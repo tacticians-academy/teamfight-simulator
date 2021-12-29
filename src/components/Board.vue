@@ -74,9 +74,9 @@ function onDrop(event: DragEvent, row: number, col: number) {
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
 .hex.team-a {
-	@apply bg-blue-100;
+	@apply bg-violet-100;
 }
 .hex.team-b {
-	@apply bg-red-100;
+	@apply bg-rose-100;
 }
 </style>

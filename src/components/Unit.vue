@@ -34,20 +34,47 @@ function onDragStart(event: DragEvent) {
 
 <template>
 <div
-	class="unit" :class="unit.team === 0 ? 'bg-blue-500' : 'bg-red-500'"
+	class="unit"
 	:style="{ left: `${currentPosition[0]}vw`, top: `${currentPosition[1]}vw` }"
 	:draggable="!state.isFighting" @dragstart="onDragStart"
 >
-	{{ unit.name }}
+	<div class="bars">
+		<div class="bar">
+			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.stats.health}%` }" />
+		</div>
+		<div v-if="unit.stats.ability.manaMax > 0" class="bar bar-small">
+			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.stats.ability.manaMax}%` }" />
+		</div>
+	</div>
+	<div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'">
+		{{ unit.name }}
+	</div>
 </div>
 </template>
 
 <style scoped lang="postcss">
 .unit {
-	@apply absolute pointer-events-auto  flex justify-center items-center;
-	clip-path: circle(50%);
-	font-size: 1.5vw;
+	@apply absolute pointer-events-auto;
 	width: v-bind(unitSize);
 	height: v-bind(unitSize);
+}
+.bars {
+	@apply absolute z-10;
+	width: v-bind(unitSize);
+	height: 0.8vw;
+}
+.bar {
+	@apply w-full bg-white border border-gray-800;
+	margin-bottom: -1px;
+	height: 0.8vw;
+}
+.bar-small {
+	height: 0.7vw;
+}
+
+.circle {
+	@apply w-full h-full  flex justify-center items-center;
+	clip-path: circle(50%);
+	font-size: 1.5vw;
 }
 </style>
