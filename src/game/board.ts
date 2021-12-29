@@ -22,7 +22,7 @@ const store = {
 		state.dragUnit = isNew ? null : unit
 	},
 	deleteUnit(position: HexCoord) {
-		state.units = state.units.filter(unit => !unit.isAt(position))
+		state.units = state.units.filter(unit => !unit.isStartAt(position))
 	},
 	moveUnit(unit: UnitData | string, position: HexCoord) {
 		const isNew = typeof unit === 'string'
@@ -30,7 +30,7 @@ const store = {
 			store.deleteUnit(position)
 			state.units.push(new UnitData(unit, position))
 		} else {
-			const existingUnit = state.units.find(unit => unit.isAt(position))
+			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
 				existingUnit.reposition(unit.startPosition)
 			}
