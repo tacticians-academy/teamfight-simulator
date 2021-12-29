@@ -36,7 +36,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 	</div>
 	<div class="absolute inset-0 pointer-events-none">
 		<template v-for="unit in state.units" :key="unit.name + unit.startPosition">
-			<Unit v-if="!unit.dead" :data="unit" />
+			<Unit v-if="!unit.dead" :unit="unit" />
 		</template>
 	</div>
 </div>
