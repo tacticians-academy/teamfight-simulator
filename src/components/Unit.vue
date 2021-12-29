@@ -3,10 +3,11 @@ import { computed, defineProps } from 'vue'
 
 import type { UnitData } from '#/game/unit'
 import { BOARD_COL_COUNT, BOARD_UNITS_RAW, BOARD_ROW_COUNT, HEX_BORDER_PROPORTION, HEX_SIZE_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/game/constants'
+import type { StarLevel } from '#/game/types'
 
 import { useStore } from '#/game/board'
 
-const { state, dragUnit } = useStore()
+const { state, setStarLevel, dragUnit } = useStore()
 
 const props = defineProps<{
 	unit: UnitData
@@ -30,6 +31,10 @@ const unitSize = `${UNIT_SIZE_HEX_PROPORTION * HEX_SIZE_PROPORTION}vw`
 function onDragStart(event: DragEvent) {
 	dragUnit(event, props.unit)
 }
+
+function onStar(starLevel: number) {
+	setStarLevel(props.unit, starLevel as StarLevel)
+}
 </script>
 
 <template>
@@ -38,9 +43,9 @@ function onDragStart(event: DragEvent) {
 	:style="{ left: `${currentPosition[0]}vw`, top: `${currentPosition[1]}vw` }"
 	:draggable="!state.isFighting" @dragstart="onDragStart"
 >
-	<div class="bars">
+	<div class="overlay bars">
 		<div class="bar">
-			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.stats.health}%` }" />
+			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
 		</div>
 		<div v-if="unit.stats.ability.manaMax > 0" class="bar bar-small">
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.stats.ability.manaMax}%` }" />
@@ -48,6 +53,11 @@ function onDragStart(event: DragEvent) {
 	</div>
 	<div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'">
 		{{ unit.name }}
+	</div>
+	<div class="overlay stars">
+		<button v-for="starLevel in 3" :key="starLevel" :disabled="state.isFighting" @click="onStar(starLevel)">
+			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
+		</button>
 	</div>
 </div>
 </template>
@@ -58,9 +68,11 @@ function onDragStart(event: DragEvent) {
 	width: v-bind(unitSize);
 	height: v-bind(unitSize);
 }
-.bars {
+.overlay {
 	@apply absolute z-10;
 	width: v-bind(unitSize);
+}
+.bars {
 	height: 0.8vw;
 }
 .bar {
@@ -70,6 +82,10 @@ function onDragStart(event: DragEvent) {
 }
 .bar-small {
 	height: 0.7vw;
+}
+.stars {
+	@apply bottom-0 text-center text-yellow-500;
+	font-size: 1.7vw;
 }
 
 .circle {

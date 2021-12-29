@@ -1,6 +1,9 @@
 export type HexCoord = [col: number, row: number]
 
 export type UnitLevelStats = [number, number?, number?]
+
+export type StarLevel = 1 | 2 | 3 | 4
+
 export interface UnitTrait {
 	description: string
 	thresholds: [number, string][]

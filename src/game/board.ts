@@ -1,7 +1,7 @@
 import { reactive, readonly } from 'vue'
 
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/game/constants'
-import type { HexCoord } from '#/game/types'
+import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/game/constants'
+import type { HexCoord, StarLevel } from '#/game/types'
 import { UnitData } from '#/game/unit'
 
 const hexRowsCols = [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => Object()))
@@ -16,6 +16,10 @@ export const state = reactive({
 const store = {
 	state: state,
 
+	setStarLevel(unit: UnitData, starLevel: StarLevel) {
+		unit.starLevel = starLevel
+		unit.reset()
+	},
 	dragUnit(event: DragEvent, unit: UnitData | string) {
 		const isNew = typeof unit === 'string'
 		event.dataTransfer?.setData('text', isNew ? unit : unit.name)
