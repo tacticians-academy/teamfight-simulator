@@ -1,4 +1,6 @@
-export const syndicate = {
+import { UnitTrait } from '#/game/types'
+
+export const syndicate: UnitTrait = {
 	description: "Certain allies are cloaked in shadows, gaining 50 Armor, 50 Magic Resist and 20% Omnivamp (healing for a percentage of all damage dealt.)",
 	thresholds: [
 		[3, "The Syndicate champion with the lowest percent Health"],
@@ -7,7 +9,7 @@ export const syndicate = {
 	],
 }
 
-export const assassin = {
+export const assassin: UnitTrait = {
 	description: "Innate: When combat starts, Assassins leap to the enemy backline. Assassins' Abilities can critically strike and they gain bonus Critical Strike Chance and Critical Strike Damage.",
 	thresholds: [
 		[3, "+10% Crit Chance and +20% Crit Damage"],
@@ -16,7 +18,7 @@ export const assassin = {
 	],
 }
 
-export const bodyguard = {
+export const bodyguard: UnitTrait = {
 	description: "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a shield and taunt adjacent enemies, forcing them to attack the Bodyguard.",
 	thresholds: [
 		[2, "100 Armor, 100 Shield"],
@@ -26,7 +28,7 @@ export const bodyguard = {
 	],
 }
 
-export const challenger = {
+export const challenger: UnitTrait = {
 	description: "Challengers get bonus Attack Speed. Upon scoring a takedown, Challengers dash to a new target and double this bonus for 2.5 seconds.",
 	thresholds: [
 		[2, "30% Attack Speed"],
@@ -36,7 +38,7 @@ export const challenger = {
 	],
 }
 
-export const clockwork = {
+export const clockwork: UnitTrait = {
 	description: "Your team has increased Attack Speed, with an increase per augment in the Hexcore.",
 	thresholds: [
 		[2, "10% Attack Speed + 5% per augment."],
@@ -45,7 +47,7 @@ export const clockwork = {
 	],
 }
 
-export const enforcer = {
+export const enforcer: UnitTrait = {
 	description: "Enforcers stun enemies at the start of combat. They break free after 5 seconds, or after losing 40% or their maximum Health.",
 	thresholds: [
 		[2, "The enemy who has the most Health"],
@@ -53,7 +55,7 @@ export const enforcer = {
 	],
 }
 
-export const protector = {
+export const protector: UnitTrait = {
 	description: "Protectors shield themselves for 4 seconds whenever they cast an Ability. This shield doesn't stack.",
 	thresholds: [
 		[2, "20% Maximum Health Shield"],
@@ -63,7 +65,7 @@ export const protector = {
 	],
 }
 
-export const scrap = {
+export const scrap: UnitTrait = {
 	description: "At the start of combat, components held by Scrap champions turn into full items for the rest of combat. Additionally, your team also gains Health for each component equipped in your army, including those that are part of a full item.",
 	thresholds: [
 		[2, "1 component, 20 health"],
@@ -72,7 +74,7 @@ export const scrap = {
 	],
 }
 
-export const sniper = {
+export const sniper: UnitTrait = {
 	description: "Snipers gain +1 Attack Range and deal bonus damage for each hex between themselves and their target.",
 	thresholds: [
 		[2, "8% bonus damage"],

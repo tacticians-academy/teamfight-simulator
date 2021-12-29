@@ -1,6 +1,7 @@
 import { assassin, bodyguard, challenger, clockwork, enforcer, protector, scrap, sniper, syndicate } from '#/game/data/set6/traits'
+import type { UnitStats } from '#/game/types'
 
-export const akali = {
+export const akali: UnitStats = {
 	name: "Akali",
 	cost: 5,
 	health: 850,
@@ -9,20 +10,19 @@ export const akali = {
 	range: 1,
 	armor: 30,
 	magicResist: 30,
-	manaStart: 0,
-	manaMax: 40,
 	traits: [syndicate, assassin],
 	ability: {
-		name: "Rocket Grab",
-		manaStart: 100,
-		manaMax: 180,
-		description: "Braum slams his vault door into the ground, creating a fissure towards his target. Enemies within 2 hexes of Braum and those struck by the fissure are stunned for a few seconds and take magic damage.",
-		damage: [100, 200, 600],
-		stun: [2, 3, 6],
+		name: "Perfect Execution",
+		manaStart: 0,
+		manaMax: 40,
+		description: "Akali dashes in a line through the most enemies, dealing magic damage and marking them for 7 seconds. When a marked target drops below Health threshold, Akali dashes again and executes them, dealing magic damage to enemies she passes through.",
+		damage: [275, 375, 2000],
+		// recastDamage: [250, 325, 2000],
+		// recastExecute: [0.15, 0.20, 0.90],
 	},
 }
 
-export const blitzcrank = {
+export const blitzcrank: UnitStats = {
 	name: "Blitzcrank",
 	cost: 2,
 	health: 650,
@@ -46,7 +46,7 @@ export const blitzcrank = {
 	},
 }
 
-export const braum = {
+export const braum: UnitStats = {
 	name: "Braum",
 	cost: 4,
 	health: 1100,
@@ -66,7 +66,7 @@ export const braum = {
 	},
 }
 
-export const caitlyn = {
+export const caitlyn: UnitStats = {
 	name: "Caitlyn",
 	cost: 1,
 	attack: 50,
@@ -85,7 +85,7 @@ export const caitlyn = {
 	},
 }
 
-export const camille = {
+export const camille: UnitStats = {
 	name: "Camille",
 	cost: 1,
 	attack: 50,
@@ -109,4 +109,4 @@ export const camille = {
 	},
 }
 
-export const allUnits = [akali, blitzcrank, braum, caitlyn, camille]
+export const allUnits: UnitStats[] = [akali, blitzcrank, braum, caitlyn, camille]
