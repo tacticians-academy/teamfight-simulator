@@ -6,22 +6,35 @@ import { UnitData } from '#/game/unit'
 
 const hexRowsCols = [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => Object()))
 
-const units: UnitData[] = []
-
 export const state = reactive({
 	hexRowsCols,
-	units,
+	units: [] as UnitData[],
+	dragUnit: null as UnitData | null,
 })
 
 const store = {
 	state: state,
 
+	dragUnit(event: DragEvent, unit: UnitData | string) {
+		const isNew = typeof unit === 'string'
+		event.dataTransfer?.setData('text', isNew ? unit : unit.name)
+		state.dragUnit = isNew ? null : unit
+	},
 	deleteUnit(position: HexCoord) {
 		state.units = state.units.filter(unit => !unit.isAt(position))
 	},
-	replaceUnit(name: string, position: HexCoord) {
-		store.deleteUnit(position)
-		state.units.push(new UnitData(name, position))
+	replaceUnit(unit: UnitData | string, position: HexCoord) {
+		const isNew = typeof unit === 'string'
+		if (isNew) {
+			store.deleteUnit(position)
+			state.units.push(new UnitData(unit, position))
+		} else {
+			const existingUnit = state.units.find(unit => unit.isAt(position))
+			if (existingUnit) {
+				existingUnit.reposition(unit.startPosition)
+			}
+			unit.reposition(position)
+		}
 	},
 }
 

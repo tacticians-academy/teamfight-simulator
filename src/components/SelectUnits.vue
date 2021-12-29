@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { allUnits } from '#/game/data/set6/units'
 
+import { useStore } from '#/game/board'
+
+const { dragUnit } = useStore()
+
 function onDrag(event: DragEvent, name: string) {
-	event.dataTransfer?.setData('text', name)
+	dragUnit(event, name)
 }
 </script>
 

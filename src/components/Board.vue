@@ -18,7 +18,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 		return
 	}
 	event.preventDefault()
-	replaceUnit(championName, [col, row])
+	replaceUnit(state.dragUnit ?? championName, [col, row])
 }
 </script>
 

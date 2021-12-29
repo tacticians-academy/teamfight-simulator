@@ -4,6 +4,10 @@ import { computed, defineProps } from 'vue'
 import type { UnitData } from '#/game/unit'
 import { BOARD_COL_COUNT, BOARD_UNITS_RAW, BOARD_ROW_COUNT, HEX_BORDER_PROPORTION, HEX_SIZE_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/game/constants'
 
+import { useStore } from '#/game/board'
+
+const { dragUnit } = useStore()
+
 const props = defineProps<{
 	data: UnitData
 }>()
@@ -23,10 +27,18 @@ const currentPosition = computed(() => {
 })
 
 const unitSize = `${UNIT_SIZE_HEX_PROPORTION * HEX_SIZE_PROPORTION}vw`
+
+function onDragStart(event: DragEvent) {
+	dragUnit(event, props.data)
+}
 </script>
 
 <template>
-<div class="unit" :class="data.team === 0 ? 'bg-blue-500' : 'bg-red-500'" :style="{ left: `${currentPosition[0]}vw`, top: `${currentPosition[1]}vw` }">
+<div
+	class="unit" :class="data.team === 0 ? 'bg-blue-500' : 'bg-red-500'"
+	:style="{ left: `${currentPosition[0]}vw`, top: `${currentPosition[1]}vw` }"
+	draggable="true" @dragstart="onDragStart"
+>
 	{{ data.name }}
 </div>
 </template>
