@@ -4,7 +4,7 @@ import Unit from '#/components/Unit.vue'
 import { useStore } from '#/game/board'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/game/constants'
 
-const { state, replaceUnit } = useStore()
+const { state, moveUnit } = useStore()
 
 function onDragOver(event: DragEvent) {
 	if (event.dataTransfer?.items.length !== 1) {
@@ -18,7 +18,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 		return
 	}
 	event.preventDefault()
-	replaceUnit(state.dragUnit ?? championName, [col, row])
+	moveUnit(state.dragUnit ?? championName, [col, row])
 }
 </script>
 
@@ -35,10 +35,9 @@ function onDrop(event: DragEvent, row: number, col: number) {
 		</div>
 	</div>
 	<div class="absolute inset-0 pointer-events-none">
-		<Unit
-			v-for="unit in state.units" :key="unit.name + unit.startPosition"
-			:data="unit"
-		/>
+		<template v-for="unit in state.units" :key="unit.name + unit.startPosition">
+			<Unit v-if="!unit.dead" :data="unit" />
+		</template>
 	</div>
 </div>
 </template>

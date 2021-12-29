@@ -7,6 +7,7 @@ import { UnitData } from '#/game/unit'
 const hexRowsCols = [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => Object()))
 
 export const state = reactive({
+	isFighting: false,
 	hexRowsCols,
 	units: [] as UnitData[],
 	dragUnit: null as UnitData | null,
@@ -23,7 +24,7 @@ const store = {
 	deleteUnit(position: HexCoord) {
 		state.units = state.units.filter(unit => !unit.isAt(position))
 	},
-	replaceUnit(unit: UnitData | string, position: HexCoord) {
+	moveUnit(unit: UnitData | string, position: HexCoord) {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
 			store.deleteUnit(position)
@@ -34,6 +35,13 @@ const store = {
 				existingUnit.reposition(unit.startPosition)
 			}
 			unit.reposition(position)
+		}
+		state.dragUnit = null
+	},
+
+	resetGame() {
+		for (const unit of state.units) {
+			unit.activePosition = undefined
 		}
 	},
 }

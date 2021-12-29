@@ -3,7 +3,7 @@ import { allUnits } from '#/game/data/set6/units'
 
 import { useStore } from '#/game/board'
 
-const { dragUnit } = useStore()
+const { state, dragUnit } = useStore()
 
 function onDrag(event: DragEvent, name: string) {
 	dragUnit(event, name)
@@ -11,7 +11,7 @@ function onDrag(event: DragEvent, name: string) {
 </script>
 
 <template>
-<div v-for="unit in allUnits" :key="unit.name" draggable="true" @dragstart="onDrag($event, unit.name)">
+<div v-for="unit in allUnits" :key="unit.name" :draggable="!state.isFighting" @dragstart="onDrag($event, unit.name)">
 	{{ unit.name }}
 </div>
 </template>

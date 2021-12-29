@@ -6,6 +6,7 @@ export class UnitData {
 	startPosition: HexCoord = [0, 0]
 	activePosition: HexCoord | undefined
 	team: 0 | 1 = 0
+	dead = false
 
 	constructor(name: string, position: HexCoord) {
 		this.name = name
