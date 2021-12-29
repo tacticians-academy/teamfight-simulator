@@ -42,7 +42,7 @@ const store = {
 
 	resetGame() {
 		for (const unit of state.units) {
-			unit.activePosition = undefined
+			unit.reset()
 		}
 	},
 }

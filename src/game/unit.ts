@@ -7,11 +7,14 @@ import type { HexCoord, UnitStats } from '#/game/types'
 export class UnitData {
 	name: string
 	startPosition: HexCoord = [0, 0]
-	activePosition: HexCoord | undefined
 	team: 0 | 1 = 0
-	dead = false
 	starLevel: 0 | 1 | 2 | 3 | 4 = 1
 	stats: UnitStats
+
+	activePosition: HexCoord | undefined
+	dead = false
+	mana = 0
+	health = 0
 
 	constructor(name: string, position: HexCoord) {
 		const stats = allUnits.find(unit => unit.name === name)
@@ -20,7 +23,15 @@ export class UnitData {
 		}
 		this.stats = stats ?? allUnits[0]
 		this.name = name
+		this.reset()
 		this.reposition(position)
+	}
+
+	reset() {
+		this.dead = false
+		this.activePosition = undefined
+		this.mana = this.stats.ability.manaStart
+		this.health = this.stats.health
 	}
 
 	isAt(position: HexCoord) {
