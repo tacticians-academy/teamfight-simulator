@@ -2,7 +2,7 @@
 import '#/assets/main.postcss'
 
 import { useStore } from '#/game/board'
-const { state, resetGame } = useStore()
+const { state, deleteUnit, resetGame } = useStore()
 
 import SelectUnits from '#/components/SelectUnits.vue'
 
@@ -12,16 +12,29 @@ import { cancelLoop, runLoop } from '#/game/loop'
 function onFight() {
 	state.isFighting = !state.isFighting
 	if (state.isFighting) {
-		runLoop(0)
+		runLoop(performance.now())
 	} else {
 		cancelLoop()
 		resetGame()
 	}
 }
+
+function onDragOver(event: DragEvent) {
+	if (event.dataTransfer?.items.length !== 1) {
+		return
+	}
+	event.preventDefault()
+}
+function onDrop(event: DragEvent) {
+	const dragFrom = state.dragUnit?.startPosition
+	if (dragFrom) {
+		deleteUnit(dragFrom)
+	}
+}
 </script>
 
 <template>
-<div class="sidebar  bg-gray-100  flex flex-col justify-between">
+<div class="sidebar  bg-gray-100  flex flex-col justify-between" @dragover="onDragOver" @drop="onDrop">
 	<div v-if="!state.isFighting" class="p-1 flex flex-col">
 		<SelectUnits />
 	</div>
