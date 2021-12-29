@@ -1,19 +1,28 @@
 import { reactive, readonly } from 'vue'
 
-import { TESTING } from '#/helpers/utils'
-
-const BOARD_ROW_PER_SIDE_COUNT = 4
-const BOARD_ROW_COUNT = BOARD_ROW_PER_SIDE_COUNT * 2
-const BOARD_COL_COUNT = 7
+import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/game/constants'
+import type { HexCoord } from '#/game/types'
+import { UnitData } from '#/game/unit'
 
 const hexRowsCols = [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => Object()))
 
+const units: UnitData[] = []
+
 export const state = reactive({
 	hexRowsCols,
+	units,
 })
 
 const store = {
-	state: TESTING ? readonly(state) : state,
+	state: state,
+
+	deleteUnit(position: HexCoord) {
+		state.units = state.units.filter(unit => !unit.isAt(position))
+	},
+	replaceUnit(name: string, position: HexCoord) {
+		store.deleteUnit(position)
+		state.units.push(new UnitData(name, position))
+	},
 }
 
 export function useStore() {
