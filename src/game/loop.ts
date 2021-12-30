@@ -7,41 +7,47 @@ const { state } = useStore()
 
 let startedAtMS: DOMHighResTimeStamp = 0
 
-const MOVE_LOCKOUT_JUMPERS_MS = 300
-const MOVE_LOCKOUT_MELEE_MS = 500
+const MOVE_LOCKOUT_JUMPERS_MS = 500
+const MOVE_LOCKOUT_MELEE_MS = 1000
+
+let didBacklineJump = false
 
 export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
-	if (!startedAtMS) {
+	const isFirstLoop = !startedAtMS
+	if (isFirstLoop) {
 		startedAtMS = frameMS
 		updatePaths(state.units)
+		didBacklineJump = false
 	}
 	const elapsedMS = frameMS - startedAtMS
-	let didUnitMove = false
+	if (elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {
+		didBacklineJump = true
+	}
 	for (const unit of state.units) {
 		if (unit.dead || unit.isMoving(frameMS)) {
 			continue
 		}
-		unit.updateTarget(state.units)
+		if (didBacklineJump) {
+			unit.updateTarget(state.units)
+		}
 		if (unit.target) {
-			unit.updateAttack(frameMS)
+			unit.updateAttack(frameMS, state.units)
 		} else {
 			if (elapsedMS < MOVE_LOCKOUT_MELEE_MS) {
-				if (elapsedMS < MOVE_LOCKOUT_JUMPERS_MS) {
+				if (!didBacklineJump) {
 					if (!unit.jumpsToBackline()) {
 						continue
 					}
-					//TODO jump
+					unit.jumpToBackline(frameMS, state.units)
 					continue
 				} else if (unit.range() > 1) {
 					continue
 				}
 			}
-			if (unit.updateMove(frameMS)) {
-				didUnitMove = true
-			}
+			unit.updateMove(frameMS, state.units)
 		}
 	}
-	if (didUnitMove) {
+	if (isFirstLoop) {
 		updatePaths(state.units)
 	}
 	if (unanimated === true) {

@@ -9,6 +9,29 @@ export function buildBoard(fillObjects: boolean): any[][] {
 	return [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => (fillObjects ? {} : [])))
 }
 
+function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): HexCoord | null {
+	if (!containsHex(hex, unitPositions)) {
+		return hex
+	}
+	const surroundingHexes = getSurrounding(hex)
+	for (const surroundingHex of surroundingHexes) {
+		if (!containsHex(surroundingHex, unitPositions)) {
+			return surroundingHex
+		}
+	}
+	for (const surroundingHex of surroundingHexes) {
+		const result = nearestAvailableRecursive(surroundingHex, unitPositions)
+		if (result) {
+			return result
+		}
+	}
+	return null
+}
+export function getClosestHexAvailableTo(startHex: HexCoord, units: UnitData[]) {
+	const unitPositions = units.filter(unit => unit.collides()).map(unit => unit.currentPosition())
+	return nearestAvailableRecursive(startHex, unitPositions)
+}
+
 export function getSurrounding([col, row]: HexCoord) {
 	const validHexes: HexCoord[] = []
 	if (col < lastCol) {
@@ -43,7 +66,7 @@ export function isSameHex(a: HexCoord, b: HexCoord) {
 	return a[0] === b[0] && a[1] === b[1]
 }
 
-export function containsHex(targetHex: HexCoord, hexes: HexCoord[]) {
+export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	for (const hex of hexes) {
 		if (isSameHex(targetHex, hex)) {
 			return true
@@ -68,7 +91,7 @@ export function getNearestEnemies(unit: UnitData, allUnits: UnitData[], range?: 
 					checkedHexes.push(surroundingHex)
 					visitedSurroundingHexes.push(surroundingHex)
 					for (const checkUnit of allUnits) {
-						if (!checkUnit.dead && checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
+						if (checkUnit.attackable() && checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
 							enemies.push(checkUnit)
 						}
 					}
