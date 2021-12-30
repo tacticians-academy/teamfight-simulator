@@ -1,10 +1,11 @@
 import { containsHex, getNearestEnemies, isSameHex } from '#/game/boardUtils'
-import { BOARD_ROW_PER_SIDE_COUNT } from '#/game/constants'
+import { BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
 import type { HexCoord, StarLevel, UnitStats } from '#/game/types'
 import { DamageType } from '#/game/types'
 
-import { sniper } from '#/game/data/set6/traits'
+import { assassin, sniper } from '#/game/data/set6/traits'
 import { allUnits } from '#/game/data/set6/units'
+import { getNextHex } from '#/game/pathfinding'
 
 export class UnitData {
 	name: string
@@ -24,6 +25,7 @@ export class UnitData {
 
 	cachedTargetDistance = 0
 	attackStartAt = 0
+	moveUntil: DOMHighResTimeStamp = 0
 
 	constructor(name: string, position: HexCoord) {
 		const stats = allUnits.find(unit => unit.name === name)
@@ -45,6 +47,9 @@ export class UnitData {
 		this.health = this.stats.health * this.starMultiplier
 		this.healthMax = this.health
 		this.attackSpeedMultiplier = 1
+		this.cachedTargetDistance = 0
+		this.attackStartAt = 0
+		this.moveUntil = 0
 	}
 
 	updateTarget(units: UnitData[]) {
@@ -77,6 +82,21 @@ export class UnitData {
 				this.attackStartAt = frameTiming
 			}
 		}
+	}
+
+	updateMove(frameMS: DOMHighResTimeStamp) {
+		const nextHex = getNextHex(this)
+		if (nextHex) {
+			const msPerHex = 1000 * HEX_MOVE_UNITS / this.moveSpeed()
+			this.moveUntil = frameMS + msPerHex
+			this.activePosition = nextHex
+			return true
+		}
+		return false
+	}
+
+	isMoving(frameMS: DOMHighResTimeStamp) {
+		return frameMS < this.moveUntil
 	}
 
 	gainMana(amount: number) {
@@ -145,6 +165,9 @@ export class UnitData {
 		return this.activePosition ?? this.startPosition
 	}
 
+	jumpsToBackline() {
+		return this.stats.traits.includes(assassin) //TODO assassin spat
+	}
 	attackDamage() {
 		return this.stats.attack * this.starMultiplier //TODO items
 	}
@@ -161,6 +184,9 @@ export class UnitData {
 		return this.stats.attackSpeed * this.attackSpeedMultiplier //TODO items
 	}
 	range() {
-		return this.stats.range + (this.stats.traits.includes(sniper) ? 1 : 0) //TODO items
+		return this.stats.range + (this.stats.traits.includes(sniper) ? 1 : 0) //TODO rfc, sniper spat
+	}
+	moveSpeed() {
+		return 550 //TODO featherweights
 	}
 }

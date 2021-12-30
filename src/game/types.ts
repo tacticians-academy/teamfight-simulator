@@ -1,5 +1,4 @@
 export type HexCoord = [col: number, row: number]
-export type HexVector = [to: HexCoord, from: HexCoord]
 
 export type UnitLevelStats = [number, number?, number?]
 

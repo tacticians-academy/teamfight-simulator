@@ -1,10 +1,10 @@
 import { reactive, readonly } from 'vue'
 
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/game/constants'
 import type { HexCoord, StarLevel } from '#/game/types'
 import { UnitData } from '#/game/unit'
+import { buildBoard } from '#/game/boardUtils'
 
-const hexRowsCols = [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => Object()))
+const hexRowsCols: Object[][] = buildBoard(true)
 
 export const state = reactive({
 	isFighting: false,

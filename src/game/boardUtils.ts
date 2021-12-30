@@ -5,6 +5,10 @@ import type { UnitData } from '#/game/unit'
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
 
+export function buildBoard(fillObjects: boolean): any[][] {
+	return [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => (fillObjects ? {} : [])))
+}
+
 export function getSurrounding([col, row]: HexCoord) {
 	const validHexes: HexCoord[] = []
 	if (col < lastCol) {

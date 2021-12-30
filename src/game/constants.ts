@@ -1,3 +1,5 @@
+export const HEX_MOVE_UNITS = 210 //TODO figure out what this actually is
+
 export const BOARD_ROW_PER_SIDE_COUNT = 4
 export const BOARD_ROW_COUNT = BOARD_ROW_PER_SIDE_COUNT * 2
 export const BOARD_COL_COUNT = 7
