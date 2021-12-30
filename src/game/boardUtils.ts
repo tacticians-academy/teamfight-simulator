@@ -54,28 +54,28 @@ export function getNearestEnemies(unit: UnitData, allUnits: UnitData[], range?: 
 		range = unit.range()
 	}
 	let checkHexes = [unit.currentPosition()]
-	const checkedHexes: HexCoord[] = [unit.currentPosition()]
+	const checkedHexes: HexCoord[] = [...checkHexes]
 	const enemies: UnitData[] = []
 	while (checkHexes.length && !enemies.length) {
-		const visitedHexes: HexCoord[] = []
+		const visitedSurroundingHexes: HexCoord[] = []
 		for (const checkHex of checkHexes) {
 			for (const surroundingHex of getSurrounding(checkHex)) {
 				if (!containsHex(surroundingHex, checkedHexes)) {
 					checkedHexes.push(surroundingHex)
-					visitedHexes.push(surroundingHex)
+					visitedSurroundingHexes.push(surroundingHex)
 					for (const checkUnit of allUnits) {
-						if (checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
+						if (!checkUnit.dead && checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
 							enemies.push(checkUnit)
 						}
 					}
 				}
 			}
 		}
+		currentRange += 1
 		if (currentRange >= range) {
 			break
 		}
-		checkHexes = visitedHexes
-		currentRange += 1
+		checkHexes = visitedSurroundingHexes
 	}
 	return enemies
 }

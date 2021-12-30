@@ -1,22 +1,30 @@
 let frameID: number | null = null
 
 import { useStore } from '#/game/board'
-import { getSurrounding } from '#/game/boardUtils'
+import { updatePaths } from '#/game/pathfinding'
 
 const { state } = useStore()
 
-export function runLoop(animated: DOMHighResTimeStamp | false) {
-	for (const unit of state.units) {
-		getSurrounding(unit.currentPosition())
+let startTime: DOMHighResTimeStamp = 0
+
+export function runLoop(frameTiming: DOMHighResTimeStamp, unanimated?: boolean) {
+	if (!startTime) {
+		startTime = frameTiming
+		updatePaths(state.units)
 	}
-	if (animated !== false) {
-		frameID = window.requestAnimationFrame(runLoop)
+	for (const unit of state.units) {
+		unit.updateTarget(state.units)
+		unit.updateAttack(frameTiming)
+	}
+	if (unanimated === true) {
+		runLoop(startTime + 60, true)
 	} else {
-		runLoop(false)
+		frameID = window.requestAnimationFrame(runLoop)
 	}
 }
 
 export function cancelLoop() {
+	startTime = 0
 	if (frameID !== null) {
 		window.cancelAnimationFrame(frameID)
 		frameID = null

@@ -10,6 +10,10 @@ export interface UnitTrait {
 	thresholds: [number, string][]
 }
 
+export const enum DamageType {
+	physical, magic, true
+}
+
 export interface UnitAbility {
 	name: string
 	manaStart: number
