@@ -15,6 +15,8 @@ export const enum DamageType {
 
 export interface UnitAbility {
 	name: string
+	target: 'current' | 'nearest' | 'farthest' | 'most' | 'highest hp' | 'highest hp%' | 'lowest hp' | 'lowest hp%'
+	castRange?: number
 	manaStart: number
 	manaMax: number
 	description: string

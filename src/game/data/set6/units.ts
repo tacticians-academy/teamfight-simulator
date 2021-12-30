@@ -13,11 +13,12 @@ export const akali: UnitStats = {
 	traits: [syndicate, assassin],
 	ability: {
 		name: "Perfect Execution",
+		target: 'most',
 		manaStart: 0,
 		manaMax: 40,
 		description: "Akali dashes in a line through the most enemies, dealing magic damage and marking them for 7 seconds. When a marked target drops below Health threshold, Akali dashes again and executes them, dealing magic damage to enemies she passes through.",
 		damage: [275, 375, 2000],
-		// recastDamage: [250, 325, 2000],
+		// markedDamage: [250, 325, 2000],
 		// recastExecute: [0.15, 0.20, 0.90],
 	},
 }
@@ -34,6 +35,7 @@ export const blitzcrank: UnitStats = {
 	traits: [scrap, bodyguard, protector],
 	ability: {
 		name: "Rocket Grab",
+		target: 'farthest',
 		manaStart: 175,
 		manaMax: 175,
 		description: "Blitzcrank pulls the farthest enemy, dealing magic damage and stunning them for 1.5 seconds. His next attack after pulling knocks up for 1 second. Allies within range will prefer attacking Blitzcrank's target.",
@@ -58,6 +60,7 @@ export const braum: UnitStats = {
 	traits: [syndicate, bodyguard],
 	ability: {
 		name: "Vault Breaker",
+		target: 'current',
 		manaStart: 100,
 		manaMax: 180,
 		description: "Braum slams his vault door into the ground, creating a fissure towards his target. Enemies within 2 hexes of Braum and those struck by the fissure are stunned for a few seconds and take magic damage.",
@@ -78,6 +81,7 @@ export const caitlyn: UnitStats = {
 	traits: [enforcer, sniper],
 	ability: {
 		name: "Ace in the Hole",
+		target: 'farthest',
 		manaStart: 0,
 		manaMax: 110,
 		description: "Caitlyn takes aim at the farthest enemy, firing a deadly bullet towards them that deals magic damage to the first enemy it hits.",
@@ -97,6 +101,7 @@ export const camille: UnitStats = {
 	traits: [clockwork, challenger],
 	ability: {
 		name: "Defensive Sweep",
+		target: 'current',
 		manaStart: 0,
 		manaMax: 60,
 		description: "Camille gains a shield blocking damage over 4 seconds, then sweeps her leg, dealing magic damage to enemies in a cone. While this shield holds, Camille's attacks restore Health.",

@@ -38,7 +38,7 @@ function onDrop(event: DragEvent) {
 	<div v-if="!state.isFighting" class="p-1 flex flex-col">
 		<SelectUnits />
 	</div>
-	<button :disabled="!state.isFighting && state.units.length < 2" class="button" @click="onFight">{{ state.isFighting ? 'Peace' : 'Fight!' }}</button>
+	<button :disabled="!state.isFighting && state.units.length < 2" class="button" @click="onFight">{{ state.isFighting ? 'Ceasefire' : 'Teamfight!' }}</button>
 </div>
 </template>
 
