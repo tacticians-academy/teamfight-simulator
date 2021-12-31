@@ -1,13 +1,14 @@
 import { reactive, readonly } from 'vue'
 
-import type { HexCoord, StarLevel } from '#/game/types'
+import type { HexCoord, StarLevel, TeamNumber } from '#/game/types'
 import { UnitData } from '#/game/unit'
 import { buildBoard } from '#/game/boardUtils'
 
 const hexRowsCols: Object[][] = buildBoard(true)
 
 export const state = reactive({
-	isFighting: false,
+	isRunning: false,
+	winningTeam: null as TeamNumber | null,
 	hexRowsCols,
 	units: [] as UnitData[],
 	dragUnit: null as UnitData | null,
@@ -42,6 +43,10 @@ const store = {
 			unit.reposition(position)
 		}
 		state.dragUnit = null
+	},
+
+	gameOver(forTeam: TeamNumber) {
+		state.winningTeam = forTeam === 0 ? 1 : 0
 	},
 
 	resetGame() {

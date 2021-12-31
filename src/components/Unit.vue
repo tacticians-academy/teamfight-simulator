@@ -41,7 +41,7 @@ function onStar(starLevel: number) {
 <div
 	class="unit"
 	:style="{ left: `${currentPosition[0]}vw`, top: `${currentPosition[1]}vw` }"
-	:draggable="!state.isFighting" @dragstart="onDragStart"
+	:draggable="!state.isRunning" @dragstart="onDragStart"
 >
 	<div class="overlay bars">
 		<div class="bar">
@@ -55,7 +55,7 @@ function onStar(starLevel: number) {
 		{{ unit.name }}
 	</div>
 	<div class="overlay stars">
-		<button v-for="starLevel in 3" :key="starLevel" :disabled="state.isFighting" @click="onStar(starLevel)">
+		<button v-for="starLevel in 3" :key="starLevel" :disabled="state.isRunning" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>

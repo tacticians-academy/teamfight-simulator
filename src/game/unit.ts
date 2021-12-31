@@ -1,6 +1,6 @@
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, isSameHex } from '#/game/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
-import type { HexCoord, StarLevel, UnitStats } from '#/game/types'
+import type { HexCoord, StarLevel, TeamNumber, UnitStats } from '#/game/types'
 import { DamageType } from '#/game/types'
 
 import { assassin, sniper } from '#/game/data/set6/traits'
@@ -10,7 +10,7 @@ import { getNextHex, updatePaths } from '#/game/pathfinding'
 export class UnitData {
 	name: string
 	startPosition: HexCoord = [0, 0]
-	team: 0 | 1 = 0
+	team: TeamNumber = 0
 	starLevel: StarLevel = 1
 	stats: UnitStats
 
@@ -73,12 +73,12 @@ export class UnitData {
 		}
 	}
 
-	updateAttack(frameTiming: DOMHighResTimeStamp, units: UnitData[]) {
+	updateAttack(frameTiming: DOMHighResTimeStamp, units: UnitData[], gameOver: (team: TeamNumber) => void) {
 		if (this.target != null) {
 			const msBetweenAttacks = 1000 / this.attackSpeed()
 			if (frameTiming >= this.attackStartAt + msBetweenAttacks) {
 				if (this.attackStartAt > 0) {
-					this.target.damage(this.attackDamage(), DamageType.physical, units) //TODO projectile
+					this.target.damage(this.attackDamage(), DamageType.physical, units, gameOver) //TODO projectile
 					this.gainMana(10)
 				}
 				this.attackStartAt = frameTiming
@@ -121,7 +121,7 @@ export class UnitData {
 		this.mana = Math.min(this.manaMax(), this.mana + amount)
 	}
 
-	damage(rawDamage: number, type: DamageType, units: UnitData[]) {
+	damage(rawDamage: number, type: DamageType, units: UnitData[], gameOver: (team: TeamNumber) => void) {
 		const defenseStat = type === DamageType.physical
 			? this.armor()
 			: type === DamageType.magic
@@ -132,7 +132,11 @@ export class UnitData {
 		if (this.health < takenDamage) {
 			this.health = 0
 			this.dead = true
-			updatePaths(units)
+			if (units.find(unit => unit.team === this.team && !unit.dead)) {
+				updatePaths(units)
+			} else {
+				gameOver(this.team)
+			}
 		} else {
 			this.health -= takenDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takenDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic

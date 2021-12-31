@@ -3,7 +3,7 @@ let frameID: number | null = null
 import { useStore } from '#/game/board'
 import { updatePaths } from '#/game/pathfinding'
 
-const { state } = useStore()
+const { state, gameOver } = useStore()
 
 let startedAtMS: DOMHighResTimeStamp = 0
 
@@ -31,7 +31,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			unit.updateTarget(state.units)
 		}
 		if (unit.target) {
-			unit.updateAttack(frameMS, state.units)
+			unit.updateAttack(frameMS, state.units, gameOver)
 		} else {
 			if (elapsedMS < MOVE_LOCKOUT_MELEE_MS) {
 				if (!didBacklineJump) {

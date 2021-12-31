@@ -11,7 +11,7 @@ function onDrag(event: DragEvent, name: string) {
 </script>
 
 <template>
-<div v-for="unit in allUnits" :key="unit.name" :draggable="!state.isFighting" @dragstart="onDrag($event, unit.name)">
+<div v-for="unit in allUnits" :key="unit.name" :draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)">
 	{{ unit.name }}
 </div>
 </template>

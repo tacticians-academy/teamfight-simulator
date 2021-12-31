@@ -10,8 +10,9 @@ import { SIDEBAR_UNITS } from '#/game/constants'
 import { cancelLoop, runLoop } from '#/game/loop'
 
 function onFight() {
-	state.isFighting = !state.isFighting
-	if (state.isFighting) {
+	state.isRunning = !state.isRunning
+	state.winningTeam = null
+	if (state.isRunning) {
 		runLoop(performance.now())
 	} else {
 		cancelLoop()
@@ -35,10 +36,13 @@ function onDrop(event: DragEvent) {
 
 <template>
 <div class="sidebar  bg-gray-100  flex flex-col justify-between" @dragover="onDragOver" @drop="onDrop">
-	<div v-if="!state.isFighting" class="p-1 flex flex-col">
+	<div v-if="!state.isRunning" class="p-1 flex flex-col">
 		<SelectUnits />
 	</div>
-	<button :disabled="!state.isFighting && state.units.length < 2" class="button" @click="onFight">{{ state.isFighting ? 'Ceasefire' : 'Teamfight!' }}</button>
+	<div v-else-if="state.winningTeam !== null" class="flex justify-center">
+		<div :class="state.winningTeam === 0 ? 'text-violet-500' : 'text-rose-500'">{{ state.winningTeam === 0 ? 'Blue' : 'Red' }} team won!</div>
+	</div>
+	<button :disabled="!state.isRunning && state.units.length < 2" class="button" @click="onFight">{{ state.isRunning ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
 </div>
 </template>
 
