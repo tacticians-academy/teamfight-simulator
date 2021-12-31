@@ -20,14 +20,15 @@ const currentItems = itemData.filter(item => {
 	if (name.startsWith('tft_')) {
 		return false
 	}
+	const icon = (item.icon as string).toLowerCase()
 	const from = item.from as number[]
 	if (from.length) {
-		if (from.includes(8) && !name.includes(spatulaItemKey)) {
+		if (from.includes(8) && !icon.includes(spatulaItemKey)) {
 			return false
 		}
 		return from.every(itemID => standardComponents.includes(itemID))
 	}
-	return standardComponents.includes(item.id) || name.includes(spatulaItemKey)
+	return standardComponents.includes(item.id) || icon.includes(spatulaItemKey)
 })
 
 const outputFolder = `src/data/set${currentSetNumber}/`

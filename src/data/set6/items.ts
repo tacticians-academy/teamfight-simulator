@@ -50,6 +50,17 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
+		"desc": "The holder gains the Enforcer trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Enforcer.TFT_Set6.dds",
+		"id": 2194,
+		"name": "Enforcer Emblem",
+		"unique": true
+	},
+	{
 		"desc": "When combat begins, the holder shoots a beam straight ahead that delays affected enemies' first cast, increasing their max Mana by @CostIncrease@% until they cast.<br><br><tftitemrules>[Unique - only one per champion]</tftitemrules>",
 		"effects": {
 			"Armor": 20,
@@ -100,6 +111,17 @@ export const items: ItemData[] = [
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Zephyr.dds",
 		"id": 67,
 		"name": "Zephyr",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Clockwork trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Clockwork.TFT_Set6.dds",
+		"id": 2191,
+		"name": "Clockwork Emblem",
 		"unique": true
 	},
 	{
@@ -205,6 +227,28 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
+		"desc": "The holder gains the Mercenary trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Mercenary.TFT_Set6.dds",
+		"id": 2192,
+		"name": "Mercenary Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Bodyguard trait.<br><br><tftitemrules>[Unique - only 1 per champion <br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Bodyguard.TFT_Set6.dds",
+		"id": 58,
+		"name": "Bodyguard Emblem",
+		"unique": true
+	},
+	{
 		"desc": "%i:scaleArmor% +@Armor@ Armor",
 		"effects": {
 			"Armor": 20
@@ -292,6 +336,39 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
+		"desc": "The holder gains the Protector trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Protector.TFT_Set6.dds",
+		"id": 2196,
+		"name": "Protector Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Innovator trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Innovator.TFT_Set6.dds",
+		"id": 2198,
+		"name": "Innovator Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Scholar trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Scholar.TFT_Set6.dds",
+		"id": 2200,
+		"name": "Scholar Emblem",
+		"unique": true
+	},
+	{
 		"desc": "%i:scaleAS% +@AS@ Attack Speed",
 		"effects": {
 			"AS": 10
@@ -339,6 +416,20 @@ export const items: ItemData[] = [
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Sunfire_Cape.dds",
 		"id": 57,
 		"name": "Sunfire Cape",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Imperial trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"AD": 10
+		},
+		"from": [
+			8,
+			1
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Imperial.TFT_Set6.dds",
+		"id": 18,
+		"name": "Imperial Emblem",
 		"unique": true
 	},
 	{
@@ -421,6 +512,17 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
+		"desc": "The holder gains the Bruiser trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Bruiser.TFT_Set6.dds",
+		"id": 2197,
+		"name": "Bruiser Emblem",
+		"unique": true
+	},
+	{
 		"desc": "When the holder attacks or takes damage, they gain @StackingAD@ Attack Damage and Ability Power. <br><br>This stacks up to @StackCap@ times, at which point the holder gains @BonusResistsAtStackCap@ Armor and Magic Resist.",
 		"effects": {
 			"AS": 10,
@@ -438,6 +540,31 @@ export const items: ItemData[] = [
 		"id": 25,
 		"name": "Titan's Resolve",
 		"unique": false
+	},
+	{
+		"desc": "The holder gains the Socialite trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Socialite.TFT_Set6.dds",
+		"id": 2193,
+		"name": "Socialite Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Mutant trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"MagicResist": 20
+		},
+		"from": [
+			6,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Mutant.TFT_Set6.dds",
+		"id": 2190,
+		"name": "Mutant Emblem",
+		"unique": true
 	},
 	{
 		"desc": "The holder gains %i:scaleAD% @AD@ Attack Damage. The holder's attacks fire a bolt at another nearby enemy, dealing @MultiplierForDamage@% of the holder's Attack Damage as physical damage.",
@@ -506,6 +633,45 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
+		"desc": "The holder gains the Scrap trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Scrap.TFT_Set6.dds",
+		"id": 2195,
+		"name": "Scrap Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Arcanist trait.<br><br><tftitemrules>[Unique - only 1 per champion</tftitemrules>",
+		"effects": {
+			"AP": 10
+		},
+		"from": [
+			3,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Arcanist.TFT_Set6.dds",
+		"id": 38,
+		"name": "Arcanist Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Challenger trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"AS": 10
+		},
+		"from": [
+			2,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Challenger.TFT_Set6.dds",
+		"id": 28,
+		"name": "Challenger Emblem",
+		"unique": true
+	},
+	{
 		"desc": "At the start of combat, the holder taunts enemies within @HexRadius@ hexes. <br><br>When the holder dies, a Voidspawn arises taunting nearby enemies. Voidspawns that arise from summoned units are @SummonedStatReduction@% effective.",
 		"effects": {
 			"AS": 10,
@@ -548,6 +714,31 @@ export const items: ItemData[] = [
 		"id": 8,
 		"name": "Spatula",
 		"unique": false
+	},
+	{
+		"desc": "The holder gains the Syndicate trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"Armor": 20
+		},
+		"from": [
+			5,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Syndicate.TFT_Set6.dds",
+		"id": 68,
+		"name": "Syndicate Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Sniper trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Sniper.TFT_Set6.dds",
+		"id": 2199,
+		"name": "Sniper Emblem",
+		"unique": true
 	},
 	{
 		"desc": "When combat begins, the holder and all allies within @HexRange@ hexes in the same row gain a shield that blocks @1StarShieldValue@/@2StarShieldValue@/@3StarShieldValue@ %i:star% damage for @ShieldDuration@ seconds.",
@@ -636,6 +827,21 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
+		"desc": "The holder gains the Assassin trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"CritChance": 10,
+			"{c4b5579c}": 5
+		},
+		"from": [
+			9,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Assassin.TFT_Set6.dds",
+		"id": 89,
+		"name": "Assassin Emblem",
+		"unique": true
+	},
+	{
 		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamageAmp@% bonus Critical Strike Damage and %i:scaleAP% @TooltipBonusAP@ bonus Ability Power.",
 		"effects": {
 			"AP": 20,
@@ -673,6 +879,20 @@ export const items: ItemData[] = [
 		"id": 3,
 		"name": "Needlessly Large Rod",
 		"unique": false
+	},
+	{
+		"desc": "The holder gains the Academy trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"Mana": 15
+		},
+		"from": [
+			8,
+			4
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Academy.TFT_Set6.dds",
+		"id": 48,
+		"name": "Academy Emblem",
+		"unique": true
 	},
 	{
 		"desc": "The holder gains %i:scaleAS% @AS@% bonus Attack Speed. The holder is immune to crowd control in combat for @SpellShieldDuration@ seconds.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
@@ -744,6 +964,20 @@ export const items: ItemData[] = [
 		"id": 77,
 		"name": "Warmog's Armor",
 		"unique": false
+	},
+	{
+		"desc": "The holder gains the Chemtech trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"Health": 150
+		},
+		"from": [
+			7,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Chemtech.TFT_Set6.dds",
+		"id": 78,
+		"name": "Chemtech Emblem",
+		"unique": true
 	},
 	{
 		"desc": "The holder gains %i:scaleAS% @BonusAS@% bonus Attack Speed. Every 3rd attack from the holder unleashes a chain lightning that bounces to @1StarBounces@ enemies, dealing @Damage@ magic damage and reducing their Magic Resist by @MRShred@% for @MRShredDuration@ seconds. ",
