@@ -2,6 +2,7 @@
 import '#/assets/main.postcss'
 
 import ManageTeams from '#/components/Sidebar/ManageTeams.vue'
+import Synergies from '#/components/Sidebar/Synergies.vue'
 
 import { useStore } from '#/game/board'
 import { onDragOver } from '#/game/dragDrop'
@@ -44,6 +45,9 @@ function onDrop(event: DragEvent) {
 		</div>
 		<div v-else-if="state.winningTeam !== null" class="flex justify-center">
 			<div :class="state.winningTeam === 0 ? 'text-violet-500' : 'text-rose-500'">{{ getTeamName(state.winningTeam) }} team won!</div>
+		</div>
+		<div v-else>
+			<Synergies />
 		</div>
 	</div>
 	<button :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.isRunning ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
