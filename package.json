@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vue-tsc --noEmit && vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"data": "node --loader ts-node/esm build/loadData.ts"
 	},
 	"dependencies": {
 		"@tailwindcss/forms": "^0.4.0",
@@ -20,6 +21,8 @@
 		"@vue/eslint-config-typescript": "^10.0.0",
 		"eslint": "^8.5.0",
 		"eslint-plugin-vue": "^8.2.0",
+		"node-fetch": "^3.1.0",
+		"ts-node": "^10.4.0",
 		"typescript": "^4.5.4",
 		"vite": "^2.7.7",
 		"vue-tsc": "^0.29.8"
@@ -34,12 +37,25 @@
 		},
 		"rules": {
 			"@typescript-eslint/strict-boolean-expressions": "error",
-			"vue/component-tags-order": ["error", {
-				"order": [ [ "script", "template" ], "style" ]
-			}],
-			"vue/html-indent": ["error", "tab", {
-				"baseIndent": 0
-			}]
+			"vue/component-tags-order": [
+				"error",
+				{
+					"order": [
+						[
+							"script",
+							"template"
+						],
+						"style"
+					]
+				}
+			],
+			"vue/html-indent": [
+				"error",
+				"tab",
+				{
+					"baseIndent": 0
+				}
+			]
 		}
 	},
 	"postcss": {
