@@ -43,3 +43,9 @@ function onDrag(event: DragEvent, name: string) {
 	</div>
 </div>
 </template>
+
+<style scoped lang="postcss">
+.group-hover-visible {
+	font-size: 1.4vw;
+}
+</style>

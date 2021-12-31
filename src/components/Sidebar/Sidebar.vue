@@ -43,10 +43,10 @@ function onDrop(event: DragEvent) {
 		<div v-if="!state.isRunning" class="flex flex-col">
 			<ManageTeams />
 		</div>
-		<div v-else-if="state.winningTeam !== null" class="flex justify-center">
-			<div :class="state.winningTeam === 0 ? 'text-violet-500' : 'text-rose-500'">{{ getTeamName(state.winningTeam) }} team won!</div>
-		</div>
 		<div v-else>
+			<div v-if="state.winningTeam !== null" class="flex justify-center">
+				<div :class="state.winningTeam === 0 ? 'text-violet-500' : 'text-rose-500'">{{ getTeamName(state.winningTeam) }} team won!</div>
+			</div>
 			<Synergies />
 		</div>
 	</div>
@@ -64,7 +64,7 @@ function onDrop(event: DragEvent) {
 	padding-left: 0.1vw;
 }
 .sidebar-icon {
-	@apply text-white bg-cover bg-right  flex justify-center items-center text-center;
+	@apply text-white bg-cover bg-right font-semibold  flex justify-center items-center text-center;
 	font-size: 1.7vw;
 	width: 6.4vw;
 	height: 6.4vw;
