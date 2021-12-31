@@ -49,7 +49,7 @@ const iconURL = `url(${getIconURL(props.unit.data.icon)})`
 	</div>
 	<!-- <div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'"> -->
 	<div class="circle" :style="{ backgroundImage: iconURL }" :class="unit.team === 0 ? 'border-violet-500' : 'border-rose-500'">
-		<span class="invisible group-hover:visible">{{ unit.name }}</span>
+		<span class="group-hover-visible">{{ unit.name }}</span>
 	</div>
 	<div class="overlay stars">
 		<button v-for="starLevel in 3" :key="starLevel" :disabled="state.isRunning" @click="onStar(starLevel)">

@@ -54,8 +54,20 @@ function onDrop(event: DragEvent) {
 </div>
 </template>
 
-<style scoped lang="postcss">
+<style lang="postcss">
 .sidebar {
 	width: v-bind(SIDEBAR_UNITS);
+}
+
+.sidebar-icon-container {
+	@apply flex flex-wrap;
+	padding-left: 0.1vw;
+}
+.sidebar-icon {
+	@apply text-white bg-cover bg-right  flex justify-center items-center text-center;
+	font-size: 1.7vw;
+	width: 6.4vw;
+	height: 6.4vw;
+	margin: 0.3vw 0 0 0.3vw;
 }
 </style>

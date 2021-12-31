@@ -17,20 +17,10 @@ const sortedChampions = [...champions].sort((a, b) => a.name.localeCompare(b.nam
 <div class="flex flex-wrap">
 	<div
 		v-for="unit in sortedChampions" :key="unit.name"
-		class="unit  group" :style="{ backgroundImage: `url(${getIconURL(unit.icon)})` }"
+		class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit.icon)})` }"
 		:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
 	>
-		<span class="invisible group-hover:visible">{{ unit.name }}</span>
+		<span class="group-hover-visible">{{ unit.name }}</span>
 	</div>
 </div>
 </template>
-
-<style scoped lang="postcss">
-.unit {
-	@apply text-white bg-cover bg-right  flex justify-center items-center text-center;
-	font-size: 1.7vw;
-	width: 6.6vw;
-	height: 6.6vw;
-	margin: 0.2vw 0 0 0.2vw;
-}
-</style>
