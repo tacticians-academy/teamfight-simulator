@@ -4,12 +4,18 @@ import type { HexCoord, StarLevel, TeamNumber } from '#/game/types'
 import { UnitData } from '#/game/unit'
 import { buildBoard } from '#/game/boardUtils'
 
-const hexRowsCols: Object[][] = buildBoard(true)
+interface HexRowCol {
+	position: HexCoord
+}
+
+const hexRowsCols: HexRowCol[][] = buildBoard(true)
 
 export const state = reactive({
 	isRunning: false,
 	winningTeam: null as TeamNumber | null,
 	hexRowsCols,
+	hexProportionX: 0,
+	hexProportionY: 0,
 	units: [] as UnitData[],
 	dragUnit: null as UnitData | null,
 })

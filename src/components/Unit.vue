@@ -2,7 +2,7 @@
 import { computed, defineProps } from 'vue'
 
 import type { UnitData } from '#/game/unit'
-import { BOARD_COL_COUNT, BOARD_UNITS_RAW, BOARD_ROW_COUNT, HEX_BORDER_PROPORTION, HEX_SIZE_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/game/constants'
+import { HEX_SIZE_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/game/constants'
 import type { StarLevel } from '#/game/types'
 
 import { useStore } from '#/game/board'
@@ -13,20 +13,14 @@ const props = defineProps<{
 	unit: UnitData
 }>()
 
-const localProportion = 0.8
-const hexBorderLocalProportionX = HEX_BORDER_PROPORTION / 0.82
-const hexBorderLocalProportionY = HEX_BORDER_PROPORTION / 0.85
-const unitInset = (1 - UNIT_SIZE_HEX_PROPORTION) / 2 * HEX_SIZE_PROPORTION
-
 const currentPosition = computed(() => {
 	const [col, row] = props.unit.currentPosition()
-	const isInsetRow = row % 2 === 1
-	const x = unitInset + BOARD_UNITS_RAW * ((col + (isInsetRow ? 0.5 : 0)) / (BOARD_COL_COUNT + 0.5)) + (hexBorderLocalProportionX * (col + (isInsetRow ? 1.5 : 1)))
-	const y = unitInset + BOARD_UNITS_RAW * ((row * localProportion) / BOARD_ROW_COUNT) + (hexBorderLocalProportionY * (row + 1)) + 0
-	return [x, y]
+	const [x, y] = state.hexRowsCols[row][col].position
+	return [x * 100, y * 100]
 })
 
-const unitSize = `${UNIT_SIZE_HEX_PROPORTION * HEX_SIZE_PROPORTION}vw`
+const unitSizeX = `${100 * state.hexProportionX * 0.75}%`
+const unitSizeY = `${100 * state.hexProportionY * 0.75}%`
 
 function onDragStart(event: DragEvent) {
 	dragUnit(event, props.unit)
@@ -40,7 +34,7 @@ function onStar(starLevel: number) {
 <template>
 <div
 	class="unit"
-	:style="{ left: `${currentPosition[0]}vw`, top: `${currentPosition[1]}vw` }"
+	:style="{ left: `${currentPosition[0]}%`, top: `${currentPosition[1]}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart"
 >
 	<div class="overlay bars">
@@ -65,12 +59,12 @@ function onStar(starLevel: number) {
 <style scoped lang="postcss">
 .unit {
 	@apply absolute pointer-events-auto;
-	width: v-bind(unitSize);
-	height: v-bind(unitSize);
+	width: v-bind(unitSizeX);
+	height: v-bind(unitSizeY);
+	transform: translate(-50%, -50%);
 }
 .overlay {
-	@apply absolute z-10;
-	width: v-bind(unitSize);
+	@apply absolute w-full z-10;
 }
 .bars {
 	height: 0.8vw;
