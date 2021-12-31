@@ -29,11 +29,22 @@ const store = {
 	},
 	dragUnit(event: DragEvent, unit: ChampionUnit | string) {
 		const isNew = typeof unit === 'string'
-		event.dataTransfer?.setData('text', isNew ? unit : unit.name)
+		const transfer = event.dataTransfer
+		if (transfer) {
+			transfer.setData('text/type', 'unit')
+			transfer.setData('text/name', isNew ? unit : unit.name)
+			transfer.effectAllowed = 'copyMove'
+		}
 		state.dragUnit = isNew ? null : unit
 	},
 	deleteUnit(position: HexCoord) {
 		state.units = state.units.filter(unit => !unit.isStartAt(position))
+		state.dragUnit = null
+	},
+	copyUnit(unit: ChampionUnit, position: HexCoord) {
+		store.deleteUnit(position)
+		state.units.push(new ChampionUnit(unit.name, position))
+		//TODO copy star level, items, etc
 		state.dragUnit = null
 	},
 	moveUnit(unit: ChampionUnit | string, position: HexCoord) {

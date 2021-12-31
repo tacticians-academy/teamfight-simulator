@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import '#/assets/main.postcss'
 
-import { useStore } from '#/game/board'
-const { state, deleteUnit, resetGame } = useStore()
-
 import ManageTeams from '#/components/Sidebar/ManageTeams.vue'
+
+import { useStore } from '#/game/board'
+import { onDragOver } from '#/game/dragDrop'
 
 import { SIDEBAR_UNITS } from '#/game/constants'
 import { cancelLoop, runLoop } from '#/game/loop'
 import { computed } from 'vue'
+
+const { state, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
 	return state.isRunning || (state.units.find(unit => unit.team === 0) && state.units.find(unit => unit.team === 1))
@@ -25,12 +27,6 @@ function onFight() {
 	}
 }
 
-function onDragOver(event: DragEvent) {
-	if (event.dataTransfer?.items.length !== 1) {
-		return
-	}
-	event.preventDefault()
-}
 function onDrop(event: DragEvent) {
 	const dragFrom = state.dragUnit?.startPosition
 	if (dragFrom) {

@@ -2,26 +2,25 @@
 import Unit from '#/components/Unit.vue'
 
 import { useStore } from '#/game/board'
+import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/game/constants'
 import { onMounted, ref } from 'vue'
 
 const rowContainer = ref<HTMLElement | null>(null)
 
-const { state, moveUnit } = useStore()
+const { state, copyUnit, moveUnit } = useStore()
 
-function onDragOver(event: DragEvent) {
-	if (event.dataTransfer?.items.length !== 1) {
-		return
-	}
-	event.preventDefault()
-}
 function onDrop(event: DragEvent, row: number, col: number) {
-	const championName = event.dataTransfer?.getData('text')
-	if (championName == null || !championName.length) {
+	const championName = getDragNameOf('unit', event)
+	if (championName == null) {
 		return
 	}
 	event.preventDefault()
-	moveUnit(state.dragUnit ?? championName, [col, row])
+	if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
+		copyUnit(state.dragUnit, [col, row])
+	} else {
+		moveUnit(state.dragUnit ?? championName, [col, row])
+	}
 }
 
 onMounted(() => {
