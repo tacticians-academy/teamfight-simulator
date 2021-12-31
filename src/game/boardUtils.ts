@@ -131,3 +131,7 @@ export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 	}
 	return distanceAccumulator
 }
+
+export function getTeamName(team: number) {
+	return team === 0 ? 'Blue' : 'Red'
+}
