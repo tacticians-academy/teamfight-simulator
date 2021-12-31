@@ -46,7 +46,7 @@ onMounted(() => {
 </script>
 
 <template>
-<div class="board">
+<div class="board  overflow-y-scroll">
 	<div ref="rowContainer" class="relative">
 		<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
 			<!-- <div v-if="rowIndex === BOARD_ROW_PER_SIDE_COUNT" class="board-separator" /> -->

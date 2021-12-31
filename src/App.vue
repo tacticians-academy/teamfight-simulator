@@ -7,7 +7,7 @@ import Sidebar from '#/components/Sidebar/Sidebar.vue'
 
 <template>
 <div class="h-full  flex">
-	<Sidebar class="overflow-y-scroll" />
-	<Board class="overflow-y-scroll" />
+	<Sidebar />
+	<Board />
 </div>
 </template>
