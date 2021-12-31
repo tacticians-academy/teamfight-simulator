@@ -1,7 +1,7 @@
 import { reactive, readonly } from 'vue'
 
 import type { HexCoord, StarLevel, TeamNumber } from '#/game/types'
-import { UnitData } from '#/game/unit'
+import { ChampionUnit } from '#/game/unit'
 import { buildBoard } from '#/game/boardUtils'
 
 interface HexRowCol {
@@ -16,18 +16,18 @@ export const state = reactive({
 	hexRowsCols,
 	hexProportionX: 0,
 	hexProportionY: 0,
-	units: [] as UnitData[],
-	dragUnit: null as UnitData | null,
+	units: [] as ChampionUnit[],
+	dragUnit: null as ChampionUnit | null,
 })
 
 const store = {
 	state: state,
 
-	setStarLevel(unit: UnitData, starLevel: StarLevel) {
+	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
 		unit.reset()
 	},
-	dragUnit(event: DragEvent, unit: UnitData | string) {
+	dragUnit(event: DragEvent, unit: ChampionUnit | string) {
 		const isNew = typeof unit === 'string'
 		event.dataTransfer?.setData('text', isNew ? unit : unit.name)
 		state.dragUnit = isNew ? null : unit
@@ -36,11 +36,11 @@ const store = {
 		state.units = state.units.filter(unit => !unit.isStartAt(position))
 		state.dragUnit = null
 	},
-	moveUnit(unit: UnitData | string, position: HexCoord) {
+	moveUnit(unit: ChampionUnit | string, position: HexCoord) {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
 			store.deleteUnit(position)
-			state.units.push(new UnitData(unit, position))
+			state.units.push(new ChampionUnit(unit, position))
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {

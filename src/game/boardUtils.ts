@@ -1,6 +1,6 @@
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/game/constants'
 import type { HexCoord } from '#/game/types'
-import type { UnitData } from '#/game/unit'
+import type { ChampionUnit } from '#/game/unit'
 
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
@@ -27,7 +27,7 @@ function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): He
 	}
 	return null
 }
-export function getClosestHexAvailableTo(startHex: HexCoord, units: UnitData[]) {
+export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
 	const unitPositions = units.filter(unit => unit.collides()).map(unit => unit.currentPosition())
 	return nearestAvailableRecursive(startHex, unitPositions)
 }
@@ -75,14 +75,14 @@ export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	return false
 }
 
-export function getNearestEnemies(unit: UnitData, allUnits: UnitData[], range?: number) {
+export function getNearestEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number) {
 	let currentRange = 0
 	if (range == null) {
 		range = unit.range()
 	}
 	let checkHexes = [unit.currentPosition()]
 	const checkedHexes: HexCoord[] = [...checkHexes]
-	const enemies: UnitData[] = []
+	const enemies: ChampionUnit[] = []
 	while (checkHexes.length && !enemies.length) {
 		const visitedSurroundingHexes: HexCoord[] = []
 		for (const checkHex of checkHexes) {

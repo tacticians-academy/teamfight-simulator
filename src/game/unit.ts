@@ -1,22 +1,22 @@
+import { champions } from '#/data/set6/champions'
+import { TraitKey } from '#/data/set6/traits'
+
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, isSameHex } from '#/game/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
-import type { HexCoord, StarLevel, TeamNumber, UnitStats } from '#/game/types'
+import type { HexCoord, StarLevel, TeamNumber, ChampionData } from '#/game/types'
 import { DamageType } from '#/game/types'
-
-import { assassin, sniper } from '#/game/data/set6/traits'
-import { allUnits } from '#/game/data/set6/units'
 import { getNextHex, updatePaths } from '#/game/pathfinding'
 
-export class UnitData {
+export class ChampionUnit {
 	name: string
 	startPosition: HexCoord = [0, 0]
 	team: TeamNumber = 0
 	starLevel: StarLevel = 1
-	stats: UnitStats
+	data: ChampionData
 
 	activePosition: HexCoord | undefined
 	dead = false
-	target: UnitData | null = null // eslint-disable-line no-use-before-define
+	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
 	mana = 0
 	health = 0
 	healthMax = 0
@@ -29,11 +29,11 @@ export class UnitData {
 	moveUntil: DOMHighResTimeStamp = 0
 
 	constructor(name: string, position: HexCoord) {
-		const stats = allUnits.find(unit => unit.name === name)
+		const stats = champions.find(unit => unit.name === name)
 		if (!stats) {
 			console.log('ERR Invalid unit', name)
 		}
-		this.stats = stats ?? allUnits[0]
+		this.data = stats ?? champions[0]
 		this.name = name
 		this.reset()
 		this.reposition(position)
@@ -44,8 +44,8 @@ export class UnitData {
 		this.dead = false
 		this.target = null
 		this.activePosition = undefined
-		this.mana = this.stats.ability.manaStart
-		this.health = this.stats.health * this.starMultiplier
+		this.mana = this.data.stats.initialMana
+		this.health = this.data.stats.hp * this.starMultiplier
 		this.healthMax = this.health
 		this.attackSpeedMultiplier = 1
 		this.cachedTargetDistance = 0
@@ -54,7 +54,7 @@ export class UnitData {
 		this.ghosting = this.jumpsToBackline()
 	}
 
-	updateTarget(units: UnitData[]) {
+	updateTarget(units: ChampionUnit[]) {
 		if (this.target != null) {
 			const targetDistance = this.hexDistanceTo(this.target)
 			if (!this.target.attackable() || targetDistance > this.range()) {
@@ -73,7 +73,7 @@ export class UnitData {
 		}
 	}
 
-	updateAttack(frameTiming: DOMHighResTimeStamp, units: UnitData[], gameOver: (team: TeamNumber) => void) {
+	updateAttack(frameTiming: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		if (this.target != null) {
 			const msBetweenAttacks = 1000 / this.attackSpeed()
 			if (frameTiming >= this.attackStartAt + msBetweenAttacks) {
@@ -86,7 +86,7 @@ export class UnitData {
 		}
 	}
 
-	updateMove(frameMS: DOMHighResTimeStamp, units: UnitData[]) {
+	updateMove(frameMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const nextHex = getNextHex(this)
 		if (nextHex) {
 			const msPerHex = 1000 * HEX_MOVE_UNITS / this.moveSpeed()
@@ -98,7 +98,7 @@ export class UnitData {
 		return false
 	}
 
-	jumpToBackline(frameMS: DOMHighResTimeStamp, units: UnitData[]) {
+	jumpToBackline(frameMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const [col, row] = this.currentPosition()
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.currentPosition()
@@ -121,7 +121,7 @@ export class UnitData {
 		this.mana = Math.min(this.manaMax(), this.mana + amount)
 	}
 
-	damage(rawDamage: number, type: DamageType, units: UnitData[], gameOver: (team: TeamNumber) => void) {
+	damage(rawDamage: number, type: DamageType, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		const defenseStat = type === DamageType.physical
 			? this.armor()
 			: type === DamageType.magic
@@ -144,7 +144,7 @@ export class UnitData {
 		}
 	}
 
-	hexDistanceTo(unit: UnitData) {
+	hexDistanceTo(unit: ChampionUnit) {
 		const [ destCol, destRow ] = unit.currentPosition()
 		const [ sourceCol, sourceRow ] = this.currentPosition()
 		let currentCol = sourceCol, currentRow = sourceRow
@@ -189,25 +189,25 @@ export class UnitData {
 	}
 
 	jumpsToBackline() {
-		return this.stats.traits.includes(assassin) //TODO assassin spat
+		return this.data.traits.includes(TraitKey.assassin) //TODO assassin spat
 	}
 	attackDamage() {
-		return this.stats.attack * this.starMultiplier //TODO items
+		return this.data.stats.damage * this.starMultiplier //TODO items
 	}
 	manaMax() {
-		return this.stats.ability.manaMax //TODO yordle mutant
+		return this.data.stats.mana //TODO yordle mutant
 	}
 	armor() {
-		return this.stats.armor //TODO items
+		return this.data.stats.armor //TODO items
 	}
 	magicResist() {
-		return this.stats.magicResist //TODO items
+		return this.data.stats.magicResist //TODO items
 	}
 	attackSpeed() {
-		return this.stats.attackSpeed * this.attackSpeedMultiplier //TODO items
+		return this.data.stats.attackSpeed * this.attackSpeedMultiplier //TODO items
 	}
 	range() {
-		return this.stats.range + (this.stats.traits.includes(sniper) ? 1 : 0) //TODO rfc, sniper spat
+		return this.data.stats.range + (this.data.traits.includes(TraitKey.sniper) ? 1 : 0) //TODO rfc, sniper spat
 	}
 	moveSpeed() {
 		return 550 //TODO featherweights

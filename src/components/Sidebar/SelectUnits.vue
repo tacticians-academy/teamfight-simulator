@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { allUnits } from '#/game/data/set6/units'
+import { champions } from '#/data/set6/champions'
 
 import { useStore } from '#/game/board'
 
@@ -11,7 +11,7 @@ function onDrag(event: DragEvent, name: string) {
 </script>
 
 <template>
-<div v-for="unit in allUnits" :key="unit.name" :draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)">
+<div v-for="unit in champions" :key="unit.name" :draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)">
 	{{ unit.name }}
 </div>
 </template>

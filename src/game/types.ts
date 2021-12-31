@@ -5,44 +5,62 @@ export type UnitLevelStats = [number, number?, number?]
 export type StarLevel = 1 | 2 | 3 | 4
 export type TeamNumber = 0 | 1
 
-export interface UnitTrait {
-	description: string
-	thresholds: [number, string][]
-}
-
 export const enum DamageType {
 	physical, magic, true
 }
 
-export interface UnitAbility {
+export interface ChampionAbilityVariable {
 	name: string
-	target: 'current' | 'nearest' | 'farthest' | 'most' | 'highest hp' | 'highest hp%' | 'lowest hp' | 'lowest hp%'
-	castRange?: number
-	manaStart: number
-	manaMax: number
-	description: string
-	damage?: UnitLevelStats
-	shield?: UnitLevelStats
-	stun?: UnitLevelStats
-	knockup?: UnitLevelStats
-	focus?: boolean
-	empoweredAuto?: {
-		while?: 'shielded'
-		heal?: UnitLevelStats
-		stun?: UnitLevelStats
-		knockup?: UnitLevelStats
-	}
+	value: number[] | null
+}
+export interface ChampionAbility {
+	desc: string | null
+	icon: string
+	name: string | null
+	variables: ChampionAbilityVariable[]
 }
 
-export interface UnitStats {
-	name: string
+export interface ChampionData {
+	ability: ChampionAbility
+	apiName: string
 	cost: number
-	attack: number
-	attackSpeed: number
-	range: 1 | 2 | 3 | 4 | 5 | 6
-	health: number
-	armor: number
-	magicResist: number
-	traits: UnitTrait[]
-	ability: UnitAbility
+	icon: string
+	name: string
+	stats: {
+		armor: number
+		attackSpeed: number
+		critChance: number | null
+		critMultiplier: number
+		damage: number
+		hp: number
+		initialMana: number
+		magicResist: number
+		mana: number
+		range: number
+	},
+	traits: string[]
+}
+
+export interface TraitEffectata {
+	maxUnits: number
+	minUnits: number
+	style: number
+	variables: Record<string, number | null>
+}
+export interface TraitData {
+	apiName: string
+	desc: string
+	effects: TraitEffectata[]
+	icon: string
+	name: string
+}
+
+export interface ItemData {
+	desc: string
+	effects: Record<string, number>
+	from: number[]
+	icon: string
+	id: number
+	name: string
+	unique: boolean
 }

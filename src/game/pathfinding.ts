@@ -1,5 +1,5 @@
 import type { HexCoord } from '#/game/types'
-import type { UnitData } from '#/game/unit'
+import type { ChampionUnit } from '#/game/unit'
 
 import { buildBoard, containsHex, getSurrounding, isSameHex } from '#/game/boardUtils'
 
@@ -36,7 +36,7 @@ function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHe
 
 let previousUnitPositions: HexCoord[] = []
 
-export function updatePaths(units: UnitData[]) {
+export function updatePaths(units: ChampionUnit[]) {
 	const searchFromHexes: [HexCoord[], HexCoord[]] = [[], []]
 	for (const unit of units) {
 		if (!unit.attackable()) {
@@ -62,7 +62,7 @@ export function updatePaths(units: UnitData[]) {
 	pathsByTeam = searchFromHexes.map(teamHexes => recursiveSearch(unitPositions, teamHexes)) as [HexCoord[][], HexCoord[][]]
 }
 
-export function getNextHex(unit: UnitData): HexCoord | null {
+export function getNextHex(unit: ChampionUnit): HexCoord | null {
 	const paths = pathsByTeam[1 - unit.team]
 	const [col, row] = unit.currentPosition()
 	const moveTo = paths[col][row]

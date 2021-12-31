@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 
-import type { UnitData } from '#/game/unit'
+import type { ChampionUnit } from '#/game/unit'
 import { HEX_SIZE_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/game/constants'
 import type { StarLevel } from '#/game/types'
 
@@ -10,7 +10,7 @@ import { useStore } from '#/game/board'
 const { state, setStarLevel, dragUnit } = useStore()
 
 const props = defineProps<{
-	unit: UnitData
+	unit: ChampionUnit
 }>()
 
 const currentPosition = computed(() => {
@@ -41,8 +41,8 @@ function onStar(starLevel: number) {
 		<div class="bar">
 			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
 		</div>
-		<div v-if="unit.stats.ability.manaMax > 0" class="bar bar-small">
-			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.stats.ability.manaMax}%` }" />
+		<div v-if="unit.data.stats.mana > 0" class="bar bar-small">
+			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.data.stats.mana}%` }" />
 		</div>
 	</div>
 	<div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'">
