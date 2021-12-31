@@ -2,6 +2,7 @@
 import { defineProps } from 'vue'
 
 import type { TraitData, TraitEffectata } from '#/game/types'
+import { getIconURL } from '#/helpers/utils'
 
 const props = defineProps<{
 	trait: TraitData
@@ -10,7 +11,7 @@ const props = defineProps<{
 	units: string[]
 }>()
 
-const iconPath = props.trait.icon.toLowerCase().slice(0, -3) + 'png'
+const iconURL = getIconURL(props.trait.icon)
 const styleOffsetX = `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`
 const styleOffsetY = `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`
 </script>
@@ -19,7 +20,7 @@ const styleOffsetY = `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`
 <div class="flex items-center" :title="units.join(', ')">
 	<div class="trait-style  mr-1  flex items-center justify-center">
 		<img
-			:src="`https://raw.communitydragon.org/latest/game/${iconPath}`" :alt="trait.name"
+			:src="iconURL" :alt="trait.name"
 			class="pointer-events-none"
 		>
 	</div>
