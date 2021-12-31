@@ -40,7 +40,7 @@ function onDrop(event: DragEvent) {
 <template>
 <div class="sidebar  bg-gray-100  flex flex-col">
 	<div class="flex-grow overflow-y-scroll" @dragover="onDragOver" @drop="onDrop">
-		<div v-if="!state.isRunning" class="p-1 flex flex-col">
+		<div v-if="!state.isRunning" class="flex flex-col">
 			<ManageTeams />
 		</div>
 		<div v-else-if="state.winningTeam !== null" class="flex justify-center">

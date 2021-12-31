@@ -2,10 +2,10 @@
 import { computed, defineProps } from 'vue'
 
 import type { ChampionUnit } from '#/game/unit'
-import { HEX_SIZE_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/game/constants'
 import type { StarLevel } from '#/game/types'
 
 import { useStore } from '#/game/board'
+import { getIconURL } from '#/helpers/utils'
 
 const { state, setStarLevel, dragUnit } = useStore()
 
@@ -19,8 +19,8 @@ const currentPosition = computed(() => {
 	return [x * 100, y * 100]
 })
 
-const unitSizeX = `${100 * state.hexProportionX * 0.75}%`
-const unitSizeY = `${100 * state.hexProportionY * 0.75}%`
+const unitSizeX = `${100 * state.hexProportionX * 0.8}%`
+const unitSizeY = `${100 * state.hexProportionY * 0.8}%`
 
 function onDragStart(event: DragEvent) {
 	dragUnit(event, props.unit)
@@ -29,11 +29,13 @@ function onDragStart(event: DragEvent) {
 function onStar(starLevel: number) {
 	setStarLevel(props.unit, starLevel as StarLevel)
 }
+
+const iconURL = `url(${getIconURL(props.unit.data.icon)})`
 </script>
 
 <template>
 <div
-	class="unit"
+	class="unit  group"
 	:style="{ left: `${currentPosition[0]}%`, top: `${currentPosition[1]}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart"
 >
@@ -45,8 +47,9 @@ function onStar(starLevel: number) {
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.data.stats.mana}%` }" />
 		</div>
 	</div>
-	<div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'">
-		{{ unit.name }}
+	<!-- <div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'"> -->
+	<div class="circle" :style="{ backgroundImage: iconURL }" :class="unit.team === 0 ? 'border-violet-500' : 'border-rose-500'">
+		<span class="invisible group-hover:visible">{{ unit.name }}</span>
 	</div>
 	<div class="overlay stars">
 		<button v-for="starLevel in 3" :key="starLevel" :disabled="state.isRunning" @click="onStar(starLevel)">
@@ -66,13 +69,11 @@ function onStar(starLevel: number) {
 .overlay {
 	@apply absolute w-full z-10;
 }
-.bars {
-	height: 0.8vw;
-}
+
 .bar {
 	@apply w-full bg-white border border-gray-800;
 	margin-bottom: -1px;
-	height: 0.8vw;
+	height: 0.9vw;
 }
 .bar-small {
 	height: 0.7vw;
@@ -83,8 +84,8 @@ function onStar(starLevel: number) {
 }
 
 .circle {
-	@apply w-full h-full  flex justify-center items-center;
-	clip-path: circle(50%);
+	@apply w-full h-full bg-cover bg-right rounded-full border-4 text-white font-medium  text-center;
+	@apply flex justify-center items-center;
 	font-size: 1.5vw;
 }
 </style>
