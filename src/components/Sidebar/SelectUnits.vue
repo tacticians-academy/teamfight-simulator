@@ -15,6 +15,3 @@ function onDrag(event: DragEvent, name: string) {
 	{{ unit.name }}
 </div>
 </template>
-
-<style scoped lang="postcss">
-</style>

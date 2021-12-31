@@ -4,7 +4,7 @@ import '#/assets/main.postcss'
 import { useStore } from '#/game/board'
 const { state, deleteUnit, resetGame } = useStore()
 
-import SelectUnits from '#/components/SelectUnits.vue'
+import ManageTeams from '#/components/Sidebar/ManageTeams.vue'
 
 import { SIDEBAR_UNITS } from '#/game/constants'
 import { cancelLoop, runLoop } from '#/game/loop'
@@ -37,7 +37,7 @@ function onDrop(event: DragEvent) {
 <template>
 <div class="sidebar  bg-gray-100  flex flex-col justify-between" @dragover="onDragOver" @drop="onDrop">
 	<div v-if="!state.isRunning" class="p-1 flex flex-col">
-		<SelectUnits />
+		<ManageTeams />
 	</div>
 	<div v-else-if="state.winningTeam !== null" class="flex justify-center">
 		<div :class="state.winningTeam === 0 ? 'text-violet-500' : 'text-rose-500'">{{ state.winningTeam === 0 ? 'Blue' : 'Red' }} team won!</div>

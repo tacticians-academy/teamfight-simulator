@@ -2,7 +2,7 @@
 import '#/assets/main.postcss'
 
 import Board from '#/components/Board.vue'
-import Sidebar from '#/components/Sidebar.vue'
+import Sidebar from '#/components/Sidebar/Sidebar.vue'
 </script>
 
 <template>
