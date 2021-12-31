@@ -24,7 +24,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		didBacklineJump = true
 	}
 	for (const unit of state.units) {
-		if (unit.dead || unit.isMoving(frameMS)) {
+		if (unit.dead || unit.isMoving(frameMS) || unit.range() <= 0) {
 			continue
 		}
 		if (didBacklineJump) {
