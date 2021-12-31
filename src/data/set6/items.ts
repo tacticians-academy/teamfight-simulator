@@ -325,17 +325,6 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "%i:scaleArmor% +@Armor@ Armor",
-		"effects": {
-			"Armor": 20
-		},
-		"from": [],
-		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Chain_Vest.dds",
-		"id": 5,
-		"name": "Chain Vest",
-		"unique": false
-	},
-	{
 		"desc": "The holder gains the Protector trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
 			"Health": 150
@@ -454,23 +443,6 @@ export const items: ItemData[] = [
 		"id": 49,
 		"name": "Hand Of Justice",
 		"unique": false
-	},
-	{
-		"desc": "Prevents the holder's first death, placing them in stasis instead. After @StasisDuration@ seconds, they return with @HealthRestore@ Health and shed all negative effects.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
-		"effects": {
-			"AD": 10,
-			"Armor": 20,
-			"HealthRestore": 400,
-			"{c425872e}": 2
-		},
-		"from": [
-			1,
-			5
-		],
-		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Guardian_Angel.dds",
-		"id": 15,
-		"name": "Guardian Angel",
-		"unique": true
 	},
 	{
 		"desc": "The holder gains %i:scaleMana% @Mana@ Starting Mana (including components). After casting their Ability, the holder gains %i:scaleMana% @ManaRestore@ mana.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
@@ -796,17 +768,6 @@ export const items: ItemData[] = [
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Rapid_Fire_Cannon.dds",
 		"id": 22,
 		"name": "Rapid Firecannon",
-		"unique": false
-	},
-	{
-		"desc": "%i:scaleAD% +@AD@ Attack Damage",
-		"effects": {
-			"AD": 10
-		},
-		"from": [],
-		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/BF_Sword.dds",
-		"id": 1,
-		"name": "B.F. Sword",
 		"unique": false
 	},
 	{

@@ -13,22 +13,31 @@ const { champions, traits } = (responseJSON as any).sets[currentSetNumber]
 
 const itemData = responseJSON.items as Record<string, any>[]
 const standardComponents = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-const oldSpatulaItemNames = ['Skirmisher Emblem']
 const spatulaItemKey = `/spatula/set${currentSetNumber}/`
+const foundItemIDs: number[] = []
 const currentItems = itemData.filter(item => {
+	if (foundItemIDs.includes(item.id)) {
+		return false
+	}
 	const name = (item.name as string).toLowerCase()
 	if (name.startsWith('tft_')) {
 		return false
 	}
 	const icon = (item.icon as string).toLowerCase()
 	const from = item.from as number[]
+	let isCurrentItem = false
 	if (from.length) {
 		if (from.includes(8) && !icon.includes(spatulaItemKey)) {
 			return false
 		}
-		return from.every(itemID => standardComponents.includes(itemID))
+		isCurrentItem = from.every(itemID => standardComponents.includes(itemID))
+	} else {
+		isCurrentItem = standardComponents.includes(item.id) || icon.includes(spatulaItemKey)
 	}
-	return standardComponents.includes(item.id) || icon.includes(spatulaItemKey)
+	if (isCurrentItem) {
+		foundItemIDs.push(item.id)
+	}
+	return isCurrentItem
 })
 
 const outputFolder = `src/data/set${currentSetNumber}/`
