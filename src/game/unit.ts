@@ -1,7 +1,7 @@
 import { champions } from '#/data/set6/champions'
 import { TraitKey } from '#/data/set6/traits'
 
-import { containsHex, getClosestHexAvailableTo, getNearestEnemies, isSameHex } from '#/game/boardUtils'
+import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/game/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
 import type { HexCoord, StarLevel, TeamNumber, ChampionData } from '#/game/types'
 import { DamageType } from '#/game/types'
@@ -145,29 +145,7 @@ export class ChampionUnit {
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
-		const [ destCol, destRow ] = unit.currentPosition()
-		const [ sourceCol, sourceRow ] = this.currentPosition()
-		let currentCol = sourceCol, currentRow = sourceRow
-		let distanceAccumulator = 0
-		while (currentCol !== destCol && currentRow !== destRow) {
-			const isInsetRow = currentRow % 2 === 1
-			if (currentRow === destRow) {
-				currentCol += currentCol > destCol ? -1 : 1
-			} else {
-				currentRow += currentRow > destRow ? -1 : 1
-				if (currentCol > destCol) {
-					if (!isInsetRow) {
-						currentCol += -1
-					}
-				} else {
-					if (isInsetRow) {
-						currentCol += 1
-					}
-				}
-			}
-			distanceAccumulator += 1
-		}
-		return distanceAccumulator
+		return hexDistanceFrom(this.currentPosition(), unit.currentPosition())
 	}
 
 	isAt(position: HexCoord) {

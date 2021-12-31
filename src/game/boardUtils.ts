@@ -106,3 +106,28 @@ export function getNearestEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], 
 	}
 	return enemies
 }
+
+export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
+	let [ currentCol, currentRow ] = destHex
+	const [ destCol, destRow ] = startHex
+	let distanceAccumulator = 0
+	while (currentCol !== destCol && currentRow !== destRow) {
+		const isInsetRow = currentRow % 2 === 1
+		if (currentRow === destRow) {
+			currentCol += currentCol > destCol ? -1 : 1
+		} else {
+			currentRow += currentRow > destRow ? -1 : 1
+			if (currentCol > destCol) {
+				if (!isInsetRow) {
+					currentCol += -1
+				}
+			} else {
+				if (isInsetRow) {
+					currentCol += 1
+				}
+			}
+		}
+		distanceAccumulator += 1
+	}
+	return distanceAccumulator
+}
