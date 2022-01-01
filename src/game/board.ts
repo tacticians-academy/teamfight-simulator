@@ -1,8 +1,12 @@
 import { reactive, readonly } from 'vue'
 
 import type { HexCoord, StarLevel, TeamNumber } from '#/game/types'
+import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/unit'
 import { buildBoard } from '#/game/boardUtils'
+
+import { removeFirstFromArray } from '#/helpers/utils'
+import { items } from '#/data/set6/items'
 
 interface HexRowCol {
 	position: HexCoord
@@ -27,18 +31,43 @@ const store = {
 		unit.starLevel = starLevel
 		unit.reset()
 	},
-	dragUnit(event: DragEvent, unit: ChampionUnit | string) {
-		const isNew = typeof unit === 'string'
+	deleteItem(itemName: string, fromUnit: ChampionUnit) {
+		removeFirstFromArray(fromUnit.items, (item) => item.name === itemName)
+		state.dragUnit = null
+	},
+	addItem(itemName: string, unit: ChampionUnit) {
+		const item = items.find(item => item.name === itemName)
+		if (!item) {
+			return
+		}
+		if (unit.items.length >= 3) {
+			unit.items.shift()
+		}
+		unit.items.push(item)
+	},
+	copyItem(itemName: string, unit: ChampionUnit) {
+		store.addItem(itemName, unit)
+		state.dragUnit = null
+	},
+	moveItem(itemName: string, toUnit: ChampionUnit, fromUnit: ChampionUnit | null) {
+		if (fromUnit) {
+			store.deleteItem(itemName, fromUnit)
+		}
+		store.addItem(itemName, toUnit)
+		state.dragUnit = null
+	},
+	startDragging(event: DragEvent, type: DraggableType, name: string, dragUnit: ChampionUnit | null) {
 		const transfer = event.dataTransfer
 		if (transfer) {
-			transfer.setData('text/type', 'unit')
-			transfer.setData('text/name', isNew ? unit : unit.name)
+			transfer.setData('text/type', type)
+			transfer.setData('text/name', name)
 			transfer.effectAllowed = 'copyMove'
 		}
-		state.dragUnit = isNew ? null : unit
+		state.dragUnit = dragUnit
+		event.stopPropagation()
 	},
 	deleteUnit(position: HexCoord) {
-		state.units = state.units.filter(unit => !unit.isStartAt(position))
+		removeFirstFromArray(state.units, (unit) => unit.isStartAt(position))
 		state.dragUnit = null
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {

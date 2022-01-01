@@ -3,7 +3,7 @@ import { TraitKey } from '#/data/set6/traits'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/game/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
-import type { HexCoord, StarLevel, TeamNumber, ChampionData } from '#/game/types'
+import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData } from '#/game/types'
 import { DamageType } from '#/game/types'
 import { getNextHex, updatePaths } from '#/game/pathfinding'
 
@@ -27,6 +27,7 @@ export class ChampionUnit {
 	cachedTargetDistance = 0
 	attackStartAt = 0
 	moveUntil: DOMHighResTimeStamp = 0
+	items: ItemData[] = []
 
 	constructor(name: string, position: HexCoord) {
 		const stats = champions.find(unit => unit.name === name)

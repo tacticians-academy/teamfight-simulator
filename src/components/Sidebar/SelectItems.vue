@@ -5,7 +5,7 @@ import { useStore } from '#/game/board'
 import type { ItemData } from '#/game/types'
 import { getIconURL } from '#/helpers/utils'
 
-const { state, dragUnit } = useStore()
+const { state, startDragging } = useStore()
 
 const itemGroups: [[string, ItemData[]], [string, ItemData[]], [string, ItemData[]]] = [['Combined', []], ['Emblems', []], ['Components', []]]
 for (const item of items) {
@@ -22,7 +22,7 @@ for (const item of items) {
 itemGroups.forEach(group => group[1].sort((a, b) => a.name.localeCompare(b.name)))
 
 function onDrag(event: DragEvent, name: string) {
-	console.log(name)
+	startDragging(event, 'item', name, null)
 }
 </script>
 

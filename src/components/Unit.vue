@@ -3,11 +3,13 @@ import { computed, defineProps } from 'vue'
 
 import type { ChampionUnit } from '#/game/unit'
 import type { StarLevel } from '#/game/types'
+import type { DraggableType } from '#/game/dragDrop'
+import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 
 import { useStore } from '#/game/board'
 import { getIconURL } from '#/helpers/utils'
 
-const { state, setStarLevel, dragUnit } = useStore()
+const { state, setStarLevel, startDragging, copyItem, moveItem } = useStore()
 
 const props = defineProps<{
 	unit: ChampionUnit
@@ -22,8 +24,8 @@ const currentPosition = computed(() => {
 const unitSizeX = `${100 * state.hexProportionX * 0.8}%`
 const unitSizeY = `${100 * state.hexProportionY * 0.8}%`
 
-function onDragStart(event: DragEvent) {
-	dragUnit(event, props.unit)
+function onDragStart(event: DragEvent, type: DraggableType, name: string) {
+	startDragging(event, type, name, props.unit)
 }
 
 function onStar(starLevel: number) {
@@ -31,13 +33,27 @@ function onStar(starLevel: number) {
 }
 
 const iconURL = `url(${getIconURL(props.unit.data.icon)})`
+
+function onDrop(event: DragEvent) {
+	const itemName = getDragNameOf('item', event)
+	if (itemName == null) {
+		return
+	}
+	event.preventDefault()
+	if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
+		copyItem(itemName, props.unit)
+	} else {
+		moveItem(itemName, props.unit, state.dragUnit)
+	}
+}
 </script>
 
 <template>
 <div
 	class="unit  group"
 	:style="{ left: `${currentPosition[0]}%`, top: `${currentPosition[1]}%` }"
-	:draggable="!state.isRunning" @dragstart="onDragStart"
+	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
+	@dragover="onDragOver" @drop="onDrop"
 >
 	<div class="overlay bars">
 		<div class="bar">
@@ -45,6 +61,15 @@ const iconURL = `url(${getIconURL(props.unit.data.icon)})`
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small">
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.data.stats.mana}%` }" />
+		</div>
+		<div class="flex">
+			<div
+				v-for="item in unit.items" :key="item.name"
+				class="w-1/3"
+				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
+			>
+				<img :src="`${getIconURL(item.icon)}`" :alt="item.name">
+			</div>
 		</div>
 	</div>
 	<!-- <div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'"> -->

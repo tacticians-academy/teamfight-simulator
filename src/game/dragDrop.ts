@@ -1,18 +1,24 @@
+export type DraggableType = 'unit' | 'item'
+
 export function onDragOver(event: DragEvent) {
-	if (event.dataTransfer?.items.length !== 2) {
+	if (!event.dataTransfer || event.dataTransfer.items.length < 2) {
 		return
 	}
 	event.preventDefault()
 }
 
-export function getDragNameOf(type: 'unit' | 'item', event: DragEvent) {
-	const dragType = event.dataTransfer?.getData('text/type')
+export function getDragName(event: DragEvent) {
+	const name = event.dataTransfer?.getData('text/name')
+	return name == null || !name.length ? null : name
+}
+export function getDragType(event: DragEvent): DraggableType | undefined {
+	return event.dataTransfer?.getData('text/type') as DraggableType
+}
+
+export function getDragNameOf(type: DraggableType, event: DragEvent) {
+	const dragType = getDragType(event)
 	if (dragType !== type) {
 		return null
 	}
-	const championName = event.dataTransfer?.getData('text/name')
-	if (championName == null || !championName.length) {
-		return null
-	}
-	return championName
+	return getDragName(event)
 }

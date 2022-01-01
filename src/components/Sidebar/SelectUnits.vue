@@ -4,10 +4,10 @@ import { champions } from '#/data/set6/champions'
 import { useStore } from '#/game/board'
 import { getIconURL } from '#/helpers/utils'
 
-const { state, dragUnit } = useStore()
+const { state, startDragging } = useStore()
 
 function onDrag(event: DragEvent, name: string) {
-	dragUnit(event, name)
+	startDragging(event, 'unit', name, null)
 }
 
 const sortedChampions = [...champions].sort((a, b) => a.name.localeCompare(b.name))

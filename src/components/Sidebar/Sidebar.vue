@@ -7,13 +7,13 @@ import Synergies from '#/components/Sidebar/Synergies.vue'
 import { computed } from 'vue'
 
 import { useStore } from '#/game/board'
-import { onDragOver } from '#/game/dragDrop'
+import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
 import { getTeamName } from '#/game/boardUtils'
 
 import { SIDEBAR_UNITS } from '#/game/constants'
 import { cancelLoop, runLoop } from '#/game/loop'
 
-const { state, deleteUnit, resetGame } = useStore()
+const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
 	return state.isRunning || (state.units.find(unit => unit.team === 0) && state.units.find(unit => unit.team === 1))
@@ -31,9 +31,17 @@ function onFight() {
 }
 
 function onDrop(event: DragEvent) {
-	const dragFrom = state.dragUnit?.startPosition
-	if (dragFrom) {
-		deleteUnit(dragFrom)
+	const dragUnit = state.dragUnit
+	if (!dragUnit) {
+		return
+	}
+	if (getDragType(event) === 'unit') {
+		deleteUnit(dragUnit.startPosition)
+	} else {
+		const name = getDragName(event)
+		if (name != null) {
+			deleteItem(name, dragUnit)
+		}
 	}
 }
 </script>
