@@ -1,3 +1,5 @@
+import { markRaw } from 'vue'
+
 import { champions } from '#/data/set6/champions'
 import { TraitKey, traits } from '#/data/set6/traits'
 
@@ -13,7 +15,7 @@ export class ChampionUnit {
 	name: string
 	startPosition: HexCoord = [0, 0]
 	team: TeamNumber = 0
-	starLevel: StarLevel = 1
+	starLevel: StarLevel
 	data: ChampionData
 
 	activePosition: HexCoord | undefined
@@ -32,13 +34,14 @@ export class ChampionUnit {
 	items: ItemData[] = []
 	traits: TraitData[] = []
 
-	constructor(name: string, position: HexCoord) {
+	constructor(name: string, position: HexCoord, starLevel: StarLevel) {
 		const stats = champions.find(unit => unit.name === name)
 		if (!stats) {
 			console.log('ERR Invalid unit', name)
 		}
-		this.data = stats ?? champions[0]
+		this.data = markRaw(stats ?? champions[0])
 		this.name = name
+		this.starLevel = starLevel
 		this.reset()
 		this.reposition(position)
 	}
