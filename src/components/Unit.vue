@@ -84,8 +84,9 @@ const iconURL = `url(${getIconURL(props.unit.data.icon)})`
 }
 
 .circle {
-	@apply w-full h-full bg-cover bg-right rounded-full border-4 text-white font-medium  text-center;
+	@apply w-full h-full bg-cover rounded-full border-4 text-white font-medium  text-center;
 	@apply flex justify-center items-center;
 	font-size: 1.5vw;
+	background-position-x: 75%;
 }
 </style>
