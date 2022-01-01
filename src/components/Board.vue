@@ -8,7 +8,7 @@ import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/helpers/constants'
 
-const rowContainer = ref<HTMLElement | null>(null)
+const hexContainer = ref<HTMLElement | null>(null)
 
 const { state, copyUnit, moveUnit } = useStore()
 
@@ -26,7 +26,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 }
 
 onMounted(() => {
-	const container = rowContainer.value!
+	const container = hexContainer.value!
 	const containerWidth = container.offsetWidth
 	const containerHeight = container.offsetHeight
 	const rows = Array.from(container.children) as HTMLElement[]
@@ -48,14 +48,16 @@ onMounted(() => {
 
 <template>
 <div class="board  overflow-y-scroll">
-	<div ref="rowContainer" class="relative">
-		<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
-			<!-- <div v-if="rowIndex === BOARD_ROW_PER_SIDE_COUNT" class="board-separator" /> -->
-			<div
-				v-for="(col, colIndex) in row" :key="colIndex"
-				class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
-				@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
-			/>
+	<div class="relative">
+		<div ref="hexContainer" class="row-container">
+			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
+				<!-- <div v-if="rowIndex === BOARD_ROW_PER_SIDE_COUNT" class="board-separator" /> -->
+				<div
+					v-for="(col, colIndex) in row" :key="colIndex"
+					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
+					@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
+				/>
+			</div>
 		</div>
 		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.name + unit.startPosition">
@@ -68,19 +70,17 @@ onMounted(() => {
 
 <style scoped lang="postcss">
 .board {
-	@apply relative w-full;
+	@apply relative w-full overflow-x-hidden;
 }
 
 .row {
 	@apply relative  flex;
-	margin-bottom: v-bind(QUARTER_HEX_INSET_UNITS);
+	margin-bottom: v-bind(QUARTER_HEX_INSET_UNITS)
 }
 .row:last-child {
 	margin-bottom: v-bind(HEX_BORDER_UNITS);
 }
-
 .row-alt {
-	@apply relative;
 	left: v-bind(HALF_HEX_UNITS);
 	margin-left: v-bind(HALF_HEX_BORDER_UNITS);
 }
@@ -91,7 +91,7 @@ onMounted(() => {
 } */
 
 .hex {
-	@apply relative bg-gray-200;
+	@apply bg-gray-200;
 	width: v-bind(HEX_UNITS);
 	height: v-bind(HEX_UNITS);
 	margin: v-bind(HEX_BORDER_UNITS) 0 0 v-bind(HEX_BORDER_UNITS);
