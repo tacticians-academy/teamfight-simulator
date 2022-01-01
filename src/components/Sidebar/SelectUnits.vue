@@ -20,7 +20,7 @@ const sortedChampions = [...champions].sort((a, b) => a.name.localeCompare(b.nam
 		class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit.icon)})` }"
 		:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
 	>
-		<span class="group-hover-visible">{{ unit.name }}</span>
+		<span class="group-hover-visible  break-words w-full">{{ unit.name }}</span>
 	</div>
 </div>
 </template>

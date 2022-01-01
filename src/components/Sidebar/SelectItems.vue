@@ -38,7 +38,7 @@ function onDrag(event: DragEvent, name: string) {
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(item.icon)})` }"
 			:draggable="!state.isRunning" @dragstart="onDrag($event, item.name)"
 		>
-			<span class="group-hover-visible">{{ item.name }}</span>
+			<div class="group-hover-visible  break-words w-full">{{ item.name }}</div>
 		</div>
 	</div>
 </div>
