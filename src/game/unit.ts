@@ -1,11 +1,12 @@
 import { champions } from '#/data/set6/champions'
 import { TraitKey, traits } from '#/data/set6/traits'
 
-import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/game/boardUtils'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
-import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData } from '#/game/types'
-import { DamageType } from '#/game/types'
-import { getNextHex, updatePaths } from '#/game/pathfinding'
+import { getNextHex, updatePaths } from '#/game/pathfind'
+
+import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
+import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData } from '#/helpers/types'
+import { DamageType } from '#/helpers/types'
 
 export class ChampionUnit {
 	name: string

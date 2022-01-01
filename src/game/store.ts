@@ -1,12 +1,13 @@
-import { reactive, readonly } from 'vue'
+import { reactive } from 'vue'
 
-import type { HexCoord, StarLevel, TeamNumber } from '#/game/types'
+import { items } from '#/data/set6/items'
+
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/unit'
-import { buildBoard } from '#/game/boardUtils'
 
+import { buildBoard } from '#/helpers/boardUtils'
 import { removeFirstFromArray } from '#/helpers/utils'
-import { items } from '#/data/set6/items'
+import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
 
 interface HexRowCol {
 	position: HexCoord
@@ -25,7 +26,7 @@ export const state = reactive({
 })
 
 const store = {
-	state: state,
+	state,
 
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel

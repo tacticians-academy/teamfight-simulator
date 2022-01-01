@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { items } from '#/data/set6/items'
 
-import { useStore } from '#/game/board'
-import type { ItemData } from '#/game/types'
+import { useStore } from '#/game/store'
+
+import type { ItemData } from '#/helpers/types'
 import { getIconURL } from '#/helpers/utils'
 
 const { state, startDragging } = useStore()

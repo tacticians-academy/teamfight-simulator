@@ -3,9 +3,10 @@ import DisplayTrait from '#/components/Sidebar/DisplayTrait.vue'
 
 import { computed } from 'vue'
 
-import { useStore } from '#/game/board'
-import { getTeamName } from '#/game/boardUtils'
-import type { TraitData, TraitEffectata } from '#/game/types'
+import { useStore } from '#/game/store'
+
+import { getTeamName } from '#/helpers/boardUtils'
+import type { TraitData, TraitEffectata } from '#/helpers/types'
 
 const { state } = useStore()
 

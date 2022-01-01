@@ -1,4 +1,4 @@
-import type { ChampionData } from '#/game/types'
+import type { ChampionData } from '#/helpers/types'
 
 export const champions: ChampionData[] = [
 	{

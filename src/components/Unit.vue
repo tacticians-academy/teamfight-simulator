@@ -2,12 +2,12 @@
 import { computed, defineProps } from 'vue'
 
 import type { ChampionUnit } from '#/game/unit'
-import type { StarLevel } from '#/game/types'
 import type { DraggableType } from '#/game/dragDrop'
 import { getDragNameOf, onDragOver } from '#/game/dragDrop'
+import { useStore } from '#/game/store'
 
-import { useStore } from '#/game/board'
 import { getIconURL } from '#/helpers/utils'
+import type { StarLevel } from '#/helpers/types'
 
 const { state, setStarLevel, startDragging, copyItem, moveItem } = useStore()
 

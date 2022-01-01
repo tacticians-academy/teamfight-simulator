@@ -1,6 +1,7 @@
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/game/constants'
-import type { HexCoord } from '#/game/types'
 import type { ChampionUnit } from '#/game/unit'
+
+import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
+import type { HexCoord } from '#/helpers/types'
 
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1

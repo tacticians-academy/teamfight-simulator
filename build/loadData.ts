@@ -61,7 +61,7 @@ const itemKeys = currentItems
 const itemKeysString = `export enum ItemKey {\n\t${itemKeys}\n}`
 
 await Promise.all([
-	fs.writeFile(path.resolve(outputFolder, 'champions.ts'), `import type { ChampionData } from '#/game/types'\n\nexport const champions: ChampionData[] = ` + JSON.stringify(playableChampions, undefined, '\t')),
-	fs.writeFile(path.resolve(outputFolder, 'traits.ts'), `import type { TraitData } from '#/game/types'\n\n${traitKeysString}\n\nexport const traits: TraitData[] = ` + JSON.stringify(traits, undefined, '\t').replace(/"null"/g, 'null')),
-	fs.writeFile(path.resolve(outputFolder, 'items.ts'), `import type { ItemData } from '#/game/types'\n\n${itemKeysString}\n\nexport const items: ItemData[] = ` + JSON.stringify(currentItems, undefined, '\t')),
+	fs.writeFile(path.resolve(outputFolder, 'champions.ts'), `import type { ChampionData } from '#/helpers/types'\n\nexport const champions: ChampionData[] = ` + JSON.stringify(playableChampions, undefined, '\t')),
+	fs.writeFile(path.resolve(outputFolder, 'traits.ts'), `import type { TraitData } from '#/helpers/types'\n\n${traitKeysString}\n\nexport const traits: TraitData[] = ` + JSON.stringify(traits, undefined, '\t').replace(/"null"/g, 'null')),
+	fs.writeFile(path.resolve(outputFolder, 'items.ts'), `import type { ItemData } from '#/helpers/types'\n\n${itemKeysString}\n\nexport const items: ItemData[] = ` + JSON.stringify(currentItems, undefined, '\t')),
 ])

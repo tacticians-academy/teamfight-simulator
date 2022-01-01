@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
-import type { TraitData, TraitEffectata } from '#/game/types'
+import type { TraitData, TraitEffectata } from '#/helpers/types'
 import { getIconURL } from '#/helpers/utils'
 
 const props = defineProps<{

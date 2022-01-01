@@ -6,12 +6,12 @@ import Synergies from '#/components/Sidebar/Synergies.vue'
 
 import { computed } from 'vue'
 
-import { useStore } from '#/game/board'
+import { useStore } from '#/game/store'
 import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
-import { getTeamName } from '#/game/boardUtils'
-
-import { SIDEBAR_UNITS } from '#/game/constants'
 import { cancelLoop, runLoop } from '#/game/loop'
+
+import { SIDEBAR_UNITS } from '#/helpers/constants'
+import { getTeamName } from '#/helpers/boardUtils'
 
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 

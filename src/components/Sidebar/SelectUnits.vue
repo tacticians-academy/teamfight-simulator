@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { champions } from '#/data/set6/champions'
 
-import { useStore } from '#/game/board'
+import { useStore } from '#/game/store'
+
 import { getIconURL } from '#/helpers/utils'
 
 const { state, startDragging } = useStore()

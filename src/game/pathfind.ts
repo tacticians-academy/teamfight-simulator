@@ -1,7 +1,7 @@
-import type { HexCoord } from '#/game/types'
 import type { ChampionUnit } from '#/game/unit'
 
-import { buildBoard, containsHex, getSurrounding, isSameHex } from '#/game/boardUtils'
+import { buildBoard, containsHex, getSurrounding, isSameHex } from '#/helpers/boardUtils'
+import type { HexCoord } from '#/helpers/types'
 
 let pathsByTeam: [HexCoord[][], HexCoord[][]] = [[], []]
 
@@ -17,8 +17,8 @@ function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHe
 	for (const hex of hexes) {
 		const surroundingHexes = getSurrounding(hex)
 		for (const surroundingHex of surroundingHexes) {
-			const alreadyChecked = containsHex(surroundingHex, checkedHexes)
-			if (alreadyChecked) {
+			const wasAlreadyChecked = containsHex(surroundingHex, checkedHexes)
+			if (wasAlreadyChecked) {
 				continue
 			}
 			checkedHexes.push(surroundingHex)

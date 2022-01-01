@@ -1,7 +1,7 @@
 let frameID: number | null = null
 
-import { useStore } from '#/game/board'
-import { updatePaths } from '#/game/pathfinding'
+import { useStore } from '#/game/store'
+import { updatePaths } from '#/game/pathfind'
 
 const { state, gameOver } = useStore()
 

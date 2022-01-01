@@ -1,4 +1,4 @@
-import type { TraitData } from '#/game/types'
+import type { TraitData } from '#/helpers/types'
 
 export enum TraitKey {
 	Bruiser = 'Bruiser', YordleLord = 'YordleLord', Twinshot = 'Twinshot', Mercenary = 'Mercenary', Imperial = 'Imperial', Chemtech = 'Chemtech', Innovator = 'Innovator', Sister = 'Sister', Scholar = 'Scholar', Socialite = 'Socialite', Academy = 'Academy', Mutant = 'Mutant', Cuddly = 'Cuddly', Protector = 'Protector', Glutton = 'Glutton', Enforcer = 'Enforcer', Arcanist = 'Arcanist', Clockwork = 'Clockwork', Yordle = 'Yordle', Assassin = 'Assassin', Colossus = 'Colossus', Transformer = 'Transformer', Bodyguard = 'Bodyguard', Scrap = 'Scrap', Enchanter = 'Enchanter', Sniper = 'Sniper', Challenger = 'Challenger', Syndicate = 'Syndicate'
