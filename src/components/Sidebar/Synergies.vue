@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import DisplayTrait from '#/components/Sidebar/DisplayTrait.vue'
 
+import { computed } from 'vue'
+
 import { traits } from '#/data/set6/traits'
 
 import { useStore } from '#/game/board'
 import { getTeamName } from '#/game/boardUtils'
 import type { TraitData, TraitEffectata } from '#/game/types'
-
-import { computed } from 'vue'
 
 const { state } = useStore()
 
@@ -33,7 +33,6 @@ const synergiesByTeam = computed(() => {
 					const traitName = countSynergy[0] as string
 					const trait = traits.find(trait => trait.name === traitName)!
 					const currentEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
-					console.log(currentEffect?.style ?? 0, trait, currentEffect, Array.from(countSynergy[1]))
 					return [currentEffect?.style ?? 0, trait, currentEffect, Array.from(countSynergy[1])]
 				})
 				.sort((a, b) => {

@@ -4,13 +4,14 @@ import '#/assets/main.postcss'
 import ManageTeams from '#/components/Sidebar/ManageTeams.vue'
 import Synergies from '#/components/Sidebar/Synergies.vue'
 
+import { computed } from 'vue'
+
 import { useStore } from '#/game/board'
 import { onDragOver } from '#/game/dragDrop'
 import { getTeamName } from '#/game/boardUtils'
 
 import { SIDEBAR_UNITS } from '#/game/constants'
 import { cancelLoop, runLoop } from '#/game/loop'
-import { computed } from 'vue'
 
 const { state, deleteUnit, resetGame } = useStore()
 

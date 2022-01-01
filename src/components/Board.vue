@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import Unit from '#/components/Unit.vue'
 
+import { onMounted, ref } from 'vue'
+
 import { useStore } from '#/game/board'
 import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/game/constants'
-import { onMounted, ref } from 'vue'
 
 const rowContainer = ref<HTMLElement | null>(null)
 
