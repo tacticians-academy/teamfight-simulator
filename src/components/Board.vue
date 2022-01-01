@@ -5,8 +5,10 @@ import { onMounted, ref } from 'vue'
 
 import { useStore } from '#/game/store'
 import { getDragNameOf, onDragOver } from '#/game/dragDrop'
+import { ChampionUnit } from '#/game/unit'
 
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/helpers/constants'
+import { getSavedUnits } from '#/helpers/storage'
 
 const hexContainer = ref<HTMLElement | null>(null)
 
@@ -26,6 +28,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 }
 
 onMounted(() => {
+	// Cache hex positions
 	const container = hexContainer.value!
 	const containerWidth = container.offsetWidth
 	const containerHeight = container.offsetHeight
@@ -43,6 +46,9 @@ onMounted(() => {
 			state.hexRowsCols[rowIndex][colIndex].position = [x / containerWidth, y / containerHeight]
 		}
 	}
+
+	// Load saved units
+	state.units.push(...getSavedUnits().map(unit => new ChampionUnit(unit.name, unit.position, unit.starLevel)))
 })
 </script>
 

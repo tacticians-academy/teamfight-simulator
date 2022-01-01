@@ -1,9 +1,19 @@
 export type HexCoord = [col: number, row: number]
 
-export type UnitLevelStats = [number, number?, number?]
-
 export type StarLevel = 1 | 2 | 3 | 4
 export type TeamNumber = 0 | 1
+
+export interface HexRowCol {
+	position: HexCoord
+}
+
+export interface StorageChampion {
+	name: string
+	position: HexCoord
+	starLevel: StarLevel
+}
+
+export type UnitLevelStats = [number, number?, number?]
 
 export const enum DamageType {
 	physical, magic, true

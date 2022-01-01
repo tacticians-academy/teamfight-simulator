@@ -7,6 +7,7 @@ import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFr
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
 import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData } from '#/helpers/types'
 import { DamageType } from '#/helpers/types'
+import { saveUnits } from '#/helpers/storage'
 
 export class ChampionUnit {
 	name: string
@@ -166,6 +167,7 @@ export class ChampionUnit {
 	reposition(position: HexCoord) {
 		this.startPosition = position
 		this.team = position[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
+		window.setTimeout(saveUnits)
 	}
 	currentPosition() {
 		return this.activePosition ?? this.startPosition

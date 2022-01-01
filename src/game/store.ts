@@ -7,11 +7,8 @@ import { ChampionUnit } from '#/game/unit'
 
 import { buildBoard } from '#/helpers/boardUtils'
 import { removeFirstFromArray } from '#/helpers/utils'
-import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
-
-interface HexRowCol {
-	position: HexCoord
-}
+import type { HexCoord, HexRowCol, StarLevel, TeamNumber } from '#/helpers/types'
+import { saveUnits } from '#/helpers/storage'
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
 
@@ -31,6 +28,7 @@ const store = {
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
 		unit.reset()
+		saveUnits()
 	},
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
 		removeFirstFromArray(fromUnit.items, (item) => item.name === itemName)
@@ -75,7 +73,7 @@ const store = {
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
 		store.deleteUnit(position)
-		state.units.push(new ChampionUnit(unit.name, position))
+		state.units.push(new ChampionUnit(unit.name, position, unit.starLevel))
 		//TODO copy star level, items, etc
 		state.dragUnit = null
 	},
@@ -83,7 +81,7 @@ const store = {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
 			store.deleteUnit(position)
-			state.units.push(new ChampionUnit(unit, position))
+			state.units.push(new ChampionUnit(unit, position, 1))
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
