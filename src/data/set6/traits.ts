@@ -1,7 +1,7 @@
 import type { TraitData } from '#/game/types'
 
 export enum TraitKey {
-	bruiser = 'Bruiser', yordleLord = 'YordleLord', twinshot = 'Twinshot', mercenary = 'Mercenary', imperial = 'Imperial', chemtech = 'Chemtech', innovator = 'Innovator', sister = 'Sister', scholar = 'Scholar', socialite = 'Socialite', academy = 'Academy', mutant = 'Mutant', cuddly = 'Cuddly', protector = 'Protector', glutton = 'Glutton', enforcer = 'Enforcer', arcanist = 'Arcanist', clockwork = 'Clockwork', yordle = 'Yordle', assassin = 'Assassin', colossus = 'Colossus', transformer = 'Transformer', bodyguard = 'Bodyguard', scrap = 'Scrap', enchanter = 'Enchanter', sniper = 'Sniper', challenger = 'Challenger', syndicate = 'Syndicate'
+	Bruiser = 'Bruiser', YordleLord = 'YordleLord', Twinshot = 'Twinshot', Mercenary = 'Mercenary', Imperial = 'Imperial', Chemtech = 'Chemtech', Innovator = 'Innovator', Sister = 'Sister', Scholar = 'Scholar', Socialite = 'Socialite', Academy = 'Academy', Mutant = 'Mutant', Cuddly = 'Cuddly', Protector = 'Protector', Glutton = 'Glutton', Enforcer = 'Enforcer', Arcanist = 'Arcanist', Clockwork = 'Clockwork', Yordle = 'Yordle', Assassin = 'Assassin', Colossus = 'Colossus', Transformer = 'Transformer', Bodyguard = 'Bodyguard', Scrap = 'Scrap', Enchanter = 'Enchanter', Sniper = 'Sniper', Challenger = 'Challenger', Syndicate = 'Syndicate'
 }
 
 export const traits: TraitData[] = [

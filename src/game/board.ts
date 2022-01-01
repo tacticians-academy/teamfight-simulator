@@ -34,6 +34,7 @@ const store = {
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
 		removeFirstFromArray(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
+		fromUnit.reset()
 	},
 	addItem(itemName: string, unit: ChampionUnit) {
 		const item = items.find(item => item.name === itemName)
@@ -44,6 +45,7 @@ const store = {
 			unit.items.shift()
 		}
 		unit.items.push(item)
+		unit.reset()
 	},
 	copyItem(itemName: string, unit: ChampionUnit) {
 		store.addItem(itemName, unit)

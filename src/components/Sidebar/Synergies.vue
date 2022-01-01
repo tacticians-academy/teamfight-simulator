@@ -3,35 +3,33 @@ import DisplayTrait from '#/components/Sidebar/DisplayTrait.vue'
 
 import { computed } from 'vue'
 
-import { traits } from '#/data/set6/traits'
-
 import { useStore } from '#/game/board'
 import { getTeamName } from '#/game/boardUtils'
 import type { TraitData, TraitEffectata } from '#/game/types'
 
 const { state } = useStore()
 
-type SynergyCount = Record<string, Set<string>>
+type SynergyCount = Map<TraitData, string[]>
 
 const synergiesByTeam = computed(() => {
-	const teamSynergies: [SynergyCount, SynergyCount] = [{}, {}]
+	const teamSynergies: [SynergyCount, SynergyCount] = [new Map(), new Map()]
 	state.units.forEach(unit => {
 		const team = teamSynergies[unit.team]
-		for (const trait of unit.data.traits) {
-			if (team[trait] == null) {
-				team[trait] = new Set()
+		for (const trait of unit.traits) {
+			if (!team.has(trait)) {
+				team.set(trait, [unit.name])
+			} else if (!team.get(trait)!.includes(unit.name)) {
+				team.get(trait)?.push(unit.name)
 			}
-			team[trait].add(unit.name)
 		}
 	})
 	return teamSynergies
-		.map(team => Object.entries(team))
+		.map(team => team.entries())
 		.map(teamCountSynergies => {
-			return teamCountSynergies
+			return Array.from(teamCountSynergies)
 				.map((countSynergy): [number, TraitData, TraitEffectata | undefined, string[]] => {
-					const uniqueUnitCount = countSynergy[1].size
-					const traitName = countSynergy[0] as string
-					const trait = traits.find(trait => trait.name === traitName)!
+					const uniqueUnitCount = countSynergy[1].length
+					const trait = countSynergy[0]
 					const currentEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
 					return [currentEffect?.style ?? 0, trait, currentEffect, Array.from(countSynergy[1])]
 				})

@@ -1,9 +1,9 @@
 import { champions } from '#/data/set6/champions'
-import { TraitKey } from '#/data/set6/traits'
+import { TraitKey, traits } from '#/data/set6/traits'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/game/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/game/constants'
-import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData } from '#/game/types'
+import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData } from '#/game/types'
 import { DamageType } from '#/game/types'
 import { getNextHex, updatePaths } from '#/game/pathfinding'
 
@@ -28,6 +28,7 @@ export class ChampionUnit {
 	attackStartAt = 0
 	moveUntil: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
+	traits: TraitData[] = []
 
 	constructor(name: string, position: HexCoord) {
 		const stats = champions.find(unit => unit.name === name)
@@ -53,6 +54,8 @@ export class ChampionUnit {
 		this.attackStartAt = 0
 		this.moveUntil = 0
 		this.ghosting = this.jumpsToBackline()
+		const traitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
+		this.traits = Array.from(new Set(traitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -167,9 +170,13 @@ export class ChampionUnit {
 		return this.activePosition ?? this.startPosition
 	}
 
-	jumpsToBackline() {
-		return this.data.traits.includes(TraitKey.assassin) //TODO assassin spat
+	hasTrait(name: TraitKey) {
+		return !!this.traits.find(trait => trait.name === name)
 	}
+	jumpsToBackline() {
+		return this.hasTrait(TraitKey.Assassin)
+	}
+
 	attackDamage() {
 		return this.data.stats.damage * this.starMultiplier //TODO items
 	}
@@ -186,7 +193,7 @@ export class ChampionUnit {
 		return this.data.stats.attackSpeed * this.attackSpeedMultiplier //TODO items
 	}
 	range() {
-		return this.data.stats.range + (this.data.traits.includes(TraitKey.sniper) ? 1 : 0) //TODO rfc, sniper spat
+		return this.data.stats.range + (this.hasTrait(TraitKey.Sniper) ? 1 : 0) //TODO rfc
 	}
 	moveSpeed() {
 		return 550 //TODO featherweights

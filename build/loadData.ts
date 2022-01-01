@@ -48,13 +48,20 @@ const playableChampions = champions.filter((champion: any) => !unplayableNames.i
 const traitKeys = traits
 	.map((trait: any) => {
 		const nameKey = trait.apiName.split('_')[1]
-		return `${nameKey[0].toLowerCase() + nameKey.slice(1)} = '${nameKey}'`
+		return `${nameKey} = '${nameKey}'`
 	})
 	.join(', ')
 const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 
+const itemKeys = currentItems
+	.map((item: any) => {
+		return `${item.name.replace(/['. ]/g, '')} = ${item.id}`
+	})
+	.join(', ')
+const itemKeysString = `export enum ItemKey {\n\t${itemKeys}\n}`
+
 await Promise.all([
 	fs.writeFile(path.resolve(outputFolder, 'champions.ts'), `import type { ChampionData } from '#/game/types'\n\nexport const champions: ChampionData[] = ` + JSON.stringify(playableChampions, undefined, '\t')),
 	fs.writeFile(path.resolve(outputFolder, 'traits.ts'), `import type { TraitData } from '#/game/types'\n\n${traitKeysString}\n\nexport const traits: TraitData[] = ` + JSON.stringify(traits, undefined, '\t').replace(/"null"/g, 'null')),
-	fs.writeFile(path.resolve(outputFolder, 'items.ts'), `import type { ItemData } from '#/game/types'\n\nexport const items: ItemData[] = ` + JSON.stringify(currentItems, undefined, '\t')),
+	fs.writeFile(path.resolve(outputFolder, 'items.ts'), `import type { ItemData } from '#/game/types'\n\n${itemKeysString}\n\nexport const items: ItemData[] = ` + JSON.stringify(currentItems, undefined, '\t')),
 ])
