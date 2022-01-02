@@ -69,7 +69,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"BonusAD": 5,
-					"{b4a90a5d}": 40
+					"ProcChance": 40
 				}
 			},
 			{
@@ -78,7 +78,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"BonusAD": 40,
-					"{b4a90a5d}": 70
+					"ProcChance": 70
 				}
 			},
 			{
@@ -87,7 +87,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"BonusAD": 80,
-					"{b4a90a5d}": 100
+					"ProcChance": 100
 				}
 			}
 		],
@@ -130,8 +130,8 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"BonusDamage": 75,
-					"{0acd95c2}": null,
-					"{f469c9e6}": 75
+					"ImperialBonusDamage": null,
+					"TyrantTooltipBonusDamage": 75
 				}
 			},
 			{
@@ -140,8 +140,8 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"BonusDamage": 50,
-					"{0acd95c2}": 75,
-					"{f469c9e6}": 125
+					"ImperialBonusDamage": 75,
+					"TyrantTooltipBonusDamage": 125
 				}
 			}
 		],
@@ -213,8 +213,8 @@ export const traits: TraitData[] = [
 				"minUnits": 3,
 				"style": 1,
 				"variables": {
-					"{45564848}": 1,
-					"{97ea7bfc}": 0.25
+					"InnovationStarLevel": 1,
+					"InnovatorStarLevelMultiplier": 0.25
 				}
 			},
 			{
@@ -222,8 +222,8 @@ export const traits: TraitData[] = [
 				"minUnits": 5,
 				"style": 3,
 				"variables": {
-					"{45564848}": 2,
-					"{97ea7bfc}": 0.25
+					"InnovationStarLevel": 2,
+					"InnovatorStarLevelMultiplier": 0.25
 				}
 			},
 			{
@@ -231,8 +231,8 @@ export const traits: TraitData[] = [
 				"minUnits": 7,
 				"style": 4,
 				"variables": {
-					"{45564848}": 3,
-					"{97ea7bfc}": 0.25
+					"InnovationStarLevel": 3,
+					"InnovatorStarLevelMultiplier": 0.25
 				}
 			}
 		],
@@ -248,9 +248,9 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 3,
 				"variables": {
-					"{2a50526a}": 3,
+					"JinxASDuration": 3,
 					"{3b173c39}": 4,
-					"{5263ba40}": 0.4000000059604645
+					"JinxEmpoweredAS": 0.4000000059604645
 				}
 			}
 		],
@@ -266,8 +266,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{471b1a16}": 2,
-					"{d0539890}": 5
+					"TickRate": 2,
+					"ManaPerTick": 5
 				}
 			},
 			{
@@ -275,8 +275,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"{471b1a16}": 2,
-					"{d0539890}": 10
+					"TickRate": 2,
+					"ManaPerTick": 10
 				}
 			},
 			{
@@ -284,8 +284,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"{471b1a16}": 2,
-					"{d0539890}": 20
+					"TickRate": 2,
+					"ManaPerTick": 20
 				}
 			}
 		],
@@ -304,8 +304,8 @@ export const traits: TraitData[] = [
 					"DamagePercent": 0.20000000298023224,
 					"{5064373e}": null,
 					"{5c51b509}": 1,
-					"{6c155e99}": null,
-					"{f9f3a081}": null
+					"OmnivampPercent": null,
+					"ManaPerSecond": null
 				}
 			},
 			{
@@ -316,8 +316,8 @@ export const traits: TraitData[] = [
 					"DamagePercent": 0.20000000298023224,
 					"{5064373e}": null,
 					"{5c51b509}": 2,
-					"{6c155e99}": null,
-					"{f9f3a081}": 5
+					"OmnivampPercent": null,
+					"ManaPerSecond": 5
 				}
 			},
 			{
@@ -328,8 +328,8 @@ export const traits: TraitData[] = [
 					"DamagePercent": 0.20000000298023224,
 					"{5064373e}": null,
 					"{5c51b509}": 3,
-					"{6c155e99}": 0.30000001192092896,
-					"{f9f3a081}": 5
+					"OmnivampPercent": 0.30000001192092896,
+					"ManaPerSecond": 5
 				}
 			}
 		],
@@ -345,8 +345,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{65722d9c}": 18,
-					"{96ca059f}": 3
+					"ADAPBase": 18,
+					"ADAPPerCast": 3
 				}
 			},
 			{
@@ -354,8 +354,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"{65722d9c}": 40,
-					"{96ca059f}": 5
+					"ADAPBase": 40,
+					"ADAPPerCast": 5
 				}
 			},
 			{
@@ -363,8 +363,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"{65722d9c}": 50,
-					"{96ca059f}": 10
+					"ADAPBase": 50,
+					"ADAPPerCast": 10
 				}
 			},
 			{
@@ -372,8 +372,8 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"{65722d9c}": 70,
-					"{96ca059f}": 15
+					"ADAPBase": 70,
+					"ADAPPerCast": 15
 				}
 			}
 		],
@@ -445,8 +445,8 @@ export const traits: TraitData[] = [
 				"variables": {
 					"AttachCooldown": 2,
 					"ShieldPercent": 60,
-					"{b3105623}": 10,
-					"{f9f3a081}": 5
+					"ManaPerAllyAttack": 10,
+					"ManaPerSecond": 5
 				}
 			}
 		],
@@ -521,8 +521,8 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"HPPercent": 0.4000000059604645,
-					"{70ed38c6}": 5,
-					"{d2b7f6f1}": 1
+					"DetainDuration": 5,
+					"DetainCount": 1
 				}
 			},
 			{
@@ -531,8 +531,8 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"HPPercent": 0.4000000059604645,
-					"{70ed38c6}": 5,
-					"{d2b7f6f1}": 2
+					"DetainDuration": 5,
+					"DetainCount": 2
 				}
 			}
 		],
@@ -548,8 +548,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{2f744e2b}": 20,
-					"{faa12163}": null
+					"TeamAbilityPower": 20,
+					"ArcanistAbilityPower": null
 				}
 			},
 			{
@@ -557,8 +557,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"{2f744e2b}": 20,
-					"{faa12163}": 40
+					"TeamAbilityPower": 20,
+					"ArcanistAbilityPower": 40
 				}
 			},
 			{
@@ -566,8 +566,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"{2f744e2b}": 50,
-					"{faa12163}": 50
+					"TeamAbilityPower": 50,
+					"ArcanistAbilityPower": 50
 				}
 			},
 			{
@@ -575,8 +575,8 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"{2f744e2b}": 145,
-					"{faa12163}": null
+					"TeamAbilityPower": 145,
+					"ArcanistAbilityPower": null
 				}
 			}
 		],
@@ -592,8 +592,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{51aec5d2}": 0.05000000074505806,
-					"{cbb3a34f}": 0.10000000149011612
+					"BonusPerAugment": 0.05000000074505806,
+					"AttackSpeedBonus": 0.10000000149011612
 				}
 			},
 			{
@@ -601,8 +601,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"{51aec5d2}": 0.10000000149011612,
-					"{cbb3a34f}": 0.3499999940395355
+					"BonusPerAugment": 0.10000000149011612,
+					"AttackSpeedBonus": 0.3499999940395355
 				}
 			},
 			{
@@ -610,8 +610,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"{51aec5d2}": 0.15000000596046448,
-					"{cbb3a34f}": 0.699999988079071
+					"BonusPerAugment": 0.15000000596046448,
+					"AttackSpeedBonus": 0.699999988079071
 				}
 			}
 		],
@@ -627,7 +627,7 @@ export const traits: TraitData[] = [
 				"minUnits": 3,
 				"style": 1,
 				"variables": {
-					"{ed1f9fc2}": null
+					"PercentManaReduction": null
 				}
 			},
 			{
@@ -635,7 +635,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"{ed1f9fc2}": 20
+					"PercentManaReduction": 20
 				}
 			}
 		],
@@ -651,8 +651,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{268f634e}": 20,
-					"{9f2eb1e2}": 10
+					"CritAmpPercent": 20,
+					"CritChanceAmpPercent": 10
 				}
 			},
 			{
@@ -660,8 +660,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"{268f634e}": 40,
-					"{9f2eb1e2}": 30
+					"CritAmpPercent": 40,
+					"CritChanceAmpPercent": 30
 				}
 			},
 			{
@@ -669,8 +669,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"{268f634e}": 60,
-					"{9f2eb1e2}": 50
+					"CritAmpPercent": 60,
+					"CritChanceAmpPercent": 50
 				}
 			}
 		],
@@ -761,8 +761,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{5cc08b27}": 1,
-					"{94c6a08c}": 20
+					"NumComponents": 1,
+					"HPShieldAmount": 20
 				}
 			},
 			{
@@ -770,8 +770,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"{5cc08b27}": 3,
-					"{94c6a08c}": 35
+					"NumComponents": 3,
+					"HPShieldAmount": 35
 				}
 			},
 			{
@@ -779,8 +779,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"{5cc08b27}": 10,
-					"{94c6a08c}": 60
+					"NumComponents": 10,
+					"HPShieldAmount": 60
 				}
 			}
 		],
@@ -796,8 +796,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{47343861}": 20,
-					"{98396b21}": 0.25
+					"MagicResistance": 20,
+					"HealShieldBoost": 0.25
 				}
 			},
 			{
@@ -805,8 +805,8 @@ export const traits: TraitData[] = [
 				"minUnits": 3,
 				"style": 2,
 				"variables": {
-					"{47343861}": 35,
-					"{98396b21}": 0.4000000059604645
+					"MagicResistance": 35,
+					"HealShieldBoost": 0.4000000059604645
 				}
 			},
 			{
@@ -814,8 +814,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"{47343861}": 50,
-					"{98396b21}": 0.6000000238418579
+					"MagicResistance": 50,
+					"HealShieldBoost": 0.6000000238418579
 				}
 			},
 			{
@@ -823,8 +823,8 @@ export const traits: TraitData[] = [
 				"minUnits": 5,
 				"style": 4,
 				"variables": {
-					"{47343861}": 75,
-					"{98396b21}": 1
+					"MagicResistance": 75,
+					"HealShieldBoost": 1
 				}
 			}
 		],
@@ -840,8 +840,8 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{16394c87}": 1,
-					"{75994f47}": 8
+					"HexRangeIncrease": 1,
+					"PercentDamageIncrease": 8
 				}
 			},
 			{
@@ -849,8 +849,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"{16394c87}": 1,
-					"{75994f47}": 16
+					"HexRangeIncrease": 1,
+					"PercentDamageIncrease": 16
 				}
 			},
 			{
@@ -858,8 +858,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"{16394c87}": 1,
-					"{75994f47}": 30
+					"HexRangeIncrease": 1,
+					"PercentDamageIncrease": 30
 				}
 			}
 		],
@@ -876,7 +876,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"BonusAS": 30,
-					"{17cfa971}": 2.5
+					"BurstDuration": 2.5
 				}
 			},
 			{
@@ -885,7 +885,7 @@ export const traits: TraitData[] = [
 				"style": 2,
 				"variables": {
 					"BonusAS": 55,
-					"{17cfa971}": 2.5
+					"BurstDuration": 2.5
 				}
 			},
 			{
@@ -894,7 +894,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"BonusAS": 80,
-					"{17cfa971}": 2.5
+					"BurstDuration": 2.5
 				}
 			},
 			{
@@ -903,7 +903,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"BonusAS": 130,
-					"{17cfa971}": 2.5
+					"BurstDuration": 2.5
 				}
 			}
 		],
@@ -944,8 +944,8 @@ export const traits: TraitData[] = [
 					"Armor": 60,
 					"MagicResist": 60,
 					"{5c51b509}": 3,
-					"{867bc055}": 0.33000001311302185,
-					"{c9b0e3af}": 20
+					"{c9b0e3af}": 20,
+					"SyndicateIncrease": 0.33000001311302185
 				}
 			}
 		],

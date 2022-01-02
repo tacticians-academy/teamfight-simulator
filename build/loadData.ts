@@ -54,6 +54,57 @@ const traitKeys = (traits as TraitData[])
 		return `${nameKey} = '${nameKey}'`
 	})
 	.join(', ')
+
+const stringIDReplacements: Record<string, string> = {
+	'b4a90a5d': 'ProcChance',
+	'0acd95c2': 'ImperialBonusDamage',
+	'f469c9e6': 'TyrantTooltipBonusDamage',
+	'45564848': 'InnovationStarLevel', //TODO actual string
+	'97ea7bfc': 'InnovatorStarLevelMultiplier', //TODO actual string
+	'5263ba40': 'JinxEmpoweredAS',
+	'2a50526a': 'JinxASDuration',
+	'3b173c39': '{3b173c39}', //TODO sister ??
+	'471b1a16': 'TickRate',
+	'd0539890': 'ManaPerTick',
+	'6c155e99': 'OmnivampPercent',
+	'f9f3a081': 'ManaPerSecond',
+	'65722d9c': 'ADAPBase',
+	'96ca059f': 'ADAPPerCast',
+	'b3105623': 'ManaPerAllyAttack',
+	'70ed38c6': 'DetainDuration',
+	'd2b7f6f1': 'DetainCount', //TODO actual string
+	'2f744e2b': 'TeamAbilityPower',
+	'faa12163': 'ArcanistAbilityPower',
+	'51aec5d2': 'BonusPerAugment',
+	'cbb3a34f': 'AttackSpeedBonus',
+	'ed1f9fc2': 'PercentManaReduction',
+	'268f634e': 'CritAmpPercent',
+	'9f2eb1e2': 'CritChanceAmpPercent',
+	'5cc08b27': 'NumComponents',
+	'94c6a08c': 'HPShieldAmount',
+	'47343861': 'MagicResistance',
+	'98396b21': 'HealShieldBoost',
+	'16394c87': 'HexRangeIncrease',
+	'75994f47': 'PercentDamageIncrease',
+	'17cfa971': 'BurstDuration',
+	'867bc055': 'SyndicateIncrease',
+	// '': '',
+}
+
+traits.forEach((trait: TraitData) => {
+	trait.effects.forEach(effect => {
+		Object.keys(effect.variables).forEach(key => {
+			if (key.startsWith('{')) {
+				const replacement = stringIDReplacements[key.slice(1, -1)]
+				if (replacement) {
+					const originalValue = effect.variables[key]
+					delete effect.variables[key]
+					effect.variables[replacement] = originalValue
+				}
+			}
+		})
+	})
+})
 const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 
 const itemKeys = (currentItems as ItemData[])
