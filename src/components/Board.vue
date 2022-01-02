@@ -10,7 +10,7 @@ import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BO
 
 const hexContainer = ref<HTMLElement | null>(null)
 
-const { state, copyUnit, moveUnit, loadUnits } = useStore()
+const { state, dropUnit, loadUnits } = useStore()
 
 function onDrop(event: DragEvent, row: number, col: number) {
 	const championName = getDragNameOf('unit', event)
@@ -18,11 +18,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 		return
 	}
 	event.preventDefault()
-	if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
-		copyUnit(state.dragUnit, [col, row])
-	} else {
-		moveUnit(state.dragUnit ?? championName, [col, row])
-	}
+	dropUnit(event, championName, [col, row])
 }
 
 onMounted(() => {

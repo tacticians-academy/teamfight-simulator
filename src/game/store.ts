@@ -98,6 +98,13 @@ const store = {
 		}
 		state.dragUnit = null
 	},
+	dropUnit(event: DragEvent, name: string, hex: HexCoord) {
+		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
+			store.copyUnit(state.dragUnit, hex)
+		} else {
+			store.moveUnit(state.dragUnit ?? name, hex)
+		}
+	},
 
 	gameOver(forTeam: TeamNumber) {
 		state.winningTeam = forTeam === 0 ? 1 : 0

@@ -2,14 +2,14 @@
 import { computed, defineProps } from 'vue'
 
 import type { ChampionUnit } from '#/game/unit'
-import type { DraggableType } from '#/game/dragDrop'
+import { DraggableType, getDragName, getDragType } from '#/game/dragDrop'
 import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 import { useStore } from '#/game/store'
 
 import { getIconURL } from '#/helpers/utils'
 import type { StarLevel } from '#/helpers/types'
 
-const { state, setStarLevel, startDragging, copyItem, moveItem } = useStore()
+const { state, setStarLevel, startDragging, copyItem, moveItem, dropUnit } = useStore()
 
 const props = defineProps<{
 	unit: ChampionUnit
@@ -35,15 +35,20 @@ function onStar(starLevel: number) {
 const iconURL = `url(${getIconURL(props.unit.data.icon)})`
 
 function onDrop(event: DragEvent) {
-	const itemName = getDragNameOf('item', event)
-	if (itemName == null) {
+	const type = getDragType(event)
+	const name = getDragName(event)
+	if (type == null || name == null) {
 		return
 	}
 	event.preventDefault()
-	if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
-		copyItem(itemName, props.unit)
+	if (type === 'item') {
+		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
+			copyItem(name, props.unit)
+		} else {
+			moveItem(name, props.unit, state.dragUnit)
+		}
 	} else {
-		moveItem(itemName, props.unit, state.dragUnit)
+		dropUnit(event, name, props.unit.startPosition)
 	}
 }
 </script>
@@ -68,7 +73,7 @@ function onDrop(event: DragEvent) {
 				class="w-1/3"
 				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
 			>
-				<img :src="`${getIconURL(item.icon)}`" :alt="item.name">
+				<img :src="getIconURL(item.icon)" :alt="item.name">
 			</div>
 		</div>
 	</div>
