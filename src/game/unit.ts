@@ -29,8 +29,8 @@ export class ChampionUnit {
 
 	ghosting = false
 	cachedTargetDistance = 0
-	attackStartAt = 0
-	moveUntil: DOMHighResTimeStamp = 0
+	attackStartAtMS: DOMHighResTimeStamp = 0
+	moveUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
 
@@ -56,8 +56,8 @@ export class ChampionUnit {
 		this.healthMax = this.health
 		this.attackSpeedMultiplier = 1
 		this.cachedTargetDistance = 0
-		this.attackStartAt = 0
-		this.moveUntil = 0
+		this.attackStartAtMS = 0
+		this.moveUntilMS = 0
 		this.ghosting = this.jumpsToBackline()
 		const traitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(traitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
@@ -82,24 +82,24 @@ export class ChampionUnit {
 		}
 	}
 
-	updateAttack(frameTiming: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	updateAttack(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		if (this.target != null) {
 			const msBetweenAttacks = 1000 / this.attackSpeed()
-			if (frameTiming >= this.attackStartAt + msBetweenAttacks) {
-				if (this.attackStartAt > 0) {
-					this.target.damage(this.attackDamage(), DamageType.physical, units, gameOver) //TODO projectile
-					this.gainMana(10)
+			if (elapsedMS >= this.attackStartAtMS + msBetweenAttacks) {
+				if (this.attackStartAtMS > 0) {
+					this.target.damage(elapsedMS, this.attackDamage(), DamageType.physical, units, gameOver) //TODO projectile
+					this.gainMana(elapsedMS, 10)
 				}
-				this.attackStartAt = frameTiming
+				this.attackStartAtMS = elapsedMS
 			}
 		}
 	}
 
-	updateMove(frameMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
+	updateMove(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const nextHex = getNextHex(this)
 		if (nextHex) {
 			const msPerHex = 1000 * HEX_MOVE_UNITS / this.moveSpeed()
-			this.moveUntil = frameMS + msPerHex
+			this.moveUntilMS = elapsedMS + msPerHex
 			this.activePosition = nextHex
 			updatePaths(units)
 			return true
@@ -107,11 +107,11 @@ export class ChampionUnit {
 		return false
 	}
 
-	jumpToBackline(frameMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
+	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const [col, row] = this.currentPosition()
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.currentPosition()
-		this.moveUntil = frameMS + BACKLINE_JUMP_MS
+		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.ghosting = false
 	}
 
@@ -122,15 +122,18 @@ export class ChampionUnit {
 		return !this.dead && !this.ghosting
 	}
 
-	isMoving(frameMS: DOMHighResTimeStamp) {
-		return frameMS < this.moveUntil
+	isMoving(elapsedMS: DOMHighResTimeStamp) {
+		return elapsedMS < this.moveUntilMS
 	}
 
-	gainMana(amount: number) {
+	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
+		if (elapsedMS < this.manaLockUntilMS) {
+			return
+		}
 		this.mana = Math.min(this.manaMax(), this.mana + amount)
 	}
 
-	damage(rawDamage: number, type: DamageType, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	damage(elapsedMS: DOMHighResTimeStamp, rawDamage: number, type: DamageType, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		const defenseStat = type === DamageType.physical
 			? this.armor()
 			: type === DamageType.magic
@@ -149,7 +152,7 @@ export class ChampionUnit {
 		} else {
 			this.health -= takenDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takenDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
-			this.gainMana(manaGain)
+			this.gainMana(elapsedMS, manaGain)
 		}
 	}
 

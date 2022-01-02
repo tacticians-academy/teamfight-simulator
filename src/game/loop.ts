@@ -31,20 +31,20 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			unit.updateTarget(state.units)
 		}
 		if (unit.target) {
-			unit.updateAttack(frameMS, state.units, gameOver)
+			unit.updateAttack(elapsedMS, state.units, gameOver)
 		} else {
 			if (elapsedMS < MOVE_LOCKOUT_MELEE_MS) {
 				if (!didBacklineJump) {
 					if (!unit.jumpsToBackline()) {
 						continue
 					}
-					unit.jumpToBackline(frameMS, state.units)
+					unit.jumpToBackline(elapsedMS, state.units)
 					continue
 				} else if (unit.range() > 1) {
 					continue
 				}
 			}
-			unit.updateMove(frameMS, state.units)
+			unit.updateMove(elapsedMS, state.units)
 		}
 	}
 	if (isFirstLoop) {

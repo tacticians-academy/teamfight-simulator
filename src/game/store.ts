@@ -8,7 +8,7 @@ import { ChampionUnit } from '#/game/unit'
 import { buildBoard } from '#/helpers/boardUtils'
 import { removeFirstFromArray } from '#/helpers/utils'
 import type { HexCoord, HexRowCol, StarLevel, TeamNumber } from '#/helpers/types'
-import { saveUnits } from '#/helpers/storage'
+import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
 
@@ -24,6 +24,12 @@ export const state = reactive({
 
 const store = {
 	state,
+
+	loadUnits() {
+		if (!state.units.length) {
+			state.units.push(...getSavedUnits().map(unit => new ChampionUnit(unit.name, unit.position, unit.starLevel)))
+		}
+	},
 
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
@@ -70,6 +76,7 @@ const store = {
 	deleteUnit(position: HexCoord) {
 		removeFirstFromArray(state.units, (unit) => unit.isStartAt(position))
 		state.dragUnit = null
+		saveUnits()
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
 		store.deleteUnit(position)

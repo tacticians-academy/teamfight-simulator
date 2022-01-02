@@ -2,6 +2,8 @@ import fetch from 'node-fetch'
 import fs from 'fs/promises'
 import path from 'path'
 
+import type { ChampionData, ItemData, TraitData } from '../src/helpers/types'
+
 const response = await fetch('https://raw.communitydragon.org/latest/cdragon/tft/en_us.json')
 if (!response.ok) {
 	throw response
@@ -43,20 +45,19 @@ const currentItems = itemData.filter(item => {
 const outputFolder = `src/data/set${currentSetNumber}/`
 
 const unplayableNames = ['TFT5_EmblemArmoryKey', 'TFT6_MercenaryChest']
-const playableChampions = champions.filter((champion: any) => !unplayableNames.includes(champion.apiName))
+const playableChampions = (champions as ChampionData[])
+	.filter(champion => !unplayableNames.includes(champion.apiName))
 
-const traitKeys = traits
-	.map((trait: any) => {
+const traitKeys = (traits as TraitData[])
+	.map(trait => {
 		const nameKey = trait.apiName.split('_')[1]
 		return `${nameKey} = '${nameKey}'`
 	})
 	.join(', ')
 const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 
-const itemKeys = currentItems
-	.map((item: any) => {
-		return `${item.name.replace(/['. ]/g, '')} = ${item.id}`
-	})
+const itemKeys = (currentItems as ItemData[])
+	.map(item => `${item.name.replace(/['. ]/g, '')} = ${item.id}`)
 	.join(', ')
 const itemKeysString = `export enum ItemKey {\n\t${itemKeys}\n}`
 
