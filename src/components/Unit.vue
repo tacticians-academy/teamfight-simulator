@@ -60,7 +60,7 @@ function onDrop(event: DragEvent) {
 			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small">
-			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.data.stats.mana}%` }" />
+			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%` }" />
 		</div>
 		<div class="flex">
 			<div

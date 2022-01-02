@@ -4,6 +4,8 @@ import { champions } from '#/data/set6/champions'
 import { TraitKey, traits } from '#/data/set6/traits'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
+import abilities from '#/data/set6/abilities'
+import type { AbilityFn } from '#/data/set6/abilities'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
@@ -31,8 +33,11 @@ export class ChampionUnit {
 	cachedTargetDistance = 0
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moveUntilMS: DOMHighResTimeStamp = 0
+	manaLockUntilMS: DOMHighResTimeStamp = 0
+	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
+	ability: AbilityFn | undefined
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel) {
 		const stats = champions.find(unit => unit.name === name)
@@ -42,6 +47,7 @@ export class ChampionUnit {
 		this.data = markRaw(stats ?? champions[0])
 		this.name = name
 		this.starLevel = starLevel
+		this.ability = abilities[name]
 		this.reset()
 		this.reposition(position)
 	}
@@ -58,6 +64,8 @@ export class ChampionUnit {
 		this.cachedTargetDistance = 0
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
+		this.manaLockUntilMS = 0
+		this.stunnedUntilMS = 0
 		this.ghosting = this.jumpsToBackline()
 		const traitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(traitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
@@ -87,7 +95,7 @@ export class ChampionUnit {
 			const msBetweenAttacks = 1000 / this.attackSpeed()
 			if (elapsedMS >= this.attackStartAtMS + msBetweenAttacks) {
 				if (this.attackStartAtMS > 0) {
-					this.target.damage(elapsedMS, this.attackDamage(), DamageType.physical, units, gameOver) //TODO projectile
+					this.target.damage(elapsedMS, this.attackDamage(), DamageType.physical, this, units, gameOver) //TODO projectile
 					this.gainMana(elapsedMS, 10)
 				}
 				this.attackStartAtMS = elapsedMS
@@ -105,6 +113,14 @@ export class ChampionUnit {
 			return true
 		}
 		return false
+	}
+
+	readyToCast() {
+		return !!this.ability && this.mana >= this.manaMax()
+	}
+	castAbility(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
+		this.ability?.(elapsedMS, this, units)
+		this.mana = 0
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -133,12 +149,15 @@ export class ChampionUnit {
 		this.mana = Math.min(this.manaMax(), this.mana + amount)
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, rawDamage: number, type: DamageType, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	damage(elapsedMS: DOMHighResTimeStamp, rawDamage: number, type: DamageType, fromUnit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		const defenseStat = type === DamageType.physical
 			? this.armor()
 			: type === DamageType.magic
 				? this.magicResist()
 				: null
+		if (type === DamageType.magic) {
+			rawDamage *= fromUnit.abilityPowerMultiplier()
+		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
 		const takenDamage = rawDamage * defenseMultiplier
 		if (this.health < takenDamage) {
@@ -188,6 +207,9 @@ export class ChampionUnit {
 
 	attackDamage() {
 		return this.data.stats.damage * this.starMultiplier //TODO items
+	}
+	abilityPowerMultiplier() {
+		return 1 //TODO items, traits
 	}
 	manaMax() {
 		return this.data.stats.mana //TODO yordle mutant
