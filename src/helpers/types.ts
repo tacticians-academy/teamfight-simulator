@@ -65,6 +65,10 @@ export interface TraitData {
 	name: string
 }
 
+export type SynergyCount = Map<TraitData, string[]>
+
+export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectata | undefined, uniqueUnitNames: string[]]
+
 export interface ItemData {
 	desc: string
 	effects: Record<string, number>

@@ -9,7 +9,7 @@ import type { AbilityFn } from '#/data/set6/abilities'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
-import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData } from '#/helpers/types'
+import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 import { DamageType } from '#/helpers/types'
 import { saveUnits } from '#/helpers/storage'
 
@@ -37,9 +37,10 @@ export class ChampionUnit {
 	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
+	bonuses: [sourceName: string, key: string, value: number | null][] = []
 	ability: AbilityFn | undefined
 
-	constructor(name: string, position: HexCoord, starLevel: StarLevel) {
+	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
 		const stats = champions.find(unit => unit.name === name)
 		if (!stats) {
 			console.log('ERR Invalid unit', name)
@@ -48,11 +49,11 @@ export class ChampionUnit {
 		this.name = name
 		this.starLevel = starLevel
 		this.ability = abilities[name]
-		this.reset()
+		this.reset(synergiesByTeam)
 		this.reposition(position)
 	}
 
-	reset() {
+	reset(synergiesByTeam: SynergyData[][]) {
 		this.starMultiplier = this.starLevel === 1 ? 1 : (this.starLevel - 1) * 1.8
 		this.dead = false
 		this.target = null
@@ -69,6 +70,14 @@ export class ChampionUnit {
 		this.ghosting = this.jumpsToBackline()
 		const traitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(traitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
+		this.bonuses = []
+		synergiesByTeam[this.team].forEach(([trait, style, effect]) => {
+			if (effect != null && traitNames.includes(trait.name)) {
+				for (const key in effect.variables) {
+					this.bonuses.push([trait.name, key, effect.variables[key]])
+				}
+			}
+		})
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -118,8 +127,8 @@ export class ChampionUnit {
 	readyToCast() {
 		return !!this.ability && this.mana >= this.manaMax()
 	}
-	castAbility(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
-		this.ability?.(elapsedMS, this, units)
+	castAbility(elapsedMS: DOMHighResTimeStamp) {
+		this.ability?.(elapsedMS, this)
 		this.mana = 0
 	}
 
@@ -198,6 +207,9 @@ export class ChampionUnit {
 		return this.activePosition ?? this.startPosition
 	}
 
+	getBonuses(findKey: string, sourceName?: TraitKey) {
+		return this.bonuses.filter(bonus => bonus[1] === findKey).reduce((previous, current) => previous + (current[2] ?? 0), 0)
+	}
 	hasTrait(name: TraitKey) {
 		return !!this.traits.find(trait => trait.name === name)
 	}
@@ -224,7 +236,7 @@ export class ChampionUnit {
 		return this.data.stats.attackSpeed * this.attackSpeedMultiplier //TODO items
 	}
 	range() {
-		return this.data.stats.range + (this.hasTrait(TraitKey.Sniper) ? 1 : 0) //TODO rfc
+		return this.data.stats.range + this.getBonuses('HexRangeIncrease')
 	}
 	moveSpeed() {
 		return 550 //TODO featherweights

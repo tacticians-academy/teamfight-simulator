@@ -50,7 +50,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			continue
 		}
 		if (unit.readyToCast()) {
-			unit.castAbility(elapsedMS, state.units)
+			unit.castAbility(elapsedMS)
 		}
 		if (didBacklineJump) {
 			unit.updateTarget(state.units)
