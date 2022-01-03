@@ -12,8 +12,9 @@ const props = defineProps<{
 }>()
 
 const iconURL = getIconURL(props.trait.icon)
-const styleOffsetX = `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`
-const styleOffsetY = `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`
+const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
+const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
+
 function substitute(text: string, effect: TraitEffectata) {
 	return text
 		.replaceAll('@MinUnits@', effect.minUnits.toString())
@@ -74,7 +75,7 @@ const traitDescription = computed(() => {
 		>
 	</div>
 	{{ trait.name }}
-	<div class="trait-tooltip  group-hover-visible space-y-2">
+	<div class="trait-tooltip  group-hover-visible space-y-2 pointer-events-none">
 		<div v-html="traitDescription" />
 		<div>{{ units.join(', ') }}</div>
 	</div>
@@ -90,7 +91,7 @@ const traitDescription = computed(() => {
 }
 
 .trait-tooltip {
-	@apply absolute z-10 top-0 mt-9 ml-6 bg-gray-300 p-1;
+	@apply absolute z-50 top-0 mt-9 bg-gray-300 p-1;
 	font-size: 1.3vw;
 }
 </style>

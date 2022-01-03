@@ -2,8 +2,8 @@
 import { computed, defineProps } from 'vue'
 
 import type { ChampionUnit } from '#/game/unit'
-import { DraggableType, getDragName, getDragType } from '#/game/dragDrop'
-import { getDragNameOf, onDragOver } from '#/game/dragDrop'
+import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
+import type { DraggableType } from '#/game/dragDrop'
 import { useStore } from '#/game/store'
 
 import { getIconURL } from '#/helpers/utils'
@@ -17,8 +17,7 @@ const props = defineProps<{
 
 const currentPosition = computed(() => {
 	const [col, row] = props.unit.currentPosition()
-	const [x, y] = state.hexRowsCols[row][col].position
-	return [x * 100, y * 100]
+	return state.hexRowsCols[row][col].position
 })
 
 const unitSizeX = `${100 * state.hexProportionX * 0.8}%`
@@ -56,7 +55,7 @@ function onDrop(event: DragEvent) {
 <template>
 <div
 	class="unit  group"
-	:style="{ left: `${currentPosition[0]}%`, top: `${currentPosition[1]}%` }"
+	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
 	@dragover="onDragOver" @drop="onDrop"
 >
