@@ -7,7 +7,7 @@ import { ChampionUnit } from '#/game/unit'
 
 import { buildBoard } from '#/helpers/boardUtils'
 import { removeFirstFromArray } from '#/helpers/utils'
-import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
+import type { HexCoord, HexRowCol, ItemData, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
@@ -61,6 +61,14 @@ function resetUnitsAfterCreatingOrMoving() {
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
 }
 
+function getItemFrom(name: string) {
+	const item = items.find(item => item.name === name)
+	if (!item) {
+		console.log('Invalid item', name)
+	}
+	return item
+}
+
 const store = {
 	state,
 
@@ -84,26 +92,36 @@ const store = {
 		state.dragUnit = null
 		fromUnit.reset(getters.synergiesByTeam.value)
 	},
-	addItem(itemName: string, unit: ChampionUnit) {
-		const item = items.find(item => item.name === itemName)
+	addItem(item: ItemData, champion: ChampionUnit) {
+		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name)) {
+			console.log('Unique item per champion', item.name)
+			return false
+		}
+		if (champion.items.length >= 3) {
+			champion.items.shift()
+		}
+		champion.items.push(item)
+		champion.reset(getters.synergiesByTeam.value)
+		return true
+	},
+	addItemName(itemName: string, champion: ChampionUnit) {
+		const item = getItemFrom(itemName)
+		return !!item && store.addItem(item, champion)
+	},
+	copyItem(itemName: string, champion: ChampionUnit) {
+		const item = getItemFrom(itemName)
 		if (!item) {
 			return
 		}
-		if (unit.items.length >= 3) {
-			unit.items.shift()
-		}
-		unit.items.push(item)
-		unit.reset(getters.synergiesByTeam.value)
-	},
-	copyItem(itemName: string, unit: ChampionUnit) {
-		store.addItem(itemName, unit)
+		store.addItem(item, champion)
 		state.dragUnit = null
 	},
 	moveItem(itemName: string, toUnit: ChampionUnit, fromUnit: ChampionUnit | null) {
-		if (fromUnit) {
-			store.deleteItem(itemName, fromUnit)
+		if (store.addItemName(itemName, toUnit)) {
+			if (fromUnit) {
+				store.deleteItem(itemName, fromUnit)
+			}
 		}
-		store.addItem(itemName, toUnit)
 		state.dragUnit = null
 	},
 	startDragging(event: DragEvent, type: DraggableType, name: string, dragUnit: ChampionUnit | null) {
