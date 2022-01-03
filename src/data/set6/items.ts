@@ -24,8 +24,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"AD": 10,
 			"CritChance": 75,
-			"{45c7ed6b}": 1,
-			"{d34ac151}": 10
+			"BonusCritDmgPerCritAbove100": 1,
+			"BonusCritDamage": 10
 		},
 		"from": [
 			1,
@@ -42,7 +42,7 @@ export const items: ItemData[] = [
 			"Armor": 20,
 			"AttackSpeedSlow": 35,
 			"Mana": 15,
-			"{5cc52ba8}": 2
+			"HexRadius": 2
 		},
 		"from": [
 			4,
@@ -69,8 +69,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"Armor": 20,
 			"{4516a18d}": 60,
-			"{a861afa0}": 35,
-			"{c4b5579c}": 15
+			"CostIncrease": 35,
+			"DodgeChance": 15
 		},
 		"from": [
 			5,
@@ -87,10 +87,10 @@ export const items: ItemData[] = [
 			"Health": 150,
 			"Mana": 15,
 			"MaxHeal": 1000,
-			"{033de552}": 25,
-			"{5cc52ba8}": 1,
-			"{7b6cc2f7}": 18,
-			"{c9f222c0}": 5
+			"AoEDamageReduction": 25,
+			"HexRadius": 1,
+			"MissingHealthHeal": 18,
+			"HealTickRate": 5
 		},
 		"from": [
 			4,
@@ -106,7 +106,7 @@ export const items: ItemData[] = [
 		"effects": {
 			"Health": 150,
 			"MagicResist": 20,
-			"{510fdb6a}": 5
+			"BanishDuration": 5
 		},
 		"from": [
 			6,
@@ -134,7 +134,7 @@ export const items: ItemData[] = [
 			"AD": 10,
 			"AttackSpeed": 30,
 			"Health": 150,
-			"{9b1e8f37}": 1
+			"HexRange": 1
 		},
 		"from": [
 			1,
@@ -149,7 +149,7 @@ export const items: ItemData[] = [
 		"desc": "At the beginning of each planning phase, the holder equips 2 temporary items. Temporary items increase in power based on your player level.<br><br><tftitemrules>[Consumes 3 item slots.]</tftitemrules>",
 		"effects": {
 			"CritChance": 15,
-			"{c4b5579c}": 15
+			"DodgeChance": 15
 		},
 		"from": [
 			9,
@@ -182,9 +182,9 @@ export const items: ItemData[] = [
 			"AP": 10,
 			"Damage": 250,
 			"MagicResist": 20,
-			"{9b1e8f37}": 2,
-			"{df6f64b9}": 200,
-			"{fe079f34}": 50
+			"HexRange": 2,
+			"ManaRatio": 200,
+			"MRShred": 50
 		},
 		"from": [
 			3,
@@ -201,7 +201,7 @@ export const items: ItemData[] = [
 			"ICD": 0.5,
 			"MagicResist": 200,
 			"PercentHealthDamage": 18,
-			"{fa1ef605}": 160
+			"UNUSED_MagicDamageReductionMultiplier": 160
 		},
 		"from": [
 			6,
@@ -217,9 +217,9 @@ export const items: ItemData[] = [
 		"effects": {
 			"Health": 150,
 			"StunDuration": 4,
-			"{9b1e8f37}": 1,
-			"{c3360f16}": 600,
-			"{c4b5579c}": 15
+			"HexRange": 1,
+			"DamageCap": 600,
+			"DodgeChance": 15
 		},
 		"from": [
 			7,
@@ -280,7 +280,7 @@ export const items: ItemData[] = [
 			"AD": 10,
 			"Armor": 20,
 			"HealthRestore": 400,
-			"{c425872e}": 2
+			"StasisDuration": 2
 		},
 		"from": [
 			1,
@@ -296,8 +296,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"Armor": 20,
 			"MagicResist": 20,
-			"{7ba8c0e3}": 18,
-			"{7c694b41}": 18
+			"MRPerEnemy": 18,
+			"ArmorPerEnemy": 18
 		},
 		"from": [
 			5,
@@ -313,11 +313,11 @@ export const items: ItemData[] = [
 		"effects": {
 			"Armor": 70,
 			"ICD": 2.5,
-			"{156febb8}": 120,
-			"{1ee760be}": 60,
-			"{6688a0d5}": 100,
-			"{a3b999e9}": 80,
-			"{b5c2a66b}": 200
+			"3StarAoEDamage": 120,
+			"1StarAoEDamage": 60,
+			"CritDamageBlock": 100,
+			"2StarAoEDamage": 80,
+			"4StarAoEDamage": 200
 		},
 		"from": [
 			5,
@@ -378,8 +378,8 @@ export const items: ItemData[] = [
 			"AD": 10,
 			"AS": 10,
 			"HealthThreshold": 1800,
-			"{b8ae7546}": 60,
-			"{deada01e}": 20
+			"LargeBonusPct": 60,
+			"SmallBonusPct": 20
 		},
 		"from": [
 			1,
@@ -397,10 +397,10 @@ export const items: ItemData[] = [
 			"Health": 150,
 			"ICD": 2.5,
 			"MonsterCap": 100,
-			"{2161bfa2}": 50,
-			"{57706a69}": 20,
-			"{97e52ce8}": 8,
-			"{9b1e8f37}": 2
+			"GrievousWoundsPercent": 50,
+			"BurnPercent": 20,
+			"BurnDuration": 8,
+			"HexRange": 2
 		},
 		"from": [
 			5,
@@ -432,12 +432,11 @@ export const items: ItemData[] = [
 			"BonusAD": 20,
 			"CritChance": 15,
 			"Mana": 15,
-			"{19a89153}": 10,
-			"{41cb628d}": 10,
 			"{a60806db}": 66.66699981689453,
-			"{ae49cc70}": 20,
-			"{c0c9af7f}": 20,
-			"{f2474447}": 30
+			"BaseAD": 10,
+			"BaseSP": 10,
+			"BonusSP": 20,
+			"TooltipBonus": 30
 		},
 		"from": [
 			4,
@@ -503,10 +502,10 @@ export const items: ItemData[] = [
 		"effects": {
 			"AS": 10,
 			"Armor": 20,
-			"{9396f00d}": 25,
-			"{b3b8f644}": 2,
-			"{b55019fa}": 25,
-			"{cb9689ca}": 2
+			"StackCap": 25,
+			"StackingAD": 2,
+			"BonusResistsAtStackCap": 25,
+			"StackingAP": 2
 		},
 		"from": [
 			5,
@@ -549,7 +548,7 @@ export const items: ItemData[] = [
 			"AS": 10,
 			"AdditionalTargets": 1,
 			"MagicResist": 20,
-			"{276ba2c8}": 75
+			"MultiplierForDamage": 75
 		},
 		"from": [
 			6,
@@ -564,7 +563,7 @@ export const items: ItemData[] = [
 		"desc": "+@CritChance@ Critical Strike Chance<br>+@DodgeChance@ Dodge Chance",
 		"effects": {
 			"CritChance": 5,
-			"{c4b5579c}": 10
+			"DodgeChance": 10
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Sparring_Gloves.dds",
@@ -580,7 +579,7 @@ export const items: ItemData[] = [
 			"LifeSteal": 33,
 			"MagicResist": 20,
 			"ShieldDuration": 5,
-			"{0034a6ef}": 30
+			"ShieldHealthPercent": 30
 		},
 		"from": [
 			1,
@@ -596,8 +595,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"AP": 10,
 			"Mana": 15,
-			"{5deb4eb2}": 25,
-			"{a7db7345}": 5
+			"APPerInterval": 25,
+			"IntervalSeconds": 5
 		},
 		"from": [
 			3,
@@ -652,8 +651,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"AS": 10,
 			"Health": 150,
-			"{5cc52ba8}": 4,
-			"{7ff4f3b6}": 25
+			"HexRadius": 4,
+			"SummonedStatReduction": 25
 		},
 		"from": [
 			2,
@@ -669,7 +668,7 @@ export const items: ItemData[] = [
 		"effects": {
 			"AD": 10,
 			"Mana": 15,
-			"{4b9a3b61}": 8
+			"FlatManaRestore": 8
 		},
 		"from": [
 			1,
@@ -722,11 +721,11 @@ export const items: ItemData[] = [
 			"AP": 10,
 			"Armor": 20,
 			"ShieldDuration": 8,
-			"{0d46330d}": 350,
-			"{6fb9af6a}": 300,
-			"{829e6cec}": 400,
-			"{9b1e8f37}": 2,
-			"{c78af25f}": 800
+			"2StarShieldValue": 350,
+			"1StarShieldValue": 300,
+			"3StarShieldValue": 400,
+			"HexRange": 2,
+			"4StarShieldValue": 800
 		},
 		"from": [
 			3,
@@ -744,9 +743,9 @@ export const items: ItemData[] = [
 			"Health": 150,
 			"MonsterCap": 100,
 			"TicksPerSecond": 1,
-			"{2161bfa2}": 50,
-			"{57706a69}": 25,
-			"{97e52ce8}": 10
+			"GrievousWoundsPercent": 50,
+			"BurnPercent": 25,
+			"BurnDuration": 10
 		},
 		"from": [
 			3,
@@ -761,9 +760,9 @@ export const items: ItemData[] = [
 		"desc": "Increases the holder's Attack Range by @HexRangeIncrease@ hex and grants %i:scaleAS% @TooltipBonusAS@% bonus Attack Speed (including components). The holder's attacks can no longer miss.",
 		"effects": {
 			"AS": 50,
-			"{16394c87}": 1,
-			"{5100c273}": 50,
-			"{9f5117db}": 100
+			"HexRangeIncrease": 1,
+			"TooltipBonusAS": 50,
+			"AttackAccuracy": 100
 		},
 		"from": [
 			2,
@@ -779,8 +778,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"AS": 10,
 			"CritChance": 15,
-			"{5079c7a2}": 70,
-			"{cc9fefa7}": 5
+			"ArmorReductionPercent": 70,
+			"ArmorBreakDuration": 5
 		},
 		"from": [
 			2,
@@ -795,7 +794,7 @@ export const items: ItemData[] = [
 		"desc": "The holder gains the Assassin trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
 			"CritChance": 10,
-			"{c4b5579c}": 5
+			"DodgeChance": 5
 		},
 		"from": [
 			9,
@@ -811,8 +810,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"AP": 20,
 			"CritChance": 15,
-			"{353ede36}": 30,
-			"{5200c406}": 10
+			"CritDamageAmp": 30,
+			"TooltipBonusAP": 10
 		},
 		"from": [
 			3,
@@ -864,8 +863,8 @@ export const items: ItemData[] = [
 		"effects": {
 			"AS": 20,
 			"MagicResist": 20,
-			"{a2b76524}": 15,
-			"{c4b5579c}": 15
+			"SpellShieldDuration": 15,
+			"DodgeChance": 15
 		},
 		"from": [
 			9,
@@ -880,13 +879,13 @@ export const items: ItemData[] = [
 		"desc": "The holder gains %i:scaleAD% @Tooltip1StarBonusAD@/@Tooltip2StarBonusAD@/@Tooltip3StarBonusAD@ %i:star% bonus Attack Damage (including components).",
 		"effects": {
 			"AD": 20,
-			"{1b738810}": 80,
-			"{82618485}": 55,
-			"{8c7c8547}": 50,
-			"{d4afa164}": 75,
-			"{eb990bd7}": 125,
-			"{edb2fb99}": 100,
-			"{f924a46e}": 30
+			"3StarBonusAD": 80,
+			"2StarBonusAD": 55,
+			"Tooltip1StarBonusAD": 50,
+			"Tooltip2StarBonusAD": 75,
+			"4StarBonusAD": 125,
+			"Tooltip3StarBonusAD": 100,
+			"1StarBonusAD": 30
 		},
 		"from": [
 			1,
@@ -903,9 +902,9 @@ export const items: ItemData[] = [
 			"MagicResist": 20,
 			"Mana": 15,
 			"ManaRestore": 10,
-			"{9b1e8f37}": 1,
-			"{9fd37c1c}": 20,
-			"{d49caf5d}": 30
+			"HexRange": 1,
+			"UNUSED_APTimer": 20,
+			"BonusAP": 30
 		},
 		"from": [
 			6,
@@ -951,12 +950,12 @@ export const items: ItemData[] = [
 			"BonusAS": 15,
 			"Damage": 70,
 			"Mana": 15,
-			"{12a15e9e}": 4,
-			"{15144cec}": 4,
-			"{440f813d}": 4,
-			"{79e2ec7b}": 4,
-			"{b223097c}": 5,
-			"{fe079f34}": 50
+			"1StarBounces": 4,
+			"2StarBounces": 4,
+			"3StarBounces": 4,
+			"4StarBounces": 4,
+			"MRShredDuration": 5,
+			"MRShred": 50
 		},
 		"from": [
 			2,
@@ -973,7 +972,7 @@ export const items: ItemData[] = [
 			"AD": 10,
 			"AP": 10,
 			"ShieldMax": 400,
-			"{ad16f688}": 33
+			"OmniVamp": 33
 		},
 		"from": [
 			1,

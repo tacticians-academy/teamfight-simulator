@@ -17,7 +17,7 @@ const itemData = responseJSON.items as Record<string, any>[]
 const standardComponents = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 const spatulaItemKey = `/spatula/set${currentSetNumber}/`
 const foundItemIDs: number[] = []
-const currentItems = itemData.filter(item => {
+const currentItems = (itemData as ItemData[]).filter(item => {
 	if (foundItemIDs.includes(item.id)) {
 		return false
 	}
@@ -47,13 +47,6 @@ const outputFolder = `src/data/set${currentSetNumber}/`
 const unplayableNames = ['TFT5_EmblemArmoryKey', 'TFT6_MercenaryChest']
 const playableChampions = (champions as ChampionData[])
 	.filter(champion => !unplayableNames.includes(champion.apiName))
-
-const traitKeys = (traits as TraitData[])
-	.map(trait => {
-		const nameKey = trait.apiName.split('_')[1]
-		return `${nameKey} = '${nameKey}'`
-	})
-	.join(', ')
 
 const stringIDReplacements: Record<string, string> = {
 	'b4a90a5d': 'ProcChance',
@@ -89,7 +82,83 @@ const stringIDReplacements: Record<string, string> = {
 	'17cfa971': 'BurstDuration',
 	'867bc055': 'SyndicateIncrease',
 	// '': '',
+	'45c7ed6b': 'BonusCritDmgPerCritAbove100',
+	'd34ac151': 'BonusCritDamage',
+	'5cc52ba8': 'HexRadius',
+	'a861afa0': 'CostIncrease',
+	'c4b5579c': 'DodgeChance',
+	'c9f222c0': 'HealTickRate',
+	'7b6cc2f7': 'MissingHealthHeal',
+	'033de552': 'AoEDamageReduction',
+	'510fdb6a': 'BanishDuration',
+	'9b1e8f37': 'HexRange',
+	'fe079f34': 'MRShred',
+	'b223097c': 'MRShredDuration',
+	'df6f64b9': 'ManaRatio',
+	'c3360f16': 'DamageCap', //TODO actual name
+	'c425872e': 'StasisDuration',
+	'7c694b41': 'ArmorPerEnemy', //TODO monitor. unverifiable MRPerEnemy/ArmorPerEnemy
+	'7ba8c0e3': 'MRPerEnemy', //TODO monitor. unverifiable MRPerEnemy/ArmorPerEnemy
+	'1ee760be': '1StarAoEDamage',
+	'a3b999e9': '2StarAoEDamage',
+	'156febb8': '3StarAoEDamage',
+	'b5c2a66b': '4StarAoEDamage',
+	'6688a0d5': 'CritDamageBlock', //TODO actual name
+	'deada01e': 'SmallBonusPct',
+	'b8ae7546': 'LargeBonusPct',
+	'ad16f688': 'OmniVamp',
+	'12a15e9e': '1StarBounces', //TODO monitor. unverifiable 1StarBounces/2StarBounces/3StarBounces/4StarBounces
+	'15144cec': '2StarBounces', //TODO monitor. unverifiable 1StarBounces/2StarBounces/3StarBounces/4StarBounces
+	'440f813d': '3StarBounces', //TODO monitor. unverifiable 1StarBounces/2StarBounces/3StarBounces/4StarBounces
+	'79e2ec7b': '4StarBounces', //TODO monitor. unverifiable 1StarBounces/2StarBounces/3StarBounces/4StarBounces
+	'a2b76524': 'SpellShieldDuration',
+	'f924a46e': '1StarBonusAD', //TODO actual name
+	'82618485': '2StarBonusAD', //TODO actual name
+	'1b738810': '3StarBonusAD', //TODO actual name
+	'eb990bd7': '4StarBonusAD', //TODO verify
+	'8c7c8547': 'Tooltip1StarBonusAD',
+	'd4afa164': 'Tooltip2StarBonusAD',
+	'edb2fb99': 'Tooltip3StarBonusAD',
+	'd49caf5d': 'BonusAP',
+	'57706a69': 'BurnPercent',
+	'97e52ce8': 'BurnDuration',
+	'2161bfa2': 'GrievousWoundsPercent',
+	'b3b8f644': 'StackingAD', //TODO monitor. unverifable StackingAP
+	'cb9689ca': 'StackingAP', //TODO actual name, monitor. unverifable StackingAD
+	'9396f00d': 'StackCap', //TODO monitor. unverifable
+	'b55019fa': 'BonusResistsAtStackCap', //TODO monitor. unverifable StackCap
+	'276ba2c8': 'MultiplierForDamage',
+	'0034a6ef': 'ShieldHealthPercent',
+	'5deb4eb2': 'APPerInterval',
+	'a7db7345': 'IntervalSeconds',
+	'7ff4f3b6': 'SummonedStatReduction',
+	'4b9a3b61': 'FlatManaRestore',
+	'6fb9af6a': '1StarShieldValue',
+	'0d46330d': '2StarShieldValue',
+	'829e6cec': '3StarShieldValue',
+	'c78af25f': '4StarShieldValue',
+	'5100c273': 'TooltipBonusAS',
+	'9f5117db': 'AttackAccuracy', //TODO actual name
+	'5079c7a2': 'ArmorReductionPercent',
+	'cc9fefa7': 'ArmorBreakDuration',
+	'353ede36': 'CritDamageAmp',
+	'5200c406': 'TooltipBonusAP',
+	'19a89153': 'BaseAD', //TODO monitor. unverifiable BaseSP
+	'41cb628d': 'BaseSP', //TODO monitor. unverifiable BaseAD
+	'ae49cc70': 'BonusAD', //TODO actual name, monitor. unverifiable BonusSP
+	'c0c9af7f': 'BonusSP', //TODO actual name, monitor. unverifiable BonusAD
+	'f2474447': 'TooltipBonus',
+	'': '',
+	'9fd37c1c': 'UNUSED_APTimer', //TODO verify https://leagueoflegends.fandom.com/wiki/Chalice_of_Power_(Teamfight_Tactics)
+	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
 }
+
+const traitKeys = (traits as TraitData[])
+	.map(trait => {
+		const nameKey = trait.apiName.split('_')[1]
+		return `${nameKey} = '${nameKey}'`
+	})
+	.join(', ')
 
 traits.forEach((trait: TraitData) => {
 	trait.effects.forEach(effect => {
@@ -107,7 +176,19 @@ traits.forEach((trait: TraitData) => {
 })
 const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 
-const itemKeys = (currentItems as ItemData[])
+currentItems.forEach((item: ItemData) => {
+	Object.keys(item.effects).forEach(key => {
+		if (key.startsWith('{')) {
+			const replacement = stringIDReplacements[key.slice(1, -1)]
+			if (replacement) {
+				const originalValue = item.effects[key]
+				delete item.effects[key]
+				item.effects[replacement] = originalValue
+			}
+		}
+	})
+})
+const itemKeys = currentItems
 	.map(item => `${item.name.replace(/['. ]/g, '')} = ${item.id}`)
 	.join(', ')
 const itemKeysString = `export enum ItemKey {\n\t${itemKeys}\n}`
