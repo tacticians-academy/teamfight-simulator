@@ -1,17 +1,20 @@
 import { markRaw } from 'vue'
 
+import abilities from '#/data/set6/abilities'
+import type { AbilityFn } from '#/data/set6/abilities'
 import { champions } from '#/data/set6/champions'
+import type { ItemKey } from '#/data/set6/items'
 import { TraitKey, traits } from '#/data/set6/traits'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
-import abilities from '#/data/set6/abilities'
-import type { AbilityFn } from '#/data/set6/abilities'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
 import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
-import { DamageType } from '#/helpers/types'
 import { saveUnits } from '#/helpers/storage'
+import { DamageType } from '#/helpers/types'
+
+type BonusVariable = [key: string, value: number | null]
 
 export class ChampionUnit {
 	name: string
@@ -37,7 +40,7 @@ export class ChampionUnit {
 	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
-	bonuses: [sourceName: string, key: string, value: number | null][] = []
+	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
 	ability: AbilityFn | undefined
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
@@ -73,10 +76,19 @@ export class ChampionUnit {
 		this.bonuses = []
 		synergiesByTeam[this.team].forEach(([trait, style, effect]) => {
 			if (effect != null && traitNames.includes(trait.name)) {
+				const variables: BonusVariable[] = []
 				for (const key in effect.variables) {
-					this.bonuses.push([trait.name, key, effect.variables[key]])
+					variables.push([key, effect.variables[key]])
 				}
+				this.bonuses.push([trait.name as TraitKey, variables])
 			}
+		})
+		this.items.forEach(item => {
+			const variables: BonusVariable[] = []
+			for (const key in item.effects) {
+				variables.push([key, item.effects[key]])
+			}
+			this.bonuses.push([item.id as ItemKey, variables])
 		})
 	}
 
@@ -207,8 +219,15 @@ export class ChampionUnit {
 		return this.activePosition ?? this.startPosition
 	}
 
-	getBonuses(findKey: string, sourceName?: TraitKey) {
-		return this.bonuses.filter(bonus => bonus[1] === findKey).reduce((previous, current) => previous + (current[2] ?? 0), 0)
+	getBonusFor(sourceKey: TraitKey | ItemKey) {
+		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
+	}
+	getBonuses(variableName: string) {
+		return this.bonuses
+			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
+				const value = bonus[1].find(variable => variable[0] === variableName)?.[1]
+				return accumulator + (value ?? 0)
+			}, 0)
 	}
 	hasTrait(name: TraitKey) {
 		return !!this.traits.find(trait => trait.name === name)
