@@ -77,7 +77,16 @@ const store = {
 	loadUnits() {
 		if (!state.units.length) {
 			const synergiesByTeam = [[], []]
-			state.units.push(...getSavedUnits().map(unit => new ChampionUnit(unit.name, unit.position, unit.starLevel, synergiesByTeam)))
+			const units = getSavedUnits()
+				.map(storageChampion => {
+					const championItems = storageChampion.items
+						.map(itemName => items.find(item => item.name === itemName))
+						.filter((item): item is ItemData => !!item)
+					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel, synergiesByTeam)
+					champion.items = championItems
+					return champion
+				})
+			state.units.push(...units)
 		}
 		resetUnitsAfterCreatingOrMoving()
 	},
@@ -91,6 +100,7 @@ const store = {
 		removeFirstFromArray(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
 		fromUnit.reset(getters.synergiesByTeam.value)
+		saveUnits()
 	},
 	addItem(item: ItemData, champion: ChampionUnit) {
 		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name)) {
@@ -102,6 +112,7 @@ const store = {
 		}
 		champion.items.push(item)
 		champion.reset(getters.synergiesByTeam.value)
+		saveUnits()
 		return true
 	},
 	addItemName(itemName: string, champion: ChampionUnit) {
@@ -155,9 +166,9 @@ const store = {
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
-				existingUnit.reposition(unit.startPosition)
+				existingUnit.reposition(unit.startPosition, false)
 			}
-			unit.reposition(position)
+			unit.reposition(position, false)
 		}
 		state.dragUnit = null
 		resetUnitsAfterCreatingOrMoving()
