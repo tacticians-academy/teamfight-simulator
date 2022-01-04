@@ -6,6 +6,7 @@ import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
 import type { DraggableType } from '#/game/dragDrop'
 import { useStore } from '#/game/store'
 
+import { UNIT_SIZE_HEX_PROPORTION } from '#/helpers/constants'
 import { getIconURL } from '#/helpers/utils'
 import type { StarLevel } from '#/helpers/types'
 
@@ -20,7 +21,7 @@ const currentPosition = computed(() => {
 	return state.hexRowsCols[row][col].position
 })
 
-const unitSizeX = `${100 * state.hexProportionX * 0.8}%`
+const unitSizeX = `${100 * state.hexProportionX * UNIT_SIZE_HEX_PROPORTION}%`
 const unitSizeY = `${100 * state.hexProportionY * 0.8}%`
 
 function onDragStart(event: DragEvent, type: DraggableType, name: string) {
