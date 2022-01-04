@@ -10,6 +10,7 @@ import { getNextHex, updatePaths } from '#/game/pathfind'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
+import { BonusKey } from '#/helpers/types'
 import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType } from '#/helpers/types'
@@ -74,7 +75,8 @@ export class ChampionUnit {
 		const traitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(traitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
 		this.bonuses = []
-		synergiesByTeam[this.team].forEach(([trait, style, effect]) => {
+		const teamSynergies = synergiesByTeam[this.team]
+		teamSynergies.forEach(([trait, style, effect]) => {
 			if (effect != null && traitNames.includes(trait.name)) {
 				const variables: BonusVariable[] = []
 				for (const key in effect.variables) {
@@ -83,6 +85,18 @@ export class ChampionUnit {
 				this.bonuses.push([trait.name as TraitKey, variables])
 			}
 		})
+
+		// Innate bonuses (not handled in data)
+		console.log(this.name, traitNames.includes(TraitKey.Sniper), teamSynergies.find(synergy => synergy[0].name === TraitKey.Sniper))
+		if (traitNames.includes(TraitKey.Sniper)) {
+			const synergy = teamSynergies.find(synergy => synergy[0].name === TraitKey.Sniper)
+			if (!synergy?.[2]) {
+				const value = synergy?.[0].effects[0].variables[BonusKey.HexRangeIncrease] ?? 1
+				this.bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
+			}
+		}
+		//TODO collosus
+
 		this.items.forEach(item => {
 			const variables: BonusVariable[] = []
 			for (const key in item.effects) {
@@ -90,6 +104,7 @@ export class ChampionUnit {
 			}
 			this.bonuses.push([item.id as ItemKey, variables])
 		})
+		console.log(this.name, this.bonuses)
 	}
 
 	updateTarget(units: ChampionUnit[]) {

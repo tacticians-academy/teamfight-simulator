@@ -19,6 +19,10 @@ export const enum DamageType {
 	physical, magic, true
 }
 
+export const enum BonusKey {
+	HexRangeIncrease = 'HexRangeIncrease'
+}
+
 export interface ChampionAbilityVariable {
 	name: string
 	value: number[] | null
