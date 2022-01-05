@@ -87,7 +87,6 @@ export class ChampionUnit {
 		})
 
 		// Innate bonuses (not handled in data)
-		console.log(this.name, traitNames.includes(TraitKey.Sniper), teamSynergies.find(synergy => synergy[0].name === TraitKey.Sniper))
 		if (traitNames.includes(TraitKey.Sniper)) {
 			const synergy = teamSynergies.find(synergy => synergy[0].name === TraitKey.Sniper)
 			if (!synergy?.[2]) {
@@ -104,7 +103,6 @@ export class ChampionUnit {
 			}
 			this.bonuses.push([item.id as ItemKey, variables])
 		})
-		console.log(this.name, this.bonuses)
 	}
 
 	updateTarget(units: ChampionUnit[]) {

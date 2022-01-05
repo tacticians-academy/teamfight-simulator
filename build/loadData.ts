@@ -81,7 +81,6 @@ const stringIDReplacements: Record<string, string> = {
 	'75994f47': 'PercentDamageIncrease',
 	'17cfa971': 'BurstDuration',
 	'867bc055': 'SyndicateIncrease',
-	// '': '',
 	'45c7ed6b': 'BonusCritDmgPerCritAbove100',
 	'd34ac151': 'BonusCritDamage',
 	'5cc52ba8': 'HexRadius',
@@ -148,7 +147,6 @@ const stringIDReplacements: Record<string, string> = {
 	'ae49cc70': 'BonusAD', //TODO actual name, monitor. unverifiable BonusSP
 	'c0c9af7f': 'BonusSP', //TODO actual name, monitor. unverifiable BonusAD
 	'f2474447': 'TooltipBonus',
-	'': '',
 	'9fd37c1c': 'UNUSED_APTimer', //TODO verify https://leagueoflegends.fandom.com/wiki/Chalice_of_Power_(Teamfight_Tactics)
 	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
 }

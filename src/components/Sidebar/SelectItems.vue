@@ -11,11 +11,11 @@ const { state, startDragging } = useStore()
 const itemGroups: [[string, ItemData[]], [string, ItemData[]], [string, ItemData[]]] = [['Combined', []], ['Emblems', []], ['Components', []]]
 for (const item of items) {
 	let index
-	if (item.id < 10) {
+	if (item.id < 10) { // Component
 		index = 2
-	} else if (!item.from.length || item.from.includes(8)) {
+	} else if (!item.from.length || item.from.includes(8)) { // Emblem
 		index = 1
-	} else {
+	} else { // Combined
 		index = 0
 	}
 	itemGroups[index][1].push(item)
