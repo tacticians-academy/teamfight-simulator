@@ -151,19 +151,24 @@ const stringIDReplacements: Record<string, string> = {
 	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
 }
 
+const unreplacedIDs = new Set(Object.keys(stringIDReplacements))
+
 const traitKeys = (traits as TraitData[])
 	.map(trait => {
 		const nameKey = trait.apiName.split('_')[1]
 		return `${nameKey} = '${nameKey}'`
 	})
+	.sort((a, b) => a.localeCompare(b))
 	.join(', ')
 
 traits.forEach((trait: TraitData) => {
 	trait.effects.forEach(effect => {
 		Object.keys(effect.variables).forEach(key => {
 			if (key.startsWith('{')) {
-				const replacement = stringIDReplacements[key.slice(1, -1)]
+				const keyHash = key.slice(1, -1)
+				const replacement = stringIDReplacements[keyHash]
 				if (replacement) {
+					unreplacedIDs.delete(keyHash)
 					const originalValue = effect.variables[key]
 					delete effect.variables[key]
 					effect.variables[replacement] = originalValue
@@ -177,8 +182,10 @@ const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 currentItems.forEach((item: ItemData) => {
 	Object.keys(item.effects).forEach(key => {
 		if (key.startsWith('{')) {
-			const replacement = stringIDReplacements[key.slice(1, -1)]
+			const keyHash = key.slice(1, -1)
+			const replacement = stringIDReplacements[keyHash]
 			if (replacement) {
+				unreplacedIDs.delete(keyHash)
 				const originalValue = item.effects[key]
 				delete item.effects[key]
 				item.effects[replacement] = originalValue
@@ -187,9 +194,17 @@ currentItems.forEach((item: ItemData) => {
 	})
 })
 const itemKeys = currentItems
-	.map(item => `${item.name.replace(/['. ]/g, '')} = ${item.id}`)
+	.sort((a, b) => a.id - b.id)
+	.map(({name, id}) => {
+		const key = name.replace(/['.]/g, '').split(' ').map(word => word[0].toUpperCase() + word.slice(1)).join('')
+		return `${key} = ${id}`
+	})
 	.join(', ')
 const itemKeysString = `export enum ItemKey {\n\t${itemKeys}\n}`
+
+if (unreplacedIDs.size) {
+	console.log('Unused substitutions', unreplacedIDs)
+}
 
 await Promise.all([
 	fs.writeFile(path.resolve(outputFolder, 'champions.ts'), `import type { ChampionData } from '#/helpers/types'\n\nexport const champions: ChampionData[] = ` + JSON.stringify(playableChampions, undefined, '\t')),

@@ -1568,7 +1568,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Seraphine projects her song towards the largest group of units dealing @ModifiedDamage@ magic damage to enemies. Allies it passes through are healed for @ModifiedHeal@ Health and gain @ASBonus*100@% Attack Speed for @ASBonusDuration@ seconds.",
+			"desc": "Seraphine projects her song towards the largest group of enemy units dealing @ModifiedDamage@ magic damage to enemies. Allies it passes through are healed for @ModifiedHeal@ Health and gain @ASBonus*100@% Attack Speed for @ASBonusDuration@ seconds.",
 			"icon": "ASSETS/Characters/Seraphine/HUD/Icons2D/Seraphine_R.EllipsisMage.dds",
 			"name": "Encore",
 			"variables": [
@@ -1795,9 +1795,9 @@ export const champions: ChampionData[] = [
 					"name": "Healing",
 					"value": [
 						80,
-						200,
-						230,
-						300,
+						225,
+						250,
+						350,
 						80,
 						80,
 						80
@@ -1969,7 +1969,7 @@ export const champions: ChampionData[] = [
 						0,
 						800,
 						1400,
-						2250,
+						2000,
 						2400,
 						3000,
 						3600
@@ -4348,7 +4348,7 @@ export const champions: ChampionData[] = [
 				}
 			]
 		},
-		"apiName": "TFT_Dragon",
+		"apiName": "TFT6_HexTechDragon",
 		"cost": 5,
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_HextechDragon.TFT_Set6.dds",
 		"name": "Mechanical Dragon",
