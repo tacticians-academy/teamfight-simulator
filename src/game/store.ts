@@ -103,6 +103,10 @@ const store = {
 		saveUnits()
 	},
 	addItem(item: ItemData, champion: ChampionUnit) {
+		if (!champion.traits.length) {
+			console.log('Spawns cannot hold items')
+			return false
+		}
 		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name)) {
 			console.log('Unique item per champion', item.name)
 			return false
