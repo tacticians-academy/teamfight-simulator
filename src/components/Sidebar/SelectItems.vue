@@ -29,13 +29,13 @@ function onDrag(event: DragEvent, name: string) {
 
 <template>
 <div
-	v-for="itemGroup in itemGroups" :key="itemGroup[0]"
+	v-for="[title, group] in itemGroups" :key="title"
 	:draggable="!state.isRunning"
 >
-	<div class="font-semibold">{{ itemGroup[0] }}</div>
+	<div class="font-semibold">{{ title }}</div>
 	<div class="sidebar-icon-container">
 		<div
-			v-for="item in itemGroup[1]" :key="item.name"
+			v-for="item in group" :key="item.name"
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(item.icon)})` }"
 			:draggable="!state.isRunning" @dragstart="onDrag($event, item.name)"
 		>
