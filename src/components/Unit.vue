@@ -63,6 +63,7 @@ function onDrop(event: DragEvent) {
 	<div class="overlay bars">
 		<div class="bar">
 			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
+			<div class="bar-health">{{ Math.ceil(unit.health) }}</div>
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small">
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%` }" />
@@ -101,9 +102,14 @@ function onDrop(event: DragEvent) {
 }
 
 .bar {
-	@apply w-full bg-white border border-gray-800;
+	@apply relative w-full bg-white border border-gray-800;
 	margin-bottom: -1px;
 	height: 0.9vw;
+}
+.bar-health {
+	@apply mx-px absolute inset-0;
+	font-size: 0.7vw;
+	line-height: 0.7vw;
 }
 .bar-small {
 	height: 0.7vw;
