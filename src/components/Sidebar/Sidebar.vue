@@ -75,9 +75,9 @@ function onDrop(event: DragEvent) {
 .sidebar-icon {
 	@apply text-white bg-cover font-semibold rounded  flex justify-center items-center text-center;
 	font-size: 1.7vw;
-	width: 6.4vw;
-	height: 6.4vw;
-	margin: 0.3vw 0 0 0.3vw;
+	width: 6.5vw;
+	height: 6.5vw;
+	margin: 0.25vw 0 0 0.25vw;
 	background-position-x: 75%;
 }
 </style>

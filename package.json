@@ -55,7 +55,8 @@
 				{
 					"baseIndent": 0
 				}
-			]
+			],
+			"vue/no-v-html": "off"
 		}
 	},
 	"postcss": {
