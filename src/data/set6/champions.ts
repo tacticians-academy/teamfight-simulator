@@ -44,9 +44,9 @@ export const champions: ChampionData[] = [
 			"critMultiplier": 1.2999999523162842,
 			"damage": 65,
 			"hp": 750,
-			"initialMana": 80,
+			"initialMana": 50,
 			"magicResist": 40,
-			"mana": 120,
+			"mana": 100,
 			"range": 1
 		},
 		"traits": [
@@ -96,7 +96,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 50,
-			"hp": 650,
+			"hp": 700,
 			"initialMana": 0,
 			"magicResist": 25,
 			"mana": 40,
@@ -210,7 +210,7 @@ export const champions: ChampionData[] = [
 		"name": "Lux",
 		"stats": {
 			"armor": 25,
-			"attackSpeed": 0.699999988079071,
+			"attackSpeed": 0.75,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 45,
@@ -237,7 +237,7 @@ export const champions: ChampionData[] = [
 						4,
 						4,
 						5,
-						20,
+						15,
 						4,
 						4,
 						4
@@ -279,7 +279,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 90,
-			"hp": 950,
+			"hp": 900,
 			"initialMana": 50,
 			"magicResist": 40,
 			"mana": 100,
@@ -532,9 +532,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						225,
-						300,
-						500,
+						250,
+						325,
+						550,
 						0,
 						0,
 						0
@@ -841,8 +841,8 @@ export const champions: ChampionData[] = [
 					"name": "DamageAmount",
 					"value": [
 						50,
-						325,
-						425,
+						360,
+						420,
 						1500,
 						50,
 						50,
@@ -912,7 +912,7 @@ export const champions: ChampionData[] = [
 			"hp": 850,
 			"initialMana": 0,
 			"magicResist": 35,
-			"mana": 150,
+			"mana": 140,
 			"range": 4
 		},
 		"traits": [
@@ -1042,13 +1042,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "SlowDuration",
 					"value": [
-						3,
-						3,
-						3,
-						3,
-						3,
-						3,
-						3
+						4,
+						4,
+						4,
+						4,
+						4,
+						4,
+						4
 					]
 				}
 			]
@@ -1085,7 +1085,7 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						100,
-						160,
+						150,
 						400,
 						0,
 						0,
@@ -1143,7 +1143,7 @@ export const champions: ChampionData[] = [
 			"hp": 750,
 			"initialMana": 50,
 			"magicResist": 30,
-			"mana": 140,
+			"mana": 130,
 			"range": 4
 		},
 		"traits": [
@@ -1175,7 +1175,7 @@ export const champions: ChampionData[] = [
 						1.2000000476837158,
 						1.5,
 						2,
-						3.440000057220459,
+						3,
 						1.2000000476837158,
 						1.2000000476837158,
 						1.2000000476837158
@@ -1252,7 +1252,7 @@ export const champions: ChampionData[] = [
 						0,
 						275,
 						375,
-						550,
+						600,
 						0,
 						0,
 						0
@@ -1315,9 +1315,9 @@ export const champions: ChampionData[] = [
 					"name": "MagicDamage",
 					"value": [
 						0,
-						175,
-						300,
-						500,
+						200,
+						325,
+						550,
 						0,
 						0,
 						0
@@ -1329,7 +1329,7 @@ export const champions: ChampionData[] = [
 						0,
 						0.25,
 						0.30000001192092896,
-						0.3499999940395355,
+						0.4000000059604645,
 						0,
 						0,
 						0
@@ -1380,9 +1380,9 @@ export const champions: ChampionData[] = [
 					"name": "BaseDamage",
 					"value": [
 						0,
-						140,
-						190,
-						255,
+						155,
+						205,
+						275,
 						700,
 						700,
 						700
@@ -1422,8 +1422,8 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						110,
-						135,
-						170,
+						150,
+						200,
 						0,
 						0,
 						0
@@ -1475,7 +1475,7 @@ export const champions: ChampionData[] = [
 					"value": [
 						600,
 						900,
-						1450,
+						1350,
 						30000,
 						9999,
 						1300,
@@ -1509,13 +1509,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "DamageReduction",
 					"value": [
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896
 					]
 				},
 				{
@@ -1534,8 +1534,8 @@ export const champions: ChampionData[] = [
 					"name": "ReducedDamageToCC",
 					"value": [
 						0,
-						325,
-						550,
+						300,
+						450,
 						10500,
 						0,
 						0,
@@ -1576,9 +1576,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						1,
-						250,
-						400,
-						1000,
+						275,
+						450,
+						1200,
 						2,
 						2.25,
 						2.5
@@ -1589,7 +1589,7 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						250,
-						400,
+						350,
 						1000,
 						0,
 						0,
@@ -1635,7 +1635,7 @@ export const champions: ChampionData[] = [
 			"hp": 750,
 			"initialMana": 80,
 			"magicResist": 30,
-			"mana": 160,
+			"mana": 150,
 			"range": 4
 		},
 		"traits": [
@@ -1653,9 +1653,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						350,
+						325,
 						450,
-						650,
+						675,
 						0,
 						0,
 						0
@@ -1880,7 +1880,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 75,
-			"hp": 650,
+			"hp": 700,
 			"initialMana": 0,
 			"magicResist": 25,
 			"mana": 35,
@@ -2037,9 +2037,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						700,
-						850,
-						1000,
+						650,
+						900,
+						1100,
 						0,
 						0,
 						0
@@ -2149,10 +2149,10 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentMaxHPDamage",
 					"value": [
-						0,
-						0.07000000029802322,
 						0.07999999821186066,
-						0.09000000357627869,
+						0.07999999821186066,
+						0.07999999821186066,
+						0.07999999821186066,
 						0.07999999821186066,
 						0.07999999821186066,
 						0.07999999821186066
@@ -2192,9 +2192,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						200,
-						800,
 						900,
-						1000,
+						975,
+						1050,
 						3200,
 						6400,
 						12800
@@ -2231,14 +2231,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_ChoGath.TFT_Set6.dds",
 		"name": "Cho'Gath",
 		"stats": {
-			"armor": 50,
+			"armor": 55,
 			"attackSpeed": 0.6000000238418579,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 90,
 			"hp": 1300,
 			"initialMana": 100,
-			"magicResist": 50,
+			"magicResist": 55,
 			"mana": 165,
 			"range": 1
 		},
@@ -2258,7 +2258,7 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						100,
+						125,
 						200,
 						500,
 						2000,
@@ -2282,7 +2282,7 @@ export const champions: ChampionData[] = [
 					"name": "KnockUpDuration",
 					"value": [
 						1.5,
-						2,
+						2.5,
 						3,
 						6,
 						1.5,
@@ -2302,10 +2302,10 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 100,
-			"hp": 1850,
-			"initialMana": 100,
+			"hp": 1800,
+			"initialMana": 125,
 			"magicResist": 60,
-			"mana": 175,
+			"mana": 200,
 			"range": 1
 		},
 		"traits": [
@@ -2355,7 +2355,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.550000011920929,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 60,
+			"damage": 70,
 			"hp": 650,
 			"initialMana": 50,
 			"magicResist": 40,
@@ -2401,7 +2401,7 @@ export const champions: ChampionData[] = [
 					"name": "StunDuration",
 					"value": [
 						1.5,
-						1.25,
+						1.5,
 						1.75,
 						9.5,
 						1.5,
@@ -2413,8 +2413,8 @@ export const champions: ChampionData[] = [
 					"name": "CritBonusDamage",
 					"value": [
 						0,
-						80,
-						125,
+						70,
+						100,
 						1999,
 						0,
 						0,
@@ -2723,9 +2723,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						75,
-						150,
-						200,
-						350,
+						175,
+						225,
+						375,
 						575,
 						700,
 						825
@@ -2788,9 +2788,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						325,
-						425,
-						525,
+						300,
+						400,
+						550,
 						700,
 						500,
 						600
@@ -2865,13 +2865,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentBurn",
 					"value": [
-						1.5,
+						1,
 						2,
-						2.5,
 						3,
-						3.5,
 						4,
-						4.5
+						5,
+						6,
+						7
 					]
 				},
 				{
@@ -2890,8 +2890,8 @@ export const champions: ChampionData[] = [
 					"name": "RocketLauncherPercentAD",
 					"value": [
 						0.75,
-						1.899999976158142,
 						2,
+						2.0999999046325684,
 						8.880000114440918,
 						0.75,
 						0.75,
@@ -3139,7 +3139,7 @@ export const champions: ChampionData[] = [
 					"name": "ShieldAmount",
 					"value": [
 						400,
-						550,
+						525,
 						675,
 						850,
 						900,
@@ -3207,7 +3207,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 50,
-			"hp": 800,
+			"hp": 850,
 			"initialMana": 50,
 			"magicResist": 40,
 			"mana": 100,
@@ -3229,8 +3229,8 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						70,
-						95,
-						140,
+						100,
+						150,
 						75,
 						90,
 						90
@@ -3256,7 +3256,7 @@ export const champions: ChampionData[] = [
 		"name": "Heimerdinger",
 		"stats": {
 			"armor": 35,
-			"attackSpeed": 0.6000000238418579,
+			"attackSpeed": 0.6499999761581421,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 45,
@@ -3264,7 +3264,7 @@ export const champions: ChampionData[] = [
 			"initialMana": 0,
 			"magicResist": 35,
 			"mana": 50,
-			"range": 3
+			"range": 4
 		},
 		"traits": [
 			"Yordle",
@@ -3472,13 +3472,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "DamageReduction",
 					"value": [
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896
+						0.25,
+						0.25,
+						0.25,
+						0.25,
+						0.25,
+						0.25,
+						0.25
 					]
 				},
 				{
@@ -3496,13 +3496,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "Duration",
 					"value": [
-						4,
-						4,
-						4,
-						4,
-						4,
-						4,
-						4
+						5,
+						5,
+						5,
+						5,
+						5,
+						5,
+						5
 					]
 				}
 			]
@@ -3601,14 +3601,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Tibbers.TFT_Set6.dds",
 		"name": "Mechanical Bear",
 		"stats": {
-			"armor": 60,
+			"armor": 70,
 			"attackSpeed": 0.6000000238418579,
 			"critChance": 0.25,
 			"critMultiplier": 1.5,
 			"damage": 50,
-			"hp": 750,
+			"hp": 850,
 			"initialMana": 0,
-			"magicResist": 60,
+			"magicResist": 70,
 			"mana": 100,
 			"range": 1
 		},
@@ -3626,7 +3626,7 @@ export const champions: ChampionData[] = [
 						5,
 						5,
 						5,
-						5,
+						10,
 						5,
 						5,
 						5
@@ -3647,13 +3647,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "ADRatio",
 					"value": [
-						0.25,
-						0.25,
-						0.25,
-						0.25,
-						0.25,
-						0.25,
-						0.25
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896,
+						0.30000001192092896
 					]
 				},
 				{
@@ -3671,13 +3671,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "NumShotsPerLaunchAttack",
 					"value": [
-						2,
-						2,
-						2,
-						2,
-						2,
-						2,
-						2
+						3,
+						3,
+						3,
+						3,
+						3,
+						3,
+						3
 					]
 				}
 			]
@@ -3904,8 +3904,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						50,
-						80,
-						100,
+						70,
+						90,
 						180,
 						50,
 						50,
@@ -3920,12 +3920,12 @@ export const champions: ChampionData[] = [
 		"name": "Kai'Sa",
 		"stats": {
 			"armor": 30,
-			"attackSpeed": 1.2000000476837158,
+			"attackSpeed": 1.100000023841858,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 60,
-			"hp": 900,
-			"initialMana": 90,
+			"hp": 850,
+			"initialMana": 75,
 			"magicResist": 30,
 			"mana": 150,
 			"range": 3
@@ -3978,9 +3978,9 @@ export const champions: ChampionData[] = [
 			"critMultiplier": 1.2999999523162842,
 			"damage": 70,
 			"hp": 1100,
-			"initialMana": 100,
+			"initialMana": 120,
 			"magicResist": 60,
-			"mana": 180,
+			"mana": 200,
 			"range": 1
 		},
 		"traits": [
@@ -4053,7 +4053,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.75,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 85,
+			"damage": 80,
 			"hp": 700,
 			"initialMana": 40,
 			"magicResist": 25,

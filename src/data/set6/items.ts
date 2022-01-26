@@ -264,9 +264,9 @@ export const items: ItemData[] = [
 	{
 		"desc": "Increases the holder's Attack Range by @HexRangeIncrease@ hex and grants %i:scaleAS% @TooltipBonusAS@% bonus Attack Speed (including components). The holder's attacks can no longer miss.",
 		"effects": {
-			"AS": 50,
+			"AS": 60,
 			"HexRangeIncrease": 1,
-			"TooltipBonusAS": 50,
+			"TooltipBonusAS": 60,
 			"AttackAccuracy": 100
 		},
 		"from": [
@@ -298,7 +298,7 @@ export const items: ItemData[] = [
 		"desc": "The holder gains %i:scaleAS% @BonusAS@% bonus Attack Speed. Every 3rd attack from the holder unleashes a chain lightning that bounces to @1StarBounces@ enemies, dealing @Damage@ magic damage and reducing their Magic Resist by @MRShred@% for @MRShredDuration@ seconds. ",
 		"effects": {
 			"AS": 10,
-			"BonusAS": 15,
+			"BonusAS": 10,
 			"Damage": 70,
 			"Mana": 15,
 			"1StarBounces": 4,
@@ -438,7 +438,7 @@ export const items: ItemData[] = [
 		"effects": {
 			"AP": 10,
 			"Armor": 20,
-			"ShieldDuration": 8,
+			"ShieldDuration": 15,
 			"2StarShieldValue": 350,
 			"1StarShieldValue": 300,
 			"3StarShieldValue": 400,
@@ -481,7 +481,7 @@ export const items: ItemData[] = [
 			"MonsterCap": 100,
 			"TicksPerSecond": 1,
 			"GrievousWoundsPercent": 50,
-			"BurnPercent": 25,
+			"BurnPercent": 20,
 			"BurnDuration": 10
 		},
 		"from": [
@@ -615,14 +615,14 @@ export const items: ItemData[] = [
 		"desc": "The holder gains both of the following:<li>+@BaseAD@ Attack Damage and +@BaseSP@ Ability Power.</li> <li>Attacks and Abilities heal for @BaseHeal@% of damage dealt.</li><br><br>At the beginning of each planning phase, one of these buffs is increased to @TooltipBonus@(%).<br>",
 		"effects": {
 			"BaseHeal": 10,
-			"BonusAD": 20,
+			"BonusAD": 23,
 			"CritChance": 15,
 			"Mana": 15,
 			"{a60806db}": 66.66699981689453,
 			"BaseAD": 10,
 			"BaseSP": 10,
-			"BonusSP": 20,
-			"TooltipBonus": 30
+			"BonusSP": 23,
+			"TooltipBonus": 33
 		},
 		"from": [
 			4,
@@ -675,10 +675,10 @@ export const items: ItemData[] = [
 		"effects": {
 			"Armor": 20,
 			"Health": 150,
-			"ICD": 2.5,
+			"ICD": 2,
 			"MonsterCap": 100,
 			"GrievousWoundsPercent": 50,
-			"BurnPercent": 20,
+			"BurnPercent": 16,
 			"BurnDuration": 8,
 			"HexRange": 2
 		},
