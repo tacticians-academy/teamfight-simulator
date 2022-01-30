@@ -46,11 +46,12 @@ export function getSurrounding([col, row]: HexCoord, atDistance: number = 1): He
 	const isOffsetRow = row % 2 === 1
 	const validHexes: HexCoord[] = []
 	for (let mirror = 0; mirror < 2; mirror += 1) {
-		const mirrorMultiplier = mirror === 0 ? 1 : -1
+		const rowMultiplier = mirror === 0 ? 1 : -1
 		for (const [colDelta, rowDelta] of surroundings[atDistance - 1]) {
-			const isOffsetFromRow = isOffsetRow && rowDelta % 2 !== 0
-			const newCol = col + (colDelta + (isOffsetFromRow ? 1 : 0)) * mirrorMultiplier
-			const newRow = row + rowDelta * mirrorMultiplier
+			const isCheckOffsetFromRow = isOffsetRow && rowDelta % 2 !== 0
+			const colMultiplier = rowDelta === 0 ? rowMultiplier : 1
+			const newCol = col + (colDelta + (isCheckOffsetFromRow ? 1 : 0)) * colMultiplier
+			const newRow = row + rowDelta * rowMultiplier
 			if (newCol >= 0 && newCol <= lastCol && newRow >= 0 && newRow <= lastRow) {
 				validHexes.push([newCol, newRow])
 			}
