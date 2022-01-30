@@ -83,7 +83,7 @@ function onDrop(event: DragEvent) {
 		<span class="group-hover-visible">{{ unit.name }}</span>
 	</div>
 	<div class="overlay stars">
-		<button v-for="starLevel in 3" :key="starLevel" :disabled="state.isRunning" @click="onStar(starLevel)">
+		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.isRunning" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>

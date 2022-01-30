@@ -9,7 +9,7 @@ import { TraitKey, traits } from '#/data/set6/traits'
 import { getNextHex, updatePaths } from '#/game/pathfind'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS } from '#/helpers/constants'
+import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { BonusKey } from '#/helpers/types'
 import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 import { saveUnits } from '#/helpers/storage'
@@ -32,6 +32,7 @@ export class ChampionUnit {
 	healthMax = 0
 	attackSpeedMultiplier = 1
 	starMultiplier = 1
+	isStarLocked: boolean
 
 	ghosting = false
 	cachedTargetDistance = 0
@@ -45,13 +46,12 @@ export class ChampionUnit {
 	ability: AbilityFn | undefined
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
-		const stats = champions.find(unit => unit.name === name)
-		if (!stats) {
-			console.log('ERR Invalid unit', name)
-		}
+		const stats = champions.find(unit => unit.name === name)!
+		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]
+		this.isStarLocked = !!starLockedLevel
 		this.data = markRaw(stats ?? champions[0])
 		this.name = name
-		this.starLevel = starLevel
+		this.starLevel = starLockedLevel ?? starLevel
 		this.ability = abilities[name]
 		this.reset(synergiesByTeam)
 		this.reposition(position, true)

@@ -1,3 +1,5 @@
+import type { StarLevel } from '#/helpers/types'
+
 export const HEX_MOVE_UNITS = 210 //TODO figure out what this actually is
 export const BACKLINE_JUMP_MS = 600 //TODO up to date?
 
@@ -18,3 +20,9 @@ export const HEX_UNITS = `${HEX_SIZE_PROPORTION}vw`
 export const HALF_HEX_BORDER_UNITS = `${HEX_BORDER_PROPORTION / 2}vw`
 export const HALF_HEX_UNITS = `${HEX_SIZE_PROPORTION / 2}vw`
 export const QUARTER_HEX_INSET_UNITS = `-${HEX_SIZE_PROPORTION / 4}vw`
+
+export const LOCKED_STAR_LEVEL_BY_UNIT_API_NAME: Record<string, StarLevel> = {
+	TFT6_MalzaharVoidling: 1,
+	TFT6_Tibbers: 2,
+	TFT6_HexTechDragon: 3,
+}
