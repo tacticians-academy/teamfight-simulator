@@ -31,6 +31,6 @@ export const TEAM_EFFECT_TRAITS: Record<string, boolean | number | string[]> = {
 	Set6_Arcanist: false,
 	Set6_Bruiser: 2,
 	Set6_Clockwork: true,
-	Set6_Enchanter: ['MagicResistance'],
+	Set6_Enchanter: ['MR'],
 	Set6_Scholar: true,
 }

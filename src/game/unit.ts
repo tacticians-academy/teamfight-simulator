@@ -71,7 +71,7 @@ export class ChampionUnit {
 		this.bonuses = [ ...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items) ]
 
 		this.mana = this.data.stats.initialMana + this.getBonuses('Mana')
-		this.health = this.data.stats.hp * this.starMultiplier + this.getBonuses('Health', 'BonusHealth')
+		this.health = this.data.stats.hp * this.starMultiplier + this.getBonuses('HP')
 		this.healthMax = this.health
 	}
 
@@ -222,7 +222,7 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		return this.data.stats.damage * this.starMultiplier + this.getBonuses('AD', 'BonusAD', `${this.starLevel}StarBonusAD`)
+		return this.data.stats.damage * this.starMultiplier + this.getBonuses('AD', `${this.starLevel}StarAD`)
 	}
 	abilityPowerMultiplier() {
 		return 1 //TODO items, traits
@@ -231,13 +231,16 @@ export class ChampionUnit {
 		return this.data.stats.mana //TODO yordle mutant
 	}
 	armor() {
-		return this.data.stats.armor + this.getBonuses('Armor', 'BonusArmor', `${this.starLevel}StarBonusArmor`)
+		return this.data.stats.armor + this.getBonuses('Armor', `${this.starLevel}StarArmor`)
 	}
 	magicResist() {
-		return this.data.stats.magicResist + this.getBonuses('MagicResist', 'BonusMagicResist', `${this.starLevel}StarBonusMagicResist`)
+		return this.data.stats.magicResist + this.getBonuses('MR', `${this.starLevel}StarBonusMR`)
 	}
 	attackSpeed() {
-		return this.data.stats.attackSpeed + this.getBonuses('AttackSpeed', 'BonusAS', `${this.starLevel}StarBonusAS`) //TODO
+		return this.data.stats.attackSpeed + this.bonusAttackSpeed()
+	}
+	bonusAttackSpeed() {
+		return this.getBonuses('AS') + this.getBonuses('BonusAS', `${this.starLevel}StarBonusAS`) / 100
 	}
 	range() {
 		return this.data.stats.range + this.getBonuses('HexRangeIncrease')

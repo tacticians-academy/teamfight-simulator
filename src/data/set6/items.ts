@@ -61,9 +61,9 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "%i:scaleMR% +@MagicResist@ Magic Resist",
+		"desc": "%i:scaleMR% +@MR@ Magic Resist",
 		"effects": {
-			"MagicResist": 20
+			"MR": 20
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Negatron_Cloak.dds",
@@ -72,9 +72,9 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "%i:scaleHealth% +@Health@ Health",
+		"desc": "%i:scaleHP% +@Health@ Health",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Gaints_Belt.dds",
@@ -106,16 +106,16 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "The holder gains %i:scaleAD% @Tooltip1StarBonusAD@/@Tooltip2StarBonusAD@/@Tooltip3StarBonusAD@ %i:star% bonus Attack Damage (including components).",
+		"desc": "The holder gains %i:scaleAD% @Tooltip1StarAD@/@Tooltip2StarBonusAD@/@Tooltip3StarBonusAD@ %i:star% bonus Attack Damage (including components).",
 		"effects": {
 			"AD": 20,
-			"3StarBonusAD": 80,
-			"2StarBonusAD": 55,
-			"Tooltip1StarBonusAD": 50,
-			"Tooltip2StarBonusAD": 75,
-			"4StarBonusAD": 125,
-			"Tooltip3StarBonusAD": 100,
-			"1StarBonusAD": 30
+			"3StarAD": 80,
+			"2StarAD": 55,
+			"Tooltip1StarAD": 50,
+			"Tooltip2StarAD": 75,
+			"4StarAD": 125,
+			"Tooltip3StarAD": 100,
+			"1StarAD": 30
 		},
 		"from": [
 			1,
@@ -127,11 +127,11 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "The holder's Abilities and attacks do @SmallBonusPct@% bonus damage. If the target has more than @HealthThreshold@ maximum Health, the bonus increases to @LargeBonusPct@%.",
+		"desc": "The holder's Abilities and attacks do @SmallBonusPct@% bonus damage. If the target has more than @HPThreshold@ maximum Health, the bonus increases to @LargeBonusPct@%.",
 		"effects": {
 			"AD": 10,
 			"AS": 10,
-			"HealthThreshold": 1800,
+			"HPThreshold": 1800,
 			"LargeBonusPct": 60,
 			"SmallBonusPct": 20
 		},
@@ -145,7 +145,7 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "The holder's magic and true damage from Abilities heal them for @OmniVamp@% of the damage dealt. The holder also heals their lowest Health ally for the same amount.",
+		"desc": "The holder's magic and true damage from Abilities heal them for @OmniVamp@% of the damage dealt. The holder also heals their lowest HP ally for the same amount.",
 		"effects": {
 			"AD": 10,
 			"AP": 10,
@@ -178,11 +178,11 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "Prevents the holder's first death, placing them in stasis instead. After @StasisDuration@ seconds, they return with @HealthRestore@ Health and shed all negative effects.<br><br><tftitemrules>[Unique - Only One Per Champion]</tftitemrules>",
+		"desc": "Prevents the holder's first death, placing them in stasis instead. After @StasisDuration@ seconds, they return with @HPRestore@ Health and shed all negative effects.<br><br><tftitemrules>[Unique - Only One Per Champion]</tftitemrules>",
 		"effects": {
 			"AD": 10,
 			"Armor": 20,
-			"HealthRestore": 400,
+			"HPRestore": 400,
 			"StasisDuration": 2
 		},
 		"from": [
@@ -195,14 +195,14 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "Physical damage heals the holder for @Lifesteal@% of the damage dealt. Upon falling below @HealthThreshold@% Health, the holder gains a @ShieldHealthPercent@% maximum Health shield that lasts up to @ShieldDuration@ seconds.",
+		"desc": "Physical damage heals the holder for @Lifesteal@% of the damage dealt. Upon falling below @HPThreshold@% Health, the holder gains a @ShieldHealthPercent@% maximum Health shield that lasts up to @ShieldDuration@ seconds.",
 		"effects": {
 			"AD": 10,
-			"HealthThreshold": 40,
+			"HPThreshold": 40,
 			"LifeSteal": 33,
-			"MagicResist": 20,
+			"MR": 20,
 			"ShieldDuration": 5,
-			"ShieldHealthPercent": 30
+			"ShieldHPPercent": 30
 		},
 		"from": [
 			1,
@@ -214,11 +214,11 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "When combat begins, the holder and all allies within @HexRange@ hexes in the same row gain %i:scaleAS% @AttackSpeed@% Attack Speed for the rest of combat.",
+		"desc": "When combat begins, the holder and all allies within @HexRange@ hexes in the same row gain %i:scaleAS% @AS@% Attack Speed for the rest of combat.",
 		"effects": {
 			"AD": 10,
-			"AttackSpeed": 30,
-			"Health": 150,
+			"AS": 30,
+			"HP": 150,
 			"HexRange": 1
 		},
 		"from": [
@@ -279,11 +279,11 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "Attacks grant +@AttackSpeedPerStack@% bonus Attack Speed for the rest of combat. This effect can stack any number of times.",
+		"desc": "Attacks grant +@ASPerStack@% bonus Attack Speed for the rest of combat. This effect can stack any number of times.",
 		"effects": {
 			"AP": 10,
 			"AS": 10,
-			"AttackSpeedPerStack": 6
+			"ASPerStack": 6
 		},
 		"from": [
 			2,
@@ -342,7 +342,7 @@ export const items: ItemData[] = [
 			"AD": 10,
 			"AS": 10,
 			"AdditionalTargets": 1,
-			"MagicResist": 20,
+			"MR": 20,
 			"MultiplierForDamage": 75
 		},
 		"from": [
@@ -358,7 +358,7 @@ export const items: ItemData[] = [
 		"desc": "At the start of combat, the holder taunts enemies within @HexRadius@ hexes. <br><br>When the holder dies, a Voidspawn arises taunting nearby enemies. Voidspawns that arise from summoned units are @SummonedStatReduction@% effective.",
 		"effects": {
 			"AS": 10,
-			"Health": 150,
+			"HP": 150,
 			"HexRadius": 4,
 			"SummonedStatReduction": 25
 		},
@@ -459,7 +459,7 @@ export const items: ItemData[] = [
 		"effects": {
 			"AP": 10,
 			"Damage": 250,
-			"MagicResist": 20,
+			"MR": 20,
 			"HexRange": 2,
 			"ManaRatio": 200,
 			"MRShred": 50
@@ -474,10 +474,10 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "When the holder deals magic or true damage with their Ability, they burn the target, dealing @BurnPercent@% of the target's maximum Health as true damage over @BurnDuration@ seconds, and reducing healing by @GrievousWoundsPercent@% for the duration of the burn.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"desc": "When the holder deals magic or true damage with their Ability, they burn the target, dealing @BurnPercent@% of the target's maximum HP as true damage over @BurnDuration@ seconds, and reducing healing by @GrievousWoundsPercent@% for the duration of the burn.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
 			"AP": 10,
-			"Health": 150,
+			"HP": 150,
 			"MonsterCap": 100,
 			"TicksPerSecond": 1,
 			"GrievousWoundsPercent": 50,
@@ -508,12 +508,12 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamageAmp@% bonus Critical Strike Damage and %i:scaleAP% @TooltipBonusAP@ bonus Ability Power.",
+		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamageAmp@% bonus Critical Strike Damage and %i:scaleAP% @TooltipAP@ bonus Ability Power.",
 		"effects": {
 			"AP": 20,
 			"CritChance": 15,
 			"CritDamageAmp": 30,
-			"TooltipBonusAP": 10
+			"TooltipAP": 10
 		},
 		"from": [
 			3,
@@ -542,10 +542,10 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "Reduces the Attack Speed of enemies within @HexRadius@ hexes by @AttackSpeedSlow@%.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"desc": "Reduces the Attack Speed of enemies within @HexRadius@ hexes by @ASSlow@%.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
 			"Armor": 20,
-			"AttackSpeedSlow": 35,
+			"ASSlow": 35,
 			"Mana": 15,
 			"HexRadius": 2
 		},
@@ -559,14 +559,14 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "When combat begins, the holder and all allies within @HexRange@ hex in the same row gain %i:scaleAP% @BonusAP@ Ability Power for the rest of combat.",
+		"desc": "When combat begins, the holder and all allies within @HexRange@ hex in the same row gain %i:scaleAP% @AP@ Ability Power for the rest of combat.",
 		"effects": {
-			"MagicResist": 20,
+			"MR": 20,
 			"Mana": 15,
 			"ManaRestore": 10,
 			"HexRange": 1,
 			"UNUSED_APTimer": 20,
-			"BonusAP": 30
+			"AP": 30
 		},
 		"from": [
 			6,
@@ -578,14 +578,14 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "Every @HealTickRate@ seconds, the holder radiates an aura to allies within @HexRadius@ hex, healing them for @MissingHealthHeal@% of their missing Health. Affected allies take @AoEDamageReduction@% reduced damage from multi-target abilities and attacks for @HealTickRate@ seconds.",
+		"desc": "Every @HealTickRate@ seconds, the holder radiates an aura to allies within @HexRadius@ hex, healing them for @MissingHPHeal@% of their missing Health. Affected allies take @AoEDamageReduction@% reduced damage from multi-target abilities and attacks for @HealTickRate@ seconds.",
 		"effects": {
-			"Health": 150,
+			"HP": 150,
 			"Mana": 15,
 			"MaxHeal": 1000,
 			"AoEDamageReduction": 25,
 			"HexRadius": 1,
-			"MissingHealthHeal": 18,
+			"MissingHPHeal": 18,
 			"HealTickRate": 5
 		},
 		"from": [
@@ -612,16 +612,16 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "The holder gains both of the following:<li>+@BaseAD@ Attack Damage and +@BaseSP@ Ability Power.</li> <li>Attacks and Abilities heal for @BaseHeal@% of damage dealt.</li><br><br>At the beginning of each planning phase, one of these buffs is increased to @TooltipBonus@(%).<br>",
+		"desc": "The holder gains both of the following:<li>+@BaseAD@ Attack Damage and +@BaseAP@ Ability Power.</li> <li>Attacks and Abilities heal for @BaseHeal@% of damage dealt.</li><br><br>At the beginning of each planning phase, one of these buffs is increased to @TooltipBonus@(%).<br>",
 		"effects": {
 			"BaseHeal": 10,
-			"BonusAD": 23,
 			"CritChance": 15,
 			"Mana": 15,
-			"{a60806db}": 66.66699981689453,
 			"BaseAD": 10,
-			"BaseSP": 10,
-			"BonusSP": 23,
+			"BaseAP": 10,
+			"{a60806db}": 66.66699981689453,
+			"AD": 23,
+			"AP": 23,
 			"TooltipBonus": 33
 		},
 		"from": [
@@ -657,7 +657,7 @@ export const items: ItemData[] = [
 		"desc": "The holder gains %i:scaleArmor% @ArmorPerEnemy@ Armor and %i:scaleMR% @MRPerEnemy@ Magic Resist for each enemy targeting them.",
 		"effects": {
 			"Armor": 20,
-			"MagicResist": 20,
+			"MR": 20,
 			"MRPerEnemy": 18,
 			"ArmorPerEnemy": 18
 		},
@@ -671,10 +671,10 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "Every @ICD@ seconds, a random enemy within @HexRange@ hexes is burned for @BurnPercent@% of their maximum Health as true damage over @BurnDuration@ seconds. Any healing they receive is reduced by @GrievousWoundsPercent@%.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"desc": "Every @ICD@ seconds, a random enemy within @HexRange@ hexes is burned for @BurnPercent@% of their maximum HP as true damage over @BurnDuration@ seconds. Any healing they receive is reduced by @GrievousWoundsPercent@%.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
 			"Armor": 20,
-			"Health": 150,
+			"HP": 150,
 			"ICD": 2,
 			"MonsterCap": 100,
 			"GrievousWoundsPercent": 50,
@@ -694,7 +694,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Bodyguard trait.<br><br><tftitemrules>[Unique - only 1 per champion <br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Bodyguard.TFT_Set6.dds",
@@ -720,11 +720,11 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "Grants %i:scaleMR% @MagicResist@ bonus Magic Resist (including components). On being hit by magic or true damage from a casted Ability, launch a fireball at the Ability's caster that deals magic damage equal to @PercentHealthDamage@% of their maximum Health (@ICD@ second cooldown).",
+		"desc": "Grants %i:scaleMR% @MR@ bonus Magic Resist (including components). On being hit by magic or true damage from a casted Ability, launch a fireball at the Ability's caster that deals magic damage equal to @PercentHPDamage@% of their maximum Health (@ICD@ second cooldown).",
 		"effects": {
 			"ICD": 0.5,
-			"MagicResist": 200,
-			"PercentHealthDamage": 18,
+			"MR": 200,
+			"PercentHPDamage": 18,
 			"UNUSED_MagicDamageReductionMultiplier": 160
 		},
 		"from": [
@@ -739,8 +739,8 @@ export const items: ItemData[] = [
 	{
 		"desc": "When combat begins, the holder summons a whirlwind on the opposite side of the arena that removes the closest enemy from combat for @BanishDuration@ seconds. Ignores crowd control immunity.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
-			"Health": 150,
-			"MagicResist": 20,
+			"HP": 150,
+			"MR": 20,
 			"BanishDuration": 5
 		},
 		"from": [
@@ -770,7 +770,7 @@ export const items: ItemData[] = [
 		"desc": "The holder gains %i:scaleAS% @AS@% bonus Attack Speed. The holder is immune to crowd control in combat for @SpellShieldDuration@ seconds.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
 			"AS": 20,
-			"MagicResist": 20,
+			"MR": 20,
 			"SpellShieldDuration": 15,
 			"DodgeChance": 15
 		},
@@ -784,9 +784,9 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "Grants %i:scaleHealth% @Health@ bonus Health (including components).",
+		"desc": "Grants %i:scaleHP% @Health@ bonus Health (including components).",
 		"effects": {
-			"Health": 1000
+			"HP": 1000
 		},
 		"from": [
 			7,
@@ -800,7 +800,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Chemtech trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [
 			7,
@@ -814,7 +814,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "When combat begins, the holder and all allies within @HexRange@ hex(es) in the same row gain a shield that blocks the damage and effects of the first enemy Ability, up to 600 damage. <br>",
 		"effects": {
-			"Health": 150,
+			"HP": 150,
 			"StunDuration": 4,
 			"HexRange": 1,
 			"DamageCap": 600,
@@ -862,7 +862,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Mutant trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
-			"MagicResist": 20
+			"MR": 20
 		},
 		"from": [
 			6,
@@ -876,7 +876,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Clockwork trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Clockwork.TFT_Set6.dds",
@@ -887,7 +887,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Mercenary trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Mercenary.TFT_Set6.dds",
@@ -898,7 +898,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Socialite trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Socialite.TFT_Set6.dds",
@@ -909,7 +909,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Enforcer trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Enforcer.TFT_Set6.dds",
@@ -920,7 +920,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Scrap trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Scrap.TFT_Set6.dds",
@@ -931,7 +931,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Protector trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Protector.TFT_Set6.dds",
@@ -942,7 +942,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Bruiser trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Bruiser.TFT_Set6.dds",
@@ -953,7 +953,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Innovator trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Innovator.TFT_Set6.dds",
@@ -964,7 +964,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Sniper trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Sniper.TFT_Set6.dds",
@@ -975,7 +975,7 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Scholar trait.<br><br><tftitemrules>[Unique - only 1 per champion<br>Elusive - cannot be crafted.]</tftitemrules>",
 		"effects": {
-			"Health": 150
+			"HP": 150
 		},
 		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Scholar.TFT_Set6.dds",

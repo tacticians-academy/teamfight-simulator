@@ -51,6 +51,19 @@ const unplayableNames = ['TFT5_EmblemArmoryKey', 'TFT6_MercenaryChest']
 const playableChampions = (champions as ChampionData[])
 	.filter(champion => !unplayableNames.includes(champion.apiName))
 
+const normalizeKeys: Record<string, string> = {
+	AbilityPower: 'AP',
+	SP: 'AP',
+	BonusAP: 'AP',
+	AttackDamage: 'AD',
+	BonusAD: 'AD',
+	AttackSpeed: 'AS',
+	Health: 'HP',
+	BonusHP: 'HP',
+	BonusArmor: 'Armor',
+	MagicResist: 'MR',
+}
+
 const stringIDReplacements: Record<string, string> = {
 	'b4a90a5d': 'ProcChance',
 	'0acd95c2': 'ImperialBonusDamage',
@@ -78,7 +91,7 @@ const stringIDReplacements: Record<string, string> = {
 	'9f2eb1e2': 'CritChanceAmpPercent',
 	'5cc08b27': 'NumComponents',
 	'94c6a08c': 'HPShieldAmount',
-	'47343861': 'MagicResistance',
+	'47343861': 'MR',
 	'98396b21': 'HealShieldBoost',
 	'16394c87': 'HexRangeIncrease',
 	'75994f47': 'PercentDamageIncrease',
@@ -114,10 +127,10 @@ const stringIDReplacements: Record<string, string> = {
 	'440f813d': '3StarBounces', //TODO monitor. unverifiable 1StarBounces/2StarBounces/3StarBounces/4StarBounces
 	'79e2ec7b': '4StarBounces', //TODO monitor. unverifiable 1StarBounces/2StarBounces/3StarBounces/4StarBounces
 	'a2b76524': 'SpellShieldDuration',
-	'f924a46e': '1StarBonusAD', //TODO actual name
-	'82618485': '2StarBonusAD', //TODO actual name
-	'1b738810': '3StarBonusAD', //TODO actual name
-	'eb990bd7': '4StarBonusAD', //TODO verify
+	'f924a46e': '1StarAD', //TODO actual name
+	'82618485': '2StarAD', //TODO actual name
+	'1b738810': '3StarAD', //TODO actual name
+	'eb990bd7': '4StarAD', //TODO verify
 	'8c7c8547': 'Tooltip1StarBonusAD',
 	'd4afa164': 'Tooltip2StarBonusAD',
 	'edb2fb99': 'Tooltip3StarBonusAD',
@@ -145,10 +158,10 @@ const stringIDReplacements: Record<string, string> = {
 	'cc9fefa7': 'ArmorBreakDuration',
 	'353ede36': 'CritDamageAmp',
 	'5200c406': 'TooltipBonusAP',
-	'19a89153': 'BaseAD', //TODO monitor. unverifiable BaseSP
-	'41cb628d': 'BaseSP', //TODO monitor. unverifiable BaseAD
-	'ae49cc70': 'BonusAD', //TODO actual name, monitor. unverifiable BonusSP
-	'c0c9af7f': 'BonusSP', //TODO actual name, monitor. unverifiable BonusAD
+	'19a89153': 'BaseAD', //TODO monitor. unverifiable BaseAP
+	'41cb628d': 'BaseAP', //TODO monitor. unverifiable BaseAD
+	'ae49cc70': 'AD', //TODO actual name, monitor. unverifiable BonusAP
+	'c0c9af7f': 'AP', //TODO actual name, monitor. unverifiable BonusAD
 	'f2474447': 'TooltipBonus',
 	'9fd37c1c': 'UNUSED_APTimer', //TODO verify https://leagueoflegends.fandom.com/wiki/Chalice_of_Power_(Teamfight_Tactics)
 	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
@@ -165,17 +178,26 @@ const traitKeys = (traits as TraitData[])
 	.join(', ')
 
 traits.forEach((trait: TraitData) => {
+	for (const normalize in normalizeKeys) {
+		trait.desc = trait.desc.replace(normalize, normalizeKeys[normalize])
+	}
 	trait.effects.forEach(effect => {
 		Object.keys(effect.variables).forEach(key => {
+			const originalValue = effect.variables[key]
 			if (key.startsWith('{')) {
 				const keyHash = key.slice(1, -1)
 				const replacement = stringIDReplacements[keyHash]
 				if (replacement) {
 					unreplacedIDs.delete(keyHash)
-					const originalValue = effect.variables[key]
 					delete effect.variables[key]
-					effect.variables[replacement] = originalValue
+					key = replacement
+					effect.variables[key] = originalValue
 				}
+			}
+			for (const normalize in normalizeKeys) {
+				delete effect.variables[key]
+				key = key.replace(normalize, normalizeKeys[normalize])
+				effect.variables[key] = originalValue
 			}
 		})
 	})
@@ -183,16 +205,25 @@ traits.forEach((trait: TraitData) => {
 const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 
 currentItems.forEach((item: ItemData) => {
+	for (const normalize in normalizeKeys) {
+		item.desc = item.desc.replace(normalize, normalizeKeys[normalize])
+	}
 	Object.keys(item.effects).forEach(key => {
+		const originalValue = item.effects[key]
 		if (key.startsWith('{')) {
 			const keyHash = key.slice(1, -1)
 			const replacement = stringIDReplacements[keyHash]
 			if (replacement) {
 				unreplacedIDs.delete(keyHash)
-				const originalValue = item.effects[key]
 				delete item.effects[key]
-				item.effects[replacement] = originalValue
+				key = replacement
+				item.effects[key] = originalValue
 			}
+		}
+		for (const normalize in normalizeKeys) {
+			delete item.effects[key]
+			key = key.replace(normalize, normalizeKeys[normalize])
+			item.effects[key] = originalValue
 		}
 	})
 })

@@ -7,7 +7,7 @@ export enum TraitKey {
 export const traits: TraitData[] = [
 	{
 		"apiName": "Set6_Syndicate",
-		"desc": "Certain allies are cloaked in shadows, gaining @Armor@ Armor, @MagicResist@ Magic Resist and @PercentOmnivamp@% Omnivamp (healing for a percentage of all damage dealt.)<br><br><row>(@MinUnits@) The Syndicate champion with the lowest percent Health</row><br><row>(@MinUnits@) All Syndicate champions</row><br><row>(@MinUnits@) Your whole team, and the effects are increased by @SyndicateIncrease*100@%</row><br>",
+		"desc": "Certain allies are cloaked in shadows, gaining @Armor@ Armor, @MR@ Magic Resist and @PercentOmnivamp@% Omnivamp (healing for a percentage of all damage dealt.)<br><br><row>(@MinUnits@) The Syndicate champion with the lowest percent HP</row><br><row>(@MinUnits@) All Syndicate champions</row><br><row>(@MinUnits@) Your whole team, and the effects are increased by @SyndicateIncrease*100@%</row><br>",
 		"effects": [
 			{
 				"maxUnits": 4,
@@ -15,7 +15,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"Armor": 55,
-					"MagicResist": 55,
+					"MR": 55,
 					"{5c51b509}": 1,
 					"{c9b0e3af}": 20
 				}
@@ -26,7 +26,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"Armor": 55,
-					"MagicResist": 55,
+					"MR": 55,
 					"{5c51b509}": 2,
 					"{c9b0e3af}": 20
 				}
@@ -37,10 +37,10 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"Armor": 55,
-					"MagicResist": 55,
+					"MR": 55,
 					"{5c51b509}": 3,
-					"{c9b0e3af}": 20,
-					"SyndicateIncrease": 0.6000000238418579
+					"SyndicateIncrease": 0.6000000238418579,
+					"{c9b0e3af}": 20
 				}
 			}
 		],
@@ -135,7 +135,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Protector",
-		"desc": "Protectors shield themselves for @Duration@ seconds whenever they cast an Ability. This shield doesn't stack.<br><br><expandRow> (@MinUnits@) @ShieldPercent@% maximum Health shield</expandRow>",
+		"desc": "Protectors shield themselves for @Duration@ seconds whenever they cast an Ability. This shield doesn't stack.<br><br><expandRow> (@MinUnits@) @ShieldPercent@% maximum HP shield</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 2,
@@ -258,14 +258,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Enchanter",
-		"desc": "Your team has bonus Magic Resist. Enchanters gain bonus healing and shielding.<br><expandRow>(@MinUnits@) +@MagicResistance@ Magic Resist; @HealShieldBoost*100@% healing and shielding</expandRow><br>",
+		"desc": "Your team has bonus Magic Resist. Enchanters gain bonus healing and shielding.<br><expandRow>(@MinUnits@) +@MRance@ Magic Resist; @HealShieldBoost*100@% healing and shielding</expandRow><br>",
 		"effects": [
 			{
 				"maxUnits": 2,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"MagicResistance": 20,
+					"MR": 20,
 					"HealShieldBoost": 0.25
 				}
 			},
@@ -274,7 +274,7 @@ export const traits: TraitData[] = [
 				"minUnits": 3,
 				"style": 2,
 				"variables": {
-					"MagicResistance": 35,
+					"MR": 35,
 					"HealShieldBoost": 0.4000000059604645
 				}
 			},
@@ -283,7 +283,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"MagicResistance": 50,
+					"MR": 50,
 					"HealShieldBoost": 0.6000000238418579
 				}
 			},
@@ -292,7 +292,7 @@ export const traits: TraitData[] = [
 				"minUnits": 5,
 				"style": 4,
 				"variables": {
-					"MagicResistance": 75,
+					"MR": 75,
 					"HealShieldBoost": 1
 				}
 			}
@@ -302,7 +302,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Cuddly",
-		"desc": "At the start of combat, Yuumi attaches herself to the nearest ally, or to the lowest Health ally after being unattached for @AttachCooldown@ seconds. Attaching to an ally grants them a shield equal to @ShieldPercent@% of Yuumi's maximum Health. Yuumi detaches if the shield breaks.<br><br>While attached, Yuumi is untargetable and cannot attack, but gains @ManaPerSecond@ Mana per second, and @ManaPerAllyAttack@ Mana whenever the ally attacks.",
+		"desc": "At the start of combat, Yuumi attaches herself to the nearest ally, or to the lowest HP ally after being unattached for @AttachCooldown@ seconds. Attaching to an ally grants them a shield equal to @ShieldPercent@% of Yuumi's maximum Health. Yuumi detaches if the shield breaks.<br><br>While attached, Yuumi is untargetable and cannot attack, but gains @ManaPerSecond@ Mana per second, and @ManaPerAllyAttack@ Mana whenever the ally attacks.",
 		"effects": [
 			{
 				"maxUnits": 25000,
@@ -335,14 +335,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Bodyguard",
-		"desc": "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a Shield and taunt adjacent enemies, forcing them to attack the Bodyguard.<br><br><expandRow>(@MinUnits@) @BonusArmor@ Armor, @ShieldAmount@ Shield</expandRow>",
+		"desc": "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a Shield and taunt adjacent enemies, forcing them to attack the Bodyguard.<br><br><expandRow>(@MinUnits@) @Armor@ Armor, @ShieldAmount@ Shield</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"BonusArmor": 75,
+					"Armor": 75,
 					"ShieldAmount": 150
 				}
 			},
@@ -351,7 +351,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"BonusArmor": 150,
+					"Armor": 150,
 					"ShieldAmount": 350
 				}
 			},
@@ -360,7 +360,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"BonusArmor": 250,
+					"Armor": 250,
 					"ShieldAmount": 700
 				}
 			},
@@ -369,7 +369,7 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"BonusArmor": 450,
+					"Armor": 450,
 					"ShieldAmount": 1200
 				}
 			}
@@ -423,7 +423,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Mutant",
-		"desc": "Mutants gain a different Trait bonus from game to game.<br><br><tftstrong>Cybernetic Enhancement</tftstrong> grants bonus stats to Mutants with at least 1 item.<br><tftstrong>Voracious Appetite</tftstrong> strengthens Mutants on each ally's death.<br><tftstrong>Voidborne</tftstrong> executes targets below a Health threshold and deals true damage. <br><tftstrong>Hyper-Adrenal Glands</tftstrong> give a chance for Mutants to deal additional attacks.<br><tftstrong>Synaptic Web</tftstrong> reduces the Mana cost of Mutants' Abilities.<br><tftstrong>Bio-Leeching</tftstrong> grants Omnivamp (healing for a percentage of damage dealt) to your team.<br><tftstrong>Metamorphosis</tftstrong> grants stacking bonuses to Mutants at regular intervals.",
+		"desc": "Mutants gain a different Trait bonus from game to game.<br><br><tftstrong>Cybernetic Enhancement</tftstrong> grants bonus stats to Mutants with at least 1 item.<br><tftstrong>Voracious Appetite</tftstrong> strengthens Mutants on each ally's death.<br><tftstrong>Voidborne</tftstrong> executes targets below a HP threshold and deals true damage. <br><tftstrong>Hyper-Adrenal Glands</tftstrong> give a chance for Mutants to deal additional attacks.<br><tftstrong>Synaptic Web</tftstrong> reduces the Mana cost of Mutants' Abilities.<br><tftstrong>Bio-Leeching</tftstrong> grants Omnivamp (healing for a percentage of damage dealt) to your team.<br><tftstrong>Metamorphosis</tftstrong> grants stacking bonuses to Mutants at regular intervals.",
 		"effects": [
 			{
 				"maxUnits": 4,
@@ -503,7 +503,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Glutton",
-		"desc": "An ally can be fed to Tahm Kench once per planning phase, permanently granting him either Ability Power, Health, Armor, or Magic Resist.<br><br><tftitemrules>To feed, hold an ally over Tahm Kench until his mouth opens, then release.</tftitemrules>",
+		"desc": "An ally can be fed to Tahm Kench once per planning phase, permanently granting him either Ability Power, HP, Armor, or Magic Resist.<br><br><tftitemrules>To feed, hold an ally over Tahm Kench until his mouth opens, then release.</tftitemrules>",
 		"effects": [
 			{
 				"maxUnits": 25000,
@@ -517,7 +517,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Innovator",
-		"desc": "Innovators build a mechanical companion to join the battle. The companion receives bonus Health and Attack Damage based on allied Innovators' star levels. <br><br><row>(@MinUnits@) Mechanical Scarab </row><br><row>(@MinUnits@) Mechanical Bear</row><br><row>(@MinUnits@) Mechanical Dragon </row>",
+		"desc": "Innovators build a mechanical companion to join the battle. The companion receives bonus HP and Attack Damage based on allied Innovators' star levels. <br><br><row>(@MinUnits@) Mechanical Scarab </row><br><row>(@MinUnits@) Mechanical Bear</row><br><row>(@MinUnits@) Mechanical Dragon </row>",
 		"effects": [
 			{
 				"maxUnits": 4,
@@ -587,14 +587,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Twinshot",
-		"desc": "Twinshots gain bonus Attack Damage. When a Twinshot attacks, they have a chance to attack twice instead.<br><br><expandRow>(@MinUnits@) @BonusAD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
+		"desc": "Twinshots gain bonus Attack Damage. When a Twinshot attacks, they have a chance to attack twice instead.<br><br><expandRow>(@MinUnits@) @AD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"BonusAD": 5,
+					"AD": 5,
 					"ProcChance": 40
 				}
 			},
@@ -603,7 +603,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"BonusAD": 40,
+					"AD": 40,
 					"ProcChance": 70
 				}
 			},
@@ -612,7 +612,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"BonusAD": 80,
+					"AD": 80,
 					"ProcChance": 100
 				}
 			}
@@ -636,14 +636,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Bruiser",
-		"desc": "Your team gains bonus maximum Health. Bruisers gain double the bonus.<br><expandRow>(@MinUnits@) @BonusHealth@ Health</expandRow>",
+		"desc": "Your team gains bonus maximum HP. Bruisers gain double the bonus.<br><expandRow>(@MinUnits@) @BonusHealth@ Health</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"BonusHealth": 125
+					"HP": 125
 				}
 			},
 			{
@@ -651,7 +651,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"BonusHealth": 225
+					"HP": 225
 				}
 			},
 			{
@@ -659,7 +659,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"BonusHealth": 400
+					"HP": 400
 				}
 			},
 			{
@@ -667,7 +667,7 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"BonusHealth": 700
+					"HP": 700
 				}
 			}
 		],
@@ -728,15 +728,15 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Arcanist",
-		"desc": "Arcanists increase the Ability Power of your team.<br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power</row><br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power, Arcanists gain an additional @ArcanistAbilityPower@</row><br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power, Arcanists gain an additional @ArcanistAbilityPower@</row><br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power</row>",
+		"desc": "Arcanists increase the Ability Power of your team.<br><row>(@MinUnits@) Your team gains @TeamAP@ Ability Power</row><br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power, Arcanists gain an additional @ArcanistAbilityPower@</row><br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power, Arcanists gain an additional @ArcanistAbilityPower@</row><br><row>(@MinUnits@) Your team gains @TeamAbilityPower@ Ability Power</row>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"TeamAbilityPower": 20,
-					"ArcanistAbilityPower": null
+					"TeamAP": 20,
+					"ArcanistAP": null
 				}
 			},
 			{
@@ -744,8 +744,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"TeamAbilityPower": 20,
-					"ArcanistAbilityPower": 40
+					"TeamAP": 20,
+					"ArcanistAP": 40
 				}
 			},
 			{
@@ -753,8 +753,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"TeamAbilityPower": 50,
-					"ArcanistAbilityPower": 50
+					"TeamAP": 50,
+					"ArcanistAP": 50
 				}
 			},
 			{
@@ -762,8 +762,8 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"TeamAbilityPower": 145,
-					"ArcanistAbilityPower": null
+					"TeamAP": 145,
+					"ArcanistAP": null
 				}
 			}
 		],
@@ -807,7 +807,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Clockwork",
-		"desc": "Your team has increased Attack Speed, with an additional increase per augment in the Hexcore.<br><br><expandRow>(@MinUnits@) @AttackSpeedBonus*100@% Attack Speed + @BonusPerAugment*100@% per augment </expandRow><br><br>",
+		"desc": "Your team has increased Attack Speed, with an additional increase per augment in the Hexcore.<br><br><expandRow>(@MinUnits@) @ASBonus*100@% Attack Speed + @BonusPerAugment*100@% per augment </expandRow><br><br>",
 		"effects": [
 			{
 				"maxUnits": 3,
@@ -815,7 +815,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"BonusPerAugment": 0.05000000074505806,
-					"AttackSpeedBonus": 0.10000000149011612
+					"ASBonus": 0.10000000149011612
 				}
 			},
 			{
@@ -824,7 +824,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"BonusPerAugment": 0.10000000149011612,
-					"AttackSpeedBonus": 0.3499999940395355
+					"ASBonus": 0.3499999940395355
 				}
 			},
 			{
@@ -833,7 +833,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"BonusPerAugment": 0.15000000596046448,
-					"AttackSpeedBonus": 0.699999988079071
+					"ASBonus": 0.699999988079071
 				}
 			}
 		],
@@ -842,7 +842,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Enforcer",
-		"desc": "Enforcers stun enemies at the start of combat. They break free after @DetainDuration@ seconds, or after losing @HPPercent*100@% of their maximum Health. Enforcers will not try to stun enemies who are immune to crowd control effects.<br><br><row>(@MinUnits@) The enemy who has the most Health</row><br><row>(@MinUnits@) And the enemy who dealt the most damage last combat</row>",
+		"desc": "Enforcers stun enemies at the start of combat. They break free after @DetainDuration@ seconds, or after losing @HPPercent*100@% of their maximum HP. Enforcers will not try to stun enemies who are immune to crowd control effects.<br><br><row>(@MinUnits@) The enemy who has the most Health</row><br><row>(@MinUnits@) And the enemy who dealt the most damage last combat</row>",
 		"effects": [
 			{
 				"maxUnits": 3,
@@ -898,18 +898,18 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Chemtech",
-		"desc": "After dropping below @HealthThreshold@% Health, Chemtech champions become chem-powered, gaining Attack Speed, @DamageReduction@% damage reduction, and regenerating a percentage of their maximum Health each second for @Duration@ seconds.<br><br><expandRow>(@MinUnits@) @AttackSpeed@% Attack Speed, @HealthRegen@% Health</expandRow>",
+		"desc": "After dropping below @HPThreshold@% Health, Chemtech champions become chem-powered, gaining Attack Speed, @DamageReduction@% damage reduction, and regenerating a percentage of their maximum Health each second for @Duration@ seconds.<br><br><expandRow>(@MinUnits@) @AS@% Attack Speed, @HealthRegen@% Health</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 4,
 				"minUnits": 3,
 				"style": 1,
 				"variables": {
-					"AttackSpeed": 15,
+					"AS": 15,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HealthRegen": 3,
-					"HealthThreshold": 75
+					"HPRegen": 3,
+					"HPThreshold": 75
 				}
 			},
 			{
@@ -917,11 +917,11 @@ export const traits: TraitData[] = [
 				"minUnits": 5,
 				"style": 2,
 				"variables": {
-					"AttackSpeed": 50,
+					"AS": 50,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HealthRegen": 5,
-					"HealthThreshold": 75
+					"HPRegen": 5,
+					"HPThreshold": 75
 				}
 			},
 			{
@@ -929,11 +929,11 @@ export const traits: TraitData[] = [
 				"minUnits": 7,
 				"style": 3,
 				"variables": {
-					"AttackSpeed": 90,
+					"AS": 90,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HealthRegen": 8,
-					"HealthThreshold": 75
+					"HPRegen": 8,
+					"HPThreshold": 75
 				}
 			},
 			{
@@ -941,11 +941,11 @@ export const traits: TraitData[] = [
 				"minUnits": 9,
 				"style": 4,
 				"variables": {
-					"AttackSpeed": 135,
+					"AS": 135,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HealthRegen": 15,
-					"HealthThreshold": 75
+					"HPRegen": 15,
+					"HPThreshold": 75
 				}
 			}
 		],
