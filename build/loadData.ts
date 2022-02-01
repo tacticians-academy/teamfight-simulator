@@ -1,17 +1,20 @@
+const LOAD_PBE = false
+
 import fetch from 'node-fetch'
 import fs from 'fs/promises'
 import path from 'path'
 
 import type { ChampionData, ItemData, TraitData } from '../src/helpers/types'
 
-const response = await fetch('https://raw.communitydragon.org/latest/cdragon/tft/en_us.json')
+const response = await fetch(`https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}/cdragon/tft/en_us.json`)
 if (!response.ok) {
 	throw response
 }
 const responseJSON = await response.json() as Record<string, any>
-
 const currentSetNumber = Object.keys(responseJSON.sets).reduce((previous, current) => Math.max(previous, parseInt(current, 10)), 0)
 const { champions, traits } = (responseJSON as any).sets[currentSetNumber]
+
+console.log('Loading set', currentSetNumber, 'from', LOAD_PBE ? 'PBE' : 'Live', '...', 'Units:', champions.length, 'Traits:', traits.length)
 
 const itemData = responseJSON.items as Record<string, any>[]
 const standardComponents = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -124,7 +127,7 @@ const stringIDReplacements: Record<string, string> = {
 	'2161bfa2': 'GrievousWoundsPercent',
 	'b3b8f644': 'StackingAD', //TODO monitor. unverifable StackingAP
 	'cb9689ca': 'StackingAP', //TODO actual name, monitor. unverifable StackingAD
-	'9396f00d': 'StackCap', //TODO monitor. unverifable
+	'9396f00d': 'StackCap', //TODO monitor. unverifable BonusResistsAtStackCap
 	'b55019fa': 'BonusResistsAtStackCap', //TODO monitor. unverifable StackCap
 	'276ba2c8': 'MultiplierForDamage',
 	'0034a6ef': 'ShieldHealthPercent',

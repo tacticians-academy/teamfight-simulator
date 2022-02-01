@@ -46,10 +46,10 @@ export class ChampionUnit {
 	ability: AbilityFn | undefined
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
-		const stats = champions.find(unit => unit.name === name)!
+		const stats = champions.find(unit => unit.name === name) ?? champions[0]
 		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]
 		this.isStarLocked = !!starLockedLevel
-		this.data = markRaw(stats ?? champions[0])
+		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLockedLevel ?? starLevel
 		this.ability = abilities[name]

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import DisplayTrait from '#/components/Sidebar/DisplayTrait.vue'
 
-import { computed } from 'vue'
-
 import { useStore } from '#/game/store'
 
 import { getTeamName } from '#/helpers/boardUtils'
