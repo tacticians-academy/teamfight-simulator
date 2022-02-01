@@ -612,16 +612,16 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "The holder gains both of the following:<li>+@BaseAD@ Attack Damage and +@BaseAP@ Ability Power.</li> <li>Attacks and Abilities heal for @BaseHeal@% of damage dealt.</li><br><br>At the beginning of each planning phase, one of these buffs is increased to @TooltipBonus@(%).<br>",
+		"desc": "The holder gains both of the following:<li>+@AD@ Attack Damage and +@AP@ Ability Power.</li> <li>Attacks and Abilities heal for @BaseHeal@% of damage dealt.</li><br><br>At the beginning of each planning phase, one of these buffs is increased to @TooltipBonus@(%).<br>",
 		"effects": {
 			"BaseHeal": 10,
 			"CritChance": 15,
 			"Mana": 15,
-			"BaseAD": 10,
-			"BaseAP": 10,
+			"AD": 10,
+			"AP": 10,
 			"{a60806db}": 66.66699981689453,
-			"AD": 23,
-			"AP": 23,
+			"AdditionalAD": 23,
+			"AdditionalAP": 23,
 			"TooltipBonus": 33
 		},
 		"from": [

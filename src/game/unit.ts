@@ -234,7 +234,7 @@ export class ChampionUnit {
 		return ad
 	}
 	abilityPowerMultiplier() {
-		return 1 //TODO items, traits
+		return this.getBonuses('AP') / 100
 	}
 	manaMax() {
 		return this.data.stats.mana //TODO yordle mutant

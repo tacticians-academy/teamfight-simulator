@@ -54,8 +54,10 @@ const playableChampions = (champions as ChampionData[])
 const normalizeKeys: Record<string, string> = {
 	AbilityPower: 'AP',
 	SP: 'AP',
+	BaseAP: 'AP',
 	BonusAP: 'AP',
 	AttackDamage: 'AD',
+	BaseAD: 'AD',
 	BonusAD: 'AD',
 	AttackSpeed: 'AS',
 	Health: 'HP',
@@ -160,8 +162,8 @@ const stringIDReplacements: Record<string, string> = {
 	'5200c406': 'TooltipBonusAP',
 	'19a89153': 'BaseAD', //TODO monitor. unverifiable BaseAP
 	'41cb628d': 'BaseAP', //TODO monitor. unverifiable BaseAD
-	'ae49cc70': 'AD', //TODO actual name, monitor. unverifiable BonusAP
-	'c0c9af7f': 'AP', //TODO actual name, monitor. unverifiable BonusAD
+	'ae49cc70': 'AdditionalAD', //TODO actual name, monitor. unverifiable BonusAP
+	'c0c9af7f': 'AdditionalAP', //TODO actual name, monitor. unverifiable BonusAD
 	'f2474447': 'TooltipBonus',
 	'9fd37c1c': 'UNUSED_APTimer', //TODO verify https://leagueoflegends.fandom.com/wiki/Chalice_of_Power_(Teamfight_Tactics)
 	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
