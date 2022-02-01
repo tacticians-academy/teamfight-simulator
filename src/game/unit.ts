@@ -9,13 +9,11 @@ import { TraitKey, traits } from '#/data/set6/traits'
 import { getNextHex, updatePaths } from '#/game/pathfind'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
-import { BonusKey } from '#/helpers/types'
-import type { HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType } from '#/helpers/types'
-
-type BonusVariable = [key: string, value: number | null]
+import type { BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 
 export class ChampionUnit {
 	name: string
@@ -30,7 +28,6 @@ export class ChampionUnit {
 	mana = 0
 	health = 0
 	healthMax = 0
-	attackSpeedMultiplier = 1
 	starMultiplier = 1
 	isStarLocked: boolean
 
@@ -62,47 +59,20 @@ export class ChampionUnit {
 		this.dead = false
 		this.target = null
 		this.activePosition = undefined
-		this.mana = this.data.stats.initialMana
-		this.health = this.data.stats.hp * this.starMultiplier
-		this.healthMax = this.health
-		this.attackSpeedMultiplier = 1
 		this.cachedTargetDistance = 0
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
 		this.manaLockUntilMS = 0
 		this.stunnedUntilMS = 0
 		this.ghosting = this.jumpsToBackline()
-		const traitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
-		this.traits = Array.from(new Set(traitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
-		this.bonuses = []
-		const teamSynergies = synergiesByTeam[this.team]
-		teamSynergies.forEach(([trait, style, effect]) => {
-			if (effect != null && traitNames.includes(trait.name)) {
-				const variables: BonusVariable[] = []
-				for (const key in effect.variables) {
-					variables.push([key, effect.variables[key]])
-				}
-				this.bonuses.push([trait.name as TraitKey, variables])
-			}
-		})
 
-		// Innate bonuses (not handled in data)
-		if (traitNames.includes(TraitKey.Sniper)) {
-			const synergy = teamSynergies.find(synergy => synergy[0].name === TraitKey.Sniper)
-			if (!synergy?.[2]) {
-				const value = synergy?.[0].effects[0].variables[BonusKey.HexRangeIncrease] ?? 1
-				this.bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
-			}
-		}
-		//TODO collosus
+		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
+		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
+		this.bonuses = [ ...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items) ]
 
-		this.items.forEach(item => {
-			const variables: BonusVariable[] = []
-			for (const key in item.effects) {
-				variables.push([key, item.effects[key]])
-			}
-			this.bonuses.push([item.id as ItemKey, variables])
-		})
+		this.mana = this.data.stats.initialMana + this.getBonuses('Mana')
+		this.health = this.data.stats.hp * this.starMultiplier + this.getBonuses('Health', 'BonusHealth')
+		this.healthMax = this.health
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -237,10 +207,10 @@ export class ChampionUnit {
 	getBonusFor(sourceKey: TraitKey | ItemKey) {
 		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
 	}
-	getBonuses(variableName: string) {
+	getBonuses(...variableNames: string[]) {
 		return this.bonuses
 			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
-				const value = bonus[1].find(variable => variable[0] === variableName)?.[1]
+				const value = bonus[1].find(variable => variableNames.includes(variable[0]))?.[1]
 				return accumulator + (value ?? 0)
 			}, 0)
 	}
@@ -252,7 +222,7 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		return this.data.stats.damage * this.starMultiplier //TODO items
+		return this.data.stats.damage * this.starMultiplier + this.getBonuses('AD', 'BonusAD', `${this.starLevel}StarBonusAD`)
 	}
 	abilityPowerMultiplier() {
 		return 1 //TODO items, traits
@@ -261,13 +231,13 @@ export class ChampionUnit {
 		return this.data.stats.mana //TODO yordle mutant
 	}
 	armor() {
-		return this.data.stats.armor //TODO items
+		return this.data.stats.armor + this.getBonuses('Armor', 'BonusArmor', `${this.starLevel}StarBonusArmor`)
 	}
 	magicResist() {
-		return this.data.stats.magicResist //TODO items
+		return this.data.stats.magicResist + this.getBonuses('MagicResist', 'BonusMagicResist', `${this.starLevel}StarBonusMagicResist`)
 	}
 	attackSpeed() {
-		return this.data.stats.attackSpeed * this.attackSpeedMultiplier //TODO items
+		return this.data.stats.attackSpeed + this.getBonuses('AttackSpeed', 'BonusAS', `${this.starLevel}StarBonusAS`) //TODO
 	}
 	range() {
 		return this.data.stats.range + this.getBonuses('HexRangeIncrease')

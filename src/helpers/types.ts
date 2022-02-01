@@ -83,3 +83,5 @@ export interface ItemData {
 	name: string
 	unique: boolean
 }
+
+export type BonusVariable = [key: string, value: number | null]
