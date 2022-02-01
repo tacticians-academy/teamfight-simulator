@@ -1,6 +1,8 @@
 import { computed, reactive } from 'vue'
 
 import { items } from '#/data/set6/items'
+import { traits } from '#/data/set6/traits'
+import type { TraitKey } from '#/data/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/unit'
@@ -110,6 +112,18 @@ const store = {
 		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name)) {
 			console.log('Unique item per champion', item.name)
 			return false
+		}
+		if (item.name.endsWith('Emblem')) {
+			const emblemTrait = item.name.replace(' Emblem', '') as TraitKey
+			const trait = traits.find(trait => trait.name === emblemTrait)
+			if (!trait) {
+				console.log('ERR: No trait for emblem', item)
+			} else {
+				if (champion.hasTrait(emblemTrait)) {
+					console.log('Unit already has trait', emblemTrait)
+					return false
+				}
+			}
 		}
 		if (champion.items.length >= 3) {
 			champion.items.shift()
