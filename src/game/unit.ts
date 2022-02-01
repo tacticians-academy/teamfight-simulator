@@ -30,6 +30,7 @@ export class ChampionUnit {
 	healthMax = 0
 	starMultiplier = 1
 	isStarLocked: boolean
+	fixedAS: number | undefined = undefined
 
 	ghosting = false
 	cachedTargetDistance = 0
@@ -73,6 +74,7 @@ export class ChampionUnit {
 		this.mana = this.data.stats.initialMana + this.getBonuses('Mana')
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonuses('HP')
 		this.healthMax = this.health
+		this.fixedAS = this.data.ability.variables.find(v => v.name === 'AttackSpeed')?.value?.[this.starLevel]
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -222,7 +224,14 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		return this.data.stats.damage * this.starMultiplier + this.getBonuses('AD', `${this.starLevel}StarAD`)
+		const ad = this.data.stats.damage * this.starMultiplier + this.getBonuses('AD', `${this.starLevel}StarAD`)
+		if (this.fixedAS != null) {
+			const multiplier = this.data.ability.variables.find(v => v.name === 'ADFromAttackSpeed')?.value?.[this.starLevel]
+			if (multiplier != null) {
+				return ad + this.bonusAttackSpeed() * 100 * multiplier
+			}
+		}
+		return ad
 	}
 	abilityPowerMultiplier() {
 		return 1 //TODO items, traits
@@ -236,11 +245,11 @@ export class ChampionUnit {
 	magicResist() {
 		return this.data.stats.magicResist + this.getBonuses('MR', `${this.starLevel}StarBonusMR`)
 	}
-	attackSpeed() {
-		return this.data.stats.attackSpeed + this.bonusAttackSpeed()
-	}
 	bonusAttackSpeed() {
-		return this.getBonuses('AS') + this.getBonuses('BonusAS', `${this.starLevel}StarBonusAS`) / 100
+		return this.getBonuses('AS', 'BonusAS', `${this.starLevel}StarBonusAS`) / 100
+	}
+	attackSpeed() {
+		return this.fixedAS ?? this.data.stats.attackSpeed + this.bonusAttackSpeed()
 	}
 	range() {
 		return this.data.stats.range + this.getBonuses('HexRangeIncrease')
