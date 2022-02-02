@@ -6,6 +6,7 @@ import path from 'path'
 
 import { BonusKey } from '../src/helpers/types.js'
 import type { ChampionData, ItemData, TraitData } from '../src/helpers/types.js'
+import { ItemKey } from '../src/data/set6/items.js'
 
 const url = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}/cdragon/tft/en_us.json`
 console.log(url)
@@ -231,6 +232,14 @@ traits.forEach((trait: TraitData) => {
 const traitKeysString = `export enum TraitKey {\n\t${traitKeys}\n}`
 
 currentItems.forEach((item: ItemData) => {
+	if (item.id === ItemKey.HandOfJustice) {
+		const invalidKey = 'BonusAD'
+		if (item.effects[invalidKey] != null) {
+			delete item.effects[invalidKey]
+		} else {
+			console.log('Normalize', ItemKey.HandOfJustice, invalidKey, 'missing', item.effects)
+		}
+	}
 	for (const normalize in normalizeKeys) {
 		item.desc = item.desc.replace(normalize, normalizeKeys[normalize])
 	}
