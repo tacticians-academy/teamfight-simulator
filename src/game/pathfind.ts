@@ -63,7 +63,7 @@ export function updatePaths(units: ChampionUnit[]) {
 }
 
 export function getNextHex(unit: ChampionUnit): HexCoord | null {
-	const paths = pathsByTeam[1 - unit.team]
+	const paths = pathsByTeam[unit.opposingTeam()]
 	const [col, row] = unit.currentPosition()
 	const moveTo = paths[col][row]
 	return moveTo?.length ? moveTo : null

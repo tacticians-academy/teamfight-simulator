@@ -8,12 +8,11 @@ export const projectiles = []
 
 export default {
 	Zyra: (elapsedMS, champion) => {
-		const opposingTeam = 1 - champion.team
 		hexEffects.push(new HexEffect(elapsedMS, {
 			activatesAfterMS: -1,
 			source: champion,
-			targetTeam: opposingTeam,
-			hexes: getRowOfMost(opposingTeam),
+			targetTeam: champion.opposingTeam(),
+			hexes: getRowOfMost(champion.opposingTeam()),
 			damage: champion.getAbilityValue('Damage'),
 			damageType: DamageType.magic,
 			stunSeconds: champion.getAbilityValue('StunDuration'),

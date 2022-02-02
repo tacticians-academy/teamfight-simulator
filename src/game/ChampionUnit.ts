@@ -120,6 +120,10 @@ export class ChampionUnit {
 		return false
 	}
 
+	opposingTeam(): TeamNumber {
+		return 1 - this.team as TeamNumber
+	}
+
 	readyToCast() {
 		return !!this.ability && this.mana >= this.manaMax()
 	}

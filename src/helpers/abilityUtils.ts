@@ -1,14 +1,14 @@
 import { state } from '#/game/store'
 
 import { BOARD_COL_COUNT } from '#/helpers/constants'
-import type { HexCoord } from '#/helpers/types'
+import type { HexCoord, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
-function getUnitsOfTeam(team: number | null) {
+function getUnitsOfTeam(team: TeamNumber | null) {
 	return team == null ? state.units : state.units.filter(unit => unit.team === team)
 }
 
-export function getRowOfMost(team: number | null) {
+export function getRowOfMost(team: TeamNumber | null) {
 	const units = getUnitsOfTeam(team)
 	const unitRows = units.map(unit => unit.currentPosition()[1])
 	const unitsPerRow = getArrayValueCounts(unitRows)
