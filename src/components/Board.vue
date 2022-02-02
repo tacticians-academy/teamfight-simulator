@@ -50,7 +50,6 @@ onMounted(() => {
 	<div class="relative">
 		<div ref="hexContainer" class="row-container">
 			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
-				<!-- <div v-if="rowIndex === BOARD_ROW_PER_SIDE_COUNT" class="board-separator" /> -->
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
 					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
@@ -74,7 +73,7 @@ onMounted(() => {
 
 .row {
 	@apply relative  flex;
-	margin-bottom: v-bind(QUARTER_HEX_INSET_UNITS)
+	margin-bottom: v-bind(QUARTER_HEX_INSET_UNITS);
 }
 .row:last-child {
 	margin-bottom: v-bind(HEX_BORDER_UNITS);
@@ -83,11 +82,6 @@ onMounted(() => {
 	left: v-bind(HALF_HEX_UNITS);
 	margin-left: v-bind(HALF_HEX_BORDER_UNITS);
 }
-
-/* .board-separator {
-	@apply absolute -z-10 w-full h-8 bg-gray-400;
-	height: 3vw;
-} */
 
 .hex {
 	@apply bg-gray-200;
