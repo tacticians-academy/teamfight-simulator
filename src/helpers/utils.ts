@@ -1,7 +1,11 @@
 export const TESTING = process.env.NODE_ENV !== 'production'
 
-export function getIconURL(assetPath: string) {
-	return `https://raw.communitydragon.org/latest/game/${assetPath.toLowerCase().slice(0, -3)}png`
+export function getIconURL(deriveAsset: {icon: string | null | undefined}) {
+	if (deriveAsset.icon == null) {
+		console.warn('getIconURL', deriveAsset)
+		return ''
+	}
+	return `https://raw.communitydragon.org/latest/game/${deriveAsset.icon.toLowerCase().slice(0, -3)}png`
 }
 
 export function removeFirstFromArray<T>(array: T[], findFn: (el: T) => boolean) {

@@ -27,7 +27,7 @@ unitGroups[1][1].sort((a, b) => b.cost - a.cost)
 		<div class="flex flex-wrap">
 			<div
 				v-for="unit in group" :key="unit.name"
-				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit.icon)})` }"
+				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit)})` }"
 				:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
 			>
 				<span class="group-hover-visible  break-words w-full">{{ unit.name }}</span>

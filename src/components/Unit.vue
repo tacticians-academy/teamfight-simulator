@@ -32,7 +32,7 @@ function onStar(starLevel: number) {
 	setStarLevel(props.unit, starLevel as StarLevel)
 }
 
-const iconURL = `url(${getIconURL(props.unit.data.icon)})`
+const iconURL = `url(${getIconURL(props.unit.data)})`
 
 function onDrop(event: DragEvent) {
 	const type = getDragType(event)
@@ -74,7 +74,7 @@ function onDrop(event: DragEvent) {
 				class="w-1/3"
 				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
 			>
-				<img :src="getIconURL(item.icon)" :alt="item.name">
+				<img :src="getIconURL(item)" :alt="item.name">
 			</div>
 		</div>
 	</div>

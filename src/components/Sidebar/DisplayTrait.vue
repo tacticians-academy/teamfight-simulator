@@ -11,7 +11,7 @@ const props = defineProps<{
 	units: string[]
 }>()
 
-const iconURL = getIconURL(props.trait.icon)
+const iconURL = getIconURL(props.trait)
 const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
 const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
 
