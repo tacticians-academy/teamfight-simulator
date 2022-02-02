@@ -153,10 +153,10 @@ const stringIDReplacements: Record<string, string> = {
 	'57706a69': 'BurnPercent',
 	'97e52ce8': 'BurnDuration',
 	'2161bfa2': 'GrievousWoundsPercent',
-	'b3b8f644': 'StackingAD', //TODO monitor. unverifable StackingAP
-	'cb9689ca': 'StackingAP', //TODO actual name, monitor. unverifable StackingAD
-	'9396f00d': 'StackCap', //TODO monitor. unverifable BonusResistsAtStackCap
-	'b55019fa': 'BonusResistsAtStackCap', //TODO monitor. unverifable StackCap
+	'b3b8f644': 'StackingAD', //TODO monitor. unverifiable StackingAP
+	'cb9689ca': 'StackingAP', //TODO actual name, monitor. unverifiable StackingAD
+	'9396f00d': 'StackCap', //TODO monitor. unverifiable BonusResistsAtStackCap
+	'b55019fa': 'BonusResistsAtStackCap', //TODO monitor. unverifiable StackCap
 	'276ba2c8': 'MultiplierForDamage',
 	'0034a6ef': 'ShieldHealthPercent',
 	'5deb4eb2': 'APPerInterval',

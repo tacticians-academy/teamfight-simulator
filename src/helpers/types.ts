@@ -56,7 +56,7 @@ export interface ChampionData {
 	traits: string[]
 }
 
-export interface TraitEffectata {
+export interface TraitEffectData {
 	maxUnits: number
 	minUnits: number
 	style: number
@@ -65,14 +65,14 @@ export interface TraitEffectata {
 export interface TraitData {
 	apiName: string
 	desc: string
-	effects: TraitEffectata[]
+	effects: TraitEffectData[]
 	icon: string
 	name: string
 }
 
 export type SynergyCount = Map<TraitData, string[]>
 
-export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectata | undefined, uniqueUnitNames: string[]]
+export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
 
 export interface ItemData {
 	desc: string

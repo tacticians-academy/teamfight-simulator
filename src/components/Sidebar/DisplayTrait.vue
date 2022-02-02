@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 
-import type { TraitData, TraitEffectata } from '#/helpers/types'
+import type { TraitData, TraitEffectData } from '#/helpers/types'
 import { ASSET_PREFIX, getIconURL } from '#/helpers/utils'
 
 const props = defineProps<{
 	trait: TraitData
 	activeStyle: number
-	activeEffect: TraitEffectata | undefined
+	activeEffect: TraitEffectData | undefined
 	units: string[]
 }>()
 
@@ -17,7 +17,7 @@ const iconURL = getIconURL(props.trait)
 const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
 const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
 
-function substitute(text: string, effect: TraitEffectata) {
+function substitute(text: string, effect: TraitEffectData) {
 	return text
 		.replaceAll('@MinUnits@', effect.minUnits.toString())
 		.replaceAll('@MaxUnits@', effect.maxUnits.toString())
@@ -38,7 +38,7 @@ function substitute(text: string, effect: TraitEffectata) {
 		})
 }
 
-function formatRow(text: string, effect: TraitEffectata) {
+function formatRow(text: string, effect: TraitEffectData) {
 	const result = substitute(text, effect)
 	return effect.style === props.activeStyle ? `<b>${result}</b>` : result
 }
