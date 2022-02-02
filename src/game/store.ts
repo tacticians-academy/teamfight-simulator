@@ -169,9 +169,12 @@ const store = {
 		saveUnits()
 		resetUnitsAfterCreatingOrMoving()
 	},
+	addUnit(name: string, position: HexCoord, starLevel: StarLevel) {
+		state.units.push(new ChampionUnit(name, position, starLevel, getters.synergiesByTeam.value))
+	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
 		store.deleteUnit(position)
-		state.units.push(new ChampionUnit(unit.name, position, unit.starLevel, getters.synergiesByTeam.value))
+		this.addUnit(unit.name, position, unit.starLevel)
 		//TODO copy star level, items, etc
 		state.dragUnit = null
 		resetUnitsAfterCreatingOrMoving()
@@ -180,13 +183,13 @@ const store = {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
 			store.deleteUnit(position)
-			state.units.push(new ChampionUnit(unit, position, 1, getters.synergiesByTeam.value))
+			this.addUnit(unit, position, 1)
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
-				existingUnit.reposition(unit.startPosition, false)
+				existingUnit.reposition(unit.startPosition)
 			}
-			unit.reposition(position, false)
+			unit.reposition(position)
 		}
 		state.dragUnit = null
 		resetUnitsAfterCreatingOrMoving()

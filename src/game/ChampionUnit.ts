@@ -51,7 +51,7 @@ export class ChampionUnit {
 		this.starLevel = starLockedLevel ?? starLevel
 		this.ability = abilities[name]
 		this.reset(synergiesByTeam)
-		this.reposition(position, true)
+		this.reposition(position)
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
@@ -198,12 +198,10 @@ export class ChampionUnit {
 		return containsHex(this.currentPosition(), hexes)
 	}
 
-	reposition(position: HexCoord, initial: boolean) {
+	reposition(position: HexCoord) {
 		this.startPosition = position
 		this.team = position[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
-		if (!initial) {
-			window.setTimeout(saveUnits)
-		}
+		window.setTimeout(saveUnits)
 	}
 	currentPosition() {
 		return this.activePosition ?? this.startPosition
