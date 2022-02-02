@@ -2,7 +2,7 @@
 import { computed, defineProps } from 'vue'
 
 import type { TraitData, TraitEffectata } from '#/helpers/types'
-import { getIconURL } from '#/helpers/utils'
+import { ASSET_PREFIX, getIconURL } from '#/helpers/utils'
 
 const props = defineProps<{
 	trait: TraitData
@@ -10,6 +10,8 @@ const props = defineProps<{
 	activeEffect: TraitEffectata | undefined
 	units: string[]
 }>()
+
+const traitTexture = `url(${ASSET_PREFIX}/assets/ux/tft/tft_traits_texture_atlas.png)`
 
 const iconURL = getIconURL(props.trait)
 const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
@@ -86,7 +88,7 @@ const traitDescription = computed(() => {
 .trait-style {
 	width: 48px;
 	height: 54px;
-	background-image: url('https://raw.communitydragon.org/latest/game/assets/ux/tft/tft_traits_texture_atlas.png');
+	background-image: v-bind(traitTexture);
 	background-position: v-bind(styleOffsetX) v-bind(styleOffsetY);
 }
 
