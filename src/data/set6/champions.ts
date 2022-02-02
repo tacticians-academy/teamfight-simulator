@@ -2831,44 +2831,6 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "After @EggTurns@ turns, this egg will hatch into tons of loot!",
-			"icon": "ASSETS/Characters/TFT6_TheGoldenEgg/HUD/TFT6_TheGoldenEgg_Square.TFT_Set6_Stage2.dds",
-			"name": "Hatching",
-			"variables": [
-				{
-					"name": "EggTurns",
-					"value": [
-						7,
-						7,
-						7,
-						7,
-						7,
-						7,
-						7
-					]
-				}
-			]
-		},
-		"apiName": "TFT6_TheGoldenEgg",
-		"cost": 8,
-		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_TheGoldenEgg.TFT_Set6_Stage2.dds",
-		"name": "The Golden Egg",
-		"stats": {
-			"armor": 10,
-			"attackSpeed": 1,
-			"critChance": null,
-			"critMultiplier": 0,
-			"damage": null,
-			"hp": 10,
-			"initialMana": 0,
-			"magicResist": 10,
-			"mana": 100,
-			"range": 0
-		},
-		"traits": []
-	},
-	{
-		"ability": {
 			"desc": "Nocturne terrifies his target, stunning them with fear for @StunDuration@ seconds and dealing @ModifiedDamage@ magic damage over the duration.",
 			"icon": "ASSETS/Characters/Nocturne/HUD/Icons2D/Nocturne_UnspeakableHorror.dds",
 			"name": "Unspeakable Horror",

@@ -49,7 +49,7 @@ const currentItems = (itemData as ItemData[]).reverse().filter(item => {
 
 const outputFolder = `src/data/set${currentSetNumber}/`
 
-const unplayableNames = ['TFT5_EmblemArmoryKey', 'TFT6_MercenaryChest']
+const unplayableNames = ['TFT5_EmblemArmoryKey', 'TFT6_MercenaryChest', 'TFT6_TheGoldenEgg']
 const playableChampions = (champions as ChampionData[])
 	.filter(champion => {
 		if (unplayableNames.includes(champion.apiName)) {
