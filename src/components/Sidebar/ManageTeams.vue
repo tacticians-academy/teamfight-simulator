@@ -17,12 +17,24 @@ function onToggle(name: SectionName) {
 <template>
 <div>
 	<div class="flex justify-around flex-grow">
-		<button @click="onToggle('units')">Units</button>
-		<button @click="onToggle('items')">Items</button>
-		<button @click="onToggle('players')">Players</button>
+		<button :class="{ 'bg-gray-300': showSection === 'units' }" @click="onToggle('units')">
+			Units
+		</button>
+		<button :class="{ 'bg-gray-300': showSection === 'items' }" @click="onToggle('items')">
+			Items
+		</button>
+		<button :class="{ 'bg-gray-300': showSection === 'players' }" @click="onToggle('players')">
+			Players
+		</button>
 	</div>
 	<SelectUnits v-if="showSection === 'units'" />
 	<SelectItems v-else-if="showSection === 'items'" />
 	<SelectPlayers v-else-if="showSection === 'players'" />
 </div>
 </template>
+
+<style scoped lang="postcss">
+button {
+	@apply m-px flex-grow rounded-full;
+}
+</style>
