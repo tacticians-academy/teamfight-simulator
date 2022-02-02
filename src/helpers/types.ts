@@ -23,7 +23,14 @@ export const enum DamageType {
 }
 
 export const enum BonusKey {
-	HexRangeIncrease = 'HexRangeIncrease'
+	Armor = 'Armor',
+	AttackDamage = 'AD',
+	AttackSpeed = 'AS',
+	AbilityPower = 'AP',
+	HexRangeIncrease = 'HexRangeIncrease',
+	Health = 'HP',
+	MagicResist = 'MR',
+	Mana = 'Mana'
 }
 
 export interface ChampionAbilityVariable {

@@ -590,14 +590,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Twinshot",
-		"desc": "Twinshots gain bonus Attack Damage. When a Twinshot attacks, they have a chance to attack twice instead.<br><br><expandRow>(@MinUnits@) @AD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
+		"desc": "Twinshots gain bonus Attack Damage. When a Twinshot attacks, they have a chance to attack twice instead.<br><br><expandRow>(@MinUnits@) @BonusAD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"AD": 5,
+					"BonusAD": 5,
 					"ProcChance": 40
 				}
 			},
@@ -606,7 +606,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"AD": 40,
+					"BonusAD": 40,
 					"ProcChance": 70
 				}
 			},
@@ -615,7 +615,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"AD": 80,
+					"BonusAD": 80,
 					"ProcChance": 100
 				}
 			}
@@ -646,7 +646,7 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"HP": 125
+					"BonusHP": 125
 				}
 			},
 			{
@@ -654,7 +654,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"HP": 225
+					"BonusHP": 225
 				}
 			},
 			{
@@ -662,7 +662,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"HP": 400
+					"BonusHP": 400
 				}
 			},
 			{
@@ -670,7 +670,7 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"HP": 700
+					"BonusHP": 700
 				}
 			}
 		],
@@ -714,7 +714,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Colossus",
-		"desc": "Innate: Colossi are bigger and more powerful. They gain @HPTooltip@ bonus Health and immunity to crowd control effects. However, each Colossus requires 2 team slots.<br><row>(@MinUnits@) Colossus champions take @DamageReduction*100@% less damage</row>",
+		"desc": "Innate: Colossi are bigger and more powerful. They gain @BonusHPTooltip@ bonus Health and immunity to crowd control effects. However, each Colossus requires 2 team slots.<br><row>(@MinUnits@) Colossus champions take @DamageReduction*100@% less damage</row>",
 		"effects": [
 			{
 				"maxUnits": 25000,
@@ -723,7 +723,7 @@ export const traits: TraitData[] = [
 				"variables": {
 					"DamageReduction": 0.25,
 					"Colossus/Mutant/Socialite": 2,
-					"HPTooltip": 800
+					"BonusHPTooltip": 800
 				}
 			}
 		],
@@ -846,14 +846,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Striker",
-		"desc": "Strikers gain bonus Attack Damage.<br><expandRow>(@MinUnits@) +@AD@ Attack Damage</expandRow>",
+		"desc": "Strikers gain bonus Attack Damage.<br><expandRow>(@MinUnits@) +@BonusAD@ Attack Damage</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"AD": 40
+					"BonusAD": 40
 				}
 			},
 			{
@@ -861,7 +861,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"AD": 75
+					"BonusAD": 75
 				}
 			},
 			{
@@ -869,7 +869,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"AD": 110
+					"BonusAD": 110
 				}
 			}
 		],

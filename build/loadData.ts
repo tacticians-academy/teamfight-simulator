@@ -4,7 +4,8 @@ import fetch from 'node-fetch'
 import fs from 'fs/promises'
 import path from 'path'
 
-import type { ChampionData, ItemData, TraitData } from '../src/helpers/types'
+import { BonusKey } from '../src/helpers/types.js'
+import type { ChampionData, ItemData, TraitData } from '../src/helpers/types.js'
 
 const url = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}/cdragon/tft/en_us.json`
 console.log(url)
@@ -62,20 +63,18 @@ const playableChampions = (champions as ChampionData[])
 		return true
 	})
 
-const normalizeKeys: Record<string, string> = {
-	AbilityPower: 'AP',
-	SP: 'AP',
-	BaseAP: 'AP',
-	BonusAP: 'AP',
-	AttackDamage: 'AD',
-	BaseAD: 'AD',
-	BonusAD: 'AD',
-	ADBoost: 'AD',
-	AttackSpeed: 'AS',
-	Health: 'HP',
-	BonusHP: 'HP',
-	BonusArmor: 'Armor',
-	MagicResist: 'MR',
+const normalizeKeys: Record<string, BonusKey> = {
+	AbilityPower: BonusKey.AbilityPower,
+	SP: BonusKey.AbilityPower,
+	BaseAP: BonusKey.AbilityPower,
+	AttackDamage: BonusKey.AttackDamage,
+	BaseAD: BonusKey.AttackDamage,
+	ADBoost: `Bonus${BonusKey.AttackDamage}` as BonusKey,
+	AttackSpeed: BonusKey.AttackSpeed,
+	Health: BonusKey.Health,
+	BonusArmor: BonusKey.Armor,
+	MagicResist: BonusKey.MagicResist,
+	// BonusMR: BonusKey.MagicResist,
 }
 
 const stringIDReplacements: Record<string, string> = {
@@ -106,9 +105,9 @@ const stringIDReplacements: Record<string, string> = {
 	'9f2eb1e2': 'CritChanceAmpPercent',
 	'5cc08b27': 'NumComponents',
 	'94c6a08c': 'HPShieldAmount',
-	'47343861': 'MR',
+	'47343861': 'MagicResist',
 	'98396b21': 'HealShieldBoost',
-	'16394c87': 'HexRangeIncrease',
+	'16394c87': BonusKey.HexRangeIncrease,
 	'75994f47': 'PercentDamageIncrease',
 	'17cfa971': 'BurstDuration',
 	'867bc055': 'SyndicateIncrease',

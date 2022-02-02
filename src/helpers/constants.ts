@@ -1,3 +1,4 @@
+import { BonusKey } from '#/helpers/types'
 import type { StarLevel } from '#/helpers/types'
 
 export const HEX_MOVE_UNITS = 210 //TODO figure out what this actually is
@@ -20,6 +21,7 @@ export const HEX_UNITS = `${HEX_SIZE_PROPORTION}vw`
 export const HALF_HEX_BORDER_UNITS = `${HEX_BORDER_PROPORTION / 2}vw`
 export const HALF_HEX_UNITS = `${HEX_SIZE_PROPORTION / 2}vw`
 export const QUARTER_HEX_INSET_UNITS = `-${HEX_SIZE_PROPORTION / 4}vw`
+export const HEX_GAP_BETWEEN_SIDE_EDGES_UNITS = `${HEX_SIZE_PROPORTION / 4 + HEX_BORDER_PROPORTION}vw`
 
 export const LOCKED_STAR_LEVEL_BY_UNIT_API_NAME: Record<string, StarLevel> = {
 	TFT6_MalzaharVoidling: 1,
@@ -27,10 +29,10 @@ export const LOCKED_STAR_LEVEL_BY_UNIT_API_NAME: Record<string, StarLevel> = {
 	TFT6_HexTechDragon: 3,
 }
 
-export const TEAM_EFFECT_TRAITS: Record<string, boolean | number | string[]> = {
+export const TEAM_EFFECT_TRAITS: Record<string, boolean | number | BonusKey[]> = {
 	Set6_Arcanist: false,
 	Set6_Bruiser: 2,
 	Set6_Clockwork: true,
-	Set6_Enchanter: ['MR'],
+	Set6_Enchanter: [BonusKey.MagicResist],
 	Set6_Scholar: true,
 }

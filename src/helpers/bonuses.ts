@@ -42,7 +42,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 						}
 						key = key.replace('Team', '')
 					} else if (typeof teamEffect === 'object') {
-						if (!teamEffect.includes(key)) {
+						if (!teamEffect.includes(key as BonusKey)) {
 							continue
 						}
 					}
@@ -56,9 +56,9 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 	// Innate bonuses (not handled in data)
 	const colossusEffect = getInnateEffectForUnitWith(TraitKey.Colossus, unitTraitNames, teamSynergies)
 	if (colossusEffect) {
-		const value = colossusEffect.variables['HPTooltip']
+		const value = colossusEffect.variables[`${BonusKey.Health}Tooltip`]
 		if (value != null) {
-			bonuses.push([TraitKey.Colossus, [['HP', value]]])
+			bonuses.push([TraitKey.Colossus, [[BonusKey.Health, value]]])
 		} else {
 			console.log('Missing Colossus HP bonus', colossusEffect)
 		}

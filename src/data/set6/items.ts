@@ -106,15 +106,15 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "The holder gains %i:scaleAD% @Tooltip1StarAD@/@Tooltip2StarBonusAD@/@Tooltip3StarBonusAD@ %i:star% bonus Attack Damage (including components).",
+		"desc": "The holder gains %i:scaleAD% @Tooltip1StarBonusAD@/@Tooltip2StarBonusAD@/@Tooltip3StarBonusAD@ %i:star% bonus Attack Damage (including components).",
 		"effects": {
 			"AD": 20,
 			"3StarAD": 80,
 			"2StarAD": 55,
-			"Tooltip1StarAD": 50,
-			"Tooltip2StarAD": 75,
+			"Tooltip1StarBonusAD": 50,
+			"Tooltip2StarBonusAD": 75,
 			"4StarAD": 125,
-			"Tooltip3StarAD": 100,
+			"Tooltip3StarBonusAD": 100,
 			"1StarAD": 30
 		},
 		"from": [
@@ -510,12 +510,12 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamageAmp@% bonus Critical Strike Damage and %i:scaleAP% @TooltipAP@ bonus Ability Power.",
+		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamageAmp@% bonus Critical Strike Damage and %i:scaleAP% @TooltipBonusAP@ bonus Ability Power.",
 		"effects": {
 			"AP": 20,
 			"CritChance": 15,
 			"CritDamageAmp": 30,
-			"TooltipAP": 10
+			"TooltipBonusAP": 10
 		},
 		"from": [
 			3,
@@ -561,14 +561,14 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "When combat begins, the holder and all allies within @HexRange@ hex in the same row gain %i:scaleAP% @AP@ Ability Power for the rest of combat.",
+		"desc": "When combat begins, the holder and all allies within @HexRange@ hex in the same row gain %i:scaleAP% @BonusAP@ Ability Power for the rest of combat.",
 		"effects": {
 			"MR": 20,
 			"Mana": 15,
 			"ManaRestore": 10,
 			"HexRange": 1,
 			"UNUSED_APTimer": 20,
-			"AP": 30
+			"BonusAP": 30
 		},
 		"from": [
 			6,

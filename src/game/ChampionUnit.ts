@@ -11,7 +11,7 @@ import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFr
 import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { DamageType } from '#/helpers/types'
+import { BonusKey, DamageType } from '#/helpers/types'
 import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 
 export class ChampionUnit {
@@ -68,10 +68,10 @@ export class ChampionUnit {
 
 		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
-		this.bonuses = [ ...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items) ]
+		this.bonuses = [...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items)]
 
-		this.mana = this.data.stats.initialMana + this.getBonuses('Mana')
-		this.health = this.data.stats.hp * this.starMultiplier + this.getBonuses('HP')
+		this.mana = this.data.stats.initialMana + this.getBonuses(BonusKey.Mana)
+		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.data.ability.variables.find(v => v.name === 'AttackSpeed')?.value?.[this.starLevel]
 	}
@@ -214,13 +214,17 @@ export class ChampionUnit {
 	getBonusFor(sourceKey: TraitKey | ItemKey) {
 		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
 	}
-	getBonuses(...variableNames: string[]) {
+	getBonusVariants(bonus: BonusKey) {
+		return this.getBonuses(bonus, `Bonus${bonus}` as BonusKey, `${this.starLevel}Star${bonus}` as BonusKey)
+	}
+	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
 			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
-				const value = bonus[1].find(variable => variableNames.includes(variable[0]))?.[1]
+				const value = bonus[1].find(variable => variableNames.includes(variable[0] as BonusKey))?.[1]
 				return accumulator + (value ?? 0)
 			}, 0)
 	}
+
 	hasTrait(name: TraitKey) {
 		return !!this.traits.find(trait => trait.name === name)
 	}
@@ -229,7 +233,7 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		const ad = this.data.stats.damage * this.starMultiplier + this.getBonuses('AD', `${this.starLevel}StarAD`)
+		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
 		if (this.fixedAS != null) {
 			const multiplier = this.data.ability.variables.find(v => v.name === 'ADFromAttackSpeed')?.value?.[this.starLevel]
 			if (multiplier != null) {
@@ -239,25 +243,25 @@ export class ChampionUnit {
 		return ad
 	}
 	abilityPowerMultiplier() {
-		return (100 + this.getBonuses('AP')) / 100
+		return (100 + this.getBonusVariants(BonusKey.AbilityPower)) / 100
 	}
 	manaMax() {
 		return this.data.stats.mana //TODO yordle mutant
 	}
 	armor() {
-		return this.data.stats.armor + this.getBonuses('Armor', `${this.starLevel}StarArmor`)
+		return this.data.stats.armor + this.getBonusVariants(BonusKey.Armor)
 	}
 	magicResist() {
-		return this.data.stats.magicResist + this.getBonuses('MR', `${this.starLevel}StarBonusMR`)
+		return this.data.stats.magicResist + this.getBonusVariants(BonusKey.MagicResist)
 	}
 	bonusAttackSpeed() {
-		return this.getBonuses('AS', 'BonusAS', `${this.starLevel}StarBonusAS`) / 100
+		return this.getBonusVariants(BonusKey.AttackSpeed) / 100
 	}
 	attackSpeed() {
 		return this.fixedAS ?? this.data.stats.attackSpeed + this.bonusAttackSpeed()
 	}
 	range() {
-		return this.data.stats.range + this.getBonuses('HexRangeIncrease')
+		return this.data.stats.range + this.getBonuses(BonusKey.HexRangeIncrease)
 	}
 	moveSpeed() {
 		return 550 //TODO featherweights
