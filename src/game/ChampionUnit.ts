@@ -220,8 +220,8 @@ export class ChampionUnit {
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
 			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
-				const value = bonus[1].find(variable => variableNames.includes(variable[0] as BonusKey))?.[1]
-				return accumulator + (value ?? 0)
+				const variables = bonus[1].filter(variable => variableNames.includes(variable[0] as BonusKey))
+				return accumulator + variables.reduce((total, v) => total + (v[1] ?? 0), 0)
 			}, 0)
 	}
 
