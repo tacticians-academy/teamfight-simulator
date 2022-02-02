@@ -56,7 +56,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 	// Innate bonuses (not handled in data)
 	const colossusEffect = getInnateEffectForUnitWith(TraitKey.Colossus, unitTraitNames, teamSynergies)
 	if (colossusEffect) {
-		const value = colossusEffect.variables[`${BonusKey.Health}Tooltip`]
+		const value = colossusEffect.variables[`Bonus${BonusKey.Health}Tooltip`]
 		if (value != null) {
 			bonuses.push([TraitKey.Colossus, [[BonusKey.Health, value]]])
 		} else {

@@ -96,11 +96,11 @@ function onInfo(event: Event) {
 		</button>
 	</div>
 	<div v-if="showInfo" class="p-1 bg-gray-100">
-		AR: {{ unit.armor() }}
-		MR: {{ unit.magicResist() }}
-		AS: {{ unit.attackSpeed().toFixed(2) }}
-		AD: {{ unit.attackDamage() }}
-		AP: {{ unit.abilityPowerMultiplier() * 100 }}
+		AR:&nbsp;{{ unit.armor() }}
+		MR:&nbsp;{{ unit.magicResist() }}
+		AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
+		AD:&nbsp;{{ unit.attackDamage() }}
+		AP:&nbsp;{{ unit.abilityPowerMultiplier() * 100 }}
 	</div>
 </div>
 </template>
