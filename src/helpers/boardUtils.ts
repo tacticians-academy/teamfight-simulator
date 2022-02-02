@@ -1,4 +1,4 @@
-import type { ChampionUnit } from '#/game/unit'
+import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
 import type { HexCoord, TeamNumber } from '#/helpers/types'

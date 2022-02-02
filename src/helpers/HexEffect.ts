@@ -1,4 +1,4 @@
-import type { ChampionUnit } from '#/game/unit'
+import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { DamageType, HexCoord } from '#/helpers/types'
 
 const DEFAULT_CAST_MS = 500

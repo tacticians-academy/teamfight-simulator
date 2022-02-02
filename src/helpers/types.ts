@@ -1,4 +1,4 @@
-import type { ChampionUnit } from '#/game/unit'
+import type { ChampionUnit } from '#/game/ChampionUnit'
 
 export type HexCoord = [col: number, row: number]
 

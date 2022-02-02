@@ -5,7 +5,7 @@ import { traits } from '#/data/set6/traits'
 import type { TraitKey } from '#/data/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
-import { ChampionUnit } from '#/game/unit'
+import { ChampionUnit } from '#/game/ChampionUnit'
 
 import { buildBoard } from '#/helpers/boardUtils'
 import { removeFirstFromArray } from '#/helpers/utils'

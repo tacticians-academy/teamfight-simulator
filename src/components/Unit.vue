@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps, ref } from 'vue'
 
-import type { ChampionUnit } from '#/game/unit'
+import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
 import type { DraggableType } from '#/game/dragDrop'
 import { useStore } from '#/game/store'

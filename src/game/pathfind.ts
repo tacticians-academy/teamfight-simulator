@@ -1,4 +1,4 @@
-import type { ChampionUnit } from '#/game/unit'
+import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { buildBoard, containsHex, getSurrounding, isSameHex } from '#/helpers/boardUtils'
 import type { HexCoord } from '#/helpers/types'
