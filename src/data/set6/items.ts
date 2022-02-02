@@ -1,7 +1,7 @@
 import type { ItemData } from '#/helpers/types'
 
 export enum ItemKey {
-	BFSword = 1, RecurveBow = 2, NeedlesslyLargeRod = 3, TearOfTheGoddess = 4, ChainVest = 5, NegatronCloak = 6, GiantsBelt = 7, Spatula = 8, SparringGloves = 9, Deathblade = 11, GiantSlayer = 12, HextechGunblade = 13, SpearOfShojin = 14, GuardianAngel = 15, Bloodthirster = 16, ZekesHerald = 17, ImperialEmblem = 18, InfinityEdge = 19, RapidFirecannon = 22, GuinsoosRageblade = 23, StatikkShiv = 24, TitansResolve = 25, RunaansHurricane = 26, ZzRotPortal = 27, ChallengerEmblem = 28, LastWhisper = 29, RabadonsDeathcap = 33, ArchangelsStaff = 34, LocketOfTheIronSolari = 35, IonicSpark = 36, Morellonomicon = 37, ArcanistEmblem = 38, JeweledGauntlet = 39, BlueBuff = 44, FrozenHeart = 45, ChaliceOfPower = 46, Redemption = 47, AcademyEmblem = 48, HandOfJustice = 49, BrambleVest = 55, GargoyleStoneplate = 56, SunfireCape = 57, BodyguardEmblem = 58, ShroudOfStillness = 59, DragonsClaw = 66, Zephyr = 67, SyndicateEmblem = 68, Quicksilver = 69, WarmogsArmor = 77, ChemtechEmblem = 78, BansheesClaw = 79, AssassinEmblem = 89, ThiefsGloves = 99, MutantEmblem = 2190, ClockworkEmblem = 2191, MercenaryEmblem = 2192, SocialiteEmblem = 2193, EnforcerEmblem = 2194, ScrapEmblem = 2195, ProtectorEmblem = 2196, BruiserEmblem = 2197, InnovatorEmblem = 2198, SniperEmblem = 2199, ScholarEmblem = 2200
+	BFSword = 1, RecurveBow = 2, NeedlesslyLargeRod = 3, TearOfTheGoddess = 4, ChainVest = 5, NegatronCloak = 6, GiantsBelt = 7, Spatula = 8, SparringGloves = 9, Deathblade = 11, GiantSlayer = 12, HextechGunblade = 13, SpearOfShojin = 14, EdgeOfNight = 15, Bloodthirster = 16, ZekesHerald = 17, ImperialEmblem = 18, InfinityEdge = 19, RapidFirecannon = 22, GuinsoosRageblade = 23, StatikkShiv = 24, TitansResolve = 25, RunaansHurricane = 26, ZzRotPortal = 27, ChallengerEmblem = 28, LastWhisper = 29, RabadonsDeathcap = 33, ArchangelsStaff = 34, LocketOfTheIronSolari = 35, IonicSpark = 36, Morellonomicon = 37, ArcanistEmblem = 38, JeweledGauntlet = 39, BlueBuff = 44, FrozenHeart = 45, ChaliceOfPower = 46, Redemption = 47, AcademyEmblem = 48, HandOfJustice = 49, BrambleVest = 55, GargoyleStoneplate = 56, SunfireCape = 57, BodyguardEmblem = 58, ShroudOfStillness = 59, DragonsClaw = 66, Zephyr = 67, SyndicateEmblem = 68, Quicksilver = 69, DebonairEmblem = 70, StrikerEmblem = 71, HextechEmblem = 72, WarmogsArmor = 77, ChemtechEmblem = 78, BansheesClaw = 79, AssassinEmblem = 89, ThiefsGloves = 99, MutantEmblem = 2190, ClockworkEmblem = 2191, MercenaryEmblem = 2192, SocialiteEmblem = 2193, EnforcerEmblem = 2194, ScrapEmblem = 2195, ProtectorEmblem = 2196, BruiserEmblem = 2197, InnovatorEmblem = 2198, SniperEmblem = 2199, ScholarEmblem = 2200
 }
 
 export const items: ItemData[] = [
@@ -178,20 +178,22 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "Prevents the holder's first death, placing them in stasis instead. After @StasisDuration@ seconds, they return with @HPRestore@ Health and shed all negative effects.<br><br><tftitemrules>[Unique - Only One Per Champion]</tftitemrules>",
+		"desc": "When the holder first drops below @HPThreshold@% health, they briefly enter stealth, becoming untargetable and shedding negative effects. After coming out of stealth, the holder gains an additional %i:scaleAS% @AS@% bonus Attack Speed.<br><br><tftitemrules>[Unique - only one per champion]</tftitemrules>",
 		"effects": {
 			"AD": 10,
 			"Armor": 20,
-			"HPRestore": 400,
-			"StasisDuration": 2
+			"AS": 30,
+			"DamageReduction": 80,
+			"HPThreshold": 50,
+			"{b1442c34}": 1
 		},
 		"from": [
 			1,
 			5
 		],
-		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Guardian_Angel.dds",
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard_New/Edge_Of_Night.dds",
 		"id": 15,
-		"name": "Guardian Angel",
+		"name": "Edge of Night",
 		"unique": true
 	},
 	{
@@ -264,9 +266,9 @@ export const items: ItemData[] = [
 	{
 		"desc": "Increases the holder's Attack Range by @HexRangeIncrease@ hex and grants %i:scaleAS% @TooltipBonusAS@% bonus Attack Speed (including components). The holder's attacks can no longer miss.",
 		"effects": {
-			"AS": 60,
+			"AS": 55,
 			"HexRangeIncrease": 1,
-			"TooltipBonusAS": 60,
+			"TooltipBonusAS": 55,
 			"AttackAccuracy": 100
 		},
 		"from": [
@@ -343,7 +345,7 @@ export const items: ItemData[] = [
 			"AS": 10,
 			"AdditionalTargets": 1,
 			"MR": 20,
-			"MultiplierForDamage": 75
+			"MultiplierForDamage": 70
 		},
 		"from": [
 			6,
@@ -634,13 +636,14 @@ export const items: ItemData[] = [
 		"unique": false
 	},
 	{
-		"desc": "Grants %i:scaleArmor% @Armor@ bonus Armor (including components). Negates bonus damage from incoming critical strikes. On being hit by an attack, deal @1StarAoEDamage@/@2StarAoEDamage@/@3StarAoEDamage@ %i:star% magic damage to all nearby enemies (once every @ICD@ seconds).",
+		"desc": "Grants %i:scaleArmor% @Armor@ bonus Armor (including components). Negates @CritReduction@% bonus damage from incoming critical strikes. On being hit by an attack, deal @1StarAoEDamage@/@2StarAoEDamage@/@3StarAoEDamage@ %i:star% magic damage to all nearby enemies (once every @ICD@ seconds).",
 		"effects": {
 			"Armor": 70,
 			"ICD": 2.5,
 			"3StarAoEDamage": 120,
 			"1StarAoEDamage": 60,
 			"CritDamageBlock": 100,
+			"{79a4455a}": 100,
 			"2StarAoEDamage": 80,
 			"4StarAoEDamage": 200
 		},
@@ -755,12 +758,9 @@ export const items: ItemData[] = [
 	{
 		"desc": "The holder gains the Syndicate trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
 		"effects": {
-			"Armor": 20
+			"HP": 150
 		},
-		"from": [
-			5,
-			8
-		],
+		"from": [],
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Syndicate.TFT_Set6.dds",
 		"id": 68,
 		"name": "Syndicate Emblem",
@@ -781,6 +781,48 @@ export const items: ItemData[] = [
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard/Quicksilver.dds",
 		"id": 69,
 		"name": "Quicksilver",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Debonair trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"Armor": 20
+		},
+		"from": [
+			5,
+			8
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Debonair.TFT_Set6_Stage2.dds",
+		"id": 70,
+		"name": "Debonair Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Striker trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"AD": 10
+		},
+		"from": [
+			8,
+			1
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Striker.TFT_Set6_Stage2.dds",
+		"id": 71,
+		"name": "Striker Emblem",
+		"unique": true
+	},
+	{
+		"desc": "The holder gains the Hextech trait.<br><br><tftitemrules>[Unique - only 1 per champion]</tftitemrules>",
+		"effects": {
+			"Mana": 15
+		},
+		"from": [
+			8,
+			4
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Hextech.TFT_Set6_Stage2.dds",
+		"id": 72,
+		"name": "Hextech Emblem",
 		"unique": true
 	},
 	{

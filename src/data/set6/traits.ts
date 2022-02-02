@@ -1,10 +1,29 @@
 import type { TraitData } from '#/helpers/types'
 
 export enum TraitKey {
-	Academy = 'Academy', Arcanist = 'Arcanist', Assassin = 'Assassin', Bodyguard = 'Bodyguard', Bruiser = 'Bruiser', Challenger = 'Challenger', Chemtech = 'Chemtech', Clockwork = 'Clockwork', Colossus = 'Colossus', Cuddly = 'Cuddly', Enchanter = 'Enchanter', Enforcer = 'Enforcer', Glutton = 'Glutton', Imperial = 'Imperial', Innovator = 'Innovator', Mercenary = 'Mercenary', Mutant = 'Mutant', Protector = 'Protector', Scholar = 'Scholar', Scrap = 'Scrap', Sister = 'Sister', Sniper = 'Sniper', Socialite = 'Socialite', Syndicate = 'Syndicate', Transformer = 'Transformer', Twinshot = 'Twinshot', Yordle = 'Yordle', YordleLord = 'YordleLord'
+	Arcanist = 'Arcanist', Assassin = 'Assassin', Bodyguard = 'Bodyguard', Bruiser = 'Bruiser', Challenger = 'Challenger', Chemtech = 'Chemtech', Clockwork = 'Clockwork', Colossus = 'Colossus', Debonair = 'Debonair', Enchanter = 'Enchanter', Enforcer = 'Enforcer', Glutton = 'Glutton', Hextech = 'Hextech', Innovator = 'Innovator', Mastermind = 'Mastermind', Mercenary = 'Mercenary', Mutant = 'Mutant', Rivals = 'Rivals', Scholar = 'Scholar', Scrap = 'Scrap', Sniper = 'Sniper', Socialite = 'Socialite', Striker = 'Striker', Syndicate = 'Syndicate', Transformer = 'Transformer', Twinshot = 'Twinshot', Yordle = 'Yordle', YordleLord = 'YordleLord'
 }
 
 export const traits: TraitData[] = [
+	{
+		"apiName": "Set6_Rivals",
+		"desc": "This trait is only active when you have exactly 1 unique Rival unit, as Rivals refuse to work together.<br><br>Vi's mana cost is reduced by @ViManaReduction@.<br><br>Jinx gains @JinxEmpoweredAS*100@% Attack Speed for @JinxASDuration@ seconds after scoring a takedown.",
+		"effects": [
+			{
+				"maxUnits": 1,
+				"minUnits": 1,
+				"style": 3,
+				"variables": {
+					"JinxASDuration": 3,
+					"{3b173c39}": 4,
+					"JinxEmpoweredAS": 0.4000000059604645,
+					"{a859d7b0}": 20
+				}
+			}
+		],
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Rivals.tex",
+		"name": "Rival"
+	},
 	{
 		"apiName": "Set6_Syndicate",
 		"desc": "Certain allies are cloaked in shadows, gaining @Armor@ Armor, @MR@ Magic Resist and @PercentOmnivamp@% Omnivamp (healing for a percentage of all damage dealt.)<br><br><row>(@MinUnits@) The Syndicate champion with the lowest percent HP</row><br><row>(@MinUnits@) All Syndicate champions</row><br><row>(@MinUnits@) Your whole team, and the effects are increased by @SyndicateIncrease*100@%</row><br>",
@@ -44,26 +63,8 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Syndicate.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Syndicate.tex",
 		"name": "Syndicate"
-	},
-	{
-		"apiName": "Set6_Sister",
-		"desc": "(@MinUnits@) Sisters gain empowered skills to compete with each other. <br>Vi's Ability range increases by 2 hexes.<br><br>Jinx gains @JinxEmpoweredAS*100@% Attack Speed for @JinxASDuration@ seconds after scoring a takedown.",
-		"effects": [
-			{
-				"maxUnits": 25000,
-				"minUnits": 2,
-				"style": 3,
-				"variables": {
-					"JinxASDuration": 3,
-					"{3b173c39}": 4,
-					"JinxEmpoweredAS": 0.4000000059604645
-				}
-			}
-		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Sisters.dds",
-		"name": "Sister"
 	},
 	{
 		"apiName": "Set6_Yordle",
@@ -86,96 +87,8 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Yordle.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Yordle.tex",
 		"name": "Yordle"
-	},
-	{
-		"apiName": "Set6_Academy",
-		"desc": "Academics have bonus Attack Damage and Ability Power. They also learn from their allies, gaining an additional bonus whenever an ally casts their Ability.<br><br><expandRow>(@MinUnits@) @ADAPBase@ Attack Damage and Ability Power; @ADAPPerCast@ from allies' casts</expandRow>",
-		"effects": [
-			{
-				"maxUnits": 3,
-				"minUnits": 2,
-				"style": 1,
-				"variables": {
-					"ADAPBase": 18,
-					"ADAPPerCast": 3
-				}
-			},
-			{
-				"maxUnits": 5,
-				"minUnits": 4,
-				"style": 2,
-				"variables": {
-					"ADAPBase": 40,
-					"ADAPPerCast": 5
-				}
-			},
-			{
-				"maxUnits": 7,
-				"minUnits": 6,
-				"style": 3,
-				"variables": {
-					"ADAPBase": 50,
-					"ADAPPerCast": 10
-				}
-			},
-			{
-				"maxUnits": 25000,
-				"minUnits": 8,
-				"style": 4,
-				"variables": {
-					"ADAPBase": 70,
-					"ADAPPerCast": 15
-				}
-			}
-		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Academy.dds",
-		"name": "Academy "
-	},
-	{
-		"apiName": "Set6_Protector",
-		"desc": "Protectors shield themselves for @Duration@ seconds whenever they cast an Ability. This shield doesn't stack.<br><br><expandRow> (@MinUnits@) @ShieldPercent@% maximum HP shield</expandRow>",
-		"effects": [
-			{
-				"maxUnits": 2,
-				"minUnits": 2,
-				"style": 1,
-				"variables": {
-					"Duration": 4,
-					"ShieldPercent": 20
-				}
-			},
-			{
-				"maxUnits": 3,
-				"minUnits": 3,
-				"style": 2,
-				"variables": {
-					"Duration": 4,
-					"ShieldPercent": 35
-				}
-			},
-			{
-				"maxUnits": 4,
-				"minUnits": 4,
-				"style": 3,
-				"variables": {
-					"Duration": 4,
-					"ShieldPercent": 45
-				}
-			},
-			{
-				"maxUnits": 25000,
-				"minUnits": 5,
-				"style": 4,
-				"variables": {
-					"Duration": 4,
-					"ShieldPercent": 60
-				}
-			}
-		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_3_Protector.dds",
-		"name": "Protector"
 	},
 	{
 		"apiName": "Set6_Scrap",
@@ -209,7 +122,7 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Scrap.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Scrap.tex",
 		"name": "Scrap"
 	},
 	{
@@ -230,7 +143,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"BonusAS": 55,
+					"BonusAS": 60,
 					"BurstDuration": 2.5
 				}
 			},
@@ -239,7 +152,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"BonusAS": 80,
+					"BonusAS": 90,
 					"BurstDuration": 2.5
 				}
 			},
@@ -248,17 +161,17 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"BonusAS": 130,
+					"BonusAS": 150,
 					"BurstDuration": 2.5
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Challenger.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Challenger.tex",
 		"name": "Challenger"
 	},
 	{
 		"apiName": "Set6_Enchanter",
-		"desc": "Your team has bonus Magic Resist. Enchanters gain bonus healing and shielding.<br><expandRow>(@MinUnits@) +@MRance@ Magic Resist; @HealShieldBoost*100@% healing and shielding</expandRow><br>",
+		"desc": "Your team has bonus Magic Resist. Enchanters gain bonus healing and shielding.<br><expandRow>(@MinUnits@) @MRance@ Magic Resist; @HealShieldBoost*100@% healing and shielding</expandRow><br>",
 		"effects": [
 			{
 				"maxUnits": 2,
@@ -297,27 +210,8 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Enchanter.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Enchanter.tex",
 		"name": "Enchanter"
-	},
-	{
-		"apiName": "Set6_Cuddly",
-		"desc": "At the start of combat, Yuumi attaches herself to the nearest ally, or to the lowest HP ally after being unattached for @AttachCooldown@ seconds. Attaching to an ally grants them a shield equal to @ShieldPercent@% of Yuumi's maximum Health. Yuumi detaches if the shield breaks.<br><br>While attached, Yuumi is untargetable and cannot attack, but gains @ManaPerSecond@ Mana per second, and @ManaPerAllyAttack@ Mana whenever the ally attacks.",
-		"effects": [
-			{
-				"maxUnits": 25000,
-				"minUnits": 1,
-				"style": 3,
-				"variables": {
-					"AttachCooldown": 2,
-					"ShieldPercent": 60,
-					"ManaPerAllyAttack": 10,
-					"ManaPerSecond": 5
-				}
-			}
-		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Cuddly.TFT_Set6.dds",
-		"name": "Cuddly"
 	},
 	{
 		"apiName": "Set6_YordleLord",
@@ -330,19 +224,19 @@ export const traits: TraitData[] = [
 				"variables": {}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_YordleLord.TFT_Set6.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_YordleLord.TFT_Set6.tex",
 		"name": "Yordle-Lord"
 	},
 	{
 		"apiName": "Set6_Bodyguard",
-		"desc": "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a Shield and taunt adjacent enemies, forcing them to attack the Bodyguard.<br><br><expandRow>(@MinUnits@) @Armor@ Armor, @ShieldAmount@ Shield</expandRow>",
+		"desc": "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a shield and taunt adjacent enemies, forcing them to attack the Bodyguard.<br><br><expandRow>(@MinUnits@) @Armor@ Armor, @ShieldAmount@ shield</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"Armor": 75,
+					"Armor": 80,
 					"ShieldAmount": 150
 				}
 			},
@@ -351,7 +245,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"Armor": 150,
+					"Armor": 160,
 					"ShieldAmount": 350
 				}
 			},
@@ -374,19 +268,19 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Hero.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Hero.tex",
 		"name": "Bodyguard"
 	},
 	{
 		"apiName": "Set6_Socialite",
-		"desc": "Socialites reveal a spotlight on the battlefield. The unit standing in the spotlight at the start of combat gains unique bonuses.<br><br><row>(@MinUnits@) @DamagePercent*100@% bonus damage</row><br><row>(@MinUnits@) and @ManaPerSecond@ Mana per second</row><br><row>(@MinUnits@) and heal for @OmnivampPercent*100@% of all damage they deal</row>",
+		"desc": "Socialites reveal a spotlight on the battlefield. The unit standing in the spotlight at the start of combat gains unique bonuses.<br><br><row>(@MinUnits@) @DamagePercent*100@% bonus damage</row><br><row>(@MinUnits@) and @ManaPerSecond@ Mana per second</row><br><row>(@MinUnits@) and heal for @OmnivampPercent*100@% of all damage they deal</row><br><row>(@MinUnits@) all of the bonuses are doubled</row>",
 		"effects": [
 			{
 				"maxUnits": 1,
 				"minUnits": 1,
 				"style": 1,
 				"variables": {
-					"DamagePercent": 0.20000000298023224,
+					"DamagePercent": 0.15000000596046448,
 					"{5064373e}": null,
 					"{5c51b509}": 1,
 					"OmnivampPercent": null,
@@ -398,27 +292,39 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 2,
 				"variables": {
-					"DamagePercent": 0.20000000298023224,
+					"DamagePercent": 0.25,
 					"{5064373e}": null,
 					"{5c51b509}": 2,
 					"OmnivampPercent": null,
-					"ManaPerSecond": 3
+					"ManaPerSecond": 4
+				}
+			},
+			{
+				"maxUnits": 4,
+				"minUnits": 3,
+				"style": 3,
+				"variables": {
+					"DamagePercent": 0.25,
+					"{5064373e}": null,
+					"{5c51b509}": 3,
+					"OmnivampPercent": 0.33000001311302185,
+					"ManaPerSecond": 4
 				}
 			},
 			{
 				"maxUnits": 25000,
-				"minUnits": 3,
-				"style": 3,
+				"minUnits": 5,
+				"style": 4,
 				"variables": {
-					"DamagePercent": 0.20000000298023224,
+					"DamagePercent": 0.5,
 					"{5064373e}": null,
-					"{5c51b509}": 3,
-					"OmnivampPercent": 0.33000001311302185,
-					"ManaPerSecond": 3
+					"{5c51b509}": 4,
+					"OmnivampPercent": 0.6600000262260437,
+					"ManaPerSecond": 8
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Socialite.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Socialite.tex",
 		"name": "Socialite"
 	},
 	{
@@ -440,16 +346,18 @@ export const traits: TraitData[] = [
 					"{6b5aee70}": 2,
 					"{76882e8f}": 450,
 					"{7c799240}": 20,
+					"{7f322ebf}": null,
 					"{82e43c84}": 20,
 					"{994006f0}": 2,
 					"{9cc303b4}": null,
 					"{b6322d58}": 30,
 					"{c26236e7}": 40,
-					"{f3cab19f}": 175
+					"{f3cab19f}": 175,
+					"{f90dd382}": null
 				}
 			},
 			{
-				"maxUnits": 25000,
+				"maxUnits": 6,
 				"minUnits": 5,
 				"style": 3,
 				"variables": {
@@ -463,17 +371,60 @@ export const traits: TraitData[] = [
 					"{6b5aee70}": 2,
 					"{76882e8f}": 900,
 					"{7c799240}": 30,
+					"{7f322ebf}": null,
 					"{82e43c84}": 40,
 					"{994006f0}": 4,
 					"{9cc303b4}": 40,
 					"{b6322d58}": 60,
 					"{c26236e7}": 75,
-					"{f3cab19f}": 225
+					"{f3cab19f}": 225,
+					"{f90dd382}": null
+				}
+			},
+			{
+				"maxUnits": 25000,
+				"minUnits": 7,
+				"style": 4,
+				"variables": {
+					"{02ce80f2}": 8,
+					"{190fb0a2}": 40,
+					"{2f805979}": 90,
+					"{2fb1d11d}": 0.03999999910593033,
+					"{3f1cec4d}": 20,
+					"{5c51b509}": 3,
+					"{66d8ecb1}": 50,
+					"{6b5aee70}": 2,
+					"{76882e8f}": 1500,
+					"{7c799240}": 45,
+					"{7f322ebf}": 40,
+					"{82e43c84}": 40,
+					"{994006f0}": 7,
+					"{9cc303b4}": 100,
+					"{b6322d58}": 100,
+					"{c26236e7}": 100,
+					"{f3cab19f}": 175,
+					"{f90dd382}": 60
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Experimental.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Experimental.tex",
 		"name": "Mutant"
+	},
+	{
+		"apiName": "Set6_Mastermind",
+		"desc": "At the start of combat, the Mastermind grants the 2 allies directly in front of him @ManaGrant@% of their maximum Mana.",
+		"effects": [
+			{
+				"maxUnits": 25000,
+				"minUnits": 1,
+				"style": 3,
+				"variables": {
+					"{ce492058}": 40
+				}
+			}
+		],
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Mastermind.tex",
+		"name": "Mastermind"
 	},
 	{
 		"apiName": "Set6_Mercenary",
@@ -498,12 +449,12 @@ export const traits: TraitData[] = [
 				"variables": {}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Mercenary.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Mercenary.tex",
 		"name": "Mercenary"
 	},
 	{
 		"apiName": "Set6_Glutton",
-		"desc": "An ally can be fed to Tahm Kench once per planning phase, permanently granting him either Ability Power, HP, Armor, or Magic Resist.<br><br><tftitemrules>To feed, hold an ally over Tahm Kench until his mouth opens, then release.</tftitemrules>",
+		"desc": "An ally from the bench can be fed to Tahm Kench once per planning phase, permanently granting him either Ability Power, HP, Armor, or Magic Resist.<br><br><tftitemrules>To feed, hold an ally from the bench over Tahm Kench until his mouth opens, then release.</tftitemrules>",
 		"effects": [
 			{
 				"maxUnits": 25000,
@@ -512,43 +463,8 @@ export const traits: TraitData[] = [
 				"variables": {}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Glutton.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Glutton.tex",
 		"name": "Glutton"
-	},
-	{
-		"apiName": "Set6_Innovator",
-		"desc": "Innovators build a mechanical companion to join the battle. The companion receives bonus HP and Attack Damage based on allied Innovators' star levels. <br><br><row>(@MinUnits@) Mechanical Scarab </row><br><row>(@MinUnits@) Mechanical Bear</row><br><row>(@MinUnits@) Mechanical Dragon </row>",
-		"effects": [
-			{
-				"maxUnits": 4,
-				"minUnits": 3,
-				"style": 1,
-				"variables": {
-					"InnovationStarLevel": 1,
-					"InnovatorStarLevelMultiplier": 0.25
-				}
-			},
-			{
-				"maxUnits": 6,
-				"minUnits": 5,
-				"style": 3,
-				"variables": {
-					"InnovationStarLevel": 2,
-					"InnovatorStarLevelMultiplier": 0.25
-				}
-			},
-			{
-				"maxUnits": 25000,
-				"minUnits": 7,
-				"style": 4,
-				"variables": {
-					"InnovationStarLevel": 3,
-					"InnovatorStarLevelMultiplier": 0.25
-				}
-			}
-		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Innovator.dds",
-		"name": "Innovator"
 	},
 	{
 		"apiName": "Set6_Scholar",
@@ -582,8 +498,95 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Scholar.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Scholar.tex",
 		"name": "Scholar"
+	},
+	{
+		"apiName": "Set6_Innovator",
+		"desc": "Innovators build a mechanical companion to join the battle. The companion receives bonus HP and Attack Damage based on allied Innovators' star levels. <br><br><row>(@MinUnits@) Mechanical Scarab </row><br><row>(@MinUnits@) Mechanical Bear</row><br><row>(@MinUnits@) Mechanical Dragon </row>",
+		"effects": [
+			{
+				"maxUnits": 4,
+				"minUnits": 3,
+				"style": 1,
+				"variables": {
+					"InnovationStarLevel": 1,
+					"InnovatorStarLevelMultiplier": 0.25
+				}
+			},
+			{
+				"maxUnits": 6,
+				"minUnits": 5,
+				"style": 3,
+				"variables": {
+					"InnovationStarLevel": 2,
+					"InnovatorStarLevelMultiplier": 0.25
+				}
+			},
+			{
+				"maxUnits": 25000,
+				"minUnits": 7,
+				"style": 4,
+				"variables": {
+					"InnovationStarLevel": 3,
+					"InnovatorStarLevelMultiplier": 0.25
+				}
+			}
+		],
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Innovator.tex",
+		"name": "Innovator"
+	},
+	{
+		"apiName": "Set6_Hextech",
+		"desc": "At the start of combat and every @Frequency@ seconds afterwards, the Hexcore sends out a pulse that charges up allied Hextech champions with a shield for @ShieldDuration@ seconds. While the shield is active, attacks deal bonus magic damage on hit. This shield does not stack.<br><br><expandRow>(@MinUnits@) @ShieldAmount@ shield, @MagicDamage@ magic damage</expandRow>",
+		"effects": [
+			{
+				"maxUnits": 3,
+				"minUnits": 2,
+				"style": 1,
+				"variables": {
+					"MagicDamage": 10,
+					"ShieldAmount": 200,
+					"ShieldDuration": 4,
+					"{2fb31c01}": 6
+				}
+			},
+			{
+				"maxUnits": 5,
+				"minUnits": 4,
+				"style": 2,
+				"variables": {
+					"MagicDamage": 40,
+					"ShieldAmount": 300,
+					"ShieldDuration": 4,
+					"{2fb31c01}": 6
+				}
+			},
+			{
+				"maxUnits": 7,
+				"minUnits": 6,
+				"style": 3,
+				"variables": {
+					"MagicDamage": 80,
+					"ShieldAmount": 600,
+					"ShieldDuration": 4,
+					"{2fb31c01}": 6
+				}
+			},
+			{
+				"maxUnits": 25000,
+				"minUnits": 8,
+				"style": 4,
+				"variables": {
+					"MagicDamage": 140,
+					"ShieldAmount": 1000,
+					"ShieldDuration": 4,
+					"{2fb31c01}": 6
+				}
+			}
+		],
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_Hextech.tex",
+		"name": "Hextech"
 	},
 	{
 		"apiName": "Set6_Twinshot",
@@ -617,7 +620,7 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Twinshot.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Twinshot.tex",
 		"name": "Twinshot"
 	},
 	{
@@ -631,7 +634,7 @@ export const traits: TraitData[] = [
 				"variables": {}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Transformer.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Transformer.tex",
 		"name": "Transformer"
 	},
 	{
@@ -671,7 +674,7 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Bruiser.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Bruiser.tex",
 		"name": "Bruiser"
 	},
 	{
@@ -706,25 +709,61 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Assassin.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Assassin.tex",
 		"name": "Assassin"
 	},
 	{
 		"apiName": "Set6_Colossus",
-		"desc": "Innate: Colossi are bigger, more powerful, and immune to crowd control effects. However, each Colossus requires 2 team slots.<br><row>(@MinUnits@) Colossus champions take @DamageReduction*100@% less damage</row>",
+		"desc": "Innate: Colossi are bigger and more powerful. They gain @HP@ bonus Health and immunity to crowd control effects. However, each Colossus requires 2 team slots.<br><row>(@MinUnits@) Colossus champions take @DamageReduction*100@% less damage</row>",
 		"effects": [
 			{
 				"maxUnits": 25000,
 				"minUnits": 2,
 				"style": 3,
 				"variables": {
+					"HP": 1000,
 					"DamageReduction": 0.25,
 					"{5c51b509}": 2
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Colossus.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Colossus.tex",
 		"name": "Colossus"
+	},
+	{
+		"apiName": "Set6_Debonair",
+		"desc": "Debonair champions gain bonus HP and Ability Power, and you have a higher chance to see Debonair VIPs in your Shop. <br><br>If there is a Debonair VIP in play, they activate their unique bonus. Sell the old VIP for a chance to see a new one in your Shop. <br><br><expandRow>(@MinUnits@) @Health@ Health, @AP@ Ability Power </expandRow>",
+		"effects": [
+			{
+				"maxUnits": 4,
+				"minUnits": 3,
+				"style": 1,
+				"variables": {
+					"HP": 200,
+					"{7f1304b2}": 20
+				}
+			},
+			{
+				"maxUnits": 6,
+				"minUnits": 5,
+				"style": 3,
+				"variables": {
+					"HP": 600,
+					"{7f1304b2}": 60
+				}
+			},
+			{
+				"maxUnits": 8,
+				"minUnits": 7,
+				"style": 4,
+				"variables": {
+					"HP": 1000,
+					"{7f1304b2}": 100
+				}
+			}
+		],
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Debonair.tex",
+		"name": "Debonair"
 	},
 	{
 		"apiName": "Set6_Arcanist",
@@ -767,7 +806,7 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Arcanist.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Arcanist.tex",
 		"name": "Arcanist"
 	},
 	{
@@ -802,8 +841,40 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Sniper.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Sniper.tex",
 		"name": "Sniper"
+	},
+	{
+		"apiName": "Set6_Striker",
+		"desc": "Strikers gain bonus Attack Damage.<br><expandRow>(@MinUnits@) +@ADBoost@ Attack Damage</expandRow>",
+		"effects": [
+			{
+				"maxUnits": 3,
+				"minUnits": 2,
+				"style": 1,
+				"variables": {
+					"{df962703}": 40
+				}
+			},
+			{
+				"maxUnits": 5,
+				"minUnits": 4,
+				"style": 3,
+				"variables": {
+					"{df962703}": 75
+				}
+			},
+			{
+				"maxUnits": 25000,
+				"minUnits": 6,
+				"style": 4,
+				"variables": {
+					"{df962703}": 110
+				}
+			}
+		],
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Striker.tex",
+		"name": "Striker"
 	},
 	{
 		"apiName": "Set6_Clockwork",
@@ -837,12 +908,12 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Clockwork.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Clockwork.tex",
 		"name": "Clockwork"
 	},
 	{
 		"apiName": "Set6_Enforcer",
-		"desc": "Enforcers stun enemies at the start of combat. They break free after @DetainDuration@ seconds, or after losing @HPPercent*100@% of their maximum HP. Enforcers will not try to stun enemies who are immune to crowd control effects.<br><br><row>(@MinUnits@) The enemy who has the most Health</row><br><row>(@MinUnits@) And the enemy who dealt the most damage last combat</row>",
+		"desc": "Enforcers stun enemies at the start of combat. The target breaks free after @DetainDuration@ seconds, or after losing @HPPercent*100@% of their maximum HP. Enforcers will not try to stun enemies who are immune to crowd control effects.<br><br><row>(@MinUnits@) The enemy who has the most Health</row><br><row>(@MinUnits@) And the enemy who dealt the most damage last combat</row>",
 		"effects": [
 			{
 				"maxUnits": 3,
@@ -865,36 +936,8 @@ export const traits: TraitData[] = [
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Enforcer.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Enforcer.tex",
 		"name": "Enforcer"
-	},
-	{
-		"apiName": "Set6_Imperial",
-		"desc": "At the start of combat, the Imperial who dealt the most damage last combat becomes the Tyrant. The Tyrant deals bonus damage. When the Tyrant dies, the Imperial who has dealt the most damage this combat becomes the new Tyrant.<br><br><row>(@MinUnits@) The Tyrant deals @TyrantTooltipBonusDamage@% bonus damage</row><br><row>(@MinUnits@) The Tyrant deals @TyrantTooltipBonusDamage@% bonus damage and the other Imperials deal @ImperialBonusDamage@% bonus damage</row>",
-		"effects": [
-			{
-				"maxUnits": 4,
-				"minUnits": 3,
-				"style": 3,
-				"variables": {
-					"BonusDamage": 80,
-					"ImperialBonusDamage": null,
-					"TyrantTooltipBonusDamage": 80
-				}
-			},
-			{
-				"maxUnits": 25000,
-				"minUnits": 5,
-				"style": 4,
-				"variables": {
-					"BonusDamage": 70,
-					"ImperialBonusDamage": 80,
-					"TyrantTooltipBonusDamage": 150
-				}
-			}
-		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Imperial.dds",
-		"name": "Imperial"
 	},
 	{
 		"apiName": "Set6_Chemtech",
@@ -908,7 +951,7 @@ export const traits: TraitData[] = [
 					"AS": 15,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HPRegen": 3,
+					"HPRegen": 4,
 					"HPThreshold": 75
 				}
 			},
@@ -917,10 +960,10 @@ export const traits: TraitData[] = [
 				"minUnits": 5,
 				"style": 2,
 				"variables": {
-					"AS": 50,
+					"AS": 40,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HPRegen": 5,
+					"HPRegen": 8,
 					"HPThreshold": 75
 				}
 			},
@@ -929,10 +972,10 @@ export const traits: TraitData[] = [
 				"minUnits": 7,
 				"style": 3,
 				"variables": {
-					"AS": 90,
+					"AS": 80,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HPRegen": 8,
+					"HPRegen": 12,
 					"HPThreshold": 75
 				}
 			},
@@ -941,15 +984,15 @@ export const traits: TraitData[] = [
 				"minUnits": 9,
 				"style": 4,
 				"variables": {
-					"AS": 135,
+					"AS": 150,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HPRegen": 15,
+					"HPRegen": 18,
 					"HPThreshold": 75
 				}
 			}
 		],
-		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Chemtech.dds",
+		"icon": "ASSETS/UX/TraitIcons/Trait_Icon_6_Chemtech.tex",
 		"name": "Chemtech"
 	}
 ]

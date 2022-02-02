@@ -1,4 +1,4 @@
-const LOAD_PBE = false
+const LOAD_PBE = true
 
 import fetch from 'node-fetch'
 import fs from 'fs/promises'
@@ -6,7 +6,9 @@ import path from 'path'
 
 import type { ChampionData, ItemData, TraitData } from '../src/helpers/types'
 
-const response = await fetch(`https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}/cdragon/tft/en_us.json`)
+const url = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}/cdragon/tft/en_us.json`
+console.log(url)
+const response = await fetch(url)
 if (!response.ok) {
 	throw response
 }
@@ -49,7 +51,16 @@ const outputFolder = `src/data/set${currentSetNumber}/`
 
 const unplayableNames = ['TFT5_EmblemArmoryKey', 'TFT6_MercenaryChest']
 const playableChampions = (champions as ChampionData[])
-	.filter(champion => !unplayableNames.includes(champion.apiName))
+	.filter(champion => {
+		if (unplayableNames.includes(champion.apiName)) {
+			return false
+		}
+		if (!champion.icon) {
+			console.log('No icon for champion, excluding.', champion)
+			return false
+		}
+		return true
+	})
 
 const normalizeKeys: Record<string, string> = {
 	AbilityPower: 'AP',
@@ -167,6 +178,8 @@ const stringIDReplacements: Record<string, string> = {
 	'f2474447': 'TooltipBonus',
 	'9fd37c1c': 'UNUSED_APTimer', //TODO verify https://leagueoflegends.fandom.com/wiki/Chalice_of_Power_(Teamfight_Tactics)
 	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
+	'79a4455a': 'CritReduction',
+	'b1442c34': 'StealthDuration', //TODO verify
 }
 
 const unreplacedIDs = new Set(Object.keys(stringIDReplacements))
