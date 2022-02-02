@@ -135,9 +135,10 @@ function onInfo(event: Event) {
 }
 
 .circle {
-	@apply w-full h-full bg-cover rounded-full border-4 text-white font-medium  text-center;
+	@apply w-full h-full bg-cover rounded-full text-white font-medium  text-center;
 	@apply flex justify-center items-center;
 	font-size: 1.5vw;
+	border-width: 0.4vw;
 	background-position-x: 75%;
 }
 </style>
