@@ -1,3 +1,5 @@
+import type { ChampionUnit } from '#/game/unit'
+
 export type HexCoord = [col: number, row: number]
 
 export type StarLevel = 1 | 2 | 3 | 4
@@ -85,3 +87,5 @@ export interface ItemData {
 }
 
 export type BonusVariable = [key: string, value: number | null]
+
+export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, champion: ChampionUnit) => void

@@ -1,7 +1,6 @@
 import { markRaw } from 'vue'
 
 import abilities from '#/data/set6/abilities'
-import type { AbilityFn } from '#/data/set6/abilities'
 import { champions } from '#/data/set6/champions'
 import type { ItemKey } from '#/data/set6/items'
 import { TraitKey, traits } from '#/data/set6/traits'
@@ -13,7 +12,7 @@ import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType } from '#/helpers/types'
-import type { BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
+import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 
 export class ChampionUnit {
 	name: string
@@ -206,6 +205,10 @@ export class ChampionUnit {
 		return this.activePosition ?? this.startPosition
 	}
 
+	getAbilityValue(name: string) {
+		const entry = this.data.ability.variables.find(valueObject => valueObject.name === name)
+		return entry?.value?.[this.starLevel]
+	}
 	getBonusFor(sourceKey: TraitKey | ItemKey) {
 		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
 	}

@@ -1,24 +1,22 @@
-import type { ChampionUnit } from '#/game/unit'
-
-import { DamageType } from '#/helpers/types'
-import { getAbilityValue, getRowOfMost } from '#/helpers/abilityUtils'
+import { getRowOfMost } from '#/helpers/abilityUtils'
 import { HexEffect } from '#/helpers/HexEffect'
-
-export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, champion: ChampionUnit) => void
+import { DamageType } from '#/helpers/types'
+import type { AbilityFn } from '#/helpers/types'
 
 export const hexEffects: HexEffect[] = []
 export const projectiles = []
 
 export default {
 	Zyra: (elapsedMS, champion) => {
+		const opposingTeam = 1 - champion.team
 		hexEffects.push(new HexEffect(elapsedMS, {
 			activatesAfterMS: -1,
 			source: champion,
-			targetTeam: 1 - champion.team,
-			hexes: getRowOfMost(1 - champion.team),
-			damage: getAbilityValue('Damage', champion),
+			targetTeam: opposingTeam,
+			hexes: getRowOfMost(opposingTeam),
+			damage: champion.getAbilityValue('Damage'),
 			damageType: DamageType.magic,
-			stunSeconds: getAbilityValue('StunDuration', champion),
+			stunSeconds: champion.getAbilityValue('StunDuration'),
 		}))
 	},
 } as Record<string, AbilityFn>
