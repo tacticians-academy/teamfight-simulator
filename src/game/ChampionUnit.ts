@@ -79,7 +79,7 @@ export class ChampionUnit {
 	updateTarget(units: ChampionUnit[]) {
 		if (this.target != null) {
 			const targetDistance = this.hexDistanceTo(this.target)
-			if (!this.target.attackable() || targetDistance > this.range()) {
+			if (!this.target.isAttackable() || targetDistance > this.range()) {
 				this.target = null
 			} else {
 				this.cachedTargetDistance = targetDistance
@@ -140,10 +140,10 @@ export class ChampionUnit {
 		this.ghosting = false
 	}
 
-	attackable() {
+	isAttackable() {
 		return !this.dead && !this.ghosting
 	}
-	collides() {
+	hasCollision() {
 		return !this.dead && !this.ghosting
 	}
 

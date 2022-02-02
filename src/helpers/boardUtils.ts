@@ -29,7 +29,7 @@ function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): He
 	return null
 }
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitPositions = units.filter(unit => unit.collides()).map(unit => unit.currentPosition())
+	const unitPositions = units.filter(unit => unit.hasCollision()).map(unit => unit.currentPosition())
 	return nearestAvailableRecursive(startHex, unitPositions)
 }
 
@@ -67,7 +67,7 @@ export function getDensestTargetHexes(units: ChampionUnit[], team: TeamNumber | 
 		if (team !== null && unit.team !== team) {
 			continue
 		}
-		if (!unit.attackable()) {
+		if (!unit.isAttackable()) {
 			continue
 		}
 		const position = unit.currentPosition()
@@ -123,7 +123,7 @@ export function getNearestEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], 
 					checkedHexes.push(surroundingHex)
 					visitedSurroundingHexes.push(surroundingHex)
 					for (const checkUnit of allUnits) {
-						if (checkUnit.attackable() && checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
+						if (checkUnit.isAttackable() && checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
 							enemies.push(checkUnit)
 						}
 					}
