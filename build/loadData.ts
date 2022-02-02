@@ -70,6 +70,7 @@ const normalizeKeys: Record<string, string> = {
 	AttackDamage: 'AD',
 	BaseAD: 'AD',
 	BonusAD: 'AD',
+	ADBoost: 'AD',
 	AttackSpeed: 'AS',
 	Health: 'HP',
 	BonusHP: 'HP',
@@ -79,20 +80,21 @@ const normalizeKeys: Record<string, string> = {
 
 const stringIDReplacements: Record<string, string> = {
 	'b4a90a5d': 'ProcChance',
-	'0acd95c2': 'ImperialBonusDamage',
-	'f469c9e6': 'TyrantTooltipBonusDamage',
+	// '0acd95c2': 'ImperialBonusDamage',
+	// 'f469c9e6': 'TyrantTooltipBonusDamage',
 	'45564848': 'InnovationStarLevel', //TODO actual string
 	'97ea7bfc': 'InnovatorStarLevelMultiplier', //TODO actual string
 	'5263ba40': 'JinxEmpoweredAS',
 	'2a50526a': 'JinxASDuration',
-	'3b173c39': '{3b173c39}', //TODO sister ??
+	'a859d7b0': 'ViManaReduction',
+	'3b173c39': 'ViPunchRange', //TODO verify
 	'471b1a16': 'TickRate',
 	'd0539890': 'ManaPerTick',
 	'6c155e99': 'OmnivampPercent',
 	'f9f3a081': 'ManaPerSecond',
-	'65722d9c': 'ADAPBase',
-	'96ca059f': 'ADAPPerCast',
-	'b3105623': 'ManaPerAllyAttack',
+	// '65722d9c': 'ADAPBase',
+	// '96ca059f': 'ADAPPerCast',
+	// 'b3105623': 'ManaPerAllyAttack',
 	'70ed38c6': 'DetainDuration',
 	'd2b7f6f1': 'DetainCount', //TODO actual string
 	'2f744e2b': 'TeamAbilityPower',
@@ -124,7 +126,7 @@ const stringIDReplacements: Record<string, string> = {
 	'b223097c': 'MRShredDuration',
 	'df6f64b9': 'ManaRatio',
 	'c3360f16': 'DamageCap', //TODO actual name
-	'c425872e': 'StasisDuration',
+	// 'c425872e': 'StasisDuration',
 	'7c694b41': 'ArmorPerEnemy', //TODO monitor. unverifiable MRPerEnemy/ArmorPerEnemy
 	'7ba8c0e3': 'MRPerEnemy', //TODO monitor. unverifiable MRPerEnemy/ArmorPerEnemy
 	'1ee760be': '1StarAoEDamage',
@@ -180,6 +182,15 @@ const stringIDReplacements: Record<string, string> = {
 	'fa1ef605': 'UNUSED_MagicDamageReductionMultiplier', //TODO verify https://leagueoflegends.fandom.com/wiki/Dragon%27s_Claw_(Teamfight_Tactics)
 	'79a4455a': 'CritReduction',
 	'b1442c34': 'StealthDuration', //TODO verify
+	'5c51b509': 'Colossus/Mutant/Socialite', //TODO ??
+	'7f1304b2': 'AbilityPower',
+	'df962703': 'ADBoost',
+	'c9b0e3af': 'PercentOmnivamp',
+	'ce492058': 'ManaGrant',
+	'2fb31c01': 'Frequency',
+
+	'76882e8f': 'MutantCyberHealth',
+	'190fb0a2': 'MutantMetamorphosisArmorMR',
 }
 
 const unreplacedIDs = new Set(Object.keys(stringIDReplacements))

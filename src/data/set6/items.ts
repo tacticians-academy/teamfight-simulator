@@ -185,7 +185,7 @@ export const items: ItemData[] = [
 			"AS": 30,
 			"DamageReduction": 80,
 			"HPThreshold": 50,
-			"{b1442c34}": 1
+			"StealthDuration": 1
 		},
 		"from": [
 			1,
@@ -643,7 +643,7 @@ export const items: ItemData[] = [
 			"3StarAoEDamage": 120,
 			"1StarAoEDamage": 60,
 			"CritDamageBlock": 100,
-			"{79a4455a}": 100,
+			"CritReduction": 100,
 			"2StarAoEDamage": 80,
 			"4StarAoEDamage": 200
 		},

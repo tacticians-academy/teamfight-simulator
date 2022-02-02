@@ -15,9 +15,9 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"JinxASDuration": 3,
-					"{3b173c39}": 4,
+					"ViPunchRange": 4,
 					"JinxEmpoweredAS": 0.4000000059604645,
-					"{a859d7b0}": 20
+					"ViManaReduction": 20
 				}
 			}
 		],
@@ -35,8 +35,8 @@ export const traits: TraitData[] = [
 				"variables": {
 					"Armor": 55,
 					"MR": 55,
-					"{5c51b509}": 1,
-					"{c9b0e3af}": 20
+					"Colossus/Mutant/Socialite": 1,
+					"PercentOmnivamp": 20
 				}
 			},
 			{
@@ -46,8 +46,8 @@ export const traits: TraitData[] = [
 				"variables": {
 					"Armor": 55,
 					"MR": 55,
-					"{5c51b509}": 2,
-					"{c9b0e3af}": 20
+					"Colossus/Mutant/Socialite": 2,
+					"PercentOmnivamp": 20
 				}
 			},
 			{
@@ -57,9 +57,9 @@ export const traits: TraitData[] = [
 				"variables": {
 					"Armor": 55,
 					"MR": 55,
-					"{5c51b509}": 3,
+					"Colossus/Mutant/Socialite": 3,
 					"SyndicateIncrease": 0.6000000238418579,
-					"{c9b0e3af}": 20
+					"PercentOmnivamp": 20
 				}
 			}
 		],
@@ -282,7 +282,7 @@ export const traits: TraitData[] = [
 				"variables": {
 					"DamagePercent": 0.15000000596046448,
 					"{5064373e}": null,
-					"{5c51b509}": 1,
+					"Colossus/Mutant/Socialite": 1,
 					"OmnivampPercent": null,
 					"ManaPerSecond": null
 				}
@@ -294,7 +294,7 @@ export const traits: TraitData[] = [
 				"variables": {
 					"DamagePercent": 0.25,
 					"{5064373e}": null,
-					"{5c51b509}": 2,
+					"Colossus/Mutant/Socialite": 2,
 					"OmnivampPercent": null,
 					"ManaPerSecond": 4
 				}
@@ -306,7 +306,7 @@ export const traits: TraitData[] = [
 				"variables": {
 					"DamagePercent": 0.25,
 					"{5064373e}": null,
-					"{5c51b509}": 3,
+					"Colossus/Mutant/Socialite": 3,
 					"OmnivampPercent": 0.33000001311302185,
 					"ManaPerSecond": 4
 				}
@@ -318,7 +318,7 @@ export const traits: TraitData[] = [
 				"variables": {
 					"DamagePercent": 0.5,
 					"{5064373e}": null,
-					"{5c51b509}": 4,
+					"Colossus/Mutant/Socialite": 4,
 					"OmnivampPercent": 0.6600000262260437,
 					"ManaPerSecond": 8
 				}
@@ -337,14 +337,14 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"{02ce80f2}": 8,
-					"{190fb0a2}": 18,
+					"MutantMetamorphosisArmorMR": 18,
 					"{2f805979}": 30,
 					"{2fb1d11d}": 0.019999999552965164,
 					"{3f1cec4d}": 20,
-					"{5c51b509}": 1,
+					"Colossus/Mutant/Socialite": 1,
 					"{66d8ecb1}": 50,
 					"{6b5aee70}": 2,
-					"{76882e8f}": 450,
+					"MutantCyberHP": 450,
 					"{7c799240}": 20,
 					"{7f322ebf}": null,
 					"{82e43c84}": 20,
@@ -362,14 +362,14 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"{02ce80f2}": 12,
-					"{190fb0a2}": 25,
+					"MutantMetamorphosisArmorMR": 25,
 					"{2f805979}": 55,
 					"{2fb1d11d}": 0.029999999329447746,
 					"{3f1cec4d}": 20,
-					"{5c51b509}": 2,
+					"Colossus/Mutant/Socialite": 2,
 					"{66d8ecb1}": 50,
 					"{6b5aee70}": 2,
-					"{76882e8f}": 900,
+					"MutantCyberHP": 900,
 					"{7c799240}": 30,
 					"{7f322ebf}": null,
 					"{82e43c84}": 40,
@@ -387,14 +387,14 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"{02ce80f2}": 8,
-					"{190fb0a2}": 40,
+					"MutantMetamorphosisArmorMR": 40,
 					"{2f805979}": 90,
 					"{2fb1d11d}": 0.03999999910593033,
 					"{3f1cec4d}": 20,
-					"{5c51b509}": 3,
+					"Colossus/Mutant/Socialite": 3,
 					"{66d8ecb1}": 50,
 					"{6b5aee70}": 2,
-					"{76882e8f}": 1500,
+					"MutantCyberHP": 1500,
 					"{7c799240}": 45,
 					"{7f322ebf}": 40,
 					"{82e43c84}": 40,
@@ -419,7 +419,7 @@ export const traits: TraitData[] = [
 				"minUnits": 1,
 				"style": 3,
 				"variables": {
-					"{ce492058}": 40
+					"ManaGrant": 40
 				}
 			}
 		],
@@ -548,7 +548,7 @@ export const traits: TraitData[] = [
 					"MagicDamage": 10,
 					"ShieldAmount": 200,
 					"ShieldDuration": 4,
-					"{2fb31c01}": 6
+					"Frequency": 6
 				}
 			},
 			{
@@ -559,7 +559,7 @@ export const traits: TraitData[] = [
 					"MagicDamage": 40,
 					"ShieldAmount": 300,
 					"ShieldDuration": 4,
-					"{2fb31c01}": 6
+					"Frequency": 6
 				}
 			},
 			{
@@ -570,7 +570,7 @@ export const traits: TraitData[] = [
 					"MagicDamage": 80,
 					"ShieldAmount": 600,
 					"ShieldDuration": 4,
-					"{2fb31c01}": 6
+					"Frequency": 6
 				}
 			},
 			{
@@ -581,7 +581,7 @@ export const traits: TraitData[] = [
 					"MagicDamage": 140,
 					"ShieldAmount": 1000,
 					"ShieldDuration": 4,
-					"{2fb31c01}": 6
+					"Frequency": 6
 				}
 			}
 		],
@@ -723,7 +723,7 @@ export const traits: TraitData[] = [
 				"variables": {
 					"HP": 1000,
 					"DamageReduction": 0.25,
-					"{5c51b509}": 2
+					"Colossus/Mutant/Socialite": 2
 				}
 			}
 		],
@@ -740,7 +740,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"HP": 200,
-					"{7f1304b2}": 20
+					"AP": 20
 				}
 			},
 			{
@@ -749,7 +749,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"HP": 600,
-					"{7f1304b2}": 60
+					"AP": 60
 				}
 			},
 			{
@@ -758,7 +758,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"HP": 1000,
-					"{7f1304b2}": 100
+					"AP": 100
 				}
 			}
 		],
@@ -846,14 +846,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Striker",
-		"desc": "Strikers gain bonus Attack Damage.<br><expandRow>(@MinUnits@) +@ADBoost@ Attack Damage</expandRow>",
+		"desc": "Strikers gain bonus Attack Damage.<br><expandRow>(@MinUnits@) +@AD@ Attack Damage</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"{df962703}": 40
+					"AD": 40
 				}
 			},
 			{
@@ -861,7 +861,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"{df962703}": 75
+					"AD": 75
 				}
 			},
 			{
@@ -869,7 +869,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 4,
 				"variables": {
-					"{df962703}": 110
+					"AD": 110
 				}
 			}
 		],
