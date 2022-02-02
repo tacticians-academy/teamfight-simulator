@@ -546,7 +546,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"MagicDamage": 10,
-					"ShieldAmount": 200,
+					"ShieldAmount": 160,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -557,7 +557,7 @@ export const traits: TraitData[] = [
 				"style": 2,
 				"variables": {
 					"MagicDamage": 40,
-					"ShieldAmount": 300,
+					"ShieldAmount": 240,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -568,7 +568,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"MagicDamage": 80,
-					"ShieldAmount": 600,
+					"ShieldAmount": 480,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -579,7 +579,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"MagicDamage": 140,
-					"ShieldAmount": 1000,
+					"ShieldAmount": 800,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -714,16 +714,16 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Colossus",
-		"desc": "Innate: Colossi are bigger and more powerful. They gain @HP@ bonus Health and immunity to crowd control effects. However, each Colossus requires 2 team slots.<br><row>(@MinUnits@) Colossus champions take @DamageReduction*100@% less damage</row>",
+		"desc": "Innate: Colossi are bigger and more powerful. They gain @HPTooltip@ bonus Health and immunity to crowd control effects. However, each Colossus requires 2 team slots.<br><row>(@MinUnits@) Colossus champions take @DamageReduction*100@% less damage</row>",
 		"effects": [
 			{
 				"maxUnits": 25000,
 				"minUnits": 2,
 				"style": 3,
 				"variables": {
-					"HP": 1000,
 					"DamageReduction": 0.25,
-					"Colossus/Mutant/Socialite": 2
+					"Colossus/Mutant/Socialite": 2,
+					"HPTooltip": 800
 				}
 			}
 		],

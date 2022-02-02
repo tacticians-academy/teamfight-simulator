@@ -183,7 +183,7 @@ export const items: ItemData[] = [
 			"AD": 10,
 			"Armor": 20,
 			"AS": 30,
-			"DamageReduction": 80,
+			"DamageReduction": 100,
 			"HPThreshold": 50,
 			"StealthDuration": 1
 		},

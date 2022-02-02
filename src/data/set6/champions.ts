@@ -1290,7 +1290,7 @@ export const champions: ChampionData[] = [
 		},
 		"apiName": "TFT6_Jayce",
 		"cost": 5,
-		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6b_Jayce.dds",
+		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Jayce.TFT_Set6.dds",
 		"name": "Jayce",
 		"stats": {
 			"armor": 30,
@@ -1923,8 +1923,8 @@ export const champions: ChampionData[] = [
 					"name": "RocketLauncherPercentAD",
 					"value": [
 						0.75,
-						2,
-						2.0999999046325684,
+						2.200000047683716,
+						2.299999952316284,
 						8.880000114440918,
 						0.75,
 						0.75,
@@ -1950,14 +1950,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6b_Jinx.dds",
 		"name": "Jinx",
 		"stats": {
-			"armor": 35,
+			"armor": 40,
 			"attackSpeed": 1,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 88,
 			"hp": 888,
 			"initialMana": 0,
-			"magicResist": 35,
+			"magicResist": 40,
 			"mana": 99,
 			"range": 4
 		},
@@ -2107,9 +2107,9 @@ export const champions: ChampionData[] = [
 					"name": "ShieldAmount",
 					"value": [
 						400,
-						525,
-						675,
-						850,
+						550,
+						700,
+						900,
 						900,
 						900,
 						900
@@ -2424,7 +2424,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Passive: Talon's 1st attack on an enemy causes them to bleed for @ModifiedDamage@ magic damage over @BleedDuration@ seconds. Every 3rd attack on a target applies an additional bleed.<br><br><TFTDebonairVIP>VIP Bonus: Talon's bleed now deals true damage.</TFTDebonairVIP>",
+			"desc": "Passive: Talon's 1st attack on an enemy causes them to bleed for @ModifiedDamage@ magic damage over @BleedDuration@ seconds. Every 3rd attack on a target applies an additional bleed.<br><br><TFTDebonairVIP>VIP Bonus: Talon's bleed now deals true damage and lasts @VIPBleedDurationBonus@% longer.</TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Talon/HUD/Icons2D/TalonP.dds",
 			"name": "Blade's End",
 			"variables": [
@@ -2453,15 +2453,15 @@ export const champions: ChampionData[] = [
 					]
 				},
 				{
-					"name": "T1DebutantBonus",
+					"name": "VIPBleedDurationBonus",
 					"value": [
-						25,
-						25,
-						25,
-						25,
-						25,
-						25,
-						25
+						100,
+						100,
+						100,
+						100,
+						100,
+						100,
+						100
 					]
 				}
 			]
@@ -3151,14 +3151,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_RekSai.TFT_Set6_Stage2.dds",
 		"name": "Rek'Sai",
 		"stats": {
-			"armor": 45,
+			"armor": 40,
 			"attackSpeed": 0.699999988079071,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 60,
+			"damage": 70,
 			"hp": 800,
 			"initialMana": 30,
-			"magicResist": 45,
+			"magicResist": 40,
 			"mana": 60,
 			"range": 1
 		},
@@ -3303,9 +3303,9 @@ export const champions: ChampionData[] = [
 					"name": "BonusAttackSpeed",
 					"value": [
 						0,
-						0.6000000238418579,
-						0.800000011920929,
-						2,
+						0.5,
+						0.6499999761581421,
+						1.5,
 						0,
 						0,
 						0
@@ -3356,9 +3356,9 @@ export const champions: ChampionData[] = [
 					"name": "BaseSpinDamage",
 					"value": [
 						0,
-						100,
-						150,
-						300,
+						80,
+						120,
+						240,
 						0,
 						0,
 						0
@@ -3389,9 +3389,9 @@ export const champions: ChampionData[] = [
 			"critMultiplier": 1.2999999523162842,
 			"damage": 70,
 			"hp": 750,
-			"initialMana": 30,
+			"initialMana": 40,
 			"magicResist": 35,
-			"mana": 90,
+			"mana": 100,
 			"range": 1
 		},
 		"traits": [
@@ -3437,9 +3437,9 @@ export const champions: ChampionData[] = [
 					"name": "TransformHealth",
 					"value": [
 						50,
-						500,
-						750,
-						1400,
+						400,
+						700,
+						1250,
 						850,
 						1050,
 						1250
@@ -3449,9 +3449,9 @@ export const champions: ChampionData[] = [
 					"name": "ADPercent",
 					"value": [
 						0,
-						1.7999999523162842,
-						1.850000023841858,
-						1.899999976158142,
+						1.75,
+						1.75,
+						1.75,
 						200,
 						250,
 						300
@@ -3461,9 +3461,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						180,
-						240,
-						360,
+						150,
+						200,
+						300,
 						0,
 						0,
 						0
@@ -3492,7 +3492,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.699999988079071,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 60,
+			"damage": 65,
 			"hp": 700,
 			"initialMana": 0,
 			"magicResist": 40,
@@ -3515,9 +3515,9 @@ export const champions: ChampionData[] = [
 					"name": "ShieldAmount",
 					"value": [
 						50,
-						600,
-						700,
-						800,
+						450,
+						650,
+						900,
 						550,
 						675,
 						800
@@ -3563,9 +3563,9 @@ export const champions: ChampionData[] = [
 					"name": "DamagePerSecond",
 					"value": [
 						0,
-						200,
-						250,
-						300,
+						150,
+						225,
+						325,
 						0,
 						0,
 						0
@@ -3616,9 +3616,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
+						225,
 						250,
-						275,
-						350,
+						325,
 						500,
 						625,
 						750
@@ -3770,9 +3770,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						150,
-						200,
-						500,
+						130,
+						160,
+						400,
 						500,
 						500,
 						500
@@ -3810,11 +3810,11 @@ export const champions: ChampionData[] = [
 		"name": "Kha'Zix",
 		"stats": {
 			"armor": 30,
-			"attackSpeed": 0.949999988079071,
+			"attackSpeed": 0.8999999761581421,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 85,
-			"hp": 900,
+			"hp": 800,
 			"initialMana": 0,
 			"magicResist": 30,
 			"mana": 40,
@@ -3874,14 +3874,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Ahri.TFT_Set6_Stage2.dds",
 		"name": "Ahri",
 		"stats": {
-			"armor": 25,
-			"attackSpeed": 0.75,
+			"armor": 30,
+			"attackSpeed": 0.800000011920929,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 45,
-			"hp": 750,
+			"hp": 800,
 			"initialMana": 0,
-			"magicResist": 25,
+			"magicResist": 30,
 			"mana": 50,
 			"range": 3
 		},
@@ -4136,9 +4136,9 @@ export const champions: ChampionData[] = [
 					"name": "DamagePerSecond",
 					"value": [
 						1,
-						70,
-						100,
-						300,
+						65,
+						90,
+						225,
 						2,
 						2.25,
 						2.5
@@ -4181,7 +4181,7 @@ export const champions: ChampionData[] = [
 			"critMultiplier": 1.2999999523162842,
 			"damage": 40,
 			"hp": 700,
-			"initialMana": 40,
+			"initialMana": 30,
 			"magicResist": 30,
 			"mana": 80,
 			"range": 3
@@ -4265,7 +4265,7 @@ export const champions: ChampionData[] = [
 		"name": "Silco",
 		"stats": {
 			"armor": 35,
-			"attackSpeed": 0.800000011920929,
+			"attackSpeed": 0.6499999761581421,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 70,
@@ -4282,7 +4282,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Zeri charges herself up with electricity for @Duration@ seconds. While electrified, she aims at the farthest enemy, her attacks pierce, and she dashes after every shot.<br><br>Passive: Zeri's Basic Attacks fire @NumBullets@ bullets, each dealing @PercentAD*100@% of her Attack Damage as physical damage and @ModifiedBonusOnHit@ bonus magic damage to the first unit hit. <br><br><TFTDebonairVIP>VIP Bonus: Zeri's electrified duration lasts until the end of combat. </TFTDebonairVIP>",
+			"desc": "Zeri charges herself up with electricity for @Duration@ seconds. While electrified, she aims at the farthest enemy, her attacks pierce, and she dashes after every shot.<br><br>Passive: Zeri's Basic Attacks fire @NumBullets@ bullets, each dealing @PercentAD*100@% of her Attack Damage as physical damage and @ModifiedBonusOnHit@ bonus magic damage. <br><br><TFTDebonairVIP>VIP Bonus: Zeri's electrified duration lasts until the end of combat. </TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Zeri/HUD/Icons2D/ZeriR.Zeri.dds",
 			"name": "Lightning Crash",
 			"variables": [
@@ -4313,21 +4313,21 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentAD",
 					"value": [
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213
+						0.15000000596046448,
+						0.15000000596046448,
+						0.15000000596046448,
+						0.15000000596046448,
+						0.15000000596046448,
+						0.15000000596046448,
+						0.15000000596046448
 					]
 				},
 				{
 					"name": "BonusOnHit",
 					"value": [
 						0,
-						20,
-						30,
+						15,
+						25,
 						124,
 						0,
 						0,
@@ -4492,9 +4492,9 @@ export const champions: ChampionData[] = [
 					"name": "BaseDamage",
 					"value": [
 						0,
-						250,
-						340,
-						480,
+						225,
+						300,
+						450,
 						0,
 						0,
 						0

@@ -188,6 +188,7 @@ const stringIDReplacements: Record<string, string> = {
 	'c9b0e3af': 'PercentOmnivamp',
 	'ce492058': 'ManaGrant',
 	'2fb31c01': 'Frequency',
+	'e86b1aa9': 'BonusHealthTooltip',
 
 	'76882e8f': 'MutantCyberHealth',
 	'190fb0a2': 'MutantMetamorphosisArmorMR',
