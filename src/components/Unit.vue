@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
+import { computed, defineProps, ref } from 'vue'
 
 import type { ChampionUnit } from '#/game/unit'
 import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
@@ -15,6 +15,8 @@ const { state, setStarLevel, startDragging, copyItem, moveItem, dropUnit } = use
 const props = defineProps<{
 	unit: ChampionUnit
 }>()
+
+const showInfo = ref(false)
 
 const currentPosition = computed(() => {
 	const [col, row] = props.unit.currentPosition()
@@ -51,6 +53,12 @@ function onDrop(event: DragEvent) {
 		dropUnit(event, name, props.unit.startPosition)
 	}
 }
+
+function onInfo(event: Event) {
+	event.preventDefault()
+	showInfo.value = !showInfo.value
+	return false
+}
 </script>
 
 <template>
@@ -58,7 +66,7 @@ function onDrop(event: DragEvent) {
 	class="unit  group"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
-	@dragover="onDragOver" @drop="onDrop"
+	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"
 >
 	<div class="overlay bars">
 		<div class="bar">
@@ -86,6 +94,13 @@ function onDrop(event: DragEvent) {
 		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.isRunning" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
+	</div>
+	<div v-if="showInfo" class="p-1 bg-gray-100">
+		AR: {{ unit.armor() }}
+		MR: {{ unit.magicResist() }}
+		AS: {{ unit.attackSpeed().toFixed(2) }}
+		AD: {{ unit.attackDamage() }}
+		AP: {{ unit.abilityPowerMultiplier() * 100 }}
 	</div>
 </div>
 </template>
