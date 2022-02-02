@@ -1,11 +1,10 @@
-let frameID: number | null = null
-
 import { useStore } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 import { hexEffects } from '#/data/set6/abilities'
 
 const { state, gameOver } = useStore()
 
+let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
 
 const MOVE_LOCKOUT_JUMPERS_MS = 500
@@ -24,8 +23,8 @@ function applyPendingHexEffects(elapsedMS: DOMHighResTimeStamp) {
 			if (hexEffect.damage != null) {
 				unit.damage(elapsedMS, hexEffect.damage, hexEffect.damageType!, hexEffect.source, state.units, gameOver)
 			}
-			if (hexEffect.stunDuration != null) {
-				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunDuration)
+			if (hexEffect.stunMS != null) {
+				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)
 			}
 		}
 		hexEffects.splice(index, 1)
