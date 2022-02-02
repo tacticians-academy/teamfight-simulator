@@ -1,14 +1,14 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import type { DamageType, HexCoord } from '#/helpers/types'
+import { DamageType } from '#/helpers/types'
+import type { HexCoord } from '#/helpers/types'
 
 const DEFAULT_CAST_MS = 500
 const DEFAULT_MANA_LOCK_MS = 1000
 
 export interface HexEffectData {
-	activatesAfterMS: DOMHighResTimeStamp
-	source: ChampionUnit
-	targetTeam: number
+	activatesAfterMS?: DOMHighResTimeStamp
 	hexes: HexCoord[]
+	targetTeam?: number
 	damage?: number
 	damageType?: DamageType
 	stunSeconds?: number
@@ -23,16 +23,16 @@ export class HexEffect {
 	damageType: DamageType | null
 	stunMS: number | null
 
-	constructor(elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
-		this.activatesAtMS = data.activatesAfterMS === -1 ? elapsedMS + DEFAULT_CAST_MS : data.activatesAfterMS
-		this.source = data.source
-		this.targetTeam = data.targetTeam
+	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
+		this.activatesAtMS = elapsedMS + (data.activatesAfterMS == null ? DEFAULT_CAST_MS : data.activatesAfterMS)
+		this.source = source
+		this.targetTeam = data.targetTeam ?? source.opposingTeam()
 		this.hexes = data.hexes
 		this.damage = data.damage ?? null
-		this.damageType = data.damageType ?? null
+		this.damageType = data.damage != null ? data.damageType ?? DamageType.magic : null
 		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
 
-		data.source.attackStartAtMS = this.activatesAtMS
-		data.source.manaLockUntilMS = this.activatesAtMS + DEFAULT_MANA_LOCK_MS
+		source.attackStartAtMS = this.activatesAtMS
+		source.manaLockUntilMS = this.activatesAtMS + DEFAULT_MANA_LOCK_MS
 	}
 }
