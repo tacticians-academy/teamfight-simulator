@@ -5,6 +5,14 @@ import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
 import { BonusKey } from '#/helpers/types'
 import type { BonusVariable, ItemData, SynergyData } from '#/helpers/types'
 
+function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], teamSynergies: SynergyData[]) {
+	if (!unitTraitNames.includes(trait)) {
+		return undefined
+	}
+	const synergy = teamSynergies.find(synergy => synergy[0].name === trait)
+	return synergy?.[2] ?? synergy?.[0].effects[0]
+}
+
 export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: string[]) {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
@@ -44,16 +52,21 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 			bonuses.push([trait.name as TraitKey, variables])
 		}
 	})
+
 	// Innate bonuses (not handled in data)
-	//TODO Colossus
-	if (unitTraitNames.includes(TraitKey.Sniper)) {
-		const synergy = teamSynergies.find(synergy => synergy[0].name === TraitKey.Sniper)
-		const synergyEffect = synergy?.[2]
-		if (!synergyEffect) {
-			const synergyData = synergy?.[0]
-			const value = synergyData?.effects[0].variables[BonusKey.HexRangeIncrease] ?? 1
-			bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
+	const colossusEffect = getInnateEffectForUnitWith(TraitKey.Colossus, unitTraitNames, teamSynergies)
+	if (colossusEffect) {
+		const value = colossusEffect.variables['HPTooltip']
+		if (value != null) {
+			bonuses.push([TraitKey.Colossus, [['HP', value]]])
+		} else {
+			console.log('Missing Colossus HP bonus', colossusEffect)
 		}
+	}
+	const sniperEffect = getInnateEffectForUnitWith(TraitKey.Colossus, unitTraitNames, teamSynergies)
+	if (sniperEffect) {
+		const value = sniperEffect.variables[BonusKey.HexRangeIncrease]
+		bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
 	}
 	return bonuses
 }
