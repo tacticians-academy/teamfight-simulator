@@ -387,20 +387,20 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"{02ce80f2}": 8,
-					"MutantMetamorphosisArmorMR": 40,
-					"{2f805979}": 90,
+					"MutantMetamorphosisArmorMR": 35,
+					"{2f805979}": 80,
 					"{2fb1d11d}": 0.03999999910593033,
 					"{3f1cec4d}": 20,
 					"Colossus/Mutant/Socialite": 3,
 					"{66d8ecb1}": 50,
 					"{6b5aee70}": 2,
-					"MutantCyberHP": 1500,
-					"{7c799240}": 45,
+					"MutantCyberHP": 1350,
+					"{7c799240}": 40,
 					"{7f322ebf}": 40,
 					"{82e43c84}": 40,
 					"{994006f0}": 7,
-					"{9cc303b4}": 100,
-					"{b6322d58}": 100,
+					"{9cc303b4}": 80,
+					"{b6322d58}": 90,
 					"{c26236e7}": 100,
 					"{f3cab19f}": 175,
 					"{f90dd382}": 60
@@ -412,14 +412,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Mastermind",
-		"desc": "At the start of combat, the Mastermind grants the 2 allies directly in front of him @ManaGrant@% of their maximum Mana.",
+		"desc": "At the start of combat, the Mastermind grants the 2 allies directly in front of him @ManaGrant@ Mana.",
 		"effects": [
 			{
 				"maxUnits": 25000,
 				"minUnits": 1,
 				"style": 3,
 				"variables": {
-					"ManaGrant": 40
+					"ManaGrant": 50
 				}
 			}
 		],
@@ -597,7 +597,7 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"BonusAD": 5,
+					"BonusAD": 10,
 					"ProcChance": 40
 				}
 			},
@@ -662,7 +662,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"BonusHP": 400
+					"BonusHP": 450
 				}
 			},
 			{
@@ -670,7 +670,7 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"BonusHP": 700
+					"BonusHP": 800
 				}
 			}
 		],
@@ -739,8 +739,8 @@ export const traits: TraitData[] = [
 				"minUnits": 3,
 				"style": 1,
 				"variables": {
-					"HP": 200,
-					"AP": 20
+					"HP": 150,
+					"AP": 15
 				}
 			},
 			{
@@ -748,8 +748,8 @@ export const traits: TraitData[] = [
 				"minUnits": 5,
 				"style": 3,
 				"variables": {
-					"HP": 600,
-					"AP": 60
+					"HP": 450,
+					"AP": 45
 				}
 			},
 			{
@@ -757,8 +757,8 @@ export const traits: TraitData[] = [
 				"minUnits": 7,
 				"style": 4,
 				"variables": {
-					"HP": 1000,
-					"AP": 100
+					"HP": 800,
+					"AP": 80
 				}
 			}
 		],
@@ -853,7 +853,7 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"BonusAD": 40
+					"BonusAD": 30
 				}
 			},
 			{
@@ -861,7 +861,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
-					"BonusAD": 75
+					"BonusAD": 65
 				}
 			},
 			{

@@ -1,7 +1,7 @@
 import type { ItemData } from '#/helpers/types'
 
 export enum ItemKey {
-	BFSword = 1, RecurveBow = 2, NeedlesslyLargeRod = 3, TearOfTheGoddess = 4, ChainVest = 5, NegatronCloak = 6, GiantsBelt = 7, Spatula = 8, SparringGloves = 9, Deathblade = 11, GiantSlayer = 12, HextechGunblade = 13, SpearOfShojin = 14, EdgeOfNight = 15, Bloodthirster = 16, ZekesHerald = 17, ImperialEmblem = 18, InfinityEdge = 19, RapidFirecannon = 22, GuinsoosRageblade = 23, StatikkShiv = 24, TitansResolve = 25, RunaansHurricane = 26, ZzRotPortal = 27, ChallengerEmblem = 28, LastWhisper = 29, RabadonsDeathcap = 33, ArchangelsStaff = 34, LocketOfTheIronSolari = 35, IonicSpark = 36, Morellonomicon = 37, ArcanistEmblem = 38, JeweledGauntlet = 39, BlueBuff = 44, FrozenHeart = 45, ChaliceOfPower = 46, Redemption = 47, AcademyEmblem = 48, HandOfJustice = 49, BrambleVest = 55, GargoyleStoneplate = 56, SunfireCape = 57, BodyguardEmblem = 58, ShroudOfStillness = 59, DragonsClaw = 66, Zephyr = 67, SyndicateEmblem = 68, Quicksilver = 69, DebonairEmblem = 70, StrikerEmblem = 71, HextechEmblem = 72, WarmogsArmor = 77, ChemtechEmblem = 78, BansheesClaw = 79, AssassinEmblem = 89, ThiefsGloves = 99, MutantEmblem = 2190, ClockworkEmblem = 2191, MercenaryEmblem = 2192, SocialiteEmblem = 2193, EnforcerEmblem = 2194, ScrapEmblem = 2195, ProtectorEmblem = 2196, BruiserEmblem = 2197, InnovatorEmblem = 2198, SniperEmblem = 2199, ScholarEmblem = 2200
+	BFSword = 1, RecurveBow = 2, NeedlesslyLargeRod = 3, TearOfTheGoddess = 4, ChainVest = 5, NegatronCloak = 6, GiantsBelt = 7, Spatula = 8, SparringGloves = 9, Deathblade = 11, GiantSlayer = 12, HextechGunblade = 13, SpearOfShojin = 14, Bloodthirster = 16, ZekesHerald = 17, ImperialEmblem = 18, InfinityEdge = 19, RapidFirecannon = 22, GuinsoosRageblade = 23, StatikkShiv = 24, TitansResolve = 25, RunaansHurricane = 26, ZzRotPortal = 27, ChallengerEmblem = 28, LastWhisper = 29, RabadonsDeathcap = 33, ArchangelsStaff = 34, LocketOfTheIronSolari = 35, IonicSpark = 36, Morellonomicon = 37, ArcanistEmblem = 38, JeweledGauntlet = 39, BlueBuff = 44, FrozenHeart = 45, ChaliceOfPower = 46, Redemption = 47, AcademyEmblem = 48, HandOfJustice = 49, BrambleVest = 55, GargoyleStoneplate = 56, SunfireCape = 57, BodyguardEmblem = 58, ShroudOfStillness = 59, DragonsClaw = 66, Zephyr = 67, SyndicateEmblem = 68, Quicksilver = 69, DebonairEmblem = 70, StrikerEmblem = 71, HextechEmblem = 72, WarmogsArmor = 77, ChemtechEmblem = 78, BansheesClaw = 79, AssassinEmblem = 89, EdgeOfNight = 94, ThiefsGloves = 99, MutantEmblem = 2190, ClockworkEmblem = 2191, MercenaryEmblem = 2192, SocialiteEmblem = 2193, EnforcerEmblem = 2194, ScrapEmblem = 2195, ProtectorEmblem = 2196, BruiserEmblem = 2197, InnovatorEmblem = 2198, SniperEmblem = 2199, ScholarEmblem = 2200
 }
 
 export const items: ItemData[] = [
@@ -176,25 +176,6 @@ export const items: ItemData[] = [
 		"id": 14,
 		"name": "Spear of Shojin",
 		"unique": false
-	},
-	{
-		"desc": "When the holder first drops below @HPThreshold@% health, they briefly enter stealth, becoming untargetable and shedding negative effects. After coming out of stealth, the holder gains an additional %i:scaleAS% @AS@% bonus Attack Speed.<br><br><tftitemrules>[Unique - only one per champion]</tftitemrules>",
-		"effects": {
-			"AD": 10,
-			"Armor": 20,
-			"AS": 30,
-			"DamageReduction": 100,
-			"HPThreshold": 50,
-			"StealthDuration": 1
-		},
-		"from": [
-			1,
-			5
-		],
-		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard_New/Edge_Of_Night.dds",
-		"id": 15,
-		"name": "Edge of Night",
-		"unique": true
 	},
 	{
 		"desc": "Physical damage heals the holder for @Lifesteal@% of the damage dealt. Upon falling below @HPThreshold@% Health, the holder gains a @ShieldHealthPercent@% maximum Health shield that lasts up to @ShieldDuration@ seconds.",
@@ -884,6 +865,25 @@ export const items: ItemData[] = [
 		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Spatula/Set6/Assassin.TFT_Set6.dds",
 		"id": 89,
 		"name": "Assassin Emblem",
+		"unique": true
+	},
+	{
+		"desc": "When the holder first drops below @HPThreshold@% health, they briefly enter stealth, becoming untargetable and shedding negative effects. After coming out of stealth, the holder gains an additional %i:scaleAS% @AS@% bonus Attack Speed.<br><br><tftitemrules>[Unique - only one per champion]</tftitemrules>",
+		"effects": {
+			"AD": 10,
+			"Armor": 20,
+			"AS": 40,
+			"DamageReduction": 100,
+			"HPThreshold": 50,
+			"StealthDuration": 1
+		},
+		"from": [
+			1,
+			5
+		],
+		"icon": "ASSETS/Maps/Particles/TFT/Item_Icons/Standard_New/Edge_Of_Night.dds",
+		"id": 94,
+		"name": "Edge of Night",
 		"unique": true
 	},
 	{

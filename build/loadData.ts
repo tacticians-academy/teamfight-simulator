@@ -22,10 +22,11 @@ console.log('Loading set', currentSetNumber, 'from', LOAD_PBE ? 'PBE' : 'Live', 
 
 const itemData = responseJSON.items as Record<string, any>[]
 const standardComponents = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+const retiredItems = [15]
 const spatulaItemKey = `/spatula/set${currentSetNumber}/`
 const foundItemIDs: number[] = []
 const currentItems = (itemData as ItemData[]).reverse().filter(item => {
-	if (foundItemIDs.includes(item.id)) {
+	if (foundItemIDs.includes(item.id) || retiredItems.includes(item.id)) {
 		return false
 	}
 	const name = (item.name as string).toLowerCase()

@@ -3,7 +3,7 @@ import type { ChampionData } from '#/helpers/types'
 export const champions: ChampionData[] = [
 	{
 		"ability": {
-			"desc": "Leona calls down a beacon of light upon herself, granting herself a @ModifiedShielding@ Health shield for @Duration@ seconds. Leona and allies within 2 hexes gain @BonusStats@ Armor and Magic Resistance for the same duration.<br><br><TFTDebonairVIP>VIP Bonus: Every second, Leona heals herself for @T1DebutantBonus@ health for each unit targeting her.</TFTDebonairVIP>",
+			"desc": "Leona calls down a beacon of light upon herself, granting herself a @ModifiedShielding@ Health shield for @Duration@ seconds. Leona and allies within 2 hexes gain @BonusStats@ Armor and Magic Resistance for the same duration.<br><br><TFTDebonairVIP>VIP Bonus: Every second, Leona heals herself for @T1DebutantBonus@% max health for each unit targeting her.</TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Leona/HUD/Icons2D/LeonaSolarFlare.dds",
 			"name": "Solar Eclipse",
 			"variables": [
@@ -46,13 +46,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "T1DebutantBonus",
 					"value": [
-						15,
-						15,
-						15,
-						15,
-						15,
-						15,
-						15
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5
 					]
 				}
 			]
@@ -1467,7 +1467,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Galio becomes invulnerable and leaps into the sky before crashing down on the largest group of enemies. Enemies within a large radius take <scaleAP>@TotalDamage@</scaleAP> magic damage (@ModifiedDamage@ + @MaxHealthPercent*100@% of Galio's <health>maximum Health</health> %i:scaleHealth%) and are knocked up for @StunDuration@ second.<br><br>Passive: Galio's Critical Strikes slam the ground, dealing @ModifiedBonusDamage@ bonus magic damage to enemies around his target.",
+			"desc": "Galio becomes invulnerable and leaps into the sky before crashing down on the largest group of enemies. Enemies within a large radius take <scaleAP>@TotalDamage@</scaleAP> magic damage (@ModifiedDamage@ + @MaxHealthPercent*100@% of Galio's <health>maximum Health</health> %i:scaleHealth%) and are knocked up for @StunDuration@ second(s).<br><br>Passive: Galio's Critical Strikes slam the ground, dealing @ModifiedBonusDamage@ bonus magic damage to enemies around his target.",
 			"icon": "ASSETS/Characters/Galio/HUD/Icons2D/Galio_R.dds",
 			"name": "Colossal Entrance",
 			"variables": [
@@ -1475,8 +1475,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						200,
-						200,
-						300,
+						150,
+						225,
 						9001,
 						200,
 						200,
@@ -1500,7 +1500,7 @@ export const champions: ChampionData[] = [
 					"value": [
 						1,
 						1,
-						1,
+						1.5,
 						10,
 						1.5,
 						1.5,
@@ -1522,13 +1522,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "MaxHealthPercent",
 					"value": [
-						0.10000000149011612,
-						0.10000000149011612,
-						0.10000000149011612,
-						0.10000000149011612,
-						0.10000000149011612,
-						0.10000000149011612,
-						0.10000000149011612
+						0.05000000074505806,
+						0.05000000074505806,
+						0.05000000074505806,
+						0.05000000074505806,
+						0.05000000074505806,
+						0.05000000074505806,
+						0.05000000074505806
 					]
 				}
 			]
@@ -1798,7 +1798,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.699999988079071,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 50,
+			"damage": 65,
 			"hp": 700,
 			"initialMana": 80,
 			"magicResist": 40,
@@ -2884,7 +2884,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Brand launches a fireball at the nearest enemy, lighting them ablaze for @BlazeDuration@ seconds and dealing @ModifiedDamage@ magic damage. If the enemy is already on fire, they take @ModifiedBonusDamage@ bonus magic damage which stuns them for @StunDuration@ seconds. (total: @TotalDamage@%i:scaleAP%)<br><br><TFTDebonairVIP>VIP Bonus: Brand fires a 2nd fireball at the farthest enemy. </TFTDebonairVIP>",
+			"desc": "Brand launches a fireball at the nearest enemy, lighting them ablaze for @BlazeDuration@ seconds and dealing @ModifiedDamage@ magic damage. If the enemy is already on fire, they take @ModifiedBonusDamage@ bonus magic damage which stuns them for @StunDuration@ seconds. (total: @TotalDamage@%i:scaleAP%)<br><br><TFTDebonairVIP>VIP Bonus: Brand fires a 2nd fireball at a different nearby target (prioritizes ablaze enemies) dealing @VIPBonusReducedDamage@% reduced damage . </TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Brand/HUD/Icons2D/BrandQ.dds",
 			"name": "Sear",
 			"variables": [
@@ -2937,15 +2937,15 @@ export const champions: ChampionData[] = [
 					]
 				},
 				{
-					"name": "T1DebutantBonus",
+					"name": "VIPBonusReducedDamage",
 					"value": [
-						40,
-						40,
-						40,
-						40,
-						40,
-						40,
-						40
+						20,
+						20,
+						20,
+						20,
+						20,
+						20,
+						20
 					]
 				}
 			]
@@ -3005,9 +3005,9 @@ export const champions: ChampionData[] = [
 					"name": "StunDuration",
 					"value": [
 						0,
+						1.5,
 						2,
 						3,
-						4,
 						0,
 						0,
 						0
@@ -3017,9 +3017,9 @@ export const champions: ChampionData[] = [
 					"name": "MagicDamage",
 					"value": [
 						0,
-						300,
-						450,
-						750,
+						275,
+						400,
+						650,
 						0,
 						0,
 						0
@@ -3116,20 +3116,20 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Rek'Sai bites her target, dealing @ADPercent*100@% of her Attack Damage and stealing @ModifiedDefensiveSteal@ of her target's Armor and Magic Resist. ",
+			"desc": "Rek'Sai bites her target, dealing <scaleAD>@TotalDamage@</scaleAD> (@ADPercent*100@% of her Attack Damage %i:scaleAD% + @ModifiedDamage@), stealing @ModifiedDefensiveSteal@ of her target's Armor and Magic Resist, and healing herself for @Heal@ health.",
 			"icon": "ASSETS/Characters/RekSai/HUD/Icons2D/RekSai_E1.dds",
 			"name": "Furious Bite",
 			"variables": [
 				{
 					"name": "ADPercent",
 					"value": [
-						1.75,
-						1.75,
-						1.75,
-						1.75,
-						1.75,
-						1.75,
-						1.75
+						1.25,
+						1.25,
+						1.25,
+						1.25,
+						1.25,
+						1.25,
+						1.25
 					]
 				},
 				{
@@ -3139,6 +3139,30 @@ export const champions: ChampionData[] = [
 						0.30000001192092896,
 						0.4000000059604645,
 						0.6000000238418579,
+						0,
+						0,
+						0
+					]
+				},
+				{
+					"name": "Damage",
+					"value": [
+						0,
+						100,
+						150,
+						200,
+						0,
+						0,
+						0
+					]
+				},
+				{
+					"name": "Heal",
+					"value": [
+						0,
+						150,
+						300,
+						600,
 						0,
 						0,
 						0
@@ -3254,13 +3278,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentDamage",
 					"value": [
-						0.6000000238418579,
-						0.6000000238418579,
-						0.6000000238418579,
-						0.6000000238418579,
-						0.6000000238418579,
-						0.6000000238418579,
-						0.6000000238418579
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5
 					]
 				},
 				{
@@ -3757,13 +3781,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "MSBuff",
 					"value": [
-						1000,
-						1000,
-						1000,
-						1000,
-						1000,
-						1000,
-						1000
+						1350,
+						1350,
+						1350,
+						1350,
+						1350,
+						1350,
+						1350
 					]
 				},
 				{
@@ -3827,7 +3851,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Ahri fires an orb in a line, dealing @ModifiedDamage@ magic damage to all enemies it passes through on the way out and the way back. Ahri fires @SpiritFireStacks@ additional orb(s) for each time she has cast this combat.",
+			"desc": "Ahri fires an orb in a line, dealing @ModifiedDamage@ magic damage to all enemies it passes through on the way out and the way back. Enemies already hit by an orb take @MultiOrbDamage*100@% damage for each subsequent orb. Ahri fires @SpiritFireStacks@ additional orb(s) for each time she has cast this combat.",
 			"icon": "ASSETS/Characters/Ahri/HUD/Icons2D/Ahri_OrbofDeception.dds",
 			"name": "Orbs of Deception",
 			"variables": [
@@ -3835,9 +3859,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						150,
-						100,
-						160,
-						250,
+						125,
+						190,
+						450,
 						500,
 						400,
 						400
@@ -3866,6 +3890,18 @@ export const champions: ChampionData[] = [
 						0,
 						0
 					]
+				},
+				{
+					"name": "MultiOrbDamage",
+					"value": [
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929
+					]
 				}
 			]
 		},
@@ -3875,7 +3911,7 @@ export const champions: ChampionData[] = [
 		"name": "Ahri",
 		"stats": {
 			"armor": 30,
-			"attackSpeed": 0.800000011920929,
+			"attackSpeed": 0.75,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 45,
@@ -3977,7 +4013,7 @@ export const champions: ChampionData[] = [
 			"initialMana": 25,
 			"magicResist": 25,
 			"mana": 50,
-			"range": 3
+			"range": 4
 		},
 		"traits": [
 			"Yordle",
@@ -4116,9 +4152,9 @@ export const champions: ChampionData[] = [
 			"critMultiplier": 1.2999999523162842,
 			"damage": 100,
 			"hp": 1200,
-			"initialMana": 150,
+			"initialMana": 80,
 			"magicResist": 60,
-			"mana": 225,
+			"mana": 160,
 			"range": 1
 		},
 		"traits": [
@@ -4326,9 +4362,9 @@ export const champions: ChampionData[] = [
 					"name": "BonusOnHit",
 					"value": [
 						0,
-						15,
-						25,
-						124,
+						10,
+						20,
+						50,
 						0,
 						0,
 						0
@@ -4371,15 +4407,15 @@ export const champions: ChampionData[] = [
 					]
 				},
 				{
-					"name": "VIPBullets",
+					"name": "VIPTotalDuration",
 					"value": [
-						5,
-						5,
-						5,
-						5,
-						5,
-						5,
-						5
+						60,
+						60,
+						60,
+						60,
+						60,
+						60,
+						60
 					]
 				}
 			]
