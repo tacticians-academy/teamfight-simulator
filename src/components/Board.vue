@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Unit from '#/components/Unit.vue'
+import Projectile from '#/components/Projectile.vue'
 
 import { onMounted, ref } from 'vue'
 
@@ -60,6 +61,9 @@ onMounted(() => {
 		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.name + unit.startPosition">
 				<Unit v-if="!unit.dead" :unit="unit" />
+			</template>
+			<template v-for="projectile in state.projectiles" :key="projectile">
+				<Projectile :projectile="projectile" />
 			</template>
 		</div>
 	</div>

@@ -22,6 +22,7 @@ export const HALF_HEX_BORDER_UNITS = `${HEX_BORDER_PROPORTION / 2}vw`
 export const HALF_HEX_UNITS = `${HEX_SIZE_PROPORTION / 2}vw`
 export const QUARTER_HEX_INSET_UNITS = `-${HEX_SIZE_PROPORTION / 4}vw`
 export const HEX_GAP_BETWEEN_SIDE_EDGES_UNITS = `${HEX_SIZE_PROPORTION / 4 + HEX_BORDER_PROPORTION}vw`
+export const PROJECTILE_UNITS = `${HEX_SIZE_PROPORTION / 8}vw`
 
 export const LOCKED_STAR_LEVEL_BY_UNIT_API_NAME: Record<string, StarLevel> = {
 	TFT6_MalzaharVoidling: 1,
