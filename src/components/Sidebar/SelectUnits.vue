@@ -21,17 +21,15 @@ unitGroups[1][1].sort((a, b) => b.cost - a.cost)
 </script>
 
 <template>
-<div>
-	<div v-for="[title, group] in unitGroups" :key="title">
-		<div class="font-semibold">{{ title }}</div>
-		<div class="flex flex-wrap">
-			<div
-				v-for="unit in group" :key="unit.name"
-				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit)})` }"
-				:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
-			>
-				<span class="group-hover-visible  break-words w-full">{{ unit.name }}</span>
-			</div>
+<div v-for="[title, group] in unitGroups" :key="title" class="sidebar-icons-group">
+	<div class="font-semibold">{{ title }}</div>
+	<div class="sidebar-icons-container">
+		<div
+			v-for="unit in group" :key="unit.name"
+			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit)})` }"
+			:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
+		>
+			<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
 		</div>
 	</div>
 </div>

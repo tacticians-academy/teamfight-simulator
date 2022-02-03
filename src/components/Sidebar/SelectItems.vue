@@ -31,22 +31,17 @@ function onDrag(event: DragEvent, name: string) {
 <div
 	v-for="[title, group] in itemGroups" :key="title"
 	:draggable="!state.isRunning"
+	class="sidebar-icons-group"
 >
 	<div class="font-semibold">{{ title }}</div>
-	<div class="sidebar-icon-container">
+	<div class="sidebar-icons-container">
 		<div
 			v-for="item in group" :key="item.name"
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(item)})` }"
 			:draggable="!state.isRunning" @dragstart="onDrag($event, item.name)"
 		>
-			<div class="group-hover-visible  break-words w-full">{{ item.name }}</div>
+			<div class="sidebar-icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>
 	</div>
 </div>
 </template>
-
-<style scoped lang="postcss">
-.group-hover-visible {
-	font-size: 1.4vw;
-}
-</style>

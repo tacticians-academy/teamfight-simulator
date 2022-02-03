@@ -68,16 +68,21 @@ function onDrop(event: DragEvent) {
 	width: v-bind(SIDEBAR_UNITS);
 }
 
-.sidebar-icon-container {
-	@apply flex flex-wrap;
-	padding-left: 0.1vw;
+.sidebar-icons-group {
+	padding: 0 0.25vw;
+}
+.sidebar-icons-container {
+	@apply flex flex-wrap justify-between;
 }
 .sidebar-icon {
-	@apply text-white bg-cover font-semibold rounded  flex justify-center items-center text-center;
+	@apply text-white bg-cover font-semibold rounded aspect-square;
+	@apply flex justify-center items-center text-center;
 	font-size: 1.7vw;
-	width: 6.5vw;
-	height: 6.5vw;
-	margin: 0.25vw 0 0 0.25vw;
+	width: calc(33.3333333333% - 0.25vw * 2 / 3);
+	margin-bottom: 0.25vw;
 	background-position-x: 75%;
+}
+.sidebar-icon-name {
+	@apply break-words w-full max-h-full leading-tight;
 }
 </style>
