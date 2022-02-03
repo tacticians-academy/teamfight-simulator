@@ -2,7 +2,7 @@ import { markRaw } from 'vue'
 
 import abilities from '#/data/set6/abilities'
 import { champions } from '#/data/set6/champions'
-import type { ItemKey } from '#/data/set6/items'
+import { ItemKey } from '#/data/set6/items'
 import { TraitKey, traits } from '#/data/set6/traits'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
@@ -100,12 +100,24 @@ export class ChampionUnit {
 			const msBetweenAttacks = 1000 / this.attackSpeed()
 			if (elapsedMS >= this.attackStartAtMS + msBetweenAttacks) {
 				if (this.attackStartAtMS > 0) {
-					this.target.damage(elapsedMS, this.attackDamage(), DamageType.physical, this, units, gameOver) //TODO projectile
+					const damage = this.attackDamage()
+					this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver) //TODO projectile
 					this.gainMana(elapsedMS, 10)
 				}
 				this.attackStartAtMS = elapsedMS
 			}
 		}
+	}
+
+	critChance() {
+		return (this.data.stats.critChance ?? 0) + this.getBonuses(BonusKey.CritChance) / 100
+	}
+	critMultiplier() {
+		const excessCritChance = this.critChance() - 1
+		return this.data.stats.critMultiplier + Math.max(0, excessCritChance) + this.getBonuses(BonusKey.CritMultiplier) / 100
+	}
+	critReduction() {
+		return this.getBonuses(BonusKey.CritReduction) / 100
 	}
 
 	updateMove(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -158,28 +170,39 @@ export class ChampionUnit {
 		this.mana = Math.min(this.manaMax(), this.mana + amount)
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, rawDamage: number, type: DamageType, fromUnit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	die(units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+		this.health = 0
+		this.dead = true
+		if (units.find(unit => unit.team === this.team && !unit.dead)) {
+			updatePaths(units)
+		} else {
+			gameOver(this.team)
+		}
+	}
+
+	damage(elapsedMS: DOMHighResTimeStamp, rawDamage: number, type: DamageType, source: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		const defenseStat = type === DamageType.physical
 			? this.armor()
 			: type === DamageType.magic
 				? this.magicResist()
 				: null
 		if (type === DamageType.magic) {
-			rawDamage *= fromUnit.abilityPowerMultiplier()
+			rawDamage *= source.abilityPowerMultiplier()
+		}
+		if (type === DamageType.physical || (type === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
+			const critReduction = this.critReduction()
+			if (critReduction < 1) {
+				const critDamage = rawDamage * source.critChance() * source.critMultiplier()
+				rawDamage += critDamage * (1 - critReduction)
+			}
 		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
-		const takenDamage = rawDamage * defenseMultiplier
-		if (this.health < takenDamage) {
-			this.health = 0
-			this.dead = true
-			if (units.find(unit => unit.team === this.team && !unit.dead)) {
-				updatePaths(units)
-			} else {
-				gameOver(this.team)
-			}
+		const takingDamage = rawDamage * defenseMultiplier
+		if (this.health <= takingDamage) {
+			this.die(units, gameOver)
 		} else {
-			this.health -= takenDamage
-			const manaGain = Math.min(42.5, rawDamage * 0.01 + takenDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
+			this.health -= takingDamage
+			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 			this.gainMana(elapsedMS, manaGain)
 		}
 	}
@@ -225,8 +248,14 @@ export class ChampionUnit {
 			}, 0)
 	}
 
-	hasTrait(name: TraitKey) {
-		return !!this.traits.find(trait => trait.name === name)
+	hasActive(name: TraitKey | ItemKey) {
+		return !!this.bonuses.find(bonus => bonus[0] === name)
+	}
+	hasItem(key: ItemKey) {
+		return !!this.items.find(item => item.id === key)
+	}
+	hasTrait(key: TraitKey) {
+		return !!this.traits.find(trait => trait.name === key)
 	}
 	jumpsToBackline() {
 		return this.hasTrait(TraitKey.Assassin)
