@@ -2,10 +2,13 @@ import { useStore } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 import { hexEffects } from '#/data/set6/abilities'
 
+const GAME_TICK_MS = 30
+
 const { state, gameOver } = useStore()
 
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
+let previousFrameMS: DOMHighResTimeStamp = 0
 
 const MOVE_LOCKOUT_JUMPERS_MS = 500
 const MOVE_LOCKOUT_MELEE_MS = 1000
@@ -31,9 +34,22 @@ function applyPendingHexEffects(elapsedMS: DOMHighResTimeStamp) {
 	}
 }
 
+function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
+	if (unanimated === true) {
+		runLoop(frameMS + GAME_TICK_MS, true)
+	} else {
+		frameID = window.requestAnimationFrame(runLoop)
+	}
+}
 export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
+	const diffMS = frameMS - previousFrameMS
+	if (diffMS < GAME_TICK_MS - 1) {
+		requestNextFrame(frameMS, unanimated)
+		return
+	}
 	const isFirstLoop = !startedAtMS
 	if (isFirstLoop) {
+		previousFrameMS = frameMS
 		startedAtMS = frameMS
 		updatePaths(state.units)
 		didBacklineJump = false
@@ -75,11 +91,8 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		updatePaths(state.units)
 	}
 
-	if (unanimated === true) {
-		runLoop(frameMS + 60, true)
-	} else {
-		frameID = window.requestAnimationFrame(runLoop)
-	}
+	previousFrameMS = frameMS
+	requestNextFrame(frameMS, unanimated)
 }
 
 export function cancelLoop() {
