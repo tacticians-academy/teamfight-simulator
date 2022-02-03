@@ -6,10 +6,11 @@ import type { TraitKey } from '#/data/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
+import type { Projectile } from '#/game/Projectile'
 
 import { buildBoard } from '#/helpers/boardUtils'
-import { removeFirstFromArray } from '#/helpers/utils'
 import type { HexCoord, HexRowCol, ItemData, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
+import { removeFirstFromArray } from '#/helpers/utils'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
@@ -20,8 +21,9 @@ export const state = reactive({
 	hexRowsCols,
 	hexProportionX: 0,
 	hexProportionY: 0,
-	units: [] as ChampionUnit[],
 	dragUnit: null as ChampionUnit | null,
+	units: [] as ChampionUnit[],
+	projectiles: new Set<Projectile>(),
 })
 
 const getters = {
@@ -207,6 +209,7 @@ const store = {
 	},
 
 	resetGame() {
+		state.projectiles = new Set()
 		const synergiesByTeam = getters.synergiesByTeam.value
 		for (const unit of state.units) {
 			unit.reset(synergiesByTeam)

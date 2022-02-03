@@ -1,9 +1,6 @@
 import { getRowOfMost } from '#/helpers/abilityUtils'
-import { HexEffect } from '#/helpers/HexEffect'
+import { HexEffect, hexEffects } from '#/helpers/HexEffect'
 import type { AbilityFn } from '#/helpers/types'
-
-export const hexEffects: HexEffect[] = []
-export const projectiles = []
 
 export default {
 	Zyra: (elapsedMS, champion) => {

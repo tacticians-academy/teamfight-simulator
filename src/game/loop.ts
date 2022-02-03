@@ -1,6 +1,7 @@
 import { useStore } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
-import { hexEffects } from '#/data/set6/abilities'
+
+import { hexEffects } from '#/helpers/HexEffect'
 
 const GAME_TICK_MS = 30
 
@@ -60,6 +61,9 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 	applyPendingHexEffects(elapsedMS)
 
+	for (const projectile of state.projectiles) {
+		projectile.update(elapsedMS, diffMS, state.units, gameOver)
+	}
 	for (const unit of state.units) {
 		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS) {
 			continue

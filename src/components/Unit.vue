@@ -18,10 +18,7 @@ const props = defineProps<{
 
 const showInfo = ref(false)
 
-const currentPosition = computed(() => {
-	const [col, row] = props.unit.currentPosition()
-	return state.hexRowsCols[row][col].position
-})
+const currentPosition = computed(() => props.unit.coordinatePosition())
 
 const unitSizeX = `${100 * state.hexProportionX * UNIT_SIZE_HEX_PROPORTION}%`
 const unitSizeY = `${100 * state.hexProportionY * 0.8}%`

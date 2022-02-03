@@ -5,6 +5,8 @@ import type { HexCoord } from '#/helpers/types'
 const DEFAULT_CAST_MS = 500
 const DEFAULT_MANA_LOCK_MS = 1000
 
+export const hexEffects: HexEffect[] = [] // eslint-disable-line no-use-before-define
+
 export interface HexEffectData {
 	activatesAfterMS?: DOMHighResTimeStamp
 	hexes: HexCoord[]

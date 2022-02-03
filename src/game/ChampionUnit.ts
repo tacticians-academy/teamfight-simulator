@@ -13,6 +13,8 @@ import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_U
 import { saveUnits } from '#/helpers/storage'
 import { BonusKey, DamageType } from '#/helpers/types'
 import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
+import { state } from '#/game/store'
+import { Projectile } from '#/game/Projectile'
 
 export class ChampionUnit {
 	name: string
@@ -30,6 +32,7 @@ export class ChampionUnit {
 	starMultiplier = 1
 	isStarLocked: boolean
 	fixedAS: number | undefined = undefined
+	instantAttack: boolean
 
 	ghosting = false
 	cachedTargetDistance = 0
@@ -50,6 +53,7 @@ export class ChampionUnit {
 		this.name = name
 		this.starLevel = starLockedLevel ?? starLevel
 		this.ability = abilities[name]
+		this.instantAttack = this.data.stats.range <= 1
 		this.reset(synergiesByTeam)
 		this.reposition(position)
 	}
@@ -101,7 +105,11 @@ export class ChampionUnit {
 			if (elapsedMS >= this.attackStartAtMS + msBetweenAttacks) {
 				if (this.attackStartAtMS > 0) {
 					const damage = this.attackDamage()
-					this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver) //TODO projectile
+					if (this.instantAttack) {
+						this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver)
+					} else {
+						new Projectile(100, 0, this, this.target, damage, DamageType.physical)
+					}
 					this.gainMana(elapsedMS, 10)
 				}
 				this.attackStartAtMS = elapsedMS
@@ -228,6 +236,10 @@ export class ChampionUnit {
 	}
 	currentPosition() {
 		return this.activePosition ?? this.startPosition
+	}
+	coordinatePosition() {
+		const [col, row] = this.currentPosition()
+		return state.hexRowsCols[row][col].position
 	}
 
 	getAbilityValue(name: string) {
