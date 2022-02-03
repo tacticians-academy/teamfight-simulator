@@ -1,11 +1,9 @@
-import { useStore } from '#/game/store'
+import { state, gameOver } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
 import { hexEffects } from '#/helpers/HexEffect'
 
 const GAME_TICK_MS = 30
-
-const { state, gameOver } = useStore()
 
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
