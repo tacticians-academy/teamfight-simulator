@@ -229,14 +229,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Bodyguard",
-		"desc": "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a shield and taunt adjacent enemies, forcing them to attack the Bodyguard.<br><br><expandRow>(@MinUnits@) @Armor@ Armor, @ShieldAmount@ shield</expandRow>",
+		"desc": "Bodyguards have increased Armor. Shortly after combat begins, Bodyguards gain a shield and taunt adjacent enemies, forcing them to attack the Bodyguard.<br><br><expandRow>(@MinUnits@) @BonusArmor@ Armor, @ShieldAmount@ shield</expandRow>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"Armor": 80,
+					"BonusArmor": 80,
 					"ShieldAmount": 150
 				}
 			},
@@ -245,7 +245,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"Armor": 160,
+					"BonusArmor": 160,
 					"ShieldAmount": 350
 				}
 			},
@@ -254,7 +254,7 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"Armor": 250,
+					"BonusArmor": 250,
 					"ShieldAmount": 700
 				}
 			},
@@ -263,7 +263,7 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"Armor": 450,
+					"BonusArmor": 450,
 					"ShieldAmount": 1200
 				}
 			}
@@ -679,15 +679,15 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Assassin",
-		"desc": "Innate: When combat starts, Assassins leap to the enemy backline.<br><br>Assassins' Abilities can critically strike and they gain bonus Critical Strike Chance and bonus Critical Strike Damage.<br><br><expandRow>(@MinUnits@) +@CritChanceAmpPercent@% Crit Chance and +@CritAmpPercent@% Crit Damage</expandRow><br>",
+		"desc": "Innate: When combat starts, Assassins leap to the enemy backline.<br><br>Assassins' Abilities can critically strike and they gain bonus Critical Strike Chance and bonus Critical Strike Damage.<br><br><expandRow>(@MinUnits@) +@CritChance@% Crit Chance and +@CritDamage@% Crit Damage</expandRow><br>",
 		"effects": [
 			{
 				"maxUnits": 3,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"CritAmpPercent": 20,
-					"CritChanceAmpPercent": 10
+					"CritDamage": 20,
+					"CritChance": 10
 				}
 			},
 			{
@@ -695,8 +695,8 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"CritAmpPercent": 40,
-					"CritChanceAmpPercent": 30
+					"CritDamage": 40,
+					"CritChance": 30
 				}
 			},
 			{
@@ -704,8 +704,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"CritAmpPercent": 60,
-					"CritChanceAmpPercent": 50
+					"CritDamage": 60,
+					"CritChance": 50
 				}
 			}
 		],

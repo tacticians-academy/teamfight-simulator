@@ -73,9 +73,10 @@ const normalizeKeys: Record<string, BonusKey> = {
 	ADBoost: `Bonus${BonusKey.AttackDamage}` as BonusKey,
 	AttackSpeed: BonusKey.AttackSpeed,
 	Health: BonusKey.Health,
-	BonusArmor: BonusKey.Armor,
 	MagicResist: BonusKey.MagicResist,
-	// BonusMR: BonusKey.MagicResist,
+	CritChanceAmpPercent: BonusKey.CritChance,
+	CritDamageAmp: BonusKey.CritMultiplier,
+	CritAmpPercent: BonusKey.CritMultiplier,
 }
 
 const stringIDReplacements: Record<string, string> = {

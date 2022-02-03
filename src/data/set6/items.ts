@@ -510,11 +510,11 @@ export const items: ItemData[] = [
 		"unique": true
 	},
 	{
-		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamageAmp@% bonus Critical Strike Damage and %i:scaleAP% @TooltipBonusAP@ bonus Ability Power.",
+		"desc": "The holder's magic and true damage from their Ability can critically strike. The holder gains @CritDamage@% bonus Critical Strike Damage and %i:scaleAP% @TooltipBonusAP@ bonus Ability Power.",
 		"effects": {
 			"AP": 20,
 			"CritChance": 15,
-			"CritDamageAmp": 30,
+			"CritDamage": 30,
 			"TooltipBonusAP": 10
 		},
 		"from": [
