@@ -3,7 +3,11 @@ import { state } from '#/game/store'
 
 import type { DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 
+let instanceIndex = 0
+
 export class Projectile {
+	instanceID: string
+
 	position: HexCoord
 	velocity: number
 	acceleration: number
@@ -13,6 +17,7 @@ export class Projectile {
 	damageType: DamageType
 
 	constructor(velocity: number, acceleration: number, source: ChampionUnit, target: ChampionUnit, damage: number, damageType: DamageType) {
+		this.instanceID = `p${instanceIndex += 1}`
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
 		this.position = [x, y]
 		this.velocity = velocity

@@ -14,7 +14,11 @@ export interface HexEffectData {
 	stunSeconds?: number
 }
 
+let instanceIndex = 0
+
 export class HexEffect {
+	instanceID: string
+
 	activatesAtMS: DOMHighResTimeStamp
 	source: ChampionUnit
 	targetTeam: number | null
@@ -25,6 +29,7 @@ export class HexEffect {
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
 		this.activatesAtMS = elapsedMS + (data.activatesAfterMS == null ? DEFAULT_CAST_MS : data.activatesAfterMS)
+		this.instanceID = `h${instanceIndex += 1}`
 		this.source = source
 		this.targetTeam = data.targetTeam ?? source.opposingTeam()
 		this.hexes = data.hexes
