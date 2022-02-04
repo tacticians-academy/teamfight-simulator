@@ -85,7 +85,7 @@ const store = {
 			const units = getSavedUnits()
 				.map(storageChampion => {
 					const championItems = storageChampion.items
-						.map(itemName => items.find(item => item.name === itemName))
+						.map(itemKey => items.find(item => item.id === itemKey))
 						.filter((item): item is ItemData => !!item)
 					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel, synergiesByTeam)
 					champion.items = championItems

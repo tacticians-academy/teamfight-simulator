@@ -1,3 +1,5 @@
+import type { ItemKey } from '#/data/set6/items'
+
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 export type HexCoord = [col: number, row: number]
@@ -13,7 +15,7 @@ export interface StorageChampion {
 	name: string
 	position: HexCoord
 	starLevel: StarLevel
-	items: string[]
+	items: ItemKey[]
 }
 
 export type UnitLevelStats = [number, number?, number?]

@@ -8,7 +8,7 @@ export function saveUnits() {
 			name: unit.name,
 			position: unit.startPosition,
 			starLevel: unit.starLevel,
-			items: unit.items.map(item => item.name),
+			items: unit.items.map(item => item.id),
 		}))
 	window.localStorage.setItem('TFTSIM_units', JSON.stringify(output))
 }
@@ -16,4 +16,10 @@ export function saveUnits() {
 export function getSavedUnits() {
 	const raw = window.localStorage.getItem('TFTSIM_units')
 	return raw != null && raw.length ? JSON.parse(raw) as StorageChampion[] : []
+}
+
+//SAMPLE
+if (window.localStorage.getItem('TFTSIM_v') == null) {
+	window.localStorage.setItem('TFTSIM_v', '1')
+	window.localStorage.setItem('TFTSIM_units', `[{"name":"Zyra","position":[0,0],"starLevel":2,"items":[]},{"name":"Zyra","position":[5,4],"starLevel":1,"items":[33]}]`)
 }
