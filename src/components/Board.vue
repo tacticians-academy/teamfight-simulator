@@ -59,7 +59,7 @@ onMounted(() => {
 			</div>
 		</div>
 		<div class="absolute inset-0 pointer-events-none">
-			<template v-for="unit in state.units" :key="unit.name + unit.startPosition">
+			<template v-for="unit in state.units" :key="unit.instanceID">
 				<Unit v-if="!unit.dead" :unit="unit" />
 			</template>
 			<template v-for="projectile in state.projectiles" :key="projectile">

@@ -16,7 +16,10 @@ import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, Champio
 import { state } from '#/game/store'
 import { Projectile } from '#/game/Projectile'
 
+let instanceIndex = 0
+
 export class ChampionUnit {
+	instanceID: number
 	name: string
 	startPosition: HexCoord = [0, 0]
 	team: TeamNumber = 0
@@ -46,6 +49,7 @@ export class ChampionUnit {
 	ability: AbilityFn | undefined
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
+		this.instanceID = instanceIndex += 1
 		const stats = champions.find(unit => unit.name === name) ?? champions[0]
 		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]
 		this.isStarLocked = !!starLockedLevel
