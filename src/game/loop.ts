@@ -1,8 +1,6 @@
 import { state, gameOver } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
-import { hexEffects } from '#/helpers/HexEffect'
-
 const GAME_TICK_MS = 30
 
 let frameID: number | null = null
@@ -15,10 +13,9 @@ const MOVE_LOCKOUT_MELEE_MS = 1000
 let didBacklineJump = false
 
 function applyPendingHexEffects(elapsedMS: DOMHighResTimeStamp) {
-	for (let index = hexEffects.length - 1; index >= 0; index -= 1) {
-		const hexEffect = hexEffects[index]
+	state.hexEffects.forEach(hexEffect => {
 		if (elapsedMS < hexEffect.activatesAtMS) {
-			continue
+			return
 		}
 		const affectingUnits = hexEffect.targetTeam === 2 ? state.units : state.units.filter(unit => unit.team === hexEffect.targetTeam)
 		for (const unit of affectingUnits.filter(unit => unit.isIn(hexEffect.hexes))) {
@@ -29,8 +26,8 @@ function applyPendingHexEffects(elapsedMS: DOMHighResTimeStamp) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)
 			}
 		}
-		hexEffects.splice(index, 1)
-	}
+		state.hexEffects.delete(hexEffect)
+	})
 }
 
 function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
