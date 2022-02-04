@@ -10,7 +10,7 @@ function getUnitsOfTeam(team: TeamNumber | null) {
 
 export function getRowOfMost(team: TeamNumber | null) {
 	const units = getUnitsOfTeam(team)
-	const unitRows = units.map(unit => unit.currentPosition()[1])
+	const unitRows = units.map(unit => unit.activePosition[1])
 	const unitsPerRow = getArrayValueCounts(unitRows)
 	const maxUnitsInRowCount = unitsPerRow.reduce((previous, current) => Math.max(previous, current[1]), 0)
 	const randomRowTarget = randomItem(unitsPerRow.filter(row => row[1] === maxUnitsInRowCount))

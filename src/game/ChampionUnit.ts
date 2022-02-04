@@ -21,12 +21,12 @@ let instanceIndex = 0
 export class ChampionUnit {
 	instanceID: string
 	name: string
-	startPosition: HexCoord = [0, 0]
+	startPosition: HexCoord
 	team: TeamNumber = 0
 	starLevel: StarLevel
 	data: ChampionData
 
-	activePosition: HexCoord | undefined
+	activePosition: HexCoord
 	dead = false
 	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
 	mana = 0
@@ -58,6 +58,8 @@ export class ChampionUnit {
 		this.starLevel = starLockedLevel ?? starLevel
 		this.ability = abilities[name]
 		this.instantAttack = this.data.stats.range <= 1
+		this.startPosition = position
+		this.activePosition = position
 		this.reset(synergiesByTeam)
 		this.reposition(position)
 	}
@@ -66,7 +68,7 @@ export class ChampionUnit {
 		this.starMultiplier = this.starLevel === 1 ? 1 : (this.starLevel - 1) * 1.8
 		this.dead = false
 		this.target = null
-		this.activePosition = undefined
+		this.activePosition = this.startPosition
 		this.cachedTargetDistance = 0
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
@@ -157,9 +159,9 @@ export class ChampionUnit {
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
-		const [col, row] = this.currentPosition()
+		const [col, row] = this.activePosition
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.currentPosition()
+		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.ghosting = false
 	}
@@ -220,17 +222,17 @@ export class ChampionUnit {
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
-		return hexDistanceFrom(this.currentPosition(), unit.currentPosition())
+		return hexDistanceFrom(this.activePosition, unit.activePosition)
 	}
 
 	isAt(position: HexCoord) {
-		return isSameHex(this.currentPosition(), position)
+		return isSameHex(this.activePosition, position)
 	}
 	isStartAt(position: HexCoord) {
 		return isSameHex(this.startPosition, position)
 	}
 	isIn(hexes: Iterable<HexCoord>) {
-		return containsHex(this.currentPosition(), hexes)
+		return containsHex(this.activePosition, hexes)
 	}
 
 	reposition(position: HexCoord) {
@@ -238,11 +240,8 @@ export class ChampionUnit {
 		this.team = position[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
 		window.setTimeout(saveUnits)
 	}
-	currentPosition() {
-		return this.activePosition ?? this.startPosition
-	}
 	coordinatePosition() {
-		return coordinatePosition(this.currentPosition())
+		return coordinatePosition(this.activePosition)
 	}
 
 	getAbilityValue(name: string) {

@@ -42,7 +42,7 @@ export function updatePaths(units: ChampionUnit[]) {
 		if (!unit.isAttackable()) {
 			continue
 		}
-		searchFromHexes[unit.team].push(unit.currentPosition())
+		searchFromHexes[unit.team].push(unit.activePosition)
 	}
 	const unitPositions = [...searchFromHexes[0], ...searchFromHexes[1]]
 	const unitsCount = unitPositions.length
@@ -64,7 +64,7 @@ export function updatePaths(units: ChampionUnit[]) {
 
 export function getNextHex(unit: ChampionUnit): HexCoord | null {
 	const paths = pathsByTeam[unit.opposingTeam()]
-	const [col, row] = unit.currentPosition()
+	const [col, row] = unit.activePosition
 	const moveTo = paths[col][row]
 	return moveTo?.length ? moveTo : null
 }
