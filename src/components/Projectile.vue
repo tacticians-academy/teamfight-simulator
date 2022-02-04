@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Projectile } from '#/game/Projectile'
-
 import { defineProps } from 'vue'
+
+import type { Projectile } from '#/game/Projectile'
 
 import { PROJECTILE_UNITS } from '#/helpers/constants'
 

@@ -12,7 +12,7 @@ const hexPositions = props.hexEffect.hexes.map(coordinatePosition)
 </script>
 
 <template>
-<div :key="hexEffect.instanceID" :style="{ opacity: hexEffect.activated ? 1 : 1/3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
+<div :style="{ opacity: hexEffect.activated ? 1 : 1/3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
 	<div v-for="[col, row] in hexPositions" :key="`${row},${col}`">
 		<div
 			class="hex" :class="hexEffect.source.team === 0 ? 'team-a' : 'team-b'"

@@ -64,11 +64,11 @@ onMounted(() => {
 				<Unit v-if="!unit.dead" :unit="unit" />
 			</template>
 			<transition-group name="hexEffect">
-				<template v-for="hexEffect in state.hexEffects" :key="hexEffect">
+				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">
 					<HexEffect :hexEffect="hexEffect" />
 				</template>
 			</transition-group>
-			<template v-for="projectile in state.projectiles" :key="projectile">
+			<template v-for="projectile in state.projectiles" :key="projectile.instanceID">
 				<Projectile :projectile="projectile" />
 			</template>
 		</div>

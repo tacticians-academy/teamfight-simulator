@@ -97,7 +97,7 @@ function onInfo(event: Event) {
 		MR:&nbsp;{{ unit.magicResist() }}
 		AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
 		AD:&nbsp;{{ unit.attackDamage() }}
-		AP:&nbsp;{{ unit.abilityPowerMultiplier() * 100 }}
+		AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}
 	</div>
 </div>
 </template>
