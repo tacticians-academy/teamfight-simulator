@@ -227,6 +227,7 @@ export function useStore() {
 
 export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
+	state.hexEffects.clear()
 	cancelLoop()
 }
 

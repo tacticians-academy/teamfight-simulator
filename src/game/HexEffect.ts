@@ -7,6 +7,7 @@ const DEFAULT_MANA_LOCK_MS = 1000
 
 export interface HexEffectData {
 	activatesAfterMS?: DOMHighResTimeStamp
+	expiresAfterMS?: DOMHighResTimeStamp
 	hexes: HexCoord[]
 	targetTeam?: number
 	damage?: number
@@ -19,7 +20,9 @@ let instanceIndex = 0
 export class HexEffect {
 	instanceID: string
 
+	activatesAfterMS: DOMHighResTimeStamp
 	activatesAtMS: DOMHighResTimeStamp
+	expiresAtMS: DOMHighResTimeStamp
 	source: ChampionUnit
 	targetTeam: number | null
 	hexes: HexCoord[]
@@ -27,9 +30,13 @@ export class HexEffect {
 	damageType: DamageType | null
 	stunMS: number | null
 
+	activated = false
+
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
-		this.activatesAtMS = elapsedMS + (data.activatesAfterMS == null ? DEFAULT_CAST_MS : data.activatesAfterMS)
 		this.instanceID = `h${instanceIndex += 1}`
+		this.activatesAfterMS = data.activatesAfterMS == null ? DEFAULT_CAST_MS : data.activatesAfterMS
+		this.activatesAtMS = elapsedMS + this.activatesAfterMS
+		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.source = source
 		this.targetTeam = data.targetTeam ?? source.opposingTeam()
 		this.hexes = data.hexes

@@ -12,11 +12,16 @@ const MOVE_LOCKOUT_MELEE_MS = 1000
 
 let didBacklineJump = false
 
-function applyPendingHexEffects(elapsedMS: DOMHighResTimeStamp) {
+function updateHexEffects(elapsedMS: DOMHighResTimeStamp) {
 	state.hexEffects.forEach(hexEffect => {
+		if (hexEffect.activated && elapsedMS > hexEffect.expiresAtMS) {
+			state.hexEffects.delete(hexEffect)
+			return
+		}
 		if (elapsedMS < hexEffect.activatesAtMS) {
 			return
 		}
+		hexEffect.activated = true
 		const affectingUnits = hexEffect.targetTeam === 2 ? state.units : state.units.filter(unit => unit.team === hexEffect.targetTeam)
 		for (const unit of affectingUnits.filter(unit => unit.isIn(hexEffect.hexes))) {
 			if (hexEffect.damage != null) {
@@ -26,7 +31,6 @@ function applyPendingHexEffects(elapsedMS: DOMHighResTimeStamp) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)
 			}
 		}
-		state.hexEffects.delete(hexEffect)
 	})
 }
 
@@ -54,7 +58,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {
 		didBacklineJump = true
 	}
-	applyPendingHexEffects(elapsedMS)
+	updateHexEffects(elapsedMS)
 
 	for (const projectile of state.projectiles) {
 		projectile.update(elapsedMS, diffMS, state.units, gameOver)

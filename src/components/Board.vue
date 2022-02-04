@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HexEffect from '#/components/HexEffect.vue'
 import Unit from '#/components/Unit.vue'
 import Projectile from '#/components/Projectile.vue'
 
@@ -62,6 +63,11 @@ onMounted(() => {
 			<template v-for="unit in state.units" :key="unit.instanceID">
 				<Unit v-if="!unit.dead" :unit="unit" />
 			</template>
+			<transition-group name="hexEffect">
+				<template v-for="hexEffect in state.hexEffects" :key="hexEffect">
+					<HexEffect :hexEffect="hexEffect" />
+				</template>
+			</transition-group>
 			<template v-for="projectile in state.projectiles" :key="projectile">
 				<Projectile :projectile="projectile" />
 			</template>
@@ -69,6 +75,29 @@ onMounted(() => {
 	</div>
 </div>
 </template>
+
+<style lang="postcss">
+.hex {
+	width: v-bind(HEX_UNITS);
+	height: v-bind(HEX_UNITS);
+	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
+}
+.hex.team-a {
+	@apply bg-violet-300/80;
+}
+.hex.team-b {
+	@apply bg-rose-300/80;
+}
+</style>
+
+<style scoped lang="postcss">
+.hexEffect-leave-active {
+  transition: opacity 1500ms !important;
+}
+.hexEffect-enter-from, .hexEffect-leave-to {
+  opacity: 0 !important;
+}
+</style>
 
 <style scoped lang="postcss">
 .board {
@@ -88,15 +117,12 @@ onMounted(() => {
 }
 
 .hex {
-	width: v-bind(HEX_UNITS);
-	height: v-bind(HEX_UNITS);
 	margin: v-bind(HEX_BORDER_UNITS) 0 0 v-bind(HEX_BORDER_UNITS);
-	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
 .hex.team-a {
-	@apply bg-violet-100 dark:bg-violet-400/20;
+	@apply opacity-25;
 }
 .hex.team-b {
-	@apply bg-rose-100 dark:bg-rose-400/20;
+	@apply opacity-25;
 }
 </style>
