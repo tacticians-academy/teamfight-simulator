@@ -88,16 +88,15 @@ onMounted(() => {
 }
 
 .hex {
-	@apply bg-gray-200;
 	width: v-bind(HEX_UNITS);
 	height: v-bind(HEX_UNITS);
 	margin: v-bind(HEX_BORDER_UNITS) 0 0 v-bind(HEX_BORDER_UNITS);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
 .hex.team-a {
-	@apply bg-violet-100;
+	@apply bg-violet-100 dark:bg-violet-400/20;
 }
 .hex.team-b {
-	@apply bg-rose-100;
+	@apply bg-rose-100 dark:bg-rose-400/20;
 }
 </style>

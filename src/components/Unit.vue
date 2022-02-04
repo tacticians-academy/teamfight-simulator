@@ -92,7 +92,7 @@ function onInfo(event: Event) {
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>
-	<div v-if="showInfo" class="p-1 bg-gray-100">
+	<div v-if="showInfo" class="p-1 bg-tertiary">
 		AR:&nbsp;{{ unit.armor() }}
 		MR:&nbsp;{{ unit.magicResist() }}
 		AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
@@ -119,7 +119,7 @@ function onInfo(event: Event) {
 	height: 0.9vw;
 }
 .bar-health {
-	@apply mx-px absolute inset-0;
+	@apply mx-px absolute inset-0 text-black;
 	font-size: 0.7vw;
 	line-height: 0.7vw;
 }

@@ -4,16 +4,45 @@
 
 @import "tailwindcss/utilities";
 
-html, body, #app {
-	@apply h-full;
+@layer utilities {
+	.bg-primary {
+		@apply bg-gray-100 dark:bg-black;
+	}
+	.bg-secondary {
+		@apply bg-gray-200 dark:bg-gray-900;
+	}
+	.bg-tertiary {
+		@apply bg-gray-300 dark:bg-gray-800;
+	}
+	.bg-quaternary {
+		@apply bg-gray-400 dark:bg-gray-700;
+	}
+
+	.text-primary {
+		@apply text-black dark:text-white;
+	}
+	.text-secondary {
+		@apply text-gray-600 dark:text-gray-400;
+	}
+
+	.group-hover-visible {
+		@apply invisible group-hover:visible;
+	}
 }
 
-.button {
-	@apply h-11 m-1 rounded-lg text-lg text-white font-medium;
-	@apply bg-gray-500 hover:bg-gray-400 active:bg-gray-300;
-	@apply disabled:bg-gray-300 disabled:text-gray-400;
+@layer components {
+	.button {
+		@apply h-11 m-1 rounded-lg text-lg text-white font-medium;
+		@apply bg-quaternary hover:bg-tertiary active:bg-primary;
+		@apply disabled:bg-secondary disabled:text-secondary;
+	}
 }
 
-.group-hover-visible {
-	@apply invisible group-hover:visible;
+@layer base {
+	html, body, #app {
+		@apply h-full;
+	}
+	body {
+		@apply bg-primary text-primary;
+	}
 }

@@ -17,13 +17,13 @@ function onToggle(name: SectionName) {
 <template>
 <div>
 	<div class="flex justify-around flex-grow">
-		<button :class="{ 'bg-gray-300': showSection === 'units' }" @click="onToggle('units')">
+		<button :class="{ 'bg-quaternary': showSection === 'units' }" @click="onToggle('units')">
 			Units
 		</button>
-		<button :class="{ 'bg-gray-300': showSection === 'items' }" @click="onToggle('items')">
+		<button :class="{ 'bg-quaternary': showSection === 'items' }" @click="onToggle('items')">
 			Items
 		</button>
-		<button :class="{ 'bg-gray-300': showSection === 'players' }" @click="onToggle('players')">
+		<button :class="{ 'bg-quaternary': showSection === 'players' }" @click="onToggle('players')">
 			Players
 		</button>
 	</div>

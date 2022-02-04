@@ -47,7 +47,7 @@ function onDrop(event: DragEvent) {
 </script>
 
 <template>
-<div class="sidebar  bg-gray-100  flex flex-col">
+<div class="sidebar  bg-secondary  flex flex-col">
 	<div class="flex-grow overflow-y-scroll" @dragover="onDragOver" @drop="onDrop">
 		<div v-if="!state.isRunning" class="flex flex-col">
 			<ManageTeams />

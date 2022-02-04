@@ -14,7 +14,7 @@ const { getters: { synergiesByTeam } } = useStore()
 	<div v-for="[trait, style, currentEffect, unitNames] in teamSynergies" :key="trait.name">
 		<DisplayTrait v-if="style > 0" :trait="trait" :activeStyle="style" :activeEffect="currentEffect" :units="unitNames" />
 	</div>
-	<div class="text-gray-500 text-sm">
+	<div class="text-secondary text-sm">
 		<template v-for="[trait, style] in teamSynergies" :key="trait.name">
 			<span v-if="style === 0">{{ trait.name }}, </span>
 		</template>

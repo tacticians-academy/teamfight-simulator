@@ -77,7 +77,7 @@ const traitDescription = computed(() => {
 		>
 	</div>
 	{{ trait.name }}
-	<div class="trait-tooltip  group-hover-visible space-y-2 pointer-events-none">
+	<div class="trait-tooltip  group-hover-visible  bg-tertiary space-y-2 pointer-events-none">
 		<div v-html="traitDescription" />
 		<div>{{ units.join(', ') }}</div>
 	</div>
@@ -93,7 +93,7 @@ const traitDescription = computed(() => {
 }
 
 .trait-tooltip {
-	@apply absolute z-50 top-0 mt-9 bg-gray-300 p-1;
+	@apply absolute z-50 top-0 mt-9 p-1;
 	font-size: 1.3vw;
 }
 </style>
