@@ -217,6 +217,10 @@ const store = {
 	},
 }
 
+export function coordinatePosition([col, row]: HexCoord) {
+	return state.hexRowsCols[row][col].position
+}
+
 export function useStore() {
 	return store
 }

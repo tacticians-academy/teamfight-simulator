@@ -11,6 +11,7 @@ import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFr
 import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
+import { state, coordinatePosition } from '#/game/store'
 import { BonusKey, DamageType } from '#/helpers/types'
 import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 import { state } from '#/game/store'
@@ -242,8 +243,7 @@ export class ChampionUnit {
 		return this.activePosition ?? this.startPosition
 	}
 	coordinatePosition() {
-		const [col, row] = this.currentPosition()
-		return state.hexRowsCols[row][col].position
+		return coordinatePosition(this.currentPosition())
 	}
 
 	getAbilityValue(name: string) {
