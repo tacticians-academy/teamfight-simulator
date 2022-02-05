@@ -21,7 +21,7 @@ const showInfo = ref(false)
 const currentPosition = computed(() => props.unit.coordinatePosition())
 
 const unitSizeX = `${100 * state.hexProportionX * UNIT_SIZE_HEX_PROPORTION}%`
-const unitSizeY = `${100 * state.hexProportionY * 0.8}%`
+const unitSizeY = `${100 * state.hexProportionY * UNIT_SIZE_HEX_PROPORTION}%`
 
 function onDragStart(event: DragEvent, type: DraggableType, name: string) {
 	startDragging(event, type, name, props.unit)
@@ -110,7 +110,10 @@ function onInfo(event: Event) {
 	transform: translate(-50%, -50%);
 }
 .overlay {
-	@apply absolute w-full z-10;
+	@apply absolute w-full;
+}
+.bars {
+	top: -1vw;
 }
 
 .bar {
