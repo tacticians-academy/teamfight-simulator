@@ -8,7 +8,8 @@ import { BonusKey } from '../src/helpers/types.js'
 import type { ChampionData, ItemData, TraitData } from '../src/helpers/types.js'
 import { ItemKey } from '../src/data/set6/items.js'
 
-const url = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}/cdragon/tft/en_us.json`
+const baseURL = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}`
+const url = `${baseURL}/cdragon/tft/en_us.json`
 console.log(url)
 const response = await fetch(url)
 if (!response.ok) {
@@ -64,6 +65,25 @@ const playableChampions = (champions as ChampionData[])
 		}
 		return true
 	})
+
+const championsPath = path.resolve(outputFolder, 'champion')
+await fs.mkdir(championsPath, { recursive: true })
+for (const champion of playableChampions) {
+	const apiName = champion.apiName.toLowerCase()
+	const outputPath = path.resolve(championsPath, apiName + '.json')
+	try {
+		await fs.access(outputPath)
+	} catch {
+		console.log('\nLoading champion', apiName)
+		const url = `${baseURL}/game/data/characters/${apiName}/${apiName}.bin.json`
+		const response = await fetch(url)
+		if (!response.ok) {
+			throw response
+		}
+		const json = await response.json() as Record<string, any>
+		fs.writeFile(outputPath, JSON.stringify(json, undefined, '\t'))
+	}
+}
 
 const normalizeKeys: Record<string, BonusKey> = {
 	AbilityPower: BonusKey.AbilityPower,

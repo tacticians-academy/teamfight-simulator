@@ -538,8 +538,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						350,
-						550,
+						325,
+						500,
 						1200,
 						0,
 						0,
@@ -1160,9 +1160,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						50,
-						175,
-						250,
-						500,
+						150,
+						225,
+						450,
 						1000,
 						1250,
 						1500
@@ -1184,9 +1184,9 @@ export const champions: ChampionData[] = [
 					"name": "DamageFinal",
 					"value": [
 						0,
-						350,
-						500,
-						1000,
+						300,
+						450,
+						900,
 						0,
 						0,
 						0
@@ -1196,9 +1196,9 @@ export const champions: ChampionData[] = [
 					"name": "Shield",
 					"value": [
 						0,
-						300,
-						400,
-						900,
+						225,
+						325,
+						750,
 						0,
 						0,
 						0
@@ -3116,7 +3116,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Rek'Sai bites her target, dealing <scaleAD>@TotalDamage@</scaleAD> (@ADPercent*100@% of her Attack Damage %i:scaleAD% + @ModifiedDamage@), stealing @ModifiedDefensiveSteal@ of her target's Armor and Magic Resist, and healing herself for @Heal@ health.",
+			"desc": "Rek'Sai bites her target, dealing <scaleAD>@TotalDamage@</scaleAD> physical damage (@ADPercent*100@% of her Attack Damage %i:scaleAD% + @ModifiedDamage@), stealing @ResistPercentSteal*100@% of her target's Armor and Magic Resist, and healing herself for @Heal@ health.",
 			"icon": "ASSETS/Characters/RekSai/HUD/Icons2D/RekSai_E1.dds",
 			"name": "Furious Bite",
 			"variables": [
@@ -3160,9 +3160,9 @@ export const champions: ChampionData[] = [
 					"name": "Heal",
 					"value": [
 						0,
-						150,
-						300,
-						600,
+						100,
+						200,
+						500,
 						0,
 						0,
 						0
@@ -3181,9 +3181,9 @@ export const champions: ChampionData[] = [
 			"critMultiplier": 1.2999999523162842,
 			"damage": 70,
 			"hp": 800,
-			"initialMana": 30,
+			"initialMana": 60,
 			"magicResist": 40,
-			"mana": 60,
+			"mana": 90,
 			"range": 1
 		},
 		"traits": [
@@ -3278,13 +3278,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentDamage",
 					"value": [
-						0.5,
-						0.5,
-						0.5,
-						0.5,
-						0.5,
-						0.5,
-						0.5
+						0.4000000059604645,
+						0.4000000059604645,
+						0.4000000059604645,
+						0.4000000059604645,
+						0.4000000059604645,
+						0.4000000059604645,
+						0.4000000059604645
 					]
 				},
 				{
@@ -3485,9 +3485,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
+						100,
 						150,
-						200,
-						300,
+						250,
 						0,
 						0,
 						0
@@ -3496,13 +3496,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "TransformManaReduc",
 					"value": [
-						30,
-						30,
-						30,
-						30,
-						30,
-						30,
-						30
+						20,
+						20,
+						20,
+						20,
+						20,
+						20,
+						20
 					]
 				}
 			]
@@ -3539,8 +3539,8 @@ export const champions: ChampionData[] = [
 					"name": "ShieldAmount",
 					"value": [
 						50,
-						450,
-						650,
+						400,
+						600,
 						900,
 						550,
 						675,
@@ -3640,9 +3640,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						225,
-						250,
-						325,
+						190,
+						210,
+						260,
 						500,
 						625,
 						750
@@ -3728,13 +3728,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "ArmorPenPercent",
 					"value": [
-						50,
-						50,
-						50,
-						50,
-						50,
-						50,
-						50
+						30,
+						30,
+						30,
+						30,
+						30,
+						30,
+						30
 					]
 				},
 				{
@@ -3760,7 +3760,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.800000011920929,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 95,
+			"damage": 85,
 			"hp": 800,
 			"initialMana": 0,
 			"magicResist": 30,
@@ -4022,20 +4022,20 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Senna fires a beam in the direction of her target, dealing @PercentAD*100@% of her Attack Damage as physical damage to all enemies hit (total: <scaleAD>@ModifiedDamage@ %i:scaleAD%</scaleAD>). For each enemy hit, she heals the lowest health ally for @ModifiedPercentHealing@ of the damage dealt plus @ModifiedBaseHealing@.",
+			"desc": "Senna fires a beam in the direction of her target, dealing <scaleAD>@TotalDamage@</scaleAD> physical damage (@PercentAD*100@% of her Attack Damage %i:scaleAD% + @Damage@). For each enemy hit, she heals the lowest health ally for @ModifiedPercentHealing@ of the damage dealt.",
 			"icon": "ASSETS/Characters/Senna/HUD/Icons2D/Senna_Q.dds",
 			"name": "Piercing Darkness",
 			"variables": [
 				{
 					"name": "PercentAD",
 					"value": [
-						1.75,
-						1.75,
-						1.75,
-						1.75,
-						1.75,
-						1.75,
-						1.75
+						1.5,
+						1.5,
+						1.5,
+						1.5,
+						1.5,
+						1.5,
+						1.5
 					]
 				},
 				{
@@ -4052,6 +4052,10 @@ export const champions: ChampionData[] = [
 				},
 				{
 					"name": "BaseHealing",
+					"value": null
+				},
+				{
+					"name": "Damage",
 					"value": [
 						0,
 						100,
@@ -4172,9 +4176,9 @@ export const champions: ChampionData[] = [
 					"name": "DamagePerSecond",
 					"value": [
 						1,
-						65,
-						90,
-						225,
+						70,
+						100,
+						250,
 						2,
 						2.25,
 						2.5
@@ -4184,9 +4188,9 @@ export const champions: ChampionData[] = [
 					"name": "ASReduction",
 					"value": [
 						0.30000001192092896,
-						25,
-						25,
-						25,
+						15,
+						15,
+						15,
 						0.30000001192092896,
 						0.30000001192092896,
 						0.30000001192092896
@@ -4219,7 +4223,7 @@ export const champions: ChampionData[] = [
 			"hp": 700,
 			"initialMana": 30,
 			"magicResist": 30,
-			"mana": 80,
+			"mana": 75,
 			"range": 3
 		},
 		"traits": [
@@ -4362,8 +4366,8 @@ export const champions: ChampionData[] = [
 					"name": "BonusOnHit",
 					"value": [
 						0,
-						10,
-						20,
+						0,
+						0,
 						50,
 						0,
 						0,

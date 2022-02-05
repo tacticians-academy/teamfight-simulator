@@ -546,7 +546,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"MagicDamage": 10,
-					"ShieldAmount": 160,
+					"ShieldAmount": 150,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -557,7 +557,7 @@ export const traits: TraitData[] = [
 				"style": 2,
 				"variables": {
 					"MagicDamage": 40,
-					"ShieldAmount": 240,
+					"ShieldAmount": 200,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -568,7 +568,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"MagicDamage": 80,
-					"ShieldAmount": 480,
+					"ShieldAmount": 400,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -579,7 +579,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"MagicDamage": 140,
-					"ShieldAmount": 800,
+					"ShieldAmount": 700,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -593,7 +593,7 @@ export const traits: TraitData[] = [
 		"desc": "Twinshots gain bonus Attack Damage. When a Twinshot attacks, they have a chance to attack twice instead.<br><br><expandRow>(@MinUnits@) @BonusAD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
 		"effects": [
 			{
-				"maxUnits": 3,
+				"maxUnits": 2,
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
@@ -602,7 +602,16 @@ export const traits: TraitData[] = [
 				}
 			},
 			{
-				"maxUnits": 5,
+				"maxUnits": 3,
+				"minUnits": 3,
+				"style": 2,
+				"variables": {
+					"BonusAD": 25,
+					"ProcChance": 55
+				}
+			},
+			{
+				"maxUnits": 4,
 				"minUnits": 4,
 				"style": 3,
 				"variables": {
@@ -612,10 +621,10 @@ export const traits: TraitData[] = [
 			},
 			{
 				"maxUnits": 25000,
-				"minUnits": 6,
+				"minUnits": 5,
 				"style": 4,
 				"variables": {
-					"BonusAD": 80,
+					"BonusAD": 60,
 					"ProcChance": 100
 				}
 			}
