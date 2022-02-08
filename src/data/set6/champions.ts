@@ -46,13 +46,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "T1DebutantBonus",
 					"value": [
-						0.5,
-						0.5,
-						0.5,
-						0.5,
-						0.5,
-						0.5,
-						0.5
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929,
+						0.800000011920929
 					]
 				}
 			]
@@ -206,8 +206,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						50,
-						250,
-						325,
+						300,
+						400,
 						600,
 						450,
 						550,
@@ -229,20 +229,20 @@ export const champions: ChampionData[] = [
 				{
 					"name": "DamageReduction",
 					"value": [
-						65,
-						65,
-						65,
-						65,
-						65,
-						65,
-						65
+						75,
+						75,
+						75,
+						75,
+						75,
+						75,
+						75
 					]
 				}
 			]
 		},
 		"apiName": "TFT6_Zac",
 		"cost": 3,
-		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Zac.TFT_Set6.dds",
+		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Zac.TFT_Set6_Stage2.dds",
 		"name": "Zac",
 		"stats": {
 			"armor": 45,
@@ -583,7 +583,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Jhin transforms his weapon into a powerful sniper rifle for his next 4 shots. Each shot deals @PercentAttackDamage*100@% of his Attack Damage as physical damage, reduced by @DamageFalloff*100@% for each target it pierces through. (total: @TotalDamage@) The 4th shot is guaranteed to critically strike, and deals @ModifiedBonusDamage@ more damage based on his target's missing Health.<br><br>Passive: Jhin always attacks @AttackSpeed@ times per second. He converts each 1% of bonus Attack Speed into @ADFromAttackSpeed@ Attack Damage.",
+			"desc": "Jhin transforms his weapon into a powerful sniper rifle for his next 4 shots. Each shot deals <scaleAD>@TotalDamage@</scaleAD> physical damage (@PercentAttackDamage*100@% of his Attack Damage %i:scaleAD%), reduced by @DamageFalloff*100@% for each target it pierces through. The 4th shot is guaranteed to critically strike, and deals @ModifiedBonusDamage@ more damage based on his target's missing Health.<br><br>Passive: Jhin always attacks @AttackSpeed@ times per second. He converts each 1% of bonus Attack Speed into @ADFromAttackSpeed@ Attack Damage.",
 			"icon": "ASSETS/Characters/Jhin/HUD/Icons2D/Jhin_R.dds",
 			"name": "Curtain Call",
 			"variables": [
@@ -802,7 +802,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Gangplank attacks his target with his gun, dealing @ADPercent*100@% of his Attack Damage plus @ModifiedDamage@ bonus physical damage (total: <scaleAD>@TotalDamage@ %i:scaleAD%</scaleAD>). If this attack kills a champion, Gangplank plunders 1 gold. ",
+			"desc": "Gangplank attacks his target with his gun, dealing <scaleAD>@TotalDamage@</scaleAD> physical damage (@ADPercent*100@% of his Attack Damage %i:scaleAD% + @ModifiedDamage@). If this attack kills a champion, Gangplank plunders 1 gold. ",
 			"icon": "ASSETS/Characters/Gangplank/HUD/Icons2D/Gangplank_Q.dds",
 			"name": "Parrrley",
 			"variables": [
@@ -810,9 +810,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						110,
-						150,
-						200,
+						120,
+						160,
+						225,
 						0,
 						0,
 						0
@@ -863,8 +863,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						600,
-						900,
-						1350,
+						1000,
+						1500,
 						30000,
 						9999,
 						1300,
@@ -923,8 +923,8 @@ export const champions: ChampionData[] = [
 					"name": "ReducedDamageToCC",
 					"value": [
 						0,
-						300,
-						450,
+						350,
+						525,
 						10500,
 						0,
 						0,
@@ -1228,7 +1228,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 80,
-			"hp": 1000,
+			"hp": 900,
 			"initialMana": 0,
 			"magicResist": 50,
 			"mana": 40,
@@ -1320,9 +1320,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						650,
-						900,
-						1100,
+						625,
+						875,
+						1050,
 						0,
 						0,
 						0
@@ -1557,7 +1557,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Ezreal fires a missile at his target, dealing @PercentAD*100@% of his Attack Damage plus @BonusDamage@ bonus physical damage (total: <scaleAD>@TotalDamage@ %i:scaleAD%</scaleAD>). If the missile hits, he grants himself @ModifiedAS@ bonus stacking Attack Speed, up to <scaleAP>@MaxAS@ %i:scaleAP%</scaleAP> at @MaxStacks@ stacks.",
+			"desc": "Ezreal fires a missile at his target, dealing <scaleAD>@TotalDamage@</scaleAD> physical damage (@PercentAD*100@% of his Attack Damage %i:scaleAD% + @BonusDamage@). If the missile hits, he grants himself @ModifiedAS@ bonus stacking Attack Speed, up to <scaleAP>@MaxAS@ %i:scaleAP%</scaleAP> at @MaxStacks@ stacks.",
 			"icon": "ASSETS/Characters/Ezreal/HUD/Icons2D/Ezreal_Q.dds",
 			"name": "Mystic Shot",
 			"variables": [
@@ -1855,7 +1855,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Jinx rides her rocket into the sky, then comes crashing down near the center-most enemy, dealing @ModifiedDamage@ magic damage to enemies around the epicenter, and @FalloffPercent*100@% to all other enemies in a large area. The epicenter burns every unit except Jinx for @HexDuration@ seconds, dealing @PercentBurn@% of the target's maximum Health as true damage, and reducing healing by 50% for the duration.<br><br>She then swaps to her rocket launcher and targets random units for the rest of combat. Her attacks now explode for @RocketLauncherPercentAD*100%@% of her Attack Damage in a small area around her target. (total: <scaleAD>@TooltipDamage@ %i:scaleAD%</scaleAD>)",
+			"desc": "Jinx rides her rocket into the sky, then comes crashing down near the center-most enemy, dealing @ModifiedDamage@ magic damage to enemies around the epicenter, and @FalloffPercent*100@% to all other enemies in a large area. The epicenter burns every unit except Jinx for @HexDuration@ seconds, dealing @PercentBurn@% of the target's maximum Health as true damage, and reducing healing by 50% for the duration.<br><br>She then swaps to her rocket launcher and targets random units for the rest of combat. Her attacks now explode for <scaleAD>@TooltipDamage@</scaleAD> physical damage (@RocketLauncherPercentAD*100%@% of her Attack Damage %i:scaleAD%) in a small area around her target.",
 			"icon": "ASSETS/Characters/Jinx/HUD/Icons2D/Jinx_R.dds",
 			"name": "Super Mega Death Rocket",
 			"variables": [
@@ -2170,14 +2170,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Vex.TFT_Set6.dds",
 		"name": "Vex",
 		"stats": {
-			"armor": 40,
+			"armor": 50,
 			"attackSpeed": 0.6000000238418579,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 50,
 			"hp": 850,
 			"initialMana": 50,
-			"magicResist": 40,
+			"magicResist": 50,
 			"mana": 100,
 			"range": 2
 		},
@@ -2433,7 +2433,7 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						450,
-						625,
+						650,
 						950,
 						0,
 						0,
@@ -2574,9 +2574,9 @@ export const champions: ChampionData[] = [
 					"name": "StunDuration",
 					"value": [
 						2.5,
-						2,
-						3,
-						6,
+						1.75,
+						2.25,
+						8,
 						7,
 						7,
 						7
@@ -2721,7 +2721,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "The Dragon lands and lets out a bellowing roar, causing all enemies within @FearHexRange@ hexes to flee for @FearDuration@ seconds. Your team is energized and gains @CritIncrease*100@% Critical Chance and @CritDamageIncrease*100@% Critical Damage for @EnergizedDuration@ seconds.<br><br>Passive: The Dragon is immune to crowd control effects. Every 3rd attack is charged with lightning, dealing @ModifiedLightningDamage@ bonus magic damage to @NumEnemies@ enemies.",
+			"desc": "Passive: The Dragon is immune to crowd control effects. Every 3rd attack is charged with lightning, dealing @ModifiedLightningDamage@ bonus magic damage to @NumEnemies@ enemies.<br><br>The Dragon lands and lets out a bellowing roar, causing all enemies within @FearHexRange@ hexes to cower in fear for @FearDuration@ seconds. Your team is energized and gains @CritIncrease*100@% Critical Chance and @CritDamageIncrease*100@% Critical Damage for @EnergizedDuration@ seconds.",
 			"icon": "ASSETS/Characters/TFT6_HextechDragon/HUD/Icons2D/DragonSpell.TFT_Set6.dds",
 			"name": "Electrifying Roar",
 			"variables": [
@@ -2752,13 +2752,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "FearDuration",
 					"value": [
-						3,
-						3,
-						3,
-						3,
-						3,
-						3,
-						3
+						2,
+						2,
+						2,
+						2,
+						2,
+						2,
+						2
 					]
 				},
 				{
@@ -2788,13 +2788,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "CritDamageIncrease",
 					"value": [
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896
+						0.10000000149011612,
+						0.10000000149011612,
+						0.10000000149011612,
+						0.10000000149011612,
+						0.10000000149011612,
+						0.10000000149011612,
+						0.10000000149011612
 					]
 				},
 				{
@@ -2850,11 +2850,11 @@ export const champions: ChampionData[] = [
 				{
 					"name": "StunDuration",
 					"value": [
-						200,
 						2,
-						3,
-						4,
+						2,
 						2.5,
+						3.5,
+						3.5,
 						2.5,
 						2.5
 					]
@@ -2939,13 +2939,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "VIPBonusReducedDamage",
 					"value": [
-						20,
-						20,
-						20,
-						20,
-						20,
-						20,
-						20
+						25,
+						25,
+						25,
+						25,
+						25,
+						25,
+						25
 					]
 				}
 			]
@@ -3051,7 +3051,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Syndra flings the nearest enemy towards the farthest enemy, dealing @ModifiedDamage@ magic damage to all nearby enemies upon impact and stunning the thrown target for @StunDuration@ seconds.<br><br><TFTDebonairVIP>VIP Bonus: Force of Will's impact area is larger and knocks up affected enemies for @VIPDebutantBonus@ seconds.</TFTDebonairVIP>",
+			"desc": "Syndra flings the nearest enemy towards the farthest enemy, dealing @ModifiedDamage@ magic damage to all enemies within 1 hex upon impact and stunning the thrown target for @StunDuration@ seconds.<br><br><TFTDebonairVIP>VIP Bonus: Force of Will's impact area is 1 hex larger and knocks up affected enemies for @VIPDebutantBonus@ seconds.</TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Syndra/HUD/Icons2D/SyndraW2.dds",
 			"name": "Force of Will",
 			"variables": [
@@ -3059,9 +3059,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						250,
-						350,
-						650,
+						225,
+						325,
+						500,
 						0,
 						0,
 						0
@@ -3073,7 +3073,7 @@ export const champions: ChampionData[] = [
 						0,
 						2,
 						2.5,
-						4,
+						3,
 						0,
 						0,
 						0
@@ -3194,7 +3194,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Ashe fires a volley of @NumOfArrows@ arrows centered on her target, dealing @ADPercent*100@% of her Attack Damage as physical damage per arrow (total: <scaleAD>@TotalDamage@</scaleAD>) and slowing their Attack Speed by @ASReduction@% for @ModifiedDuration@ seconds.",
+			"desc": "Ashe fires a volley of @NumOfArrows@ arrows centered on her target, dealing <scaleAD>@TotalDamage@</scaleAD> physical damage per arrow (@ADPercent*100@% of her Attack Damage %i:scaleAD%) and slowing their Attack Speed by @ASReduction@% for @ModifiedDuration@ seconds.",
 			"icon": "ASSETS/Characters/Ashe/HUD/Icons2D/Ashe_W.dds",
 			"name": "Volley",
 			"variables": [
@@ -3214,9 +3214,9 @@ export const champions: ChampionData[] = [
 					"name": "NumOfArrows",
 					"value": [
 						0,
-						5,
+						6,
 						7,
-						9,
+						8,
 						0,
 						0,
 						0
@@ -3225,13 +3225,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "ASReduction",
 					"value": [
-						25,
-						25,
-						25,
-						25,
-						25,
-						25,
-						25
+						15,
+						15,
+						15,
+						15,
+						15,
+						15,
+						15
 					]
 				},
 				{
@@ -3271,20 +3271,20 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "For the next @Duration@ seconds, Sivir grants herself @ModifiedAttackSpeed@ bonus Attack Speed and her attacks bounce up to @NumBounces@ times dealing @PercentDamage*100@% of her Attack Damage to enemies hit.",
+			"desc": "For the next @Duration@ seconds, Sivir grants herself @ModifiedAttackSpeed@ bonus Attack Speed and her attacks bounce up to @NumBounces@ times, dealing <scaleAD>@DamageCalc@</scaleAD> physical damage (@PercentDamage*100@% of her Attack Damage %i:scaleAD%) to enemies hit.",
 			"icon": "ASSETS/Characters/Sivir/HUD/Icons2D/Sivir_W.dds",
 			"name": "Ricochet",
 			"variables": [
 				{
 					"name": "PercentDamage",
 					"value": [
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645,
-						0.4000000059604645
+						0.33000001311302185,
+						0.33000001311302185,
+						0.33000001311302185,
+						0.33000001311302185,
+						0.33000001311302185,
+						0.33000001311302185,
+						0.33000001311302185
 					]
 				},
 				{
@@ -3302,13 +3302,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "BounceRange",
 					"value": [
-						4,
-						4,
-						4,
-						4,
-						4,
-						4,
-						4
+						5,
+						5,
+						5,
+						5,
+						5,
+						5,
+						5
 					]
 				},
 				{
@@ -3328,8 +3328,8 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						0.5,
-						0.6499999761581421,
-						1.5,
+						0.75,
+						2,
 						0,
 						0,
 						0
@@ -3350,7 +3350,7 @@ export const champions: ChampionData[] = [
 			"hp": 700,
 			"initialMana": 0,
 			"magicResist": 30,
-			"mana": 70,
+			"mana": 60,
 			"range": 4
 		},
 		"traits": [
@@ -3391,13 +3391,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "BonusAAPercent",
 					"value": [
-						0.3499999940395355,
-						0.3499999940395355,
-						0.3499999940395355,
-						0.3499999940395355,
-						0.3499999940395355,
-						0.3499999940395355,
-						0.3499999940395355
+						0.25,
+						0.25,
+						0.25,
+						0.25,
+						0.25,
+						0.25,
+						0.25
 					]
 				}
 			]
@@ -3425,7 +3425,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Gnar transforms into Mega Gnar for the rest of combat. Mega Gnar throws a boulder at the farthest enemy within boulder range, dealing @ADPercent*100@% of his Attack Damage plus @Damage@ bonus damage as physical damage (total: <scaleAD>@TotalDamage@</scaleAD>) to all enemies it passes through. <br><br>While in Mega Gnar form, Gnar is melee, gains @ModifiedTransformHealth@ Health, and his mana costs are reduced by @TransformManaReduc@. ",
+			"desc": "Gnar transforms into Mega Gnar for the rest of combat. Mega Gnar throws a boulder at the farthest enemy within 3 hexes, dealing <scaleAD>@TotalDamage@</scaleAD> physical damage (@ADPercent*100@% of his Attack Damage %i:scaleAD% + @Damage@) to all enemies it passes through. <br><br>While in Mega Gnar form, Gnar is melee, gains @ModifiedTransformHealth@ Health, and his mana costs are reduced by @TransformManaReduc@.",
 			"icon": "ASSETS/Characters/Gnar/HUD/Icons2D/GnarBig_R.dds",
 			"name": "GNAR!",
 			"variables": [
@@ -3461,9 +3461,9 @@ export const champions: ChampionData[] = [
 					"name": "TransformHealth",
 					"value": [
 						50,
-						400,
-						700,
-						1250,
+						500,
+						750,
+						1200,
 						850,
 						1050,
 						1250
@@ -3485,9 +3485,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						100,
 						150,
-						250,
+						200,
+						300,
 						0,
 						0,
 						0
@@ -3516,7 +3516,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.699999988079071,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 65,
+			"damage": 70,
 			"hp": 700,
 			"initialMana": 0,
 			"magicResist": 40,
@@ -3540,8 +3540,8 @@ export const champions: ChampionData[] = [
 					"value": [
 						50,
 						400,
-						600,
-						900,
+						550,
+						750,
 						550,
 						675,
 						800
@@ -3575,9 +3575,9 @@ export const champions: ChampionData[] = [
 					"name": "StunDuration",
 					"value": [
 						0,
+						1.5,
 						2,
 						2.5,
-						3,
 						0,
 						0,
 						0
@@ -3598,13 +3598,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "RefundedMana",
 					"value": [
-						40,
-						40,
-						40,
-						40,
-						40,
-						40,
-						40
+						30,
+						30,
+						30,
+						30,
+						30,
+						30,
+						30
 					]
 				}
 			]
@@ -3640,9 +3640,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						190,
-						210,
-						260,
+						175,
+						275,
+						300,
 						500,
 						625,
 						750
@@ -3653,8 +3653,8 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						2,
+						2,
 						3,
-						4,
 						0,
 						0,
 						0
@@ -3672,7 +3672,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 60,
-			"hp": 600,
+			"hp": 650,
 			"initialMana": 0,
 			"magicResist": 25,
 			"mana": 40,
@@ -3685,7 +3685,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Draven starts spinning an axe, empowering his next attack to deal @ADMult*100@% of his Attack Damage plus @ModifiedDamage@ bonus physical damage. (total:<scaleAD> @TotalDamage@ %i:scaleAD%</scaleAD>) It will return to his original location after striking the target. If Draven catches it, he will empower the axe again. Draven can spin up to 2 axes at a time.<br><br><TFTDebonairVIP>VIP Bonus: Draven gains infinite attack range and ignores @ArmorPenPercent@% his target's Armor.</TFTDebonairVIP>",
+			"desc": "Draven starts spinning an axe, empowering his next attack to deal <scaleAD>@TotalDamage@</scaleAD> bonus physical damage (@ADMult*100@% of his Attack Damage %i:scaleAD% + @ModifiedDamage@). It will return to his original location after striking the target. If Draven catches it, he will empower the axe again. Draven can spin up to 2 axes at a time.<br><br><TFTDebonairVIP>VIP Bonus: Draven gains infinite attack range and ignores @ArmorPenPercent@% his target's Armor.</TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Draven/HUD/Icons2D/Draven_SpinningAxe.dds",
 			"name": "Spinning Axes",
 			"variables": [
@@ -3705,8 +3705,8 @@ export const champions: ChampionData[] = [
 					"name": "ADMult",
 					"value": [
 						1,
-						1.399999976158142,
 						1.5,
+						1.600000023841858,
 						4,
 						3,
 						3.5,
@@ -3717,9 +3717,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						125,
+						150,
 						200,
-						700,
+						500,
 						0,
 						0,
 						0
@@ -3728,13 +3728,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "ArmorPenPercent",
 					"value": [
-						30,
-						30,
-						30,
-						30,
-						30,
-						30,
-						30
+						50,
+						50,
+						50,
+						50,
+						50,
+						50,
+						50
 					]
 				},
 				{
@@ -3760,7 +3760,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.800000011920929,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 85,
+			"damage": 80,
 			"hp": 800,
 			"initialMana": 0,
 			"magicResist": 30,
@@ -3794,9 +3794,9 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						130,
-						160,
-						400,
+						175,
+						225,
+						500,
 						500,
 						500,
 						500
@@ -3818,8 +3818,8 @@ export const champions: ChampionData[] = [
 					"name": "ADPercent",
 					"value": [
 						0,
-						1.75,
-						1.75,
+						1.7999999523162842,
+						1.850000023841858,
 						2,
 						0,
 						0,
@@ -3833,14 +3833,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_KhaZix.TFT_Set6_Stage2.dds",
 		"name": "Kha'Zix",
 		"stats": {
-			"armor": 30,
+			"armor": 35,
 			"attackSpeed": 0.8999999761581421,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 85,
+			"damage": 90,
 			"hp": 800,
 			"initialMana": 0,
-			"magicResist": 30,
+			"magicResist": 35,
 			"mana": 40,
 			"range": 1
 		},
@@ -3851,7 +3851,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Ahri fires an orb in a line, dealing @ModifiedDamage@ magic damage to all enemies it passes through on the way out and the way back. Enemies already hit by an orb take @MultiOrbDamage*100@% damage for each subsequent orb. Ahri fires @SpiritFireStacks@ additional orb(s) for each time she has cast this combat.",
+			"desc": "Ahri fires an orb in a @HexRange@ hex line, dealing @ModifiedDamage@ magic damage to all enemies it passes through on the way out and the way back. Enemies already hit by an orb take @MultiOrbDamage*100@% damage for each subsequent orb. Ahri fires @SpiritFireStacks@ additional orb(s) for each time she has cast this combat.",
 			"icon": "ASSETS/Characters/Ahri/HUD/Icons2D/Ahri_OrbofDeception.dds",
 			"name": "Orbs of Deception",
 			"variables": [
@@ -3859,8 +3859,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						150,
-						125,
-						190,
+						120,
+						180,
 						450,
 						500,
 						400,
@@ -3870,13 +3870,13 @@ export const champions: ChampionData[] = [
 				{
 					"name": "HexRange",
 					"value": [
-						4,
-						4,
-						4,
-						4,
-						4,
-						4,
-						4
+						5,
+						5,
+						5,
+						5,
+						5,
+						5,
+						5
 					]
 				},
 				{
@@ -3902,6 +3902,18 @@ export const champions: ChampionData[] = [
 						0.800000011920929,
 						0.800000011920929
 					]
+				},
+				{
+					"name": "AngleBetweenOrbs",
+					"value": [
+						20,
+						20,
+						20,
+						20,
+						20,
+						20,
+						20
+					]
 				}
 			]
 		},
@@ -3919,7 +3931,7 @@ export const champions: ChampionData[] = [
 			"initialMana": 0,
 			"magicResist": 30,
 			"mana": 50,
-			"range": 3
+			"range": 4
 		},
 		"traits": [
 			"Syndicate",
@@ -3981,7 +3993,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Corki fires a missile at his target that explodes on impact, dealing @ModifiedDamage@ magic damage to nearby enemies.",
+			"desc": "Corki fires a missile at his target that explodes on impact, dealing @ModifiedDamage@ magic damage to enemies within 1 hex.",
 			"icon": "ASSETS/Characters/Corki/HUD/Icons2D/Corki_MissileBarrage.dds",
 			"name": "Bombardment",
 			"variables": [
@@ -3990,8 +4002,8 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						200,
-						275,
-						375,
+						260,
+						333,
 						0,
 						0,
 						0
@@ -4008,7 +4020,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.699999988079071,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 60,
+			"damage": 65,
 			"hp": 650,
 			"initialMana": 25,
 			"magicResist": 25,
@@ -4029,25 +4041,25 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentAD",
 					"value": [
-						1.5,
-						1.5,
-						1.5,
-						1.5,
-						1.5,
-						1.5,
-						1.5
+						1.600000023841858,
+						1.600000023841858,
+						1.600000023841858,
+						1.600000023841858,
+						1.600000023841858,
+						1.600000023841858,
+						1.600000023841858
 					]
 				},
 				{
 					"name": "PercentHealing",
 					"value": [
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896,
-						0.30000001192092896
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5,
+						0.5
 					]
 				},
 				{
@@ -4058,8 +4070,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						100,
-						150,
+						80,
+						125,
 						200,
 						0,
 						0,
@@ -4100,7 +4112,7 @@ export const champions: ChampionData[] = [
 					"value": [
 						0,
 						200,
-						300,
+						350,
 						1200,
 						1000,
 						1000,
@@ -4123,9 +4135,9 @@ export const champions: ChampionData[] = [
 					"name": "StunDuration",
 					"value": [
 						1.5,
+						2,
 						2.5,
-						3,
-						6,
+						8,
 						3.5,
 						4,
 						4.5
@@ -4150,15 +4162,15 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Alistar.TFT_Set6_Stage2.dds",
 		"name": "Alistar",
 		"stats": {
-			"armor": 60,
+			"armor": 70,
 			"attackSpeed": 0.6000000238418579,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 100,
-			"hp": 1200,
-			"initialMana": 80,
-			"magicResist": 60,
-			"mana": 160,
+			"hp": 1300,
+			"initialMana": 85,
+			"magicResist": 70,
+			"mana": 170,
 			"range": 1
 		},
 		"traits": [
@@ -4168,7 +4180,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Renata unleashes a toxic poison wave towards the largest group of nearby enemies, poisoning all enemies caught in its path for @Duration@ seconds. Poisoned enemies suffer @ASReduction@% reduced Attack Speed and take @ModifiedDamagePerSecond@ magic damage per second. Damage dealt by the poison can stack.",
+			"desc": "Renata unleashes a toxic poison wave towards the largest group of nearby enemies within @SpellRange@ hexes, poisoning all enemies caught in its path for @Duration@ seconds. Poisoned enemies suffer @ASReduction@% reduced Attack Speed and take @ModifiedDamagePerSecond@ magic damage per second. Damage dealt by the poison can stack.",
 			"icon": "ASSETS/Characters/TFT6_Renata/HUD/Icons2D/Renata_ToxicWave_2.dds",
 			"name": "Toxic Wave",
 			"variables": [
@@ -4176,9 +4188,9 @@ export const champions: ChampionData[] = [
 					"name": "DamagePerSecond",
 					"value": [
 						1,
+						40,
 						70,
-						100,
-						250,
+						150,
 						2,
 						2.25,
 						2.5
@@ -4207,6 +4219,18 @@ export const champions: ChampionData[] = [
 						15,
 						15
 					]
+				},
+				{
+					"name": "SpellRange",
+					"value": [
+						6,
+						6,
+						6,
+						6,
+						6,
+						6,
+						6
+					]
 				}
 			]
 		},
@@ -4220,10 +4244,10 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 40,
-			"hp": 700,
-			"initialMana": 30,
+			"hp": 800,
+			"initialMana": 0,
 			"magicResist": 30,
-			"mana": 75,
+			"mana": 60,
 			"range": 3
 		},
 		"traits": [
@@ -4253,8 +4277,8 @@ export const champions: ChampionData[] = [
 					"name": "AttackSpeed",
 					"value": [
 						50,
-						1,
-						1.5,
+						0.800000011920929,
+						1.75,
 						6.659999847412109,
 						0.5,
 						0.5,
@@ -4289,8 +4313,8 @@ export const champions: ChampionData[] = [
 					"name": "Damage",
 					"value": [
 						0,
-						300,
-						450,
+						250,
+						500,
 						5000,
 						0,
 						0,
@@ -4304,14 +4328,14 @@ export const champions: ChampionData[] = [
 		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Silco.TFT_Set6_Stage2.dds",
 		"name": "Silco",
 		"stats": {
-			"armor": 35,
+			"armor": 40,
 			"attackSpeed": 0.6499999761581421,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 70,
+			"damage": 60,
 			"hp": 850,
 			"initialMana": 0,
-			"magicResist": 35,
+			"magicResist": 40,
 			"mana": 40,
 			"range": 4
 		},
@@ -4322,7 +4346,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Zeri charges herself up with electricity for @Duration@ seconds. While electrified, she aims at the farthest enemy, her attacks pierce, and she dashes after every shot.<br><br>Passive: Zeri's Basic Attacks fire @NumBullets@ bullets, each dealing @PercentAD*100@% of her Attack Damage as physical damage and @ModifiedBonusOnHit@ bonus magic damage. <br><br><TFTDebonairVIP>VIP Bonus: Zeri's electrified duration lasts until the end of combat. </TFTDebonairVIP>",
+			"desc": "Zeri charges herself up with electricity for @Duration@ seconds. While electrified, she aims at the farthest enemy, her attacks pierce, and she dashes after every shot.<br><br>Passive: Zeri's Basic Attacks fire @NumBullets@ bullets, each dealing <scaleAD>@TooltipDamage@</scaleAD> physical damage (@PercentAD*100@% of her Attack Damage %i:scaleAD%) and @ModifiedBonusOnHit@ bonus magic damage. <br><br><TFTDebonairVIP>VIP Bonus: Zeri's electrified duration lasts until the end of combat. </TFTDebonairVIP>",
 			"icon": "ASSETS/Characters/Zeri/HUD/Icons2D/ZeriR.Zeri.dds",
 			"name": "Lightning Crash",
 			"variables": [
@@ -4353,22 +4377,22 @@ export const champions: ChampionData[] = [
 				{
 					"name": "PercentAD",
 					"value": [
-						0.15000000596046448,
-						0.15000000596046448,
-						0.15000000596046448,
-						0.15000000596046448,
-						0.15000000596046448,
-						0.15000000596046448,
-						0.15000000596046448
+						0.1599999964237213,
+						0.1599999964237213,
+						0.1599999964237213,
+						0.1599999964237213,
+						0.1599999964237213,
+						0.1599999964237213,
+						0.1599999964237213
 					]
 				},
 				{
 					"name": "BonusOnHit",
 					"value": [
 						0,
-						0,
-						0,
-						50,
+						11,
+						22,
+						55,
 						0,
 						0,
 						0
@@ -4447,7 +4471,7 @@ export const champions: ChampionData[] = [
 	},
 	{
 		"ability": {
-			"desc": "Twitch fires a powerful bolt towards his target that pierces through enemies, deals @PercentAttackDamage*100@% of his Attack Damage plus @ModifiedDamage@ bonus physical damage (total: <scaleAD>@TotalDamage@ %i:scaleAD%</scaleAD>) and reduces healing by @GWStrength*100@% for @GWDuration@ seconds.",
+			"desc": "Twitch fires a powerful bolt towards his target that pierces through enemies, deals <scaleAD>@TotalDamage@</scaleAD> physical damage (@PercentAttackDamage*100@% of his Attack Damage %i:scaleAD% + @ModifiedDamage@), and reduces healing by @GWStrength*100@% for @GWDuration@ seconds.",
 			"icon": "ASSETS/Characters/Twitch/HUD/Icons2D/Twitch_R.dds",
 			"name": "Piercing Bolt",
 			"variables": [
@@ -4503,7 +4527,7 @@ export const champions: ChampionData[] = [
 		},
 		"apiName": "TFT6_Twitch",
 		"cost": 1,
-		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Twitch.TFT_Set6.dds",
+		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_Twitch.TFT_Set6_Stage2.dds",
 		"name": "Twitch",
 		"stats": {
 			"armor": 15,
@@ -4623,7 +4647,7 @@ export const champions: ChampionData[] = [
 						0.6499999761581421,
 						0.4000000059604645,
 						0.5,
-						0.6000000238418579,
+						0.699999988079071,
 						1.0499999523162842,
 						1.149999976158142,
 						1.25
@@ -4633,11 +4657,11 @@ export const champions: ChampionData[] = [
 		},
 		"apiName": "TFT6_JarvanIV",
 		"cost": 8,
-		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6b_JarvanIV.TFT_Set6_Stage2.dds",
+		"icon": "ASSETS/UX/TFT/ChampionSplashes/TFT6_JarvanIV.TFT_Set6_Stage2.dds",
 		"name": "Jarvan IV",
 		"stats": {
 			"armor": 40,
-			"attackSpeed": 0.6000000238418579,
+			"attackSpeed": 0.6499999761581421,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 55,

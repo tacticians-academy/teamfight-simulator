@@ -134,7 +134,7 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"BonusAS": 30,
+					"BonusAS": 25,
 					"BurstDuration": 2.5
 				}
 			},
@@ -143,7 +143,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"BonusAS": 60,
+					"BonusAS": 55,
 					"BurstDuration": 2.5
 				}
 			},
@@ -412,14 +412,14 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Mastermind",
-		"desc": "At the start of combat, the Mastermind grants the 2 allies directly in front of him @ManaGrant@ Mana.",
+		"desc": "At the start of combat, the Mastermind grants the 2 allies directly in front of him @ManaGrant@ Mana (this effect does not stack).",
 		"effects": [
 			{
 				"maxUnits": 25000,
 				"minUnits": 1,
 				"style": 3,
 				"variables": {
-					"ManaGrant": 50
+					"ManaGrant": 40
 				}
 			}
 		],
@@ -545,7 +545,7 @@ export const traits: TraitData[] = [
 				"minUnits": 2,
 				"style": 1,
 				"variables": {
-					"MagicDamage": 10,
+					"MagicDamage": 20,
 					"ShieldAmount": 150,
 					"ShieldDuration": 4,
 					"Frequency": 6
@@ -556,7 +556,7 @@ export const traits: TraitData[] = [
 				"minUnits": 4,
 				"style": 2,
 				"variables": {
-					"MagicDamage": 40,
+					"MagicDamage": 50,
 					"ShieldAmount": 200,
 					"ShieldDuration": 4,
 					"Frequency": 6
@@ -567,8 +567,8 @@ export const traits: TraitData[] = [
 				"minUnits": 6,
 				"style": 3,
 				"variables": {
-					"MagicDamage": 80,
-					"ShieldAmount": 400,
+					"MagicDamage": 100,
+					"ShieldAmount": 450,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -578,7 +578,7 @@ export const traits: TraitData[] = [
 				"minUnits": 8,
 				"style": 4,
 				"variables": {
-					"MagicDamage": 140,
+					"MagicDamage": 170,
 					"ShieldAmount": 700,
 					"ShieldDuration": 4,
 					"Frequency": 6
@@ -590,7 +590,7 @@ export const traits: TraitData[] = [
 	},
 	{
 		"apiName": "Set6_Twinshot",
-		"desc": "Twinshots gain bonus Attack Damage. When a Twinshot attacks, they have a chance to attack twice instead.<br><br><expandRow>(@MinUnits@) @BonusAD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
+		"desc": "Twinshots gain bonus Attack Damage and have a chance to fire twice whenever they attack or cast an Ability.<br><br><expandRow>(@MinUnits@) @BonusAD@ Attack Damage, @ProcChance@% chance</expandRow><br>",
 		"effects": [
 			{
 				"maxUnits": 2,
@@ -972,7 +972,7 @@ export const traits: TraitData[] = [
 					"AS": 40,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HPRegen": 8,
+					"HPRegen": 7,
 					"HPThreshold": 75
 				}
 			},
@@ -984,7 +984,7 @@ export const traits: TraitData[] = [
 					"AS": 80,
 					"DamageReduction": 20,
 					"Duration": 8,
-					"HPRegen": 12,
+					"HPRegen": 10,
 					"HPThreshold": 75
 				}
 			},
