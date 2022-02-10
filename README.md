@@ -16,7 +16,7 @@ https://tftsim.netlify.app
 
 ### Play a fight
 - Assassins jump to backline
-- Units pathfind (naively) into attack range (see [pathfinding](src/game/pathfind.ts))
+- Units pathfind (naively) into attack range (see [game/pathfind](src/game/pathfind.ts))
 - Units auto-attack and generate mana
 - Supported units cast their abilities
 - Runs until one team is left standing

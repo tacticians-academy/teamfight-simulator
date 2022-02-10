@@ -1840,7 +1840,7 @@ export const champions: ChampionData[] = [
 			"attackSpeed": 0.6000000238418579,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
-			"damage": 50,
+			"damage": 55,
 			"hp": 500,
 			"initialMana": 0,
 			"magicResist": 15,
