@@ -1,5 +1,5 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { getDistanceUnit, getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION } from '#/helpers/constants'
 
 import type { ChampionSpellData, ChampionSpellMissileData, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
@@ -91,7 +91,7 @@ export class Projectile {
 		this.position[1] += Math.sin(angle) * speed
 		const [projectileX, projectileY] = this.position
 		if (this.collidesWith !== undefined) {
-			const collisionUnits = getUnitsOfTeam(this.collidesWith)
+			const collisionUnits = getAttackableUnitsOfTeam(this.collidesWith)
 			for (const unit of collisionUnits) {
 				const [unitX, unitY] = unit.coordinatePosition()
 				const xDist = (unitX - projectileX) * 100
