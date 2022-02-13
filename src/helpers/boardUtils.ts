@@ -143,7 +143,7 @@ export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 	let [ currentCol, currentRow ] = destHex
 	const [ destCol, destRow ] = startHex
 	let distanceAccumulator = 0
-	while (currentCol !== destCol && currentRow !== destRow) {
+	while (currentCol !== destCol || currentRow !== destRow) {
 		const isInsetRow = currentRow % 2 === 1
 		if (currentRow === destRow) {
 			currentCol += currentCol > destCol ? -1 : 1
