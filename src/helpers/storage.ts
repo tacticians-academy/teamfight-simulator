@@ -21,5 +21,5 @@ export function getSavedUnits() {
 //SAMPLE
 if (window.localStorage.getItem('TFTSIM_v') == null) {
 	window.localStorage.setItem('TFTSIM_v', '1')
-	window.localStorage.setItem('TFTSIM_units', `[{"name":"Zyra","position":[0,0],"starLevel":2,"items":[]},{"name":"Zyra","position":[5,4],"starLevel":1,"items":[33]}]`)
+	window.localStorage.setItem('TFTSIM_units', `[{"name":"Zyra","position":[0,0],"starLevel":2,"items":[]},{"name":"Zyra","position":[5,4],"starLevel":1,"items":[]},{"name":"Caitlyn","position":[1,5],"starLevel":1,"items":[44]}]`)
 }

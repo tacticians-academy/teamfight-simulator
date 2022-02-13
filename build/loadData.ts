@@ -250,6 +250,10 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 		json = await response.json() as ChampionJSON
 		for (const rootKey in json) { // Remove keys irrelevant to simulation
 			const entry = json[rootKey]
+			if (entry.__type === 'SkinCharacterMetaDataProperties') {
+				delete json[rootKey]
+				continue
+			}
 			const deleting = deleteNormalizations[entry.__type]
 			if (deleting != null) {
 				for (const deleteKey of deleting) {

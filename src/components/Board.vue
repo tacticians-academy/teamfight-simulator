@@ -95,10 +95,10 @@ onMounted(() => {
 
 <style scoped lang="postcss">
 .hexEffect-leave-active {
-  transition: opacity 1500ms !important;
+	transition: opacity 1500ms !important;
 }
 .hexEffect-enter-from, .hexEffect-leave-to {
-  opacity: 0 !important;
+	opacity: 0 !important;
 }
 </style>
 
