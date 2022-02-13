@@ -49,10 +49,32 @@ export interface ChampionAbility {
 	variables: ChampionAbilityVariable[]
 }
 
+export interface ChampionSpellData {
+	name: string
+	castTime?: number
+	missile?: {
+		width?: number
+		travelTime?: number
+		speed?: number
+		acceleration?: number
+		speedMax?: number
+		tracksTarget: boolean
+	}
+	variables: Record<string, number[]>
+	cantCastWhileRooted?: true
+	uninterruptable?: true
+}
+
 export interface ChampionData {
-	ability: ChampionAbility
+	ability?: ChampionAbility
+	spells: ChampionSpellData[]
+	basicAttackMissileSpeed?: number
+	critAttackMissileSpeed?: number
 	apiName: string
-	cost: number
+	cost?: number
+	isSpawn: boolean
+	starLevel?: number
+	teamSize?: number
 	icon: string
 	name: string
 	stats: {
@@ -65,6 +87,7 @@ export interface ChampionData {
 		initialMana: number
 		magicResist: number
 		mana: number
+		moveSpeed: number
 		range: number
 	},
 	traits: string[]
@@ -100,4 +123,4 @@ export interface ItemData {
 
 export type BonusVariable = [key: string, value: number | null]
 
-export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, champion: ChampionUnit) => void
+export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void

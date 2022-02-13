@@ -5,7 +5,7 @@ import fs from 'fs/promises'
 import path from 'path'
 
 import { BonusKey } from '../src/helpers/types.js'
-import type { ChampionData, ItemData, TraitData } from '../src/helpers/types.js'
+import type { ChampionData, ChampionSpellData, ItemData, TraitData } from '../src/helpers/types.js'
 import { ItemKey } from '../src/data/set6/items.js'
 
 const baseURL = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}`
@@ -60,31 +60,354 @@ const playableChampions = (champions as ChampionData[])
 			return false
 		}
 		if (!champion.icon) {
-			console.log('No icon for champion, excluding.', champion)
+			if (champion.apiName !== 'TFT6_Annie') {
+				console.log('No icon for champion, excluding.', champion)
+			}
 			return false
 		}
 		return true
 	})
 	.sort((a, b) => a.name.localeCompare(b.name))
 
+type ChampionJSON = Record<string, Record<string, any>>
+type ChampionJSONType = 'SpellObject' | 'TFTCharacterRecord'
+interface ChampionJSONAttack {
+	mAttackName?: string
+	mAttackProbability?: number
+	mAttackCastTime?: number
+	mAttackDelayCastOffsetPercent?: number
+	mAttackTotalTime?: number
+}
+interface ChampionJSONStats {
+	PortraitIcon: string
+	tier?: number
+	mLinkedTraits?: {TraitData: string}[]
+	baseStaticHPRegen: number
+	baseCritChance: number
+	critDamageMultiplier: number
+	baseArmor: number
+	attackRange: number
+	attackSpeed: number
+	baseDamage: number
+	baseHP: number
+	baseSpellBlock: number
+	mInitialMana?: number
+	primaryAbilityResource: {
+		arBase?: number
+	}
+	baseMoveSpeed: number
+	spellNames: string[]
+	extraSpells?: string[]
+	isSpawn?: true
+	teamSize: number
+	basicAttack?: ChampionJSONAttack
+	extraAttacks?: ChampionJSONAttack[]
+	critAttacks?: ChampionJSONAttack[]
+}
+
+interface ChampionJSONSpellAttack {
+	missileSpeed?: number
+	mMissileSpec?: {
+		mMissileWidth: number
+		movementComponent: {
+			mSpeed: number
+		}
+	}
+}
+
+interface ChampionJSONSpell {
+	mCastTime?: number
+	mDataValues?: {
+		mName: string
+		mValues?: number[]
+	}[]
+	mCantCancelWhileWindingUp?: true
+	missileSpeed?: number
+	mMissileSpec?: {
+		mMissileWidth: number
+		movementComponent: {
+			mTravelTime?: number
+			mSpeed?: number
+			mTracksTarget?: false
+			mAcceleration?: number
+			mInitialSpeed?: number
+			mMaxSpeed?: number
+		}
+	}
+	cantCastWhileRooted?: true
+}
+function getByType(type: ChampionJSONType, json: ChampionJSON) {
+	for (const key in json) {
+		const entry = json[key]
+		if (entry.__type === type) {
+			return entry
+		}
+	}
+}
+function getCharacterRecord(json: ChampionJSON) {
+	return getByType('TFTCharacterRecord', json) as ChampionJSONStats
+}
+function getByScriptName(name: string, json: ChampionJSON) {
+	for (const key in json) {
+		const entry = json[key]
+		if (entry.mScriptName === name) {
+			return entry
+		}
+	}
+}
+function getSpell(name: string, json: ChampionJSON): ChampionJSONSpell | undefined {
+	const spellContainer = getByScriptName(name, json)
+	if (!spellContainer) {
+		// console.log('No spell', name)
+		return undefined
+	}
+	for (const key in spellContainer) {
+		if (key !== 'mScriptName' && key !== 'mSpell' && key !== 'mBuff' && key !== 'mScript' && key !== '__type') {
+			console.log('Unknown spell key', key, name)
+		}
+	}
+	return spellContainer.mSpell
+}
+
+const deleteNormalizations: Record<string, string[]> = {
+	SpellDataResource: [ 'cooldownTime', 'mClientData', 'mAnimationName' ],
+	TFTCharacterRecord: [ 'attackSpeedRatio', 'healthBarHeight', 'healthBarFullParallax', 'selectionRadius', 'selectionHeight', 'expGivenOnDeath', 'goldGivenOnDeath', 'mShopData' ],
+}
+const renameNormalizations: Record<string, Record<string, string>> = {
+	TFTCharacterRecord: {
+		'{e1562ee7}': 'isSpawn',
+		'{8d30a918}': 'teamSize',
+	},
+}
+const renameTraits: Record<string, string> = {
+	'{e41d146c}': 'TFT6_Arcanist',
+	'{568f4f5c}': 'TFT6_Assassin',
+	'{161a5685}': 'TFT6_Syndicate',
+	'{b7403726}': 'TFT6_Bodyguard',
+	'{dbb82b57}': 'TFT6_Bruiser',
+	'{d392bf9c}': 'TFT6_Challenger',
+	'{9450bffc}': 'TFT6_Chemtech',
+	'{42e1fbf0}': 'TFT6_Clockwork',
+	'{7b9d79e4}': 'TFT6_Colossus',
+	'{32c4c2eb}': 'TFT6_Debonair',
+	'{4f6f1a9d}': 'TFT6_Enchanter',
+	'{0907e6f1}': 'TFT6_Enforcer',
+	'{7a7004b4}': 'TFT6_Glutton',
+	'{c51ec5be}': 'TFT6_Hextech',
+	'{cac372b9}': 'TFT6_Innovator',
+	'{407dfc2b}': 'TFT6_Mastermind',
+	'{de28b133}': 'TFT6_Mercenary',
+	'{5dfaa4aa}': 'TFT6_Mutant',
+	'{e6a2f180}': 'TFT6_Rivals',
+	'{bd30b5b9}': 'TFT6_Scholar',
+	'{8b9f7f1a}': 'TFT6_Scrap',
+	'{3e362a6e}': 'TFT6_Sniper',
+	'{8e9af226}': 'TFT6_Socialite',
+	'{b3cf9aef}': 'TFT6_Striker',
+	'{69d4c0d0}': 'TFT6_Transformer',
+	'{b669014b}': 'TFT6_Twinshot',
+	'{7c57b394}': 'TFT6_Yordle',
+	'{396d5623}': 'TFT6_YordleLord',
+}
+
+function reduceAttacks(attacks: ChampionJSONAttack[], json: ChampionJSON) {
+	const attackSpeeds = attacks
+		.map(attack => parseAttack(attack, json))
+		.filter((speed): speed is number => speed != null)
+	return attackSpeeds[0]
+	// return attackSpeeds.length === 0 ? undefined : attackSpeeds.reduce((acc, value) => acc + value, 0) / attackSpeeds.length
+}
+function parseAttack(attack: ChampionJSONAttack, json: ChampionJSON) {
+	const spell = getSpell(attack.mAttackName!, json)
+	if (!spell) { return undefined }
+	const attackSpell = spell as ChampionJSONSpellAttack
+	const speed = attackSpell.mMissileSpec?.movementComponent.mSpeed ?? attackSpell.missileSpeed
+	return speed
+	// return {
+	// 	probability: attack.mAttackProbability,
+	// 	width: attackSpell.mMissileSpec?.mMissileWidth,
+	// 	speed,
+	// }
+}
+
 const championsPath = path.resolve(outputFolder, 'champion')
 await fs.mkdir(championsPath, { recursive: true })
-for (const champion of playableChampions) {
-	const apiName = champion.apiName.toLowerCase()
-	const outputPath = path.resolve(championsPath, apiName + '.json')
+const outputChampions = await Promise.all(playableChampions.map(async champion => {
+	const apiName = champion.apiName
+	const pathName = champion.apiName.toLowerCase()
+	const outputPath = path.resolve(championsPath, pathName + '.json')
+	let json: ChampionJSON
 	try {
-		await fs.access(outputPath)
+		const raw = await fs.readFile(outputPath, 'utf8')
+		json = JSON.parse(raw)
 	} catch {
-		console.log('\nLoading champion', apiName)
-		const url = `${baseURL}/game/data/characters/${apiName}/${apiName}.bin.json`
+		const url = `${baseURL}/game/data/characters/${pathName}/${pathName}.bin.json`
+		console.log('\nLoading champion', apiName, url)
 		const response = await fetch(url)
 		if (!response.ok) {
 			throw response
 		}
-		const json = await response.json() as Record<string, any>
+		json = await response.json() as ChampionJSON
+		for (const rootKey in json) { // Remove keys irrelevant to simulation
+			const entry = json[rootKey]
+			const deleting = deleteNormalizations[entry.__type]
+			if (deleting != null) {
+				for (const deleteKey of deleting) {
+					delete json[rootKey][deleteKey]
+				}
+			}
+			const renaming = renameNormalizations[entry.__type]
+			if (renaming != null) {
+				for (const renameKey in renaming) {
+					const value = json[rootKey][renameKey]
+					delete json[rootKey][renameKey]
+					json[rootKey][renaming[renameKey]] = value
+				}
+			}
+			if (entry.__type === 'TFTCharacterRecord') {
+				const stats = entry as ChampionJSONStats
+				stats.mLinkedTraits?.forEach(traitEntry => {
+					const rawTrait = traitEntry.TraitData
+					traitEntry.TraitData = renameTraits[rawTrait]
+				})
+			}
+		}
 		fs.writeFile(outputPath, JSON.stringify(json, undefined, '\t'))
 	}
-}
+
+	const characterRecord = getCharacterRecord(json)
+	if (characterRecord.baseStaticHPRegen !== 0) {
+		console.log('ERR HP Regen', apiName, characterRecord.baseStaticHPRegen)
+	}
+	let totalMana = characterRecord.primaryAbilityResource.arBase
+	let initialMana = characterRecord.mInitialMana ?? 0
+	if (totalMana == null) {
+		totalMana = initialMana
+		initialMana = 0
+	}
+	const stats = {
+		armor: characterRecord.baseArmor,
+		attackSpeed: characterRecord.attackSpeed,
+		critChance: characterRecord.baseCritChance,
+		critMultiplier: characterRecord.critDamageMultiplier,
+		damage: characterRecord.baseDamage,
+		hp: characterRecord.baseHP,
+		initialMana,
+		magicResist: characterRecord.baseSpellBlock,
+		mana: totalMana,
+		moveSpeed: characterRecord.baseMoveSpeed,
+		range: Math.floor(characterRecord.attackRange / 180),
+	}
+	const spellNames = characterRecord.spellNames
+	if (characterRecord.extraSpells) {
+		spellNames.push(...characterRecord.extraSpells)
+	}
+	// if (apiName === 'TFT6_Gnar') {
+	// }
+	let isFirstSpell = true
+	const spells = spellNames
+		.filter(name => name && name !== 'BaseSpell')
+		.map(spellName => {
+			const spell = getSpell(spellName, json)
+			return spell ? [spellName, spell] as [string, ChampionJSONSpell] : undefined
+		})
+		.filter((spellData): spellData is [string, ChampionJSONSpell] => {
+			if (!spellData) {
+				return false
+			}
+			if (isFirstSpell) {
+				isFirstSpell = false
+				if (spellData[1]?.mDataValues == null) {
+					const spellName = spellData[0]
+					if (spellName !== 'TFT6_JayceR') {
+						console.log('!mDataValues', spellName)
+					}
+					return false
+				}
+			}
+			return true
+		})
+		.map(([spellName, spellData]) => {
+			const missileSpec = spellData.mMissileSpec
+			const missileMovement = missileSpec?.movementComponent
+			// const variables: {name: string, values: number[]}[] = []
+			const variables: Record<string, number[]> = {}
+			if (spellData.mDataValues) {
+				for (const dataValues of spellData.mDataValues) {
+					if (dataValues.mValues) {
+						// variables.push({ name: dataValues.mName, values: dataValues.mValues })
+						variables[dataValues.mName] = dataValues.mValues //TODO .slice(0, 4)
+					}
+				}
+			}
+			const missileSpeed = spellData.missileSpeed
+			const spell: ChampionSpellData = {
+				name: spellName,
+				castTime: spellData.mCastTime,
+				missile: !missileSpec && missileSpeed == null
+					? undefined
+					: {
+						width: missileSpec?.mMissileWidth,
+						travelTime: missileMovement?.mTravelTime,
+						speed: missileMovement?.mSpeed ?? missileMovement?.mInitialSpeed ?? missileSpeed,
+						acceleration: missileMovement?.mAcceleration,
+						speedMax: missileMovement?.mMaxSpeed,
+						tracksTarget: missileMovement?.mTracksTarget !== false,
+					},
+				variables,
+				cantCastWhileRooted: spellData.cantCastWhileRooted,
+				uninterruptable: spellData.mCantCancelWhileWindingUp,
+			}
+			if (spellData.mCastTime == null) { //TODO verify these aren't supposed to instacast?
+				console.log('!mCastTime', spellName)
+			}
+			// if (!spell.missile) { //TODO multipart spells (TFT6_ViktorE, TFT6_JhinR, etc)
+			// if (spell.missile && spell.missile.speed == null && spell.missile.travelTime == null) {
+			// 	console.log('!missile', spellName)
+			// }
+			return spell
+		})
+	if (!spells.length) {
+		console.log('No spells for', apiName)
+	} else if (spells.length > 1 && apiName !== 'TFT6_Jayce') {
+		console.log('Multiple spells for', apiName, spells.map(spell => spell.name))
+	}
+	const basicAttacks = []
+	if (characterRecord.basicAttack) {
+		if (characterRecord.basicAttack.mAttackName == null) {
+			characterRecord.basicAttack.mAttackName = `${apiName}BasicAttack`
+		}
+		basicAttacks.push(characterRecord.basicAttack)
+	}
+	if (characterRecord.extraAttacks) {
+		basicAttacks.push(...characterRecord.extraAttacks)
+	}
+	const basicAttackMissileSpeed = reduceAttacks(basicAttacks.filter(attack => attack.mAttackName), json)
+	const critAttacks = characterRecord.critAttacks
+	const critAttackMissileSpeed = critAttacks ? reduceAttacks(critAttacks.filter(attack => attack.mAttackName), json) : undefined
+
+	const isSpawn = characterRecord.isSpawn ?? false
+	const traits = characterRecord.mLinkedTraits?.map(traitData => {
+		if (traitData.TraitData.startsWith('{')) {
+			console.log('ERR Unknown trait', apiName, traitData)
+		}
+		return traitData.TraitData.split('_')[1] //TODO
+	}) ?? []
+	return {
+		spells,
+		apiName,
+		cost: characterRecord.tier,
+		isSpawn,
+		starLevel: apiName === 'TFT6_HexTechDragon' ? 3 : (apiName === 'TFT6_Tibbers' ? 2 : (apiName === 'TFT6_MalzaharVoidling' ? 1 : undefined)),
+		teamSize: characterRecord.teamSize,
+		icon: champion.icon,
+		name: champion.name,
+		basicAttackMissileSpeed,
+		critAttackMissileSpeed,
+		stats,
+		traits,
+	}
+}))
 
 const normalizeKeys: Record<string, BonusKey> = {
 	AbilityPower: BonusKey.AbilityPower,
@@ -299,7 +622,7 @@ if (unreplacedIDs.size) {
 }
 
 await Promise.all([
-	fs.writeFile(path.resolve(outputFolder, 'champions.ts'), `import type { ChampionData } from '#/helpers/types'\n\nexport const champions: ChampionData[] = ` + JSON.stringify(playableChampions, undefined, '\t')),
+	fs.writeFile(path.resolve(outputFolder, 'champions.ts'), `import type { ChampionData } from '#/helpers/types'\n\nexport const champions: ChampionData[] = ` + JSON.stringify(outputChampions, undefined, '\t')),
 	fs.writeFile(path.resolve(outputFolder, 'traits.ts'), `import type { TraitData } from '#/helpers/types'\n\n${traitKeysString}\n\nexport const traits: TraitData[] = ` + JSON.stringify(traits, undefined, '\t').replace(/"null"/g, 'null')),
 	fs.writeFile(path.resolve(outputFolder, 'items.ts'), `import type { ItemData } from '#/helpers/types'\n\n${itemKeysString}\n\nexport const items: ItemData[] = ` + JSON.stringify(currentItems, undefined, '\t')),
 ])

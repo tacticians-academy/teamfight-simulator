@@ -7,8 +7,8 @@ export default {
 	Zyra: (elapsedMS, champion) => {
 		addHexEffect(champion, elapsedMS, {
 			hexes: getRowOfMost(champion.opposingTeam()),
-			damage: champion.getAbilityValue('Damage'),
-			stunSeconds: champion.getAbilityValue('StunDuration'),
+			damage: champion.getSpellValue('Damage'),
+			stunSeconds: champion.getSpellValue('StunDuration'),
 		})
 	},
 } as Record<string, AbilityFn>

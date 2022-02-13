@@ -46,6 +46,7 @@ export class ChampionUnit {
 	items: ItemData[] = []
 	traits: TraitData[] = []
 	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
+	transformIndex = 0
 	ability: AbilityFn | undefined
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
@@ -83,7 +84,7 @@ export class ChampionUnit {
 		this.mana = this.data.stats.initialMana + this.getBonuses(BonusKey.Mana)
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
-		this.fixedAS = this.data.ability.variables.find(v => v.name === 'AttackSpeed')?.value?.[this.starLevel]
+		this.fixedAS = this.getSpellValue('AttackSpeed')
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -154,7 +155,7 @@ export class ChampionUnit {
 		return !!this.ability && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
-		this.ability?.(elapsedMS, this)
+		this.ability?.(elapsedMS, this.getCurrentSpell(), this)
 		this.mana = 0
 	}
 
@@ -244,10 +245,13 @@ export class ChampionUnit {
 		return coordinatePosition(this.activePosition)
 	}
 
-	getAbilityValue(name: string) {
-		const entry = this.data.ability.variables.find(valueObject => valueObject.name === name)
-		return entry?.value?.[this.starLevel]
+	getCurrentSpell() {
+		return this.data.spells[this.transformIndex]
 	}
+	getSpellValue(name: string) {
+		return this.getCurrentSpell().variables[name]?.[this.starLevel]
+	}
+
 	getBonusFor(sourceKey: TraitKey | ItemKey) {
 		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
 	}
@@ -278,7 +282,7 @@ export class ChampionUnit {
 	attackDamage() {
 		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
 		if (this.fixedAS != null) {
-			const multiplier = this.data.ability.variables.find(v => v.name === 'ADFromAttackSpeed')?.value?.[this.starLevel]
+			const multiplier = this.getSpellValue('ADFromAttackSpeed')
 			if (multiplier != null) {
 				return ad + this.bonusAttackSpeed() * 100 * multiplier
 			}
@@ -307,6 +311,6 @@ export class ChampionUnit {
 		return this.data.stats.range + this.getBonuses(BonusKey.HexRangeIncrease)
 	}
 	moveSpeed() {
-		return 550 //TODO featherweights
+		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
 	}
 }
