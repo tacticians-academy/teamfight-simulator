@@ -6,7 +6,6 @@ export default {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
 			hexes: getRowOfMost(champion.opposingTeam()),
-			damage: champion.getSpellValue('Damage'),
 			stunSeconds: champion.getSpellValue('StunDuration'),
 		})
 	},

@@ -342,6 +342,12 @@ export class ChampionUnit {
 	}
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
+		if (data.damage === undefined) {
+			data.damage = this.getSpellValue('Damage')
+		}
+		if (data.damageType === undefined) {
+			data.damageType = DamageType.magic
+		}
 		const projectile = new Projectile(this, elapsedMS, data)
 		this.pending.projectiles.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
@@ -350,9 +356,15 @@ export class ChampionUnit {
 		}
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
+		if (data.damage === undefined) {
+			data.damage = this.getSpellValue('Damage')
+		}
+		if (data.damageType === undefined) {
+			data.damageType = DamageType.magic
+		}
 		const hexEffect = new HexEffect(this, elapsedMS, data)
 		this.pending.hexEffects.add(hexEffect)
-		this.attackStartAtMS = hexEffect.activatesAtMS
-		this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+		this.attackStartAtMS = hexEffect.startsAtMS
+		this.manaLockUntilMS = hexEffect.startsAtMS + DEFAULT_MANA_LOCK_MS
 	}
 }

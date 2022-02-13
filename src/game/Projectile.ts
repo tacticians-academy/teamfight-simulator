@@ -11,8 +11,8 @@ const hexRadius = HEX_PROPORTION * 2 * 100
 export interface ProjectileData {
 	spell?: ChampionSpellData
 	activatesAfterMS?: DOMHighResTimeStamp
-	damage: number
-	damageType: DamageType
+	damage?: number
+	damageType?: DamageType
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	missile?: ChampionSpellMissileData
@@ -44,8 +44,8 @@ export class Projectile {
 		this.position = [x, y]
 		this.missile = data.spell?.missile ?? data.missile!
 		this.currentSpeed = this.missile.speed!
-		this.damage = data.damage
-		this.damageType = data.damageType
+		this.damage = data.damage!
+		this.damageType = data.damageType!
 		this.source = source
 		this.target = data.target
 		this.collidesWith = data.collidesWith

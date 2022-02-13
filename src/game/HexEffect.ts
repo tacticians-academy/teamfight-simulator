@@ -24,8 +24,8 @@ export class HexEffect {
 	source: ChampionUnit
 	targetTeam: number | null
 	hexes: HexCoord[]
-	damage: number | null
-	damageType: DamageType | null
+	damage?: number | null
+	damageType?: DamageType | null
 	stunMS: number | null
 
 	activated = false
