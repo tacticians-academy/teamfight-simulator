@@ -65,6 +65,7 @@ const playableChampions = (champions as ChampionData[])
 		}
 		return true
 	})
+	.sort((a, b) => a.name.localeCompare(b.name))
 
 const championsPath = path.resolve(outputFolder, 'champion')
 await fs.mkdir(championsPath, { recursive: true })
