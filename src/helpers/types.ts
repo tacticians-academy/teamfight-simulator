@@ -49,17 +49,19 @@ export interface ChampionAbility {
 	variables: ChampionAbilityVariable[]
 }
 
+export interface ChampionSpellMissileData {
+	width?: number
+	travelTime?: number
+	speed?: number
+	acceleration?: number
+	speedMax?: number
+	tracksTarget?: boolean
+}
+
 export interface ChampionSpellData {
 	name: string
 	castTime?: number
-	missile?: {
-		width?: number
-		travelTime?: number
-		speed?: number
-		acceleration?: number
-		speedMax?: number
-		tracksTarget: boolean
-	}
+	missile?: ChampionSpellMissileData
 	variables: Record<string, number[]>
 	cantCastWhileRooted?: true
 	uninterruptable?: true

@@ -30,7 +30,7 @@ onMounted(() => {
 	const containerSize = containerRect.width
 	const rows = Array.from(container.children) as HTMLElement[]
 	// const firstHex = rows[0].children[0]
-	state.hexProportion = 0.126 // firstHex.getBoundingClientRect().width / containerSize
+	// state.hexProportion = 0.126 // firstHex.getBoundingClientRect().width / containerSize
 	for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
 		const row = rows[rowIndex]
 		const cols = Array.from(row.children) as HTMLElement[]

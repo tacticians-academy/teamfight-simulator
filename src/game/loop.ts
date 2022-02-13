@@ -58,14 +58,22 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {
 		didBacklineJump = true
 	}
-	updateHexEffects(elapsedMS)
 
-	for (const projectile of state.projectiles) {
-		projectile.update(elapsedMS, diffMS, state.units, gameOver)
-	}
 	for (const unit of state.units) {
 		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS) {
 			continue
+		}
+		for (const pendingHexEffect of unit.pending.hexEffects) {
+			if (elapsedMS > pendingHexEffect.startsAtMS) {
+				state.hexEffects.add(pendingHexEffect)
+				unit.pending.hexEffects.delete(pendingHexEffect)
+			}
+		}
+		for (const pendingProjectile of unit.pending.projectiles) {
+			if (elapsedMS > pendingProjectile.startsAtMS) {
+				state.projectiles.add(pendingProjectile)
+				unit.pending.projectiles.delete(pendingProjectile)
+			}
 		}
 		if (unit.readyToCast()) {
 			unit.castAbility(elapsedMS)
@@ -88,6 +96,13 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 				}
 			}
 			unit.updateMove(elapsedMS, state.units)
+		}
+	}
+	updateHexEffects(elapsedMS)
+
+	for (const projectile of state.projectiles) {
+		if (!projectile.update(elapsedMS, diffMS, state.units, gameOver)) {
+			state.projectiles.delete(projectile)
 		}
 	}
 	if (isFirstLoop) {

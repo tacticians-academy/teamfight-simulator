@@ -6,8 +6,7 @@ import type { TraitKey } from '#/data/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
-import { HexEffect } from '#/game/HexEffect'
-import type { HexEffectData } from '#/game/HexEffect'
+import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
@@ -22,7 +21,6 @@ export const state = reactive({
 	isRunning: false,
 	winningTeam: null as TeamNumber | null,
 	hexRowsCols,
-	hexProportion: 0,
 	dragUnit: null as ChampionUnit | null,
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
@@ -228,8 +226,4 @@ export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
 	state.hexEffects.clear()
 	cancelLoop()
-}
-
-export function addHexEffect(champion: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
-	state.hexEffects.add(new HexEffect(champion, elapsedMS, data))
 }

@@ -9,12 +9,15 @@ import { getNextHex, updatePaths } from '#/game/pathfind'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
+import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { state, coordinatePosition } from '#/game/store'
+import { coordinatePosition } from '#/game/store'
 import { BonusKey, DamageType } from '#/helpers/types'
 import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
 import { Projectile } from '#/game/Projectile'
+import type { ProjectileData } from '#/game/Projectile'
+import { HexEffect } from '#/game/HexEffect'
+import type { HexEffectData } from '#/game/HexEffect'
 
 let instanceIndex = 0
 
@@ -48,6 +51,11 @@ export class ChampionUnit {
 	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
 	transformIndex = 0
 	ability: AbilityFn | undefined
+
+	pending = {
+		hexEffects: new Set<HexEffect>(),
+		projectiles: new Set<Projectile>(),
+	}
 
 	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
 		this.instanceID = `c${instanceIndex += 1}`
@@ -91,6 +99,9 @@ export class ChampionUnit {
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellValue('AttackSpeed')
+
+		this.pending.hexEffects.clear()
+		this.pending.projectiles.clear()
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -116,16 +127,26 @@ export class ChampionUnit {
 		if (this.target != null) {
 			const msBetweenAttacks = 1000 / this.attackSpeed()
 			if (elapsedMS >= this.attackStartAtMS + msBetweenAttacks) {
-				if (this.attackStartAtMS > 0) {
+				if (this.attackStartAtMS <= 0) {
+					this.attackStartAtMS = elapsedMS
+				} else {
 					const damage = this.attackDamage()
 					if (this.instantAttack) {
 						this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver)
+						this.attackStartAtMS = elapsedMS
 					} else {
-						new Projectile(100, 0, this, this.target, damage, DamageType.physical)
+						this.queueProjectile(elapsedMS, {
+							activatesAfterMS: msBetweenAttacks / 4, //TODO from data
+							missile: {
+								speed: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
+							},
+							target: this.target,
+							damage,
+							damageType: DamageType.physical,
+						})
 					}
 					this.gainMana(elapsedMS, 10)
 				}
-				this.attackStartAtMS = elapsedMS
 			}
 		}
 	}
@@ -318,5 +339,20 @@ export class ChampionUnit {
 	}
 	moveSpeed() {
 		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
+	}
+
+	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
+		const projectile = new Projectile(this, elapsedMS, data)
+		this.pending.projectiles.add(projectile)
+		this.attackStartAtMS = projectile.startsAtMS
+		if (data.spell) {
+			this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
+		}
+	}
+	queueHexEffect(elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
+		const hexEffect = new HexEffect(this, elapsedMS, data)
+		this.pending.hexEffects.add(hexEffect)
+		this.attackStartAtMS = hexEffect.activatesAtMS
+		this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 	}
 }
