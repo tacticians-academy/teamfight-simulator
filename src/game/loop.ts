@@ -64,13 +64,13 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			continue
 		}
 		for (const pendingHexEffect of unit.pending.hexEffects) {
-			if (elapsedMS > pendingHexEffect.startsAtMS) {
+			if (elapsedMS >= pendingHexEffect.startsAtMS) {
 				state.hexEffects.add(pendingHexEffect)
 				unit.pending.hexEffects.delete(pendingHexEffect)
 			}
 		}
 		for (const pendingProjectile of unit.pending.projectiles) {
-			if (elapsedMS > pendingProjectile.startsAtMS) {
+			if (elapsedMS >= pendingProjectile.startsAtMS) {
 				state.projectiles.add(pendingProjectile)
 				unit.pending.projectiles.delete(pendingProjectile)
 			}

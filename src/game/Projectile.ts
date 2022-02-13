@@ -10,7 +10,7 @@ const hexRadius = HEX_PROPORTION * 2 * 100
 
 export interface ProjectileData {
 	spell?: ChampionSpellData
-	activatesAfterMS?: DOMHighResTimeStamp
+	startsAfterMS?: DOMHighResTimeStamp
 	damage?: number
 	damageType?: DamageType
 	collidesWith?: TeamNumber | null
@@ -38,8 +38,8 @@ export class Projectile {
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
 		this.instanceID = `p${instanceIndex += 1}`
 
-		const activatesAfterMS = data.activatesAfterMS != null ? data.activatesAfterMS : data.spell!.castTime! * 1000
-		this.startsAtMS = elapsedMS + activatesAfterMS
+		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : data.spell!.castTime! * 1000
+		this.startsAtMS = elapsedMS + startsAfterMS
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
 		this.position = [x, y]
 		this.missile = data.spell?.missile ?? data.missile!
