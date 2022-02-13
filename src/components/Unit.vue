@@ -20,8 +20,7 @@ const showInfo = ref(false)
 
 const currentPosition = computed(() => props.unit.coordinatePosition())
 
-const unitSizeX = `${100 * state.hexProportionX * UNIT_SIZE_HEX_PROPORTION}%`
-const unitSizeY = `${100 * state.hexProportionY * UNIT_SIZE_HEX_PROPORTION}%`
+const unitSize = `${100 * state.hexProportion * UNIT_SIZE_HEX_PROPORTION}%`
 
 function onDragStart(event: DragEvent, type: DraggableType, name: string) {
 	startDragging(event, type, name, props.unit)
@@ -105,8 +104,8 @@ function onInfo(event: Event) {
 <style scoped lang="postcss">
 .unit {
 	@apply absolute pointer-events-auto;
-	width: v-bind(unitSizeX);
-	height: v-bind(unitSizeY);
+	width: v-bind(unitSize);
+	height: v-bind(unitSize);
 	transform: translate(-50%, -50%);
 }
 .overlay {

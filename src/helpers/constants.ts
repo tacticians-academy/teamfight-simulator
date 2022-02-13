@@ -1,7 +1,7 @@
 import { BonusKey } from '#/helpers/types'
 import type { StarLevel } from '#/helpers/types'
 
-export const HEX_MOVE_UNITS = 210 //TODO figure out what this actually is
+export const HEX_MOVE_UNITS = 180
 export const BACKLINE_JUMP_MS = 600 //TODO up to date?
 
 export const BOARD_ROW_PER_SIDE_COUNT = 4

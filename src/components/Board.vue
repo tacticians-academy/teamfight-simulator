@@ -26,11 +26,11 @@ function onDrop(event: DragEvent, row: number, col: number) {
 onMounted(() => {
 	// Cache hex positions
 	const container = hexContainer.value!
-	const containerWidth = container.offsetWidth
-	const containerHeight = container.offsetHeight
+	const containerRect = container.getBoundingClientRect()
+	const containerSize = containerRect.width
 	const rows = Array.from(container.children) as HTMLElement[]
-	state.hexProportionX = rows[0].children[0].clientWidth / containerWidth
-	state.hexProportionY = rows[0].children[0].clientHeight / containerHeight
+	// const firstHex = rows[0].children[0]
+	state.hexProportion = 0.126 // firstHex.getBoundingClientRect().width / containerSize
 	for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
 		const row = rows[rowIndex]
 		const cols = Array.from(row.children) as HTMLElement[]
@@ -39,7 +39,7 @@ onMounted(() => {
 			const hexWidthHalf = col.offsetWidth / 2
 			const x = row.offsetLeft + col.offsetLeft + hexWidthHalf
 			const y = row.offsetTop + col.offsetTop + hexWidthHalf
-			state.hexRowsCols[rowIndex][colIndex].position = [x / containerWidth, y / containerHeight]
+			state.hexRowsCols[rowIndex][colIndex].position = [x / containerSize, y / containerSize]
 		}
 	}
 
@@ -50,7 +50,7 @@ onMounted(() => {
 <template>
 <div class="board  overflow-y-scroll">
 	<div class="relative">
-		<div ref="hexContainer" class="row-container">
+		<div ref="hexContainer" class="hexes-container">
 			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
@@ -77,6 +77,9 @@ onMounted(() => {
 </template>
 
 <style lang="postcss">
+.hexes-container { /* TODO work on small screen sizes */
+	@apply aspect-square;
+}
 .hex {
 	width: v-bind(HEX_UNITS);
 	height: v-bind(HEX_UNITS);
