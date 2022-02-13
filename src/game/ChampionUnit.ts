@@ -76,6 +76,12 @@ export class ChampionUnit {
 		this.manaLockUntilMS = 0
 		this.stunnedUntilMS = 0
 		this.ghosting = this.jumpsToBackline()
+		if (this.data.apiName === 'TFT6_Jayce') {
+			const col = this.activePosition[1]
+			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
+		} else {
+			this.transformIndex = 0
+		}
 
 		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
