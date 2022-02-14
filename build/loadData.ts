@@ -173,7 +173,7 @@ function getSpell(name: string, json: ChampionJSON): ChampionJSONSpell | undefin
 }
 
 const deleteNormalizations: Record<string, string[]> = {
-	SpellDataResource: [ 'cooldownTime', 'mClientData', 'mAnimationName' ],
+	SpellObject: [ 'cooldownTime', 'mClientData', 'mAnimationName' ],
 	TFTCharacterRecord: [ 'attackSpeedRatio', 'healthBarHeight', 'healthBarFullParallax', 'selectionRadius', 'selectionHeight', 'expGivenOnDeath', 'goldGivenOnDeath', 'mShopData' ],
 }
 const renameNormalizations: Record<string, Record<string, string>> = {
@@ -257,18 +257,30 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 				delete json[rootKey]
 				continue
 			}
+
 			const deleting = deleteNormalizations[entry.__type]
 			if (deleting != null) {
-				for (const deleteKey of deleting) {
-					delete json[rootKey][deleteKey]
+				let deleteFrom = entry
+				if (entry.__type === 'SpellObject') {
+					deleteFrom = deleteFrom.mSpell
+					if (deleteFrom == null) {
+						delete json[rootKey]
+					} else if (deleteFrom.mEffectAmount != null) {
+						deleteFrom.mEffectAmount = deleteFrom.mEffectAmount.filter((effect: Object) => Object.keys(effect).length > 1)
+					}
+				}
+				if (deleteFrom != null) {
+					for (const key of deleting) {
+						delete deleteFrom[key]
+					}
 				}
 			}
 			const renaming = renameNormalizations[entry.__type]
 			if (renaming != null) {
 				for (const renameKey in renaming) {
-					const value = json[rootKey][renameKey]
-					delete json[rootKey][renameKey]
-					json[rootKey][renaming[renameKey]] = value
+					const value = entry[renameKey]
+					delete entry[renameKey]
+					entry[renaming[renameKey]] = value
 				}
 			}
 			if (entry.__type === 'TFTCharacterRecord') {
