@@ -9,7 +9,7 @@ import { getNextHex, updatePaths } from '#/game/pathfind'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_MOVE_UNITS, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
+import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { coordinatePosition } from '#/game/store'
 import { BonusKey, DamageType } from '#/helpers/types'
@@ -165,7 +165,7 @@ export class ChampionUnit {
 	updateMove(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const nextHex = getNextHex(this)
 		if (nextHex) {
-			const msPerHex = 1000 * HEX_MOVE_UNITS / this.moveSpeed()
+			const msPerHex = 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
 			this.moveUntilMS = elapsedMS + msPerHex
 			this.activePosition = nextHex
 			updatePaths(units)

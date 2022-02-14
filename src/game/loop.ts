@@ -1,7 +1,7 @@
 import { state, gameOver } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
-const GAME_TICK_MS = 30
+const GAME_TICK_MS = 1000 / 30
 
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0

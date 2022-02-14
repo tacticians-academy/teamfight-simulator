@@ -1,6 +1,6 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getDistanceUnit, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { HEX_PROPORTION } from '#/helpers/constants'
+import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 
 import type { ChampionSpellData, ChampionSpellMissileData, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 
@@ -74,7 +74,7 @@ export class Projectile {
 		const [targetX, targetY] = this.target.coordinatePosition()
 		const differenceX = targetX - currentX
 		const differenceY = targetY - currentY
-		const speed = 0.0000001 * diffMS * this.currentSpeed
+		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 		if (Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
 			this.applyDamage(elapsedMS, this.target, units, gameOver)
 			return false
