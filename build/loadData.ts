@@ -1,4 +1,5 @@
 const LOAD_PBE = true
+const MAX_STAR_LEVEL = 3
 
 import fetch from 'node-fetch'
 import fs from 'fs/promises'
@@ -340,7 +341,7 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 				for (const dataValues of spellData.mDataValues) {
 					if (dataValues.mValues) {
 						// variables.push({ name: dataValues.mName, values: dataValues.mValues })
-						variables[dataValues.mName] = dataValues.mValues //TODO .slice(0, 4)
+						variables[dataValues.mName] = dataValues.mValues.slice(0, MAX_STAR_LEVEL + 1)
 					}
 				}
 			}
