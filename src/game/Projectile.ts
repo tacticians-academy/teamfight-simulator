@@ -39,11 +39,12 @@ export class Projectile {
 		this.instanceID = `p${instanceIndex += 1}`
 
 		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : data.spell!.castTime! * 1000
-		this.startsAtMS = elapsedMS + startsAfterMS
+		const startDelay = data.spell?.missile?.startDelay
+		this.startsAtMS = elapsedMS + startsAfterMS + (startDelay != null ? startDelay * 1000 : 0)
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
 		this.position = [x, y]
 		this.missile = data.spell?.missile ?? data.missile!
-		this.currentSpeed = this.missile.speed!
+		this.currentSpeed = this.missile.speedInitial!
 		this.damage = data.damage!
 		this.damageType = data.damageType!
 		this.source = source
@@ -81,9 +82,15 @@ export class Projectile {
 		}
 
 		if (this.missile.acceleration != null) {
-			this.currentSpeed *= this.missile.acceleration
-			if (this.missile.speedMax != null && this.currentSpeed > this.missile.speedMax) {
-				this.currentSpeed = this.missile.speedMax
+			this.currentSpeed *= this.missile.acceleration * diffMS / 1000
+			if (this.missile.acceleration > 0) {
+				if (this.missile.speedMax != null && this.currentSpeed > this.missile.speedMax) {
+					this.currentSpeed = this.missile.speedMax
+				}
+			} else {
+				if (this.missile.speedMin != null && this.currentSpeed < this.missile.speedMin) {
+					this.currentSpeed = this.missile.speedMin
+				}
 			}
 		}
 		const angle = Math.atan2(differenceY, differenceX)

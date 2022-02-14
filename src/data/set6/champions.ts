@@ -7,7 +7,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_AhriQ",
 				"castTime": 0.5,
 				"missile": {
-					"speed": 1100,
+					"speedInitial": 1100,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -48,9 +48,10 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_AhriOrbMissile",
 				"missile": {
 					"width": 100,
-					"speed": 2500,
-					"acceleration": -2000,
+					"speedInitial": 2500,
+					"speedMin": 400,
 					"speedMax": 2500,
+					"acceleration": -2000,
 					"tracksTarget": false
 				},
 				"variables": {},
@@ -60,9 +61,10 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_AhriOrbReturn",
 				"missile": {
 					"width": 100,
-					"speed": 60,
-					"acceleration": 1900,
+					"speedInitial": 60,
+					"speedMin": 60,
 					"speedMax": 2600,
+					"acceleration": 1900,
 					"tracksTarget": true
 				},
 				"variables": {},
@@ -72,9 +74,10 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_AhriOrbReturnDead",
 				"missile": {
 					"width": 100,
-					"speed": 60,
-					"acceleration": 1900,
+					"speedInitial": 60,
+					"speedMin": 60,
 					"speedMax": 2600,
+					"acceleration": 1900,
 					"tracksTarget": true
 				},
 				"variables": {},
@@ -112,7 +115,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_AlistarWQ",
 				"castTime": 0.5,
 				"missile": {
-					"speed": 700,
+					"speedInitial": 700,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -177,7 +180,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.5,
 				"missile": {
 					"width": 45,
-					"speed": 1500,
+					"speedInitial": 1500,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -239,7 +242,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_BlitzcrankRocketGrab",
 				"missile": {
 					"width": 70,
-					"speed": 3000,
+					"speedInitial": 3000,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -289,7 +292,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_BrandQ",
 				"missile": {
-					"speed": 1600,
+					"speedInitial": 1600,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -376,7 +379,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_BraumBasicAttackShieldOverride",
 				"missile": {
-					"speed": 347.79998779296875,
+					"speedInitial": 347.79998779296875,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -414,7 +417,7 @@ export const champions: ChampionData[] = [
 				"castTime": 1.100000023841858,
 				"missile": {
 					"width": 40,
-					"speed": 3200,
+					"speedInitial": 3200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -570,7 +573,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.5,
 				"missile": {
 					"width": 20,
-					"speed": 2000,
+					"speedInitial": 2000,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -613,7 +616,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_DariusQ",
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -669,7 +672,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_DravenSpinning",
 				"missile": {
-					"speed": 20,
+					"speedInitial": 20,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -709,7 +712,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_DravenSpinningAttack",
 				"missile": {
-					"speed": 1700,
+					"speedInitial": 1700,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -719,7 +722,7 @@ export const champions: ChampionData[] = [
 				"missile": {
 					"width": 120,
 					"travelTime": 1.2000000476837158,
-					"speed": 700,
+					"speedInitial": 700,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -728,7 +731,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_DravenSpinningAttackCrit",
 				"castTime": 0.23330000042915344,
 				"missile": {
-					"speed": 1700,
+					"speedInitial": 1700,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -765,7 +768,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_EkkoW",
 				"castTime": 0.25,
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -854,7 +857,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.25,
 				"missile": {
 					"width": 60,
-					"speed": 2000,
+					"speedInitial": 2000,
 					"tracksTarget": false
 				},
 				"variables": {
@@ -916,7 +919,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_GalioR",
 				"castTime": 0.8500000238418579,
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -987,7 +990,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_GangplankQ",
 				"castTime": 0.25,
 				"missile": {
-					"speed": 2200,
+					"speedInitial": 2200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1035,7 +1038,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_GnarR",
 				"castTime": 0.5,
 				"missile": {
-					"speed": 1200,
+					"speedInitial": 1200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1083,7 +1086,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.5,
 				"missile": {
 					"width": 90,
-					"speed": 2100,
+					"speedInitial": 2100,
 					"tracksTarget": false
 				},
 				"variables": {},
@@ -1170,7 +1173,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_IreliaQ",
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1220,7 +1223,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_JarvanIVE",
 				"castTime": 0.75,
 				"missile": {
-					"speed": 1450,
+					"speedInitial": 1450,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1276,7 +1279,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_JayceRMelee",
 				"missile": {
-					"speed": 20,
+					"speedInitial": 20,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1330,7 +1333,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_JayceRRanged",
 				"castTime": 0.2143000066280365,
 				"missile": {
-					"speed": 1200,
+					"speedInitial": 1200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1457,7 +1460,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_JinxR",
 				"castTime": 1,
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1539,7 +1542,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_KaisaQ",
 				"castTime": 1,
 				"missile": {
-					"speed": 2500,
+					"speedInitial": 2500,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1596,7 +1599,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_KassadinQ",
 				"castTime": 0.25,
 				"missile": {
-					"speed": 1400,
+					"speedInitial": 1400,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1664,7 +1667,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_KhaZixR",
 				"missile": {
-					"speed": 2200,
+					"speedInitial": 2200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1725,7 +1728,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_LeonaW",
 				"castTime": 0.5799999833106995,
 				"missile": {
-					"speed": 828.5,
+					"speedInitial": 828.5,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1805,7 +1808,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_LucianBasicAttack",
 				"missile": {
-					"speed": 2800,
+					"speedInitial": 2800,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -1813,7 +1816,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_LucianBasicAttack2",
 				"missile": {
-					"speed": 2800,
+					"speedInitial": 2800,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -1821,7 +1824,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_LucianCritAttack",
 				"missile": {
-					"speed": 2800,
+					"speedInitial": 2800,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -1830,7 +1833,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_LucianPassiveShot",
 				"missile": {
 					"width": 50,
-					"speed": 2800,
+					"speedInitial": 2800,
 					"tracksTarget": true
 				},
 				"variables": {},
@@ -1868,7 +1871,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_LuluR",
 				"castTime": 0.25,
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -1993,7 +1996,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_TibbersP",
 				"castTime": 0.3499999940395355,
 				"missile": {
-					"speed": 3500,
+					"speedInitial": 3500,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2033,7 +2036,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_TibbersMissileEffect",
 				"missile": {
-					"speed": 2000,
+					"speedInitial": 2000,
 					"tracksTarget": true
 				},
 				"variables": {}
@@ -2117,7 +2120,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_HextechDragonEmpoweredAttack",
 				"missile": {
 					"width": 20,
-					"speed": 1000,
+					"speedInitial": 1000,
 					"tracksTarget": true
 				},
 				"variables": {},
@@ -2203,7 +2206,7 @@ export const champions: ChampionData[] = [
 				"missile": {
 					"width": 80,
 					"travelTime": 0.009999999776482582,
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": false
 				},
 				"variables": {
@@ -2259,7 +2262,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_MorganaR",
 				"missile": {
-					"speed": 20,
+					"speedInitial": 20,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2334,7 +2337,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_NocturneE",
 				"castTime": 0.5,
 				"missile": {
-					"speed": 20,
+					"speedInitial": 20,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2386,7 +2389,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.3499999940395355,
 				"missile": {
 					"width": 80,
-					"speed": 1400,
+					"speedInitial": 1400,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2449,7 +2452,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_PoppyP",
 				"castTime": 0.10000000149011612,
 				"missile": {
-					"speed": 2000,
+					"speedInitial": 2000,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2498,7 +2501,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_QuinnQ",
 				"missile": {
 					"width": 60,
-					"speed": 1550,
+					"speedInitial": 1550,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2548,7 +2551,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_RekSaiE",
 				"castTime": 0.5,
 				"missile": {
-					"speed": 4000,
+					"speedInitial": 4000,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2611,7 +2614,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.5,
 				"missile": {
 					"width": 200,
-					"speed": 800,
+					"speedInitial": 800,
 					"tracksTarget": false
 				},
 				"variables": {
@@ -2736,7 +2739,8 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_SennaQ",
 				"missile": {
 					"width": 160,
-					"speed": 20000,
+					"speedInitial": 20000,
+					"startDelay": 0.05000000074505806,
 					"tracksTarget": false
 				},
 				"variables": {
@@ -2794,7 +2798,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.5,
 				"missile": {
 					"width": 270,
-					"speed": 1600,
+					"speedInitial": 1600,
 					"tracksTarget": false
 				},
 				"variables": {
@@ -2857,7 +2861,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_SilcoR",
 				"castTime": 0.25,
 				"missile": {
-					"speed": 20,
+					"speedInitial": 20,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2926,7 +2930,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_SingedE",
 				"castTime": 0.5,
 				"missile": {
-					"speed": 20,
+					"speedInitial": 20,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -2982,7 +2986,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_SivirW",
 				"missile": {
-					"speed": 1200,
+					"speedInitial": 1200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -3226,7 +3230,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_TalonP",
 				"missile": {
-					"speed": 1200,
+					"speedInitial": 1200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -3336,7 +3340,7 @@ export const champions: ChampionData[] = [
 				"castTime": 0.3889999985694885,
 				"missile": {
 					"width": 80,
-					"speed": 4000,
+					"speedInitial": 4000,
 					"tracksTarget": false
 				},
 				"variables": {
@@ -3438,7 +3442,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_VexW",
 				"castTime": 0.25,
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -3507,7 +3511,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6b_Vi_Spell",
 				"castTime": 0.30000001192092896,
 				"missile": {
-					"speed": 0,
+					"speedInitial": 0,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -3641,7 +3645,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_WarwickP",
 				"missile": {
-					"speed": 1200,
+					"speedInitial": 1200,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -3690,7 +3694,7 @@ export const champions: ChampionData[] = [
 				"name": "TFT6_ZacQ",
 				"castTime": 0.2750000059604645,
 				"missile": {
-					"speed": 1450,
+					"speedInitial": 1450,
 					"tracksTarget": true
 				},
 				"variables": {
@@ -3800,7 +3804,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_ZeriWMis",
 				"missile": {
-					"speed": 3000,
+					"speedInitial": 3000,
 					"tracksTarget": true
 				},
 				"variables": {},
@@ -3811,7 +3815,7 @@ export const champions: ChampionData[] = [
 				"missile": {
 					"width": 10,
 					"travelTime": 10,
-					"speed": 2000,
+					"speedInitial": 2000,
 					"tracksTarget": true
 				},
 				"variables": {},
@@ -3894,7 +3898,7 @@ export const champions: ChampionData[] = [
 			{
 				"name": "TFT6_ZileanQ",
 				"missile": {
-					"speed": 1000,
+					"speedInitial": 1000,
 					"tracksTarget": true
 				},
 				"variables": {

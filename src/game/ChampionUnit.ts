@@ -138,7 +138,7 @@ export class ChampionUnit {
 						this.queueProjectile(elapsedMS, {
 							startsAfterMS: msBetweenAttacks / 4, //TODO from data
 							missile: {
-								speed: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
+								speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 							},
 							target: this.target,
 							damage,

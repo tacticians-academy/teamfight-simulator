@@ -129,10 +129,12 @@ interface ChampionJSONSpell {
 		movementComponent: {
 			mTravelTime?: number
 			mSpeed?: number
-			mTracksTarget?: false
-			mAcceleration?: number
 			mInitialSpeed?: number
+			mMinSpeed?: number
 			mMaxSpeed?: number
+			mAcceleration?: number
+			mStartDelay?: number
+			mTracksTarget?: false
 		}
 	}
 	cantCastWhileRooted?: true
@@ -354,9 +356,11 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 					: {
 						width: missileSpec?.mMissileWidth,
 						travelTime: missileMovement?.mTravelTime,
-						speed: missileMovement?.mSpeed ?? missileMovement?.mInitialSpeed ?? missileSpeed,
-						acceleration: missileMovement?.mAcceleration,
+						speedInitial: missileMovement?.mInitialSpeed ?? missileMovement?.mSpeed ?? missileSpeed!,
+						speedMin: missileMovement?.mMinSpeed,
 						speedMax: missileMovement?.mMaxSpeed,
+						acceleration: missileMovement?.mAcceleration,
+						startDelay: missileMovement?.mStartDelay,
 						tracksTarget: missileMovement?.mTracksTarget !== false,
 					},
 				variables,
@@ -367,7 +371,7 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 				console.log('!mCastTime', spellName)
 			}
 			// if (!spell.missile) { //TODO multipart spells (TFT6_ViktorE, TFT6_JhinR, etc)
-			// if (spell.missile && spell.missile.speed == null && spell.missile.travelTime == null) {
+			// if (spell.missile && spell.missile.speedMin == null && spell.missile.travelTime == null) {
 			// 	console.log('!missile', spellName)
 			// }
 			return spell
