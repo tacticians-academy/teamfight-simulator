@@ -1,4 +1,4 @@
-const LOAD_PBE = true
+const PATCH_LINE = '12.4' // 'pbe' // 'latest'
 const MAX_STAR_LEVEL = 3
 
 import fetch from 'node-fetch'
@@ -16,7 +16,7 @@ function hashCode(json: Object) {
 	}, 0)
 }
 
-const baseURL = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}`
+const baseURL = `https://raw.communitydragon.org/${PATCH_LINE}`
 const url = `${baseURL}/cdragon/tft/en_us.json`
 console.log(url)
 const response = await fetch(url)
@@ -42,7 +42,7 @@ fs.writeFile(hashPath, newHash)
 const currentSetNumber = Object.keys(responseJSON.sets).reduce((previous, current) => Math.max(previous, parseInt(current, 10)), 0)
 const { champions, traits } = (responseJSON as any).sets[currentSetNumber]
 
-console.log('Loading set', currentSetNumber, 'from', LOAD_PBE ? 'PBE' : 'Live', '...', 'Units:', champions.length, 'Traits:', traits.length)
+console.log('Loading set', currentSetNumber, 'from', PATCH_LINE.toUpperCase(), '...', 'Units:', champions.length, 'Traits:', traits.length)
 
 const itemData = responseJSON.items as Record<string, any>[]
 const standardComponents = [1, 2, 3, 4, 5, 6, 7, 8, 9]

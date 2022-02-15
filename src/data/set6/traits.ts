@@ -403,7 +403,7 @@ export const traits: TraitData[] = [
 					"{b6322d58}": 90,
 					"{c26236e7}": 100,
 					"{f3cab19f}": 175,
-					"{f90dd382}": 60
+					"{f90dd382}": 50
 				}
 			}
 		],
@@ -546,7 +546,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"MagicDamage": 20,
-					"ShieldAmount": 150,
+					"ShieldAmount": 140,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -557,7 +557,7 @@ export const traits: TraitData[] = [
 				"style": 2,
 				"variables": {
 					"MagicDamage": 50,
-					"ShieldAmount": 200,
+					"ShieldAmount": 180,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -568,7 +568,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"MagicDamage": 100,
-					"ShieldAmount": 450,
+					"ShieldAmount": 400,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -579,7 +579,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"MagicDamage": 170,
-					"ShieldAmount": 700,
+					"ShieldAmount": 600,
 					"ShieldDuration": 4,
 					"Frequency": 6
 				}
@@ -748,8 +748,8 @@ export const traits: TraitData[] = [
 				"minUnits": 3,
 				"style": 1,
 				"variables": {
-					"HP": 150,
-					"AP": 15
+					"HP": 200,
+					"AP": 20
 				}
 			},
 			{
@@ -904,7 +904,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"BonusPerAugment": 0.10000000149011612,
-					"ASBonus": 0.3499999940395355
+					"ASBonus": 0.4000000059604645
 				}
 			},
 			{
@@ -913,7 +913,7 @@ export const traits: TraitData[] = [
 				"style": 4,
 				"variables": {
 					"BonusPerAugment": 0.15000000596046448,
-					"ASBonus": 0.699999988079071
+					"ASBonus": 0.800000011920929
 				}
 			}
 		],
@@ -930,7 +930,7 @@ export const traits: TraitData[] = [
 				"style": 1,
 				"variables": {
 					"HPPercent": 0.4000000059604645,
-					"DetainDuration": 5,
+					"DetainDuration": 4,
 					"DetainCount": 1
 				}
 			},
@@ -940,7 +940,7 @@ export const traits: TraitData[] = [
 				"style": 3,
 				"variables": {
 					"HPPercent": 0.4000000059604645,
-					"DetainDuration": 5,
+					"DetainDuration": 4,
 					"DetainCount": 2
 				}
 			}

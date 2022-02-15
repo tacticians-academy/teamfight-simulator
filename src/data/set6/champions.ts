@@ -13,8 +13,8 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"Damage": [
 						150,
-						120,
-						180,
+						125,
+						190,
 						450
 					],
 					"HexRange": [
@@ -156,14 +156,14 @@ export const champions: ChampionData[] = [
 		"basicAttackMissileSpeed": 0,
 		"critAttackMissileSpeed": 0,
 		"stats": {
-			"armor": 70,
+			"armor": 80,
 			"attackSpeed": 0.6000000238418579,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 100,
-			"hp": 1300,
+			"hp": 1400,
 			"initialMana": 85,
-			"magicResist": 70,
+			"magicResist": 80,
 			"mana": 170,
 			"moveSpeed": 500,
 			"range": 1
@@ -220,7 +220,7 @@ export const champions: ChampionData[] = [
 		"critAttackMissileSpeed": 3500,
 		"stats": {
 			"armor": 20,
-			"attackSpeed": 0.75,
+			"attackSpeed": 0.699999988079071,
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 70,
@@ -298,9 +298,9 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"Damage": [
 						0,
-						100,
-						150,
-						200
+						120,
+						160,
+						210
 					],
 					"BlazeDuration": [
 						0,
@@ -321,10 +321,10 @@ export const champions: ChampionData[] = [
 						2
 					],
 					"VIPBonusReducedDamage": [
-						25,
-						25,
-						25,
-						25
+						30,
+						30,
+						30,
+						30
 					]
 				},
 				"uninterruptable": true
@@ -521,8 +521,8 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"Damage": [
 						200,
-						900,
-						975,
+						850,
+						950,
 						1050
 					],
 					"BonusHealthOnKill": [
@@ -1062,9 +1062,9 @@ export const champions: ChampionData[] = [
 					],
 					"ADPercent": [
 						0,
-						1.75,
-						1.75,
-						1.75
+						1.850000023841858,
+						1.850000023841858,
+						1.850000023841858
 					],
 					"Damage": [
 						0,
@@ -1185,9 +1185,9 @@ export const champions: ChampionData[] = [
 					],
 					"BaseDamage": [
 						0,
-						100,
-						150,
-						500
+						90,
+						135,
+						600
 					]
 				},
 				"cantCastWhileRooted": true,
@@ -1691,9 +1691,9 @@ export const champions: ChampionData[] = [
 					],
 					"ADPercent": [
 						0,
-						1.7999999523162842,
-						1.850000023841858,
-						2
+						1.9500000476837158,
+						2,
+						2.25
 					]
 				},
 				"uninterruptable": true
@@ -2056,7 +2056,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.5,
 			"damage": 50,
-			"hp": 850,
+			"hp": 775,
 			"initialMana": 0,
 			"magicResist": 70,
 			"mana": 0,
@@ -2141,7 +2141,7 @@ export const champions: ChampionData[] = [
 			"critChance": 0.25,
 			"critMultiplier": 1.2999999523162842,
 			"damage": 65,
-			"hp": 1250,
+			"hp": 1125,
 			"initialMana": 200,
 			"magicResist": 100,
 			"mana": 300,
@@ -2268,7 +2268,7 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"ShieldAmount": [
 						50,
-						400,
+						425,
 						550,
 						750
 					],
@@ -2292,9 +2292,9 @@ export const champions: ChampionData[] = [
 					],
 					"DamagePerSecond": [
 						0,
-						150,
-						225,
-						325
+						80,
+						125,
+						175
 					],
 					"RefundedMana": [
 						30,
@@ -2395,9 +2395,9 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"ShieldAmount": [
 						0,
-						100,
-						150,
-						400
+						120,
+						170,
+						600
 					],
 					"Duration": [
 						0,
@@ -2407,8 +2407,8 @@ export const champions: ChampionData[] = [
 					],
 					"Damage": [
 						0,
-						325,
-						500,
+						300,
+						450,
 						1200
 					],
 					"StunDuration": [
@@ -2564,8 +2564,8 @@ export const champions: ChampionData[] = [
 					"ResistPercentSteal": [
 						0,
 						0.30000001192092896,
-						0.4000000059604645,
-						0.6000000238418579
+						0.3499999940395355,
+						0.4000000059604645
 					],
 					"Damage": [
 						0,
@@ -2575,9 +2575,9 @@ export const champions: ChampionData[] = [
 					],
 					"Heal": [
 						0,
-						100,
-						200,
-						500
+						150,
+						250,
+						400
 					]
 				},
 				"uninterruptable": true
@@ -2620,9 +2620,9 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"DamagePerSecond": [
 						1,
-						40,
-						70,
-						150
+						55,
+						85,
+						255
 					],
 					"ASReduction": [
 						0.30000001192092896,
@@ -2804,8 +2804,8 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"Damage": [
 						1,
-						275,
-						450,
+						250,
+						400,
 						1200
 					],
 					"Heal": [
@@ -2817,7 +2817,7 @@ export const champions: ChampionData[] = [
 					"ASBonus": [
 						0.30000001192092896,
 						0.30000001192092896,
-						0.5,
+						0.44999998807907104,
 						1
 					],
 					"ASBonusDuration": [
@@ -3016,9 +3016,9 @@ export const champions: ChampionData[] = [
 					],
 					"BonusAttackSpeed": [
 						0,
-						0.5,
-						0.75,
-						2
+						0.6000000238418579,
+						0.800000011920929,
+						2.5
 					]
 				},
 				"uninterruptable": true
@@ -3163,8 +3163,8 @@ export const champions: ChampionData[] = [
 				"variables": {
 					"Damage": [
 						600,
-						1000,
-						1500,
+						900,
+						1350,
 						30000
 					],
 					"StunDuration": [
@@ -3295,15 +3295,15 @@ export const champions: ChampionData[] = [
 					],
 					"BaseSpinDamage": [
 						0,
-						80,
-						120,
-						240
+						60,
+						90,
+						150
 					],
 					"BonusAAPercent": [
-						0.25,
-						0.25,
-						0.25,
-						0.25
+						0.20000000298023224,
+						0.20000000298023224,
+						0.20000000298023224,
+						0.20000000298023224
 					]
 				}
 			}
@@ -3763,16 +3763,16 @@ export const champions: ChampionData[] = [
 						30
 					],
 					"PercentAD": [
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213,
-						0.1599999964237213
+						0.18000000715255737,
+						0.18000000715255737,
+						0.18000000715255737,
+						0.18000000715255737
 					],
 					"BonusOnHit": [
 						0,
 						11,
 						22,
-						55
+						44
 					],
 					"Duration": [
 						6,
