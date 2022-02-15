@@ -122,6 +122,10 @@ interface ChampionJSONSpell {
 		mName: string
 		mValues?: number[]
 	}[]
+	mSpellCalculations?: {
+		mName: string
+		mValues?: number[]
+	}[]
 	mCantCancelWhileWindingUp?: true
 	missileSpeed?: number
 	mMissileSpec?: {
@@ -182,7 +186,7 @@ const renameNormalizations: Record<string, Record<string, string>> = {
 		'{8d30a918}': 'teamSize',
 	},
 }
-const renameTraits: Record<string, string> = {
+const traitDataSubstitutions: Record<string, string> = {
 	'{e41d146c}': 'TFT6_Arcanist',
 	'{568f4f5c}': 'TFT6_Assassin',
 	'{161a5685}': 'TFT6_Syndicate',
@@ -211,6 +215,68 @@ const renameTraits: Record<string, string> = {
 	'{b669014b}': 'TFT6_Twinshot',
 	'{7c57b394}': 'TFT6_Yordle',
 	'{396d5623}': 'TFT6_YordleLord',
+}
+
+const mSpellCalculationsSubstitutions: Record<string, string> = {
+	'{197fbc1c}': 'UNKNOWN', // Unused on Tibbers ModifiedAllyPercentASBase?
+	'{5c260301}': 'TotalASBoost',
+	'{a7f7ee8e}': 'ModifiedASBoost',
+	'{7fd62dab}': 'ModifiedAttackDamage',
+	'{7ad6f313}': 'ModifiedBaseHealing', // Unused on Senna
+	'{e7712601}': 'ModifiedBonusAttackSpeed',
+	'{a9241a3b}': 'ModifiedBonusAS',
+	'{5b31e270}': 'ModifiedBonusDamage', //TODO Galio uses CritBonusDamage so these need to be disambiguated
+	'{4f553e5f}': 'ModifiedBonusHealth',
+	'{eeac92d1}': 'ModifiedBonusLightningDamage',
+	'{2694e795}': 'ModifiedBonusOnHit',
+	'{2cac12ec}': 'ModifiedBuffDuration',
+	'{9e7b214b}': 'ModifiedDamageAmount',
+	'{08a55045}': 'ModifiedDamageFinal',
+	'{446c04fa}': 'ModifiedDamagePerSecond',
+	'{605f22d8}': 'ModifiedHealAmount',
+	'{822057e4}': 'ModifiedMagicDamage', //TODO unify with ModifiedDamage? ModifiedDamage already groups MagicDamage
+	'{3a39e14f}': 'ModifiedPercentHealing',
+	'{6fd94775}': 'ModifiedPercentHealth',
+	'{bed1d1a3}': 'ModifiedReducedDamageToCC', // Unused on Tahm Kench
+	'{8ccbbddb}': 'ModifiedShieldAmount',
+	'{1012a6c0}': 'ModifiedRangedASBoost',
+	'{a808e8d9}': 'ModifiedShieldDR',
+	'{1321b8c9}': 'ModifiedShielding',
+	'{f2f64370}': 'ModifiedTransformHealth',
+}
+const mDataValueSubstitutions: Record<string, string> = {
+	'{6ad2d2c9}': 'UNKNOWN', // Unused on Tibbers AllyPercentASBase?
+	'{fcfce396}': 'ADMult',
+	'{bc3d5e29}': 'ADPercent',
+	'{000f6884}': 'ASBoost',
+	'{fab7c982}': 'ASPercent', //TODO ModifiedASBoost
+	'{8832edd1}': 'BaseSpinDamage', //TODO ModifiedDamage
+	'{35783862}': 'BonusOnHit',
+	'{c976d37b}': 'BonusLightningDamage',
+	'{f7adf19d}': 'CritBonusDamage',
+	'{26aa1808}': 'DamageFinal',
+	'{0fca4668}': 'HealingPerAttack', //TODO ModifiedHealing
+	'{f12d8928}': 'MaxHealthPercent',
+	'{fa6d190b}': 'MeleeDamagePercent', //TODO TotalDamage
+	'{15d27f09}': 'RangedADPercentBase', //TODO TotalDamage
+	'{df3d2f5f}': 'PercentAD',
+	'{608d099c}': 'PercentArmorDamage',
+	'{7ac38453}': 'PercentAttackDamage',
+	'{6f755c2e}': 'PercentPercentADDamage',
+	'{112cdf9c}': 'PercentHealing',
+	'{b8dc87fd}': 'RangedASBoost',
+	'{a95a0f9b}': 'RocketLauncherPercentAD',
+	'{0f565fe1}': 'ShieldDamage',
+	'{31367dd8}': 'Shielding',
+	'{ac0b3494}': 'SpinDamage',
+	'{2dac49dd}': 'TransformHealth',
+	'{3118f99b}': 'ReducedDamageToCC', // Tahm Kench unused
+	'{a6febc4a}': 'ShieldDR',
+}
+const mStatSubstitutions: Record<number, BonusKey> = {
+	1: BonusKey.Armor,
+	2: BonusKey.AttackDamage,
+	11: BonusKey.Health,
 }
 
 function reduceAttacks(attacks: ChampionJSONAttack[], json: ChampionJSON) {
@@ -251,7 +317,7 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 			throw response
 		}
 		json = await response.json() as ChampionJSON
-		for (const rootKey in json) { // Remove keys irrelevant to simulation
+		for (const rootKey in json) { // Remove and rename keys
 			const entry = json[rootKey]
 			if (entry.__type === 'SkinCharacterMetaDataProperties') {
 				delete json[rootKey]
@@ -265,8 +331,36 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 					deleteFrom = deleteFrom.mSpell
 					if (deleteFrom == null) {
 						delete json[rootKey]
-					} else if (deleteFrom.mEffectAmount != null) {
-						deleteFrom.mEffectAmount = deleteFrom.mEffectAmount.filter((effect: Object) => Object.keys(effect).length > 1)
+					} else {
+						if (deleteFrom.mEffectAmount != null) {
+							deleteFrom.mEffectAmount = deleteFrom.mEffectAmount.filter((effect: Object) => Object.keys(effect).length > 1)
+						}
+						const spellCalculations = deleteFrom.mSpellCalculations
+						for (const key in spellCalculations) {
+							const mSpellCalculationsSubstitution = mSpellCalculationsSubstitutions[key]
+							const value = spellCalculations[key]
+							if (mSpellCalculationsSubstitution != null) {
+								delete spellCalculations[key]
+								spellCalculations[mSpellCalculationsSubstitution] = value
+							} else if (key.startsWith('{')) {
+								console.log('UNKNOWN mSpellCalculationsSubstitution', key, 'for', apiName)
+							}
+							for (const mFormulaPart of value.mFormulaParts) {
+								const childArray = mFormulaPart.mSubparts != null ? mFormulaPart.mSubparts : [ mFormulaPart.mSubpart ?? mFormulaPart ]
+								for (const child of childArray) {
+									const subPart = child.mSubpart != null ? child.mSubpart : child
+									const value = subPart.mDataValue as string
+									if (value !== undefined) {
+										const mDataValueSubstitution = mDataValueSubstitutions[value]
+										if (mDataValueSubstitution != null) {
+											subPart.mDataValue = mDataValueSubstitution
+										} else if (value.startsWith('{')) {
+											console.log('UNKNOWN mDataValueSubstitution', value, 'for', apiName)
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 				if (deleteFrom != null) {
@@ -287,7 +381,7 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 				const stats = entry as ChampionJSONStats
 				stats.mLinkedTraits?.forEach(traitEntry => {
 					const rawTrait = traitEntry.TraitData
-					traitEntry.TraitData = renameTraits[rawTrait]
+					traitEntry.TraitData = traitDataSubstitutions[rawTrait]
 				})
 			}
 		}
