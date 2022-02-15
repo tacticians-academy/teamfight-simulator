@@ -9,6 +9,13 @@ import { BonusKey } from '../src/helpers/types.js'
 import type { ChampionData, ChampionSpellData, ItemData, TraitData } from '../src/helpers/types.js'
 import { ItemKey } from '../src/data/set6/items.js'
 
+function hashCode(json: Object) {
+	return json.toString().split('').reduce((a, b) => {
+		const c = ((a << 5) - a) + b.charCodeAt(0)
+		return c & c
+	}, 0)
+}
+
 const baseURL = `https://raw.communitydragon.org/${LOAD_PBE ? 'pbe' : 'latest'}`
 const url = `${baseURL}/cdragon/tft/en_us.json`
 console.log(url)
@@ -17,6 +24,21 @@ if (!response.ok) {
 	throw response
 }
 const responseJSON = await response.json() as Record<string, any>
+const newHash = hashCode(JSON.stringify(response)).toString()
+const hashPath = path.resolve('build', 'cdragon_hash.local')
+let oldHash: string | undefined
+try {
+	oldHash = await fs.readFile(hashPath, 'utf8')
+} catch {
+	console.log('No local hash. Reloading data.')
+}
+if (newHash === oldHash) {
+	console.log('Data hash unchanged. Terminating.')
+	process.exit(0)
+}
+console.log('File updated! Updating data.')
+fs.writeFile(hashPath, newHash)
+
 const currentSetNumber = Object.keys(responseJSON.sets).reduce((previous, current) => Math.max(previous, parseInt(current, 10)), 0)
 const { champions, traits } = (responseJSON as any).sets[currentSetNumber]
 
@@ -305,88 +327,82 @@ const outputChampions = await Promise.all(playableChampions.map(async champion =
 	const apiName = champion.apiName
 	const pathName = champion.apiName.toLowerCase()
 	const outputPath = path.resolve(championsPath, pathName + '.json')
-	let json: ChampionJSON
-	try {
-		const raw = await fs.readFile(outputPath, 'utf8')
-		json = JSON.parse(raw)
-	} catch {
-		const url = `${baseURL}/game/data/characters/${pathName}/${pathName}.bin.json`
-		console.log('\nLoading champion', apiName, url)
-		const response = await fetch(url)
-		if (!response.ok) {
-			throw response
+	const url = `${baseURL}/game/data/characters/${pathName}/${pathName}.bin.json`
+	console.log('Loading champion', apiName, url)
+	const response = await fetch(url)
+	if (!response.ok) {
+		throw response
+	}
+	const json = await response.json() as ChampionJSON
+	for (const rootKey in json) { // Remove and rename keys
+		const entry = json[rootKey]
+		if (entry.__type === 'SkinCharacterMetaDataProperties') {
+			delete json[rootKey]
+			continue
 		}
-		json = await response.json() as ChampionJSON
-		for (const rootKey in json) { // Remove and rename keys
-			const entry = json[rootKey]
-			if (entry.__type === 'SkinCharacterMetaDataProperties') {
-				delete json[rootKey]
-				continue
-			}
 
-			const deleting = deleteNormalizations[entry.__type]
-			if (deleting != null) {
-				let deleteFrom = entry
-				if (entry.__type === 'SpellObject') {
-					deleteFrom = deleteFrom.mSpell
-					if (deleteFrom == null) {
-						delete json[rootKey]
-					} else {
-						if (deleteFrom.mEffectAmount != null) {
-							deleteFrom.mEffectAmount = deleteFrom.mEffectAmount.filter((effect: Object) => Object.keys(effect).length > 1)
+		const deleting = deleteNormalizations[entry.__type]
+		if (deleting != null) {
+			let deleteFrom = entry
+			if (entry.__type === 'SpellObject') {
+				deleteFrom = deleteFrom.mSpell
+				if (deleteFrom == null) {
+					delete json[rootKey]
+				} else {
+					if (deleteFrom.mEffectAmount != null) {
+						deleteFrom.mEffectAmount = deleteFrom.mEffectAmount.filter((effect: Object) => Object.keys(effect).length > 1)
+					}
+					const spellCalculations = deleteFrom.mSpellCalculations
+					for (const key in spellCalculations) {
+						const mSpellCalculationsSubstitution = mSpellCalculationsSubstitutions[key]
+						const value = spellCalculations[key]
+						if (mSpellCalculationsSubstitution != null) {
+							delete spellCalculations[key]
+							spellCalculations[mSpellCalculationsSubstitution] = value
+						} else if (key.startsWith('{')) {
+							console.log('UNKNOWN mSpellCalculationsSubstitution', key, 'for', apiName)
 						}
-						const spellCalculations = deleteFrom.mSpellCalculations
-						for (const key in spellCalculations) {
-							const mSpellCalculationsSubstitution = mSpellCalculationsSubstitutions[key]
-							const value = spellCalculations[key]
-							if (mSpellCalculationsSubstitution != null) {
-								delete spellCalculations[key]
-								spellCalculations[mSpellCalculationsSubstitution] = value
-							} else if (key.startsWith('{')) {
-								console.log('UNKNOWN mSpellCalculationsSubstitution', key, 'for', apiName)
-							}
-							for (const mFormulaPart of value.mFormulaParts) {
-								const childArray = mFormulaPart.mSubparts != null ? mFormulaPart.mSubparts : [ mFormulaPart.mSubpart ?? mFormulaPart ]
-								for (const child of childArray) {
-									const subPart = child.mSubpart != null ? child.mSubpart : child
-									const value = subPart.mDataValue as string
-									if (value !== undefined) {
-										const mDataValueSubstitution = mDataValueSubstitutions[value]
-										if (mDataValueSubstitution != null) {
-											subPart.mDataValue = mDataValueSubstitution
-										} else if (value.startsWith('{')) {
-											console.log('UNKNOWN mDataValueSubstitution', value, 'for', apiName)
-										}
+						for (const mFormulaPart of value.mFormulaParts) {
+							const childArray = mFormulaPart.mSubparts != null ? mFormulaPart.mSubparts : [ mFormulaPart.mSubpart ?? mFormulaPart ]
+							for (const child of childArray) {
+								const subPart = child.mSubpart != null ? child.mSubpart : child
+								const value = subPart.mDataValue as string
+								if (value !== undefined) {
+									const mDataValueSubstitution = mDataValueSubstitutions[value]
+									if (mDataValueSubstitution != null) {
+										subPart.mDataValue = mDataValueSubstitution
+									} else if (value.startsWith('{')) {
+										console.log('UNKNOWN mDataValueSubstitution', value, 'for', apiName)
 									}
 								}
 							}
 						}
 					}
 				}
-				if (deleteFrom != null) {
-					for (const key of deleting) {
-						delete deleteFrom[key]
-					}
-				}
 			}
-			const renaming = renameNormalizations[entry.__type]
-			if (renaming != null) {
-				for (const renameKey in renaming) {
-					const value = entry[renameKey]
-					delete entry[renameKey]
-					entry[renaming[renameKey]] = value
+			if (deleteFrom != null) {
+				for (const key of deleting) {
+					delete deleteFrom[key]
 				}
-			}
-			if (entry.__type === 'TFTCharacterRecord') {
-				const stats = entry as ChampionJSONStats
-				stats.mLinkedTraits?.forEach(traitEntry => {
-					const rawTrait = traitEntry.TraitData
-					traitEntry.TraitData = traitDataSubstitutions[rawTrait]
-				})
 			}
 		}
-		fs.writeFile(outputPath, JSON.stringify(json, undefined, '\t'))
+		const renaming = renameNormalizations[entry.__type]
+		if (renaming != null) {
+			for (const renameKey in renaming) {
+				const value = entry[renameKey]
+				delete entry[renameKey]
+				entry[renaming[renameKey]] = value
+			}
+		}
+		if (entry.__type === 'TFTCharacterRecord') {
+			const stats = entry as ChampionJSONStats
+			stats.mLinkedTraits?.forEach(traitEntry => {
+				const rawTrait = traitEntry.TraitData
+				traitEntry.TraitData = traitDataSubstitutions[rawTrait]
+			})
+		}
 	}
+	fs.writeFile(outputPath, JSON.stringify(json, undefined, '\t'))
 
 	const characterRecord = getCharacterRecord(json)
 	if (characterRecord.baseStaticHPRegen !== 0) {
