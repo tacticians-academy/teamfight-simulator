@@ -44,7 +44,7 @@ export class Projectile {
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
 		this.position = [x, y]
 		this.missile = data.spell?.missile ?? data.missile!
-		this.currentSpeed = this.missile.speedInitial!
+		this.currentSpeed = this.missile.speedInitial! //TODO .travelTime
 		this.damage = data.damage!
 		this.damageType = data.damageType!
 		this.source = source

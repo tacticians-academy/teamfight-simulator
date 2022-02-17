@@ -17,7 +17,7 @@ champions.forEach(champion => {
 	unitGroups[champion.traits.length ? 0 : 1][1].push(champion)
 })
 unitGroups[0][1].sort((a, b) => a.name.localeCompare(b.name))
-unitGroups[1][1].sort((a, b) => b.cost - a.cost)
+unitGroups[1][1].sort((a, b) => (b.cost ?? 0) - (a.cost ?? 0))
 </script>
 
 <template>
