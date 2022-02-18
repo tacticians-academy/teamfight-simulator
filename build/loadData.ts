@@ -1,4 +1,4 @@
-const PATCH_LINE = '12.4' // 'pbe' // 'latest'
+const PATCH_LINE = 'latest' // '12.4' // 'pbe'
 const MAX_STAR_LEVEL = 3
 
 import fetch from 'node-fetch'
@@ -9,13 +9,6 @@ import { BonusKey } from '../src/helpers/types.js'
 import type { ChampionData, ChampionSpellData, ItemData, TraitData } from '../src/helpers/types.js'
 import { ItemKey } from '../src/data/set6/items.js'
 
-function hashCode(json: Object) {
-	return json.toString().split('').reduce((a, b) => {
-		const c = ((a << 5) - a) + b.charCodeAt(0)
-		return c & c
-	}, 0)
-}
-
 const baseURL = `https://raw.communitydragon.org/${PATCH_LINE}`
 const url = `${baseURL}/cdragon/tft/en_us.json`
 console.log(url)
@@ -23,21 +16,26 @@ const response = await fetch(url)
 if (!response.ok) {
 	throw response
 }
-const responseJSON = await response.json() as Record<string, any>
-const newHash = hashCode(JSON.stringify(response)).toString()
-const hashPath = path.resolve('build', 'cdragon_hash.local')
-let oldHash: string | undefined
+const tagPath = path.resolve('build', 'cdragon_etag.local')
+let oldEtag: string | undefined
 try {
-	oldHash = await fs.readFile(hashPath, 'utf8')
+	oldEtag = await fs.readFile(tagPath, 'utf8')
 } catch {
 	console.log('No local hash. Reloading data.')
 }
-if (newHash === oldHash) {
-	console.log('Data hash unchanged. Terminating.')
-	process.exit(0)
+const newEtag = response.headers.get('etag')
+if (newEtag != null) {
+	if (newEtag === oldEtag) {
+		console.log('Cache etag unchanged. Terminating.')
+		process.exit(0)
+	}
+	console.log('File updated! Rebuilding data.', newEtag, oldEtag)
+	fs.writeFile(tagPath, newEtag)
+} else {
+	console.log('No cache etag for resource, reloading data.')
 }
-console.log('File updated! Updating data.')
-fs.writeFile(hashPath, newHash)
+
+const responseJSON = await response.json() as Record<string, any>
 
 const currentSetNumber = Object.keys(responseJSON.sets).reduce((previous, current) => Math.max(previous, parseInt(current, 10)), 0)
 const { champions, traits } = (responseJSON as any).sets[currentSetNumber]
