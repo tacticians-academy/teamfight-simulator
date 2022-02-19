@@ -1,9 +1,11 @@
-import type { ItemKey } from '#/data/set6/items'
-import { TraitKey } from '#/data/set6/traits'
+import { BonusKey } from '@tacticians-academy/academy-library'
+import type { ItemData } from '@tacticians-academy/academy-library'
+
+import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
-import { BonusKey } from '#/helpers/types'
-import type { BonusVariable, ItemData, SynergyData } from '#/helpers/types'
+import type { BonusVariable, SynergyData } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], teamSynergies: SynergyData[]) {
 	if (!unitTraitNames.includes(trait)) {

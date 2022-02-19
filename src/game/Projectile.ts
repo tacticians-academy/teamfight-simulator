@@ -1,8 +1,10 @@
+import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-academy/academy-library'
+
 import type { ChampionUnit } from '#/game/ChampionUnit'
+
 import { getDistanceUnit, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-
-import type { ChampionSpellData, ChampionSpellMissileData, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
+import type { DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 
 let instanceIndex = 0
 

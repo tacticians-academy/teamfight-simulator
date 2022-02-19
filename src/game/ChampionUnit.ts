@@ -1,23 +1,27 @@
 import { markRaw } from 'vue'
 
+import { BonusKey } from '@tacticians-academy/academy-library'
+import type { ChampionData, ItemData, TraitData } from '@tacticians-academy/academy-library'
+
+import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
+import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
+import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
+
 import abilities from '#/data/set6/abilities'
-import { champions } from '#/data/set6/champions'
-import { ItemKey } from '#/data/set6/items'
-import { TraitKey, traits } from '#/data/set6/traits'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
+import { Projectile } from '#/game/Projectile'
+import type { ProjectileData } from '#/game/Projectile'
+import { HexEffect } from '#/game/HexEffect'
+import type { HexEffectData } from '#/game/HexEffect'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { coordinatePosition } from '#/game/store'
-import { BonusKey, DamageType } from '#/helpers/types'
-import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, ChampionData, ItemData, TraitData, SynergyData } from '#/helpers/types'
-import { Projectile } from '#/game/Projectile'
-import type { ProjectileData } from '#/game/Projectile'
-import { HexEffect } from '#/game/HexEffect'
-import type { HexEffectData } from '#/game/HexEffect'
+import { DamageType } from '#/helpers/types'
+import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -92,7 +96,7 @@ export class ChampionUnit {
 		}
 
 		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
-		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => !!trait)
+		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => trait != null)
 		this.bonuses = [...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items)]
 
 		this.mana = this.data.stats.initialMana + this.getBonuses(BonusKey.Mana)

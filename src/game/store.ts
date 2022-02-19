@@ -1,8 +1,10 @@
 import { computed, reactive } from 'vue'
 
-import { items } from '#/data/set6/items'
-import { traits } from '#/data/set6/traits'
-import type { TraitKey } from '#/data/set6/traits'
+import type { ItemData } from '@tacticians-academy/academy-library'
+
+import { items } from '@tacticians-academy/academy-library/dist/set6/items'
+import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
+import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
@@ -11,7 +13,7 @@ import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
 import { buildBoard } from '#/helpers/boardUtils'
-import type { HexCoord, HexRowCol, ItemData, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
+import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { removeFirstFromArray } from '#/helpers/utils'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
@@ -112,14 +114,14 @@ const store = {
 			console.log('Spawns cannot hold items')
 			return false
 		}
-		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name)) {
+		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name) != null) {
 			console.log('Unique item per champion', item.name)
 			return false
 		}
 		if (item.name.endsWith('Emblem')) {
 			const emblemTrait = item.name.replace(' Emblem', '') as TraitKey
 			const trait = traits.find(trait => trait.name === emblemTrait)
-			if (!trait) {
+			if (trait == null) {
 				console.log('ERR: No trait for emblem', item)
 			} else {
 				if (champion.hasTrait(emblemTrait)) {

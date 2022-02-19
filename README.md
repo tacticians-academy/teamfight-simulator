@@ -7,7 +7,7 @@ https://tftsim.netlify.app
 ## Capabilities
 
 ### Data gathering
-- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`build/loadData`](build/loadData.ts))
+- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library))
 
 ### Units setup
 - Place/move any units onto 2 teams

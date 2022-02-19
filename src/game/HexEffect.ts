@@ -1,6 +1,9 @@
+import type { ChampionSpellData } from '@tacticians-academy/academy-library'
+
 import type { ChampionUnit } from '#/game/ChampionUnit'
+
 import { DamageType } from '#/helpers/types'
-import type { ChampionSpellData, HexCoord } from '#/helpers/types'
+import type { HexCoord } from '#/helpers/types'
 
 export interface HexEffectData {
 	spell: ChampionSpellData

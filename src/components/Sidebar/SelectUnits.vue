@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { champions } from '#/data/set6/champions'
+import type { ChampionData } from '@tacticians-academy/academy-library'
+
+import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { useStore } from '#/game/store'
 
 import { getIconURL } from '#/helpers/utils'
-import type { ChampionData } from '#/helpers/types'
 
 const { state, startDragging } = useStore()
 

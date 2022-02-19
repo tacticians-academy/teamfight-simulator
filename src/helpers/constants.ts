@@ -1,4 +1,5 @@
-import { BonusKey } from '#/helpers/types'
+import { BonusKey } from '@tacticians-academy/academy-library'
+
 import type { StarLevel } from '#/helpers/types'
 
 export const DEFAULT_MANA_LOCK_MS = 1000

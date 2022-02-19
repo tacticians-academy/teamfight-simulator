@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 
-import type { TraitData, TraitEffectData } from '#/helpers/types'
+import type { TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+
 import { ASSET_PREFIX, getIconURL } from '#/helpers/utils'
 
 const props = defineProps<{
