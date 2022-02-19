@@ -1,6 +1,6 @@
-export const TESTING = process.env.NODE_ENV !== 'production'
+import { ASSET_PREFIX } from '@tacticians-academy/academy-library'
 
-export const ASSET_PREFIX = 'https://raw.communitydragon.org/pbe/game'
+export const TESTING = process.env.NODE_ENV !== 'production'
 
 export function getIconURL(deriveAsset: {icon: string | null | undefined}) {
 	if (deriveAsset.icon == null) {

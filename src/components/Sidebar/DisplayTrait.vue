@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 
-import type { TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+import { ASSET_PREFIX, substituteVariables } from '@tacticians-academy/academy-library'
+import type { EffectVariables, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
-import { ASSET_PREFIX, getIconURL } from '#/helpers/utils'
+import { getIconURL } from '#/helpers/utils'
 
 const props = defineProps<{
 	trait: TraitData
@@ -19,24 +20,12 @@ const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 *
 const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
 
 function substitute(text: string, effect: TraitEffectData) {
-	return text
+	const normalizedVariables: EffectVariables = {}
+	Object.keys(effect.variables).forEach(key => normalizedVariables[key.toUpperCase()] = effect.variables[key])
+	const description = text
 		.replaceAll('@MinUnits@', effect.minUnits.toString())
 		.replaceAll('@MaxUnits@', effect.maxUnits.toString())
-		.replace(/(@[\w*]+?@)/g, (placeholder) => {
-			placeholder = placeholder.slice(1, -1)
-			const [multiplierPlaceholder, multiplier] = placeholder.split('*')
-			if (multiplier) {
-				placeholder = multiplierPlaceholder
-			}
-			let substitution = effect.variables[placeholder]
-			if (substitution == null) {
-				return placeholder
-			}
-			if (multiplier) {
-				substitution = Math.round(substitution * parseInt(multiplier, 10))
-			}
-			return substitution.toString()
-		})
+	return substituteVariables(description, [normalizedVariables])
 }
 
 function formatRow(text: string, effect: TraitEffectData) {
