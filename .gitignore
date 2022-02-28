@@ -1,3 +1,4 @@
 dist
 *.local
 src/data/set6/champion/
+node_modules/
