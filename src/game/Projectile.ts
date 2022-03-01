@@ -20,6 +20,7 @@ export interface ProjectileData {
 	missile?: ChampionSpellMissileData
 	target: ChampionUnit
 	retargetOnTargetDeath?: boolean
+	onCollision?: () => void
 }
 
 export class Projectile {
@@ -36,6 +37,7 @@ export class Projectile {
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	retargetOnTargetDeath?: boolean
+	onCollision: () => void
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
 		this.instanceID = `p${instanceIndex += 1}`
@@ -54,9 +56,11 @@ export class Projectile {
 		this.collidesWith = data.collidesWith
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
+		this.onCollision = data.onCollision != null ? data.onCollision : () => {}
 	}
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+		this.onCollision()
 		unit.damage(elapsedMS, this.damage, this.damageType, this.source, units, gameOver)
 	}
 
