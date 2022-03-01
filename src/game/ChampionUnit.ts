@@ -209,6 +209,10 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
+	gainHealth(amount: number) {
+		this.health = Math.min(this.healthMax, this.health + amount)
+	}
+
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
 		if (elapsedMS < this.manaLockUntilMS) {
 			return

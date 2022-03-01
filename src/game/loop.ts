@@ -30,6 +30,7 @@ function updateHexEffects(elapsedMS: DOMHighResTimeStamp) {
 			if (hexEffect.stunMS != null) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)
 			}
+			hexEffect.onCollision(unit)
 		}
 	})
 }
