@@ -33,3 +33,5 @@ export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: 
 export type BonusVariable = [key: string, value: number | null]
 
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+
+export enum EffectKey { AS = 'ChampSpecificAS', AD = 'ChampSpecificAD', AP = 'ChampSpecificAP', Mana = 'ChampSpecificMana', Armor = 'ChampSpecificArmor', MR = 'ChampSpecificMR', Health = 'ChampSpecificHealth' }  

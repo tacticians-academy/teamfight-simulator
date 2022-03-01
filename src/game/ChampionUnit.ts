@@ -20,7 +20,7 @@ import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { coordinatePosition } from '#/game/store'
-import { DamageType } from '#/helpers/types'
+import { DamageType, EffectKey } from '#/helpers/types'
 import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
@@ -52,7 +52,7 @@ export class ChampionUnit {
 	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
-	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
+	bonuses: [TraitKey | ItemKey | EffectKey, BonusVariable[]][] = []
 	transformIndex = 0
 	ability: AbilityFn | undefined
 
@@ -283,7 +283,7 @@ export class ChampionUnit {
 		return this.getCurrentSpell().variables[name]?.[this.starLevel]
 	}
 
-	getBonusFor(sourceKey: TraitKey | ItemKey) {
+	getBonusFor(sourceKey: TraitKey | ItemKey | EffectKey) {
 		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
 	}
 	getBonusVariants(bonus: BonusKey) {
@@ -291,7 +291,7 @@ export class ChampionUnit {
 	}
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
-			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
+			.reduce((accumulator, bonus: [TraitKey | ItemKey | EffectKey, BonusVariable[]]) => {
 				const variables = bonus[1].filter(variable => variableNames.includes(variable[0] as BonusKey))
 				return accumulator + variables.reduce((total, v) => total + (v[1] ?? 0), 0)
 			}, 0)
