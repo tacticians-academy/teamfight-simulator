@@ -3,8 +3,7 @@ import type { AbilityFn } from '#/helpers/types'
 
 export default {
 	Caitlyn: (elapsedMS, spell, champion) => {
-		const doesTargetNearest = false
-		const target = getDistanceUnit(doesTargetNearest, champion)
+		const target = getDistanceUnit(false, champion)
 		if (!target) {
 			return console.log('No target', champion.name, champion.team)
 		}
@@ -13,7 +12,7 @@ export default {
 			target,
 			collidesWith: champion.opposingTeam(),
 			destroysOnCollision: true,
-			retargetOnTargetDeath: doesTargetNearest,
+			retargetOnTargetDeath: true,
 		})
 	},
 	Zyra: (elapsedMS, spell, champion) => {
