@@ -1,11 +1,10 @@
 <script setup lang="ts">
+import { getIconURL } from '@tacticians-academy/academy-library'
 import type { ChampionData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { useStore } from '#/game/store'
-
-import { getIconURL } from '#/helpers/utils'
 
 const { state, startDragging } = useStore()
 
@@ -27,7 +26,7 @@ unitGroups[1][1].sort((a, b) => (b.cost ?? 0) - (a.cost ?? 0))
 	<div class="sidebar-icons-container">
 		<div
 			v-for="unit in group" :key="unit.name"
-			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit)})` }"
+			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit, true)})` }"
 			:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
 		>
 			<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, defineProps, ref } from 'vue'
 
+import { getIconURL } from '@tacticians-academy/academy-library'
+
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
 import type { DraggableType } from '#/game/dragDrop'
 import { useStore } from '#/game/store'
 
 import { HEX_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/helpers/constants'
-import { getIconURL } from '#/helpers/utils'
 import type { StarLevel } from '#/helpers/types'
 
 const { state, setStarLevel, startDragging, copyItem, moveItem, dropUnit } = useStore()
@@ -30,7 +31,7 @@ function onStar(starLevel: number) {
 	setStarLevel(props.unit, starLevel as StarLevel)
 }
 
-const iconURL = `url(${getIconURL(props.unit.data)})`
+const iconURL = `url(${getIconURL(props.unit.data, true)})`
 
 function onDrop(event: DragEvent) {
 	const type = getDragType(event)
@@ -78,7 +79,7 @@ function onInfo(event: Event) {
 				class="w-1/3"
 				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
 			>
-				<img :src="getIconURL(item)" :alt="item.name">
+				<img :src="getIconURL(item, true)" :alt="item.name">
 			</div>
 		</div>
 	</div>

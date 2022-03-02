@@ -1,21 +1,4 @@
-import { ASSET_PREFIX } from '@tacticians-academy/academy-library'
-
 export const TESTING = process.env.NODE_ENV !== 'production'
-
-export function getIconURL(deriveAsset: {icon: string | null | undefined}) {
-	if (deriveAsset.icon == null) {
-		console.warn('getIconURL', deriveAsset)
-		return ''
-	}
-	return `${ASSET_PREFIX}/${deriveAsset.icon.toLowerCase().slice(0, -3)}png`
-}
-
-export function removeFirstFromArray<T>(array: T[], findFn: (el: T) => boolean) {
-	const index = array.findIndex(findFn)
-	if (index > -1) {
-		array.splice(index, 1)
-	}
-}
 
 export function getArrayValueCounts<T extends string | number | symbol>(array: T[]): [string, number][] {
 	const result: {[index in T]: number} = {} as any
