@@ -4,6 +4,10 @@ The goal of this project is to simulate fights from [Teamfight Tactics](https://
 
 https://tftsim.netlify.app
 
+## Current Set support
+
+See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simulator/milestone/1)**!
+
 ## Capabilities
 
 ### Data gathering
@@ -23,7 +27,7 @@ https://tftsim.netlify.app
 
 ## Unimplemented
 
-- Abilities: Currently Zyra is the only one implemented (see [`set6/abilities`](src/data/set6/abilities.ts))
+- Abilities: Each Set adds new champions whose abilities must be implemented before the unit can be fully supported. See [Current Set support](#current-set-support) for progress.
 - Traits: Non-basic effects are not implemented
 - Items: Non-basic effects are not implemented
 - Augments: Not implemented
@@ -58,4 +62,4 @@ npm run dev
 
 The largest outstanding project is to script the abilities of each unit. Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.
 
-Check out [`set6/abilities`](src/data/set6/abilities.ts). Pick an unimplemented champion (simpler is better to start!), and using existing implementations as a template, give it a try!
+Check out [`set6/abilities`](src/data/set6/abilities.ts). Pick an unimplemented champion from the [current Set milestone](#current-set-support), and using existing implementations as a template, give it a try!
