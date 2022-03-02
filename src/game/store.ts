@@ -1,8 +1,9 @@
 import { computed, reactive } from 'vue'
 
+import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { items } from '@tacticians-academy/academy-library/dist/set6/items'
+import { currentItems } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -14,7 +15,6 @@ import { cancelLoop } from '#/game/loop'
 
 import { buildBoard } from '#/helpers/boardUtils'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
-import { removeFirstFromArray } from '#/helpers/utils'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
@@ -69,7 +69,7 @@ function resetUnitsAfterCreatingOrMoving() {
 }
 
 function getItemFrom(name: string) {
-	const item = items.find(item => item.name === name)
+	const item = currentItems.find(item => item.name === name)
 	if (!item) {
 		console.log('Invalid item', name)
 	}
@@ -87,7 +87,7 @@ const store = {
 			const units = getSavedUnits()
 				.map(storageChampion => {
 					const championItems = storageChampion.items
-						.map(itemKey => items.find(item => item.id === itemKey))
+						.map(itemKey => currentItems.find(item => item.id === itemKey))
 						.filter((item): item is ItemData => !!item)
 					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel, synergiesByTeam)
 					champion.items = championItems
@@ -104,7 +104,7 @@ const store = {
 		saveUnits()
 	},
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
-		removeFirstFromArray(fromUnit.items, (item) => item.name === itemName)
+		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
 		fromUnit.reset(getters.synergiesByTeam.value)
 		saveUnits()
@@ -169,7 +169,7 @@ const store = {
 		event.stopPropagation()
 	},
 	deleteUnit(position: HexCoord) {
-		removeFirstFromArray(state.units, (unit) => unit.isStartAt(position))
+		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(position))
 		state.dragUnit = null
 		saveUnits()
 		resetUnitsAfterCreatingOrMoving()

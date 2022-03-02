@@ -4,7 +4,7 @@ import { defineProps } from 'vue'
 import type { Projectile } from '#/game/Projectile'
 
 const props = defineProps<{
-	projectile: Projectile,
+	projectile: Projectile
 }>()
 
 const size = props.projectile.missile.width ?? 20
