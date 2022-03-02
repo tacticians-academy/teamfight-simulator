@@ -9,4 +9,7 @@ export default defineConfig({ // https://vitejs.dev/config/
 			'#/': path.join(path.resolve(), 'src', path.sep),
 		},
 	},
+	server: {
+		open: true,
+	},
 })
