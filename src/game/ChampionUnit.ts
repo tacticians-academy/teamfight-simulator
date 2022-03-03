@@ -155,11 +155,14 @@ export class ChampionUnit {
 		}
 	}
 
-	critChance() {
+	rawCritChance() {
 		return (this.data.stats.critChance ?? 0) + this.getBonuses(BonusKey.CritChance) / 100
 	}
+	critChance() {
+		return Math.min(1, this.rawCritChance())
+	}
 	critMultiplier() {
-		const excessCritChance = this.critChance() - 1
+		const excessCritChance = this.rawCritChance() - 1
 		return this.data.stats.critMultiplier + Math.max(0, excessCritChance) + this.getBonuses(BonusKey.CritMultiplier) / 100
 	}
 	critReduction() {
