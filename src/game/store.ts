@@ -18,6 +18,8 @@ import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
+// State
+
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
 
 export const state = reactive({
@@ -28,9 +30,11 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
-	stageNumber: 2,
+	stageNumber: 4,
 	mutantType: MutantType.Cybernetic,
 })
+
+// Getters
 
 export const getters = {
 	augmentCount: computed(() => Math.min(3, Math.max(1, state.stageNumber - 1))),
@@ -68,9 +72,13 @@ export const getters = {
 	}),
 }
 
+// Watch
+
 watch(getters.augmentCount, () => {
 	resetUnitsAfterCreatingOrMoving()
 })
+
+// Store
 
 function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
@@ -239,12 +247,14 @@ const store = {
 	},
 }
 
-export function coordinatePosition([col, row]: HexCoord) {
-	return state.hexRowsCols[row][col].position
-}
-
 export function useStore() {
 	return store
+}
+
+// Helpers
+
+export function coordinatePosition([col, row]: HexCoord) {
+	return state.hexRowsCols[row][col].position
 }
 
 export function gameOver(forTeam: TeamNumber) {
