@@ -183,7 +183,7 @@ const store = {
 		saveUnits()
 	},
 	deleteUnit(position: HexCoord) {
-		this._deleteUnit(position)
+		store._deleteUnit(position)
 		resetUnitsAfterCreatingOrMoving()
 	},
 	addUnit(name: string, position: HexCoord, starLevel: StarLevel) {
@@ -193,7 +193,7 @@ const store = {
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
 		store._deleteUnit(position)
-		this.addUnit(unit.name, position, unit.starLevel)
+		store.addUnit(unit.name, position, unit.starLevel)
 		//TODO copy star level, items, etc
 		state.dragUnit = null
 	},
@@ -201,7 +201,7 @@ const store = {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
 			store._deleteUnit(position)
-			this.addUnit(unit, position, 1)
+			store.addUnit(unit, position, 1)
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
