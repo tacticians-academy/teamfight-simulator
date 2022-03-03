@@ -78,7 +78,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 			console.log('Missing Colossus HP bonus', colossusEffect)
 		}
 	}
-	const sniperEffect = getInnateEffectForUnitWith(TraitKey.Colossus, unitTraitNames, teamSynergies)
+	const sniperEffect = getInnateEffectForUnitWith(TraitKey.Sniper, unitTraitNames, teamSynergies)
 	if (sniperEffect) {
 		const value = sniperEffect.variables[BonusKey.HexRangeIncrease]
 		bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
