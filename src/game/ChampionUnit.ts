@@ -136,6 +136,7 @@ export class ChampionUnit {
 				if (this.attackStartAtMS <= 0) {
 					this.attackStartAtMS = elapsedMS
 				} else {
+					const canReProcAttack = this.attackStartAtMS > 1
 					const damage = this.attackDamage()
 					if (this.instantAttack) {
 						this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver)
@@ -152,6 +153,12 @@ export class ChampionUnit {
 						})
 					}
 					this.gainMana(elapsedMS, 10)
+					if (canReProcAttack) {
+						const multiAttackProcChance = this.getMutantBonus(MutantType.AdrenalineRush, 'ProcChance')
+						if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
+							this.attackStartAtMS = 1
+						}
+					}
 				}
 			}
 		}
@@ -356,7 +363,7 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
+		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, 'AD')
 		if (this.fixedAS != null) {
 			const multiplier = this.getSpellValue('ADFromAttackSpeed')
 			if (multiplier != null) {
