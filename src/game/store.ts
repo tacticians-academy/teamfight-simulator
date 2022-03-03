@@ -1,4 +1,4 @@
-import { computed, reactive } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
@@ -67,6 +67,10 @@ export const getters = {
 			})
 	}),
 }
+
+watch(getters.augmentCount, () => {
+	resetUnitsAfterCreatingOrMoving()
+})
 
 function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
