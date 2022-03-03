@@ -94,16 +94,16 @@ function onInfo(event: Event) {
 	</div>
 	<div v-if="showInfo" class="p-1 space-x-1 bg-tertiary  inline-flex">
 		<div>
-			AD:&nbsp;{{ unit.attackDamage() }}
-			AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}
-			AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
-			Crit:&nbsp;{{ Math.round(unit.critChance() * 100) }}%
+			<div>AD:&nbsp;{{ Math.round(unit.attackDamage()) }}</div>
+			<div>AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}</div>
+			<div>AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}</div>
+			<div>Crit:&nbsp;{{ Math.round(unit.critChance() * 100) }}%</div>
 		</div>
 		<div>
-			AR:&nbsp;{{ unit.armor() }}
-			MR:&nbsp;{{ unit.magicResist() }}
+			<div>AR:&nbsp;{{ unit.armor() }}</div>
+			<div>MR:&nbsp;{{ unit.magicResist() }}</div>
 			<div class="text-secondary">-</div>
-			(+{{ Math.round(unit.critMultiplier() * 100) }}%)
+			<div>(+{{ Math.round(unit.critMultiplier() * 100) }}%)</div>
 		</div>
 	</div>
 </div>
