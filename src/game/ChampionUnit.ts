@@ -61,7 +61,7 @@ export class ChampionUnit {
 		projectiles: new Set<Projectile>(),
 	}
 
-	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
+	constructor(name: string, position: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = champions.find(unit => unit.name === name) ?? champions[0]
 		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]

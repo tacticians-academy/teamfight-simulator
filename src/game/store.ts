@@ -89,7 +89,7 @@ const store = {
 					const championItems = storageChampion.items
 						.map(itemKey => currentItems.find(item => item.id === itemKey))
 						.filter((item): item is ItemData => !!item)
-					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel, synergiesByTeam)
+					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel)
 					champion.items = championItems
 					champion.reset(synergiesByTeam)
 					return champion
@@ -187,9 +187,10 @@ const store = {
 		resetUnitsAfterCreatingOrMoving()
 	},
 	addUnit(name: string, position: HexCoord, starLevel: StarLevel) {
-		const unit = new ChampionUnit(name, position, starLevel, getters.synergiesByTeam.value)
+		const unit = new ChampionUnit(name, position, starLevel)
 		state.units.push(unit)
 		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterCreatingOrMoving() //TODO fix need to call twice (one pass doesn't apply new traits to all units)
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
 		store._deleteUnit(position)
