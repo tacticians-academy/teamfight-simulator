@@ -14,13 +14,13 @@ import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
+import { coordinatePosition, state } from '#/game/store'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { coordinatePosition } from '#/game/store'
-import { DamageType } from '#/helpers/types'
+import { DamageType, MutantType } from '#/helpers/types'
 import type { AbilityFn, BonusRegen, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
@@ -328,6 +328,12 @@ export class ChampionUnit {
 	getBonusVariants(bonus: BonusKey) {
 		return this.getBonuses(bonus, `Bonus${bonus}` as BonusKey, `${this.starLevel}Star${bonus}` as BonusKey)
 	}
+	getMutantBonus(mutantType: MutantType, name: string) {
+		if (state.mutantType !== mutantType) {
+			return 0
+		}
+		return this.getBonuses(`Mutant${state.mutantType}${name}` as BonusKey)
+	}
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
 			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
@@ -360,12 +366,14 @@ export class ChampionUnit {
 		return ad
 	}
 	abilityPowerMultiplier() {
-		return (100 + this.getBonusVariants(BonusKey.AbilityPower)) / 100
+		const apBonus = this.getBonusVariants(BonusKey.AbilityPower) + this.getMutantBonus(MutantType.SynapticWeb, 'AP')
+		return (100 + apBonus) / 100
 	}
 	manaMax() {
 		const maxManaMultiplier = this.getBonuses('PercentManaReduction' as BonusKey)
 		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier / 100)
-		return this.data.stats.mana * multiplier //TODO mutant
+		const maxManaReduction = this.getMutantBonus(MutantType.SynapticWeb, 'ManaCost')
+		return (this.data.stats.mana - maxManaReduction) * multiplier
 	}
 	armor() {
 		return this.data.stats.armor + this.getBonusVariants(BonusKey.Armor)
