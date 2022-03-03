@@ -363,7 +363,9 @@ export class ChampionUnit {
 		return (100 + this.getBonusVariants(BonusKey.AbilityPower)) / 100
 	}
 	manaMax() {
-		return this.data.stats.mana //TODO yordle mutant
+		const maxManaMultiplier = this.getBonuses('PercentManaReduction' as BonusKey)
+		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier / 100)
+		return this.data.stats.mana * multiplier //TODO mutant
 	}
 	armor() {
 		return this.data.stats.armor + this.getBonusVariants(BonusKey.Armor)
