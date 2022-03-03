@@ -14,6 +14,7 @@ import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
 import { buildBoard } from '#/helpers/boardUtils'
+import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
@@ -27,11 +28,13 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
-	augmentCount: 1,
-	mutantName: 'Cyber',
+	stageNumber: 2,
+	mutantType: MutantType.Cybernetic,
 })
 
-const getters = {
+export const getters = {
+	augmentCount: computed(() => Math.min(3, Math.max(1, state.stageNumber - 1))),
+
 	synergiesByTeam: computed(() => {
 		const teamSynergies: [SynergyCount, SynergyCount] = [new Map(), new Map()]
 		state.units.forEach(unit => {

@@ -42,3 +42,13 @@ export interface BonusRegen {
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
 export type TraitEffectResults = [BonusVariable[], BonusRegen[]]
 export type TraitEffectFn = (activeEffect: TraitEffectData) => TraitEffectResults
+
+export enum MutantType {
+	AdrenalineRush = 'Adrenaline',
+	BioLeeching = 'BioLeeching',
+	Cybernetic = 'Cyber',
+	Metamorphosis = 'Metamorphosis',
+	SynapticWeb = 'Synaptic',
+	Voidborne = 'Voidborne',
+	VoraciousAppetite = 'Voracious',
+}
