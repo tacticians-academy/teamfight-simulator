@@ -27,6 +27,8 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
+	augmentCount: 1,
+	mutantName: 'Cyber',
 })
 
 const getters = {
