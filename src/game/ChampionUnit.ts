@@ -243,7 +243,18 @@ export class ChampionUnit {
 			}
 		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
-		const takingDamage = rawDamage * defenseMultiplier
+		let takingDamage = rawDamage * defenseMultiplier
+		if (type !== DamageType.true) {
+			const damageReduction = this.getBonuses('DamageReduction' as BonusKey) //TODO BonusKey.DamageReduction
+			if (damageReduction > 0) {
+				if (damageReduction >= 1) {
+					console.log('ERR', 'damageReduction must be between 0–1.')
+				} else {
+					takingDamage *= 1 - damageReduction
+				}
+			}
+			//TODO AOEDamageReduction
+		}
 		if (this.health <= takingDamage) {
 			this.die(units, gameOver)
 		} else {
