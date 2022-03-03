@@ -37,7 +37,7 @@ export const state = reactive({
 // Getters
 
 export const getters = {
-	augmentCount: computed(() => Math.min(3, Math.max(1, state.stageNumber - 1))),
+	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
 
 	synergiesByTeam: computed(() => {
 		const teamSynergies: [SynergyCount, SynergyCount] = [new Map(), new Map()]
