@@ -4,6 +4,8 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import traitEffects from '#/data/set6/traits'
+
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
 import type { BonusVariable, SynergyData } from '#/helpers/types'
 
@@ -23,37 +25,44 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 		const unitHasTrait = unitTraitNames.includes(trait.name)
 		if (teamEffect != null || unitHasTrait) {
 			const variables: BonusVariable[] = []
-			for (let key in activeEffect.variables) {
-				let value = activeEffect.variables[key]
-				if (unitHasTrait) {
-					if (teamEffect === false) {
-						if (key.startsWith('Team')) {
+			// console.log(trait.name, teamEffect, activeEffect.variables)
+			const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
+			if (teamTraitFn) {
+				const teamVars = teamTraitFn(activeEffect)
+				variables.push(...teamVars)
+			} else {
+				for (let key in activeEffect.variables) {
+					let value = activeEffect.variables[key]
+					if (unitHasTrait) {
+						if (teamEffect === false) {
+							if (key.startsWith('Team')) {
+								key = key.replace('Team', '')
+							} else if (key.startsWith(trait.name)) {
+								key = key.replace(trait.name, '')
+							} else {
+								console.warn('Unknown key for Team /', trait.name)
+								continue
+							}
+						}
+						if (value != null) {
+							if (typeof teamEffect === 'number') {
+								value *= teamEffect
+							}
+						}
+					} else {
+						if (teamEffect === false) {
+							if (!key.startsWith('Team')) {
+								continue
+							}
 							key = key.replace('Team', '')
-						} else if (key.startsWith(trait.name)) {
-							key = key.replace(trait.name, '')
-						} else {
-							console.warn('Unknown key for Team /', trait.name)
-							continue
+						} else if (typeof teamEffect === 'object') {
+							if (!teamEffect.includes(key as BonusKey)) {
+								continue
+							}
 						}
 					}
-					if (value != null) {
-						if (typeof teamEffect === 'number') {
-							value *= teamEffect
-						}
-					}
-				} else {
-					if (teamEffect === false) {
-						if (!key.startsWith('Team')) {
-							continue
-						}
-						key = key.replace('Team', '')
-					} else if (typeof teamEffect === 'object') {
-						if (!teamEffect.includes(key as BonusKey)) {
-							continue
-						}
-					}
+					variables.push([key, value])
 				}
-				variables.push([key, value])
 			}
 			bonuses.push([trait.name as TraitKey, variables])
 		}
