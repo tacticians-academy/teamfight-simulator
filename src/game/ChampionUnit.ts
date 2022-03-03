@@ -73,7 +73,6 @@ export class ChampionUnit {
 		this.instantAttack = this.data.stats.range <= 1
 		this.startPosition = position
 		this.activePosition = position
-		this.reset(synergiesByTeam)
 		this.reposition(position)
 	}
 

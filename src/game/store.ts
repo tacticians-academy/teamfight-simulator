@@ -91,6 +91,7 @@ const store = {
 						.filter((item): item is ItemData => !!item)
 					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel, synergiesByTeam)
 					champion.items = championItems
+					champion.reset(synergiesByTeam)
 					return champion
 				})
 			state.units.push(...units)
@@ -108,8 +109,9 @@ const store = {
 		state.dragUnit = null
 		fromUnit.reset(getters.synergiesByTeam.value)
 		saveUnits()
+		resetUnitsAfterCreatingOrMoving()
 	},
-	addItem(item: ItemData, champion: ChampionUnit) {
+	_addItem(item: ItemData, champion: ChampionUnit) {
 		if (!champion.traits.length) {
 			console.log('Spawns cannot hold items')
 			return false
@@ -134,26 +136,33 @@ const store = {
 			champion.items.shift()
 		}
 		champion.items.push(item)
-		champion.reset(getters.synergiesByTeam.value)
 		saveUnits()
 		return true
 	},
 	addItemName(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
-		return !!item && store.addItem(item, champion)
+		if (!!item && store._addItem(item, champion)) {
+			resetUnitsAfterCreatingOrMoving()
+			return true
+		}
+		return false
 	},
 	copyItem(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
 		if (!item) {
 			return
 		}
-		store.addItem(item, champion)
+		if (store._addItem(item, champion)) {
+			resetUnitsAfterCreatingOrMoving()
+		}
 		state.dragUnit = null
 	},
 	moveItem(itemName: string, toUnit: ChampionUnit, fromUnit: ChampionUnit | null) {
 		if (store.addItemName(itemName, toUnit)) {
 			if (fromUnit) {
 				store.deleteItem(itemName, fromUnit)
+			} else {
+				resetUnitsAfterCreatingOrMoving()
 			}
 		}
 		state.dragUnit = null
@@ -168,26 +177,30 @@ const store = {
 		state.dragUnit = dragUnit
 		event.stopPropagation()
 	},
-	deleteUnit(position: HexCoord) {
+	_deleteUnit(position: HexCoord) {
 		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(position))
 		state.dragUnit = null
 		saveUnits()
+	},
+	deleteUnit(position: HexCoord) {
+		this._deleteUnit(position)
 		resetUnitsAfterCreatingOrMoving()
 	},
 	addUnit(name: string, position: HexCoord, starLevel: StarLevel) {
-		state.units.push(new ChampionUnit(name, position, starLevel, getters.synergiesByTeam.value))
+		const unit = new ChampionUnit(name, position, starLevel, getters.synergiesByTeam.value)
+		state.units.push(unit)
+		resetUnitsAfterCreatingOrMoving()
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
-		store.deleteUnit(position)
+		store._deleteUnit(position)
 		this.addUnit(unit.name, position, unit.starLevel)
 		//TODO copy star level, items, etc
 		state.dragUnit = null
-		resetUnitsAfterCreatingOrMoving()
 	},
 	moveUnit(unit: ChampionUnit | string, position: HexCoord) {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
-			store.deleteUnit(position)
+			store._deleteUnit(position)
 			this.addUnit(unit, position, 1)
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
@@ -195,9 +208,9 @@ const store = {
 				existingUnit.reposition(unit.startPosition)
 			}
 			unit.reposition(position)
+			resetUnitsAfterCreatingOrMoving()
 		}
 		state.dragUnit = null
-		resetUnitsAfterCreatingOrMoving()
 	},
 	dropUnit(event: DragEvent, name: string, hex: HexCoord) {
 		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
