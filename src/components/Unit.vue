@@ -102,7 +102,7 @@ function onInfo(event: Event) {
 		<div>
 			<div>AR:&nbsp;{{ unit.armor() }}</div>
 			<div>MR:&nbsp;{{ unit.magicResist() }}</div>
-			<div class="text-secondary">-</div>
+			<div>Range:&nbsp;{{ unit.range() }}</div>
 			<div>(+{{ Math.round(unit.critMultiplier() * 100) }}%)</div>
 		</div>
 	</div>
