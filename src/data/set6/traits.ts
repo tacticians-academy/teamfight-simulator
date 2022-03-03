@@ -21,4 +21,20 @@ export default {
 			return [variables, []]
 		},
 	},
-} as { [key in TraitKey]?: { team?: TraitEffectFn } }
+	Scholar: {
+		team: (activeEffect: TraitEffectData) => {
+			const regens: BonusRegen[] = []
+			const manaPerTick = activeEffect.variables['ManaPerTick']
+			const tickRate = activeEffect.variables['TickRate']
+			if (tickRate != null && manaPerTick != null) {
+				regens.push({
+					activatedAt: 0,
+					stat: BonusKey.Mana,
+					perTick: manaPerTick,
+					tickRate,
+				})
+			}
+			return [[], regens]
+		},
+	},
+} as { [key in TraitKey]?: {team?: TraitEffectFn} }
