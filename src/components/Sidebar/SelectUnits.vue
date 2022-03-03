@@ -26,7 +26,7 @@ unitGroups[1][1].sort((a, b) => (b.cost ?? 0) - (a.cost ?? 0))
 	<div class="sidebar-icons-container">
 		<div
 			v-for="unit in group" :key="unit.name"
-			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit, true)})` }"
+			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(unit)})` }"
 			:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
 		>
 			<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
