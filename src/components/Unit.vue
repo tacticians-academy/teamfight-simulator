@@ -92,12 +92,19 @@ function onInfo(event: Event) {
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>
-	<div v-if="showInfo" class="p-1 bg-tertiary">
-		AR:&nbsp;{{ unit.armor() }}
-		MR:&nbsp;{{ unit.magicResist() }}
-		AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
-		AD:&nbsp;{{ unit.attackDamage() }}
-		AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}
+	<div v-if="showInfo" class="p-1 space-x-1 bg-tertiary  inline-flex">
+		<div>
+			AD:&nbsp;{{ unit.attackDamage() }}
+			AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}
+			AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
+			Crit:&nbsp;{{ Math.round(unit.critChance() * 100) }}%
+		</div>
+		<div>
+			AR:&nbsp;{{ unit.armor() }}
+			MR:&nbsp;{{ unit.magicResist() }}
+			<div class="text-secondary">-</div>
+			(+{{ Math.round(unit.critMultiplier() * 100) }}%)
+		</div>
 	</div>
 </div>
 </template>
