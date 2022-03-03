@@ -88,7 +88,7 @@ export class ChampionUnit {
 		this.manaLockUntilMS = 0
 		this.stunnedUntilMS = 0
 		this.ghosting = this.jumpsToBackline()
-		if (this.data.apiName === 'TFT6_Jayce') {
+		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activePosition[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
 		} else {
