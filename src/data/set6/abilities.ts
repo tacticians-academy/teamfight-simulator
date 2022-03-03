@@ -4,9 +4,7 @@ import type { AbilityFn } from '#/helpers/types'
 export default {
 	Caitlyn: (elapsedMS, spell, champion) => {
 		const target = getDistanceUnit(false, champion)
-		if (!target) {
-			return console.log('No target', champion.name, champion.team)
-		}
+		if (!target) { return console.log('No target', champion.name, champion.team) }
 		champion.queueProjectile(elapsedMS, {
 			spell,
 			target,

@@ -7,6 +7,7 @@ import { state } from '#/game/store'
 import type { BonusVariable, BonusRegen, TraitEffectFn } from '#/helpers/types'
 
 export default {
+
 	Clockwork: {
 		team: (activeEffect: TraitEffectData) => {
 			const variables: BonusVariable[] = []
@@ -14,13 +15,18 @@ export default {
 			const bonusAS = activeEffect.variables['ASBonus']
 			if (bonusPerAugment != null) {
 				variables.push([BonusKey.AttackSpeed, state.augmentCount * bonusPerAugment * 100])
+			} else {
+				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
 			}
 			if (bonusAS != null) {
 				variables.push([BonusKey.AttackSpeed, bonusAS * 100])
+			} else {
+				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
 			}
 			return [variables, []]
 		},
 	},
+
 	Scholar: {
 		team: (activeEffect: TraitEffectData) => {
 			const regens: BonusRegen[] = []
@@ -33,8 +39,11 @@ export default {
 					perTick: manaPerTick,
 					tickRate,
 				})
+			} else {
+				console.log('Invalid effect', 'Scholar', activeEffect.variables)
 			}
 			return [[], regens]
 		},
 	},
+
 } as { [key in TraitKey]?: {team?: TraitEffectFn} }
