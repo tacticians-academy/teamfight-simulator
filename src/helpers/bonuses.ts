@@ -28,9 +28,13 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 				if (unitHasTrait) {
 					if (teamEffect === false) {
 						if (key.startsWith('Team')) {
+							key = key.replace('Team', '')
+						} else if (key.startsWith(trait.name)) {
+							key = key.replace(trait.name, '')
+						} else {
+							console.warn('Unknown key for Team /', trait.name)
 							continue
 						}
-						key = key.replace(trait.name, '')
 					}
 					if (value != null) {
 						if (typeof teamEffect === 'number') {
