@@ -7,7 +7,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import traitEffects from '#/data/set6/traits'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
-import type { BonusVariable, SynergyData } from '#/helpers/types'
+import type { BonusRegen, BonusVariable, SynergyData, TraitEffectResults } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], teamSynergies: SynergyData[]) {
 	if (!unitTraitNames.includes(trait)) {
@@ -17,8 +17,9 @@ function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], t
 	return synergy?.[2] ?? synergy?.[0].effects[0]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: string[]) {
+export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: string[]): [[TraitKey, BonusVariable[]][], Set<BonusRegen>] {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
+	const regens: BonusRegen[] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
 		if (activeEffect == null) { return }
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
@@ -28,8 +29,9 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 			// console.log(trait.name, teamEffect, activeEffect.variables)
 			const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 			if (teamTraitFn) {
-				const teamVars = teamTraitFn(activeEffect)
-				variables.push(...teamVars)
+				const [bonusVariables, bonusRegens] = teamTraitFn(activeEffect)
+				variables.push(...bonusVariables)
+				regens.push(...bonusRegens)
 			} else {
 				for (let key in activeEffect.variables) {
 					let value = activeEffect.variables[key]
@@ -83,7 +85,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 		const value = sniperEffect.variables[BonusKey.HexRangeIncrease]
 		bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
 	}
-	return bonuses
+	return [bonuses, new Set(regens)]
 }
 
 export function calculateItemBonuses(items: ItemData[]) {

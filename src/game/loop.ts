@@ -63,6 +63,8 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS) {
 			continue
 		}
+		unit.updateRegen(elapsedMS)
+
 		for (const pendingHexEffect of unit.pending.hexEffects) {
 			if (elapsedMS >= pendingHexEffect.startsAtMS) {
 				state.hexEffects.add(pendingHexEffect)

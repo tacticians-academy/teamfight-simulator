@@ -4,21 +4,21 @@ import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/tra
 
 import { state } from '#/game/store'
 
-import type { TraitEffectFn } from '#/helpers/types'
+import type { BonusVariable, BonusRegen, TraitEffectFn } from '#/helpers/types'
 
 export default {
 	Clockwork: {
 		team: (activeEffect: TraitEffectData) => {
-			const variables = []
+			const variables: BonusVariable[] = []
 			const bonusPerAugment = activeEffect.variables['BonusPerAugment']
 			const bonusAS = activeEffect.variables['ASBonus']
 			if (bonusPerAugment != null) {
-				variables.push(['AS', state.augmentCount * bonusPerAugment * 100])
+				variables.push([BonusKey.AttackSpeed, state.augmentCount * bonusPerAugment * 100])
 			}
 			if (bonusAS != null) {
 				variables.push([BonusKey.AttackSpeed, bonusAS * 100])
 			}
-			return variables
+			return [variables, []]
 		},
 	},
-} as Record<TraitKey, { team?: TraitEffectFn }>
+} as { [key in TraitKey]?: { team?: TraitEffectFn } }

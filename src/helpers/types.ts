@@ -1,4 +1,4 @@
-import type { ChampionSpellData, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+import type { BonusKey, ChampionSpellData, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
@@ -31,6 +31,14 @@ export type SynergyCount = Map<TraitData, string[]>
 export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
 
 export type BonusVariable = [key: string, value: number | null]
+export interface BonusRegen {
+	activatedAt: DOMHighResTimeStamp
+	expiresAfter?: DOMHighResTimeStamp
+	stat: BonusKey.Mana | BonusKey.Health
+	perTick: number
+	tickRate: number
+}
 
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
-export type TraitEffectFn = (activeEffect: TraitEffectData) => BonusVariable[]
+export type TraitEffectResults = [BonusVariable[], BonusRegen[]]
+export type TraitEffectFn = (activeEffect: TraitEffectData) => TraitEffectResults

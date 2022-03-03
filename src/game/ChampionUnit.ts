@@ -21,7 +21,7 @@ import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MA
 import { saveUnits } from '#/helpers/storage'
 import { coordinatePosition } from '#/game/store'
 import { DamageType } from '#/helpers/types'
-import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
+import type { AbilityFn, BonusRegen, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -53,6 +53,7 @@ export class ChampionUnit {
 	items: ItemData[] = []
 	traits: TraitData[] = []
 	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
+	regens = new Set<BonusRegen>()
 	transformIndex = 0
 	ability: AbilityFn | undefined
 
@@ -96,7 +97,9 @@ export class ChampionUnit {
 
 		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => trait != null)
-		this.bonuses = [...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items)]
+		const [synergyTraitBonuses, synergyRegens] = calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames)
+		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
+		this.regens = synergyRegens
 
 		this.mana = this.data.stats.initialMana + this.getBonuses(BonusKey.Mana)
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
@@ -152,6 +155,26 @@ export class ChampionUnit {
 				}
 			}
 		}
+	}
+
+	updateRegen(elapsedMS: DOMHighResTimeStamp) {
+		this.regens.forEach(regen => {
+			if (regen.expiresAfter != null && regen.activatedAt + regen.expiresAfter >= elapsedMS) {
+				this.regens.delete(regen)
+				return
+			}
+			if (elapsedMS < regen.activatedAt + regen.tickRate * 1000) {
+				return
+			}
+			regen.activatedAt = elapsedMS
+			if (regen.stat === BonusKey.Health) {
+				//TODO
+			} else if (regen.stat === BonusKey.Mana) {
+				this.addMana(regen.perTick)
+			} else {
+				console.warn('Unknown regen stat', regen)
+			}
+		})
 	}
 
 	rawCritChance() {
@@ -211,11 +234,14 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
+	addMana(amount: number) {
+		this.mana = Math.min(this.manaMax(), this.mana + amount)
+	}
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
 		if (elapsedMS < this.manaLockUntilMS) {
 			return
 		}
-		this.mana = Math.min(this.manaMax(), this.mana + amount)
+		this.addMana(amount)
 	}
 
 	die(units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
