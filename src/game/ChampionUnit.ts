@@ -101,7 +101,7 @@ export class ChampionUnit {
 		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
 		this.regens = synergyRegens
 
-		this.mana = this.data.stats.initialMana + this.getBonuses(BonusKey.Mana)
+		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellValue('AttackSpeed')
@@ -219,7 +219,7 @@ export class ChampionUnit {
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
 		this.ability?.(elapsedMS, this.getCurrentSpell(), this)
-		this.mana = 0
+		this.mana = 0 //TODO Blue Buff
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -241,8 +241,11 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
+	setMana(amount: number) {
+		this.mana = Math.min(this.manaMax(), amount)
+	}
 	addMana(amount: number) {
-		this.mana = Math.min(this.manaMax(), this.mana + amount)
+		this.setMana(this.mana + amount)
 	}
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
 		if (elapsedMS < this.manaLockUntilMS) {
