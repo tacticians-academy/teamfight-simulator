@@ -258,8 +258,15 @@ export class ChampionUnit {
 	die(units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		this.health = 0
 		this.dead = true
-		if (units.find(unit => unit.team === this.team && !unit.dead)) {
+		const teamUnits = units.filter(unit => !unit.dead && unit.team === this.team)
+		if (teamUnits.length) {
 			updatePaths(units)
+			teamUnits.forEach(unit => {
+				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
+				if (increaseADAP > 0) {
+					unit.bonuses.push([TraitKey.Mutant, [[BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP]]])
+				}
+			})
 		} else {
 			gameOver(this.team)
 		}
@@ -410,6 +417,11 @@ export class ChampionUnit {
 	moveSpeed() {
 		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
 	}
+
+	dodgeChance() {
+		return this.getBonuses('DodgeChance' as BonusKey)
+	}
+
 	getVamp(damageType: DamageType) {
 		const vampBonuses = [BonusKey.VampOmni]
 		if (damageType === DamageType.physical) {
