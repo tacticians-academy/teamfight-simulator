@@ -9,7 +9,7 @@ import type { BonusVariable, BonusScaling, TraitEffectFn } from '#/helpers/types
 
 export default {
 
-	Clockwork: {
+	[TraitKey.Clockwork]: {
 		team: (activeEffect: TraitEffectData) => {
 			const variables: BonusVariable[] = []
 			const bonusPerAugment = activeEffect.variables['BonusPerAugment']
@@ -44,7 +44,7 @@ export default {
 		},
 	},
 
-	Scholar: {
+	[TraitKey.Scholar]: {
 		team: (activeEffect: TraitEffectData) => {
 			const scalings: BonusScaling[] = []
 			const intervalAmount = activeEffect.variables['ManaPerTick']

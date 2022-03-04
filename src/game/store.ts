@@ -3,7 +3,7 @@ import { computed, reactive, watch } from 'vue'
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { currentItems } from '@tacticians-academy/academy-library/dist/set6/items'
+import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -138,7 +138,7 @@ const store = {
 			console.log('Unique item per champion', item.name)
 			return false
 		}
-		if (item.name === 'Blue Buff' && champion.manaMax() <= 0) {
+		if (item.id === ItemKey.BlueBuff && champion.manaMax() <= 0) {
 			console.log('Manaless champions cannot hold', item.name)
 			return false
 		}
