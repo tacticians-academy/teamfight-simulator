@@ -297,6 +297,12 @@ export class ChampionUnit {
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 			this.gainMana(elapsedMS, manaGain)
 		}
+
+		const sourceVamp = source.getVamp(type)
+		if (sourceVamp > 0) {
+			console.log('Heal', sourceVamp, takingDamage * sourceVamp / 100)
+			// source.heal(takingDamage * sourceVamp / 100) //TODO
+		}
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
@@ -399,6 +405,16 @@ export class ChampionUnit {
 	}
 	moveSpeed() {
 		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
+	}
+	getVamp(damageType: DamageType) {
+		const vampBonuses = [BonusKey.VampOmni]
+		if (damageType === DamageType.physical) {
+			vampBonuses.push(BonusKey.VampPhysical)
+		}
+		if (damageType === DamageType.magic || damageType === DamageType.true) {
+			vampBonuses.push(BonusKey.VampSpell)
+		}
+		return this.getBonuses(...vampBonuses)
 	}
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
