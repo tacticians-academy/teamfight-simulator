@@ -138,6 +138,10 @@ const store = {
 			console.log('Unique item per champion', item.name)
 			return false
 		}
+		if (item.name === 'Blue Buff' && champion.manaMax() <= 0) {
+			console.log('Manaless champions cannot hold', item.name)
+			return false
+		}
 		if (item.name.endsWith('Emblem')) {
 			const emblemTrait = item.name.replace(' Emblem', '') as TraitKey
 			const trait = traits.find(trait => trait.name === emblemTrait)

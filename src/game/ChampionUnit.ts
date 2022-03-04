@@ -219,7 +219,7 @@ export class ChampionUnit {
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
 		this.ability?.(elapsedMS, this.getCurrentSpell(), this)
-		this.mana = 0 //TODO Blue Buff
+		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
