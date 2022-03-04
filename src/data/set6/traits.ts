@@ -2,8 +2,9 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { getters } from '#/game/store'
+import { getters, state } from '#/game/store'
 
+import { MutantType } from '#/helpers/types'
 import type { BonusVariable, BonusRegen, TraitEffectFn } from '#/helpers/types'
 
 export default {
@@ -24,6 +25,22 @@ export default {
 				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
 			}
 			return [variables, []]
+		},
+	},
+
+	Mutant: {
+		team: (activeEffect: TraitEffectData) => {
+			if (state.mutantType === MutantType.BioLeeching) {
+				const variables: BonusVariable[] = []
+				const omnivamp = activeEffect.variables['MutantBioLeechingOmnivamp']
+				if (omnivamp != null) {
+					variables.push([BonusKey.VampOmni, omnivamp])
+				} else {
+					console.log('Invalid effect', 'Mutant', state.mutantType, activeEffect.variables)
+				}
+				return [variables, []]
+			}
+			return [[], []]
 		},
 	},
 

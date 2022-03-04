@@ -37,6 +37,7 @@ export const state = reactive({
 // Getters
 
 export const getters = {
+	mutantType: computed(() => state.mutantType),
 	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
 
 	synergiesByTeam: computed(() => {
@@ -74,7 +75,7 @@ export const getters = {
 
 // Watch
 
-watch(getters.augmentCount, () => {
+watch([getters.augmentCount, getters.mutantType], () => {
 	resetUnitsAfterCreatingOrMoving()
 })
 
