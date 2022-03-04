@@ -17,12 +17,11 @@ import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, state } from '#/game/store'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
+import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { DamageType, MutantType } from '#/helpers/types'
-import { MutantBonus } from '#/helpers/types'
-import type { AbilityFn, BonusRegen, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
+import { DamageType, MutantType, MutantBonus } from '#/helpers/types'
+import type { AbilityFn, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -54,7 +53,7 @@ export class ChampionUnit {
 	items: ItemData[] = []
 	traits: TraitData[] = []
 	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
-	regens = new Set<BonusRegen>()
+	scalings = new Set<BonusScaling>()
 	transformIndex = 0
 	ability: AbilityFn | undefined
 
@@ -98,9 +97,9 @@ export class ChampionUnit {
 
 		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
 		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => trait != null)
-		const [synergyTraitBonuses, synergyRegens] = calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames)
+		const [synergyTraitBonuses, synergyScalings] = calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames)
 		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
-		this.regens = synergyRegens
+		this.scalings = new Set([...synergyScalings])
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
@@ -166,22 +165,30 @@ export class ChampionUnit {
 	}
 
 	updateRegen(elapsedMS: DOMHighResTimeStamp) {
-		this.regens.forEach(regen => {
-			if (regen.expiresAfter != null && regen.activatedAt + regen.expiresAfter >= elapsedMS) {
-				this.regens.delete(regen)
+		this.scalings.forEach(scaling => {
+			if (scaling.activatedAt === 0) {
+				scaling.activatedAt = elapsedMS
 				return
 			}
-			if (elapsedMS < regen.activatedAt + regen.tickRate * 1000) {
+			if (scaling.expiresAfter != null && scaling.activatedAt + scaling.expiresAfter >= elapsedMS) {
+				this.scalings.delete(scaling)
 				return
 			}
-			regen.activatedAt = elapsedMS
-			if (regen.stat === BonusKey.Health) {
-				//TODO
-			} else if (regen.stat === BonusKey.Mana) {
-				this.addMana(regen.perTick)
-			} else {
-				console.warn('Unknown regen stat', regen)
+			if (elapsedMS < scaling.activatedAt + scaling.intervalSeconds * 1000) {
+				return
 			}
+			scaling.activatedAt = elapsedMS
+			const bonuses: BonusVariable[] = []
+			for (const stat of scaling.stats) {
+				if (stat === BonusKey.Health) {
+					//TODO
+				} else if (stat === BonusKey.Mana) {
+					this.addMana(scaling.intervalAmount)
+				} else {
+					bonuses.push([stat, scaling.intervalAmount])
+				}
+			}
+			this.bonuses.push([scaling.source as TraitKey, bonuses])
 		})
 	}
 

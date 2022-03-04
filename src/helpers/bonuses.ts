@@ -7,7 +7,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import traitEffects from '#/data/set6/traits'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
-import type { BonusRegen, BonusVariable, SynergyData, TraitEffectResults } from '#/helpers/types'
+import type { BonusScaling, BonusVariable, SynergyData } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], teamSynergies: SynergyData[]) {
 	if (!unitTraitNames.includes(trait)) {
@@ -17,9 +17,9 @@ function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], t
 	return synergy?.[2] ?? synergy?.[0].effects[0]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: string[]): [[TraitKey, BonusVariable[]][], Set<BonusRegen>] {
+export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: string[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
-	const regens: BonusRegen[] = []
+	const scalings: BonusScaling[] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
 		if (activeEffect == null) { return }
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
@@ -27,9 +27,9 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		const variables: BonusVariable[] = []
 		if (teamTraitFn) {
-			const [bonusVariables, bonusRegens] = teamTraitFn(activeEffect)
+			const [bonusVariables, bonusScalings] = teamTraitFn(activeEffect)
 			variables.push(...bonusVariables)
-			regens.push(...bonusRegens)
+			scalings.push(...bonusScalings)
 		}
 		if (teamEffect != null || unitHasTrait) {
 			// console.log(trait.name, teamEffect, activeEffect.variables)
@@ -86,7 +86,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 		const value = sniperEffect.variables[BonusKey.HexRangeIncrease]
 		bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
 	}
-	return [bonuses, new Set(regens)]
+	return [bonuses, scalings]
 }
 
 export function calculateItemBonuses(items: ItemData[]) {

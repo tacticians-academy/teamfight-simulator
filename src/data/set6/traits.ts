@@ -1,11 +1,11 @@
 import { BonusKey } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { getters, state } from '#/game/store'
 
 import { MutantType } from '#/helpers/types'
-import type { BonusVariable, BonusRegen, TraitEffectFn } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, TraitEffectFn } from '#/helpers/types'
 
 export default {
 
@@ -46,20 +46,21 @@ export default {
 
 	Scholar: {
 		team: (activeEffect: TraitEffectData) => {
-			const regens: BonusRegen[] = []
-			const manaPerTick = activeEffect.variables['ManaPerTick']
-			const tickRate = activeEffect.variables['TickRate']
-			if (tickRate != null && manaPerTick != null) {
-				regens.push({
+			const scalings: BonusScaling[] = []
+			const intervalAmount = activeEffect.variables['ManaPerTick']
+			const intervalSeconds = activeEffect.variables['TickRate']
+			if (intervalAmount != null && intervalSeconds != null) {
+				scalings.push({
+					source: TraitKey.Scholar,
 					activatedAt: 0,
-					stat: BonusKey.Mana,
-					perTick: manaPerTick,
-					tickRate,
+					stats: [BonusKey.Mana],
+					intervalAmount,
+					intervalSeconds,
 				})
 			} else {
 				console.log('Invalid effect', 'Scholar', activeEffect.variables)
 			}
-			return [[], regens]
+			return [[], scalings]
 		},
 	},
 

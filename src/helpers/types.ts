@@ -31,16 +31,17 @@ export type SynergyCount = Map<TraitData, string[]>
 export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
 
 export type BonusVariable = [key: string, value: number | null]
-export interface BonusRegen {
+export interface BonusScaling {
+	source: string
 	activatedAt: DOMHighResTimeStamp
 	expiresAfter?: DOMHighResTimeStamp
-	stat: BonusKey.Mana | BonusKey.Health
-	perTick: number
-	tickRate: number
+	stats: BonusKey[]
+	intervalAmount: number
+	intervalSeconds: number
 }
 
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
-export type TraitEffectResults = [BonusVariable[], BonusRegen[]]
+export type TraitEffectResults = [BonusVariable[], BonusScaling[]]
 export type TraitEffectFn = (activeEffect: TraitEffectData) => TraitEffectResults
 
 export enum MutantType {
