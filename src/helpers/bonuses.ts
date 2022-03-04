@@ -100,3 +100,21 @@ export function calculateItemBonuses(items: ItemData[]) {
 	})
 	return bonuses
 }
+
+export function calculateItemScalings(items: ItemData[]) {
+	const scalings: BonusScaling[] = []
+	items.forEach(item => {
+		const intervalAmount = item.effects['APPerInterval']
+		const intervalSeconds = item.effects['IntervalSeconds']
+		if (intervalAmount != null && intervalSeconds != null) {
+			scalings.push({
+				activatedAt: 0,
+				source: item.name,
+				stats: [BonusKey.AbilityPower],
+				intervalAmount,
+				intervalSeconds,
+			})
+		}
+	})
+	return scalings
+}
