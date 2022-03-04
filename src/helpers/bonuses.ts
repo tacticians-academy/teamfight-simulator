@@ -24,48 +24,49 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 		if (activeEffect == null) { return }
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
 		const unitHasTrait = unitTraitNames.includes(trait.name)
+		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
+		const variables: BonusVariable[] = []
+		if (teamTraitFn) {
+			const [bonusVariables, bonusRegens] = teamTraitFn(activeEffect)
+			variables.push(...bonusVariables)
+			regens.push(...bonusRegens)
+		}
 		if (teamEffect != null || unitHasTrait) {
-			const variables: BonusVariable[] = []
 			// console.log(trait.name, teamEffect, activeEffect.variables)
-			const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
-			if (teamTraitFn) {
-				const [bonusVariables, bonusRegens] = teamTraitFn(activeEffect)
-				variables.push(...bonusVariables)
-				regens.push(...bonusRegens)
-			} else {
-				for (let key in activeEffect.variables) {
-					let value = activeEffect.variables[key]
-					if (unitHasTrait) {
-						if (teamEffect === false) {
-							if (key.startsWith('Team')) {
-								key = key.replace('Team', '')
-							} else if (key.startsWith(trait.name)) {
-								key = key.replace(trait.name, '')
-							} else {
-								console.warn('Unknown key for Team /', trait.name)
-								continue
-							}
-						}
-						if (value != null) {
-							if (typeof teamEffect === 'number') {
-								value *= teamEffect
-							}
-						}
-					} else {
-						if (teamEffect === false) {
-							if (!key.startsWith('Team')) {
-								continue
-							}
+			for (let key in activeEffect.variables) {
+				let value = activeEffect.variables[key]
+				if (unitHasTrait) {
+					if (teamEffect === false) {
+						if (key.startsWith('Team')) {
 							key = key.replace('Team', '')
-						} else if (typeof teamEffect === 'object') {
-							if (!teamEffect.includes(key as BonusKey)) {
-								continue
-							}
+						} else if (key.startsWith(trait.name)) {
+							key = key.replace(trait.name, '')
+						} else {
+							console.warn('Unknown key for Team /', trait.name)
+							continue
 						}
 					}
-					variables.push([key, value])
+					if (value != null) {
+						if (typeof teamEffect === 'number') {
+							value *= teamEffect
+						}
+					}
+				} else {
+					if (teamEffect === false) {
+						if (!key.startsWith('Team')) {
+							continue
+						}
+						key = key.replace('Team', '')
+					} else if (typeof teamEffect === 'object') {
+						if (!teamEffect.includes(key as BonusKey)) {
+							continue
+						}
+					}
 				}
+				variables.push([key, value])
 			}
+		}
+		if (variables.length) {
 			bonuses.push([trait.name as TraitKey, variables])
 		}
 	})
