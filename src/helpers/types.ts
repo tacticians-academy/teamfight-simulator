@@ -52,3 +52,17 @@ export enum MutantType {
 	Voidborne = 'Voidborne',
 	VoraciousAppetite = 'Voracious',
 }
+export const enum MutantBonus {
+	VoraciousADAP = 'ADAP',
+	MetamorphosisArmorMR = 'ArmorMR',
+	MetamorphosisGrowthRate = 'GrowthRate',
+	BioLeechingOmnivamp = 'Omnivamp',
+	VoidborneExecuteThreshold = 'ExecuteThreshold',
+	AdrenalineAD = 'AD',
+	SynapticManaCost = 'ManaCost',
+	MetamorphosisADAP = 'ADAP',
+	VoidborneTrueDamagePercent = 'TrueDamagePercent',
+	CyberAD = 'AD',
+	AdrenalineProcChance = 'ProcChance',
+	SynapticAP = 'AP',
+}
