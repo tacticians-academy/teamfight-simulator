@@ -78,7 +78,7 @@ export class ChampionUnit {
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
-		this.starMultiplier = this.starLevel === 1 ? 1 : (this.starLevel - 1) * 1.8
+		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
 		this.target = null
 		this.activePosition = this.startPosition
