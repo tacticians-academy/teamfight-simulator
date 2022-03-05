@@ -7,6 +7,11 @@ import { getters, state } from '#/game/store'
 import { MutantType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, TraitEffectFn } from '#/helpers/types'
 
+interface TraitFns {
+	solo?: TraitEffectFn,
+	team?: TraitEffectFn,
+}
+
 export default {
 
 	[TraitKey.Clockwork]: {
@@ -29,18 +34,46 @@ export default {
 	},
 
 	Mutant: {
+		solo: (activeEffect: TraitEffectData) => {
+			const scalings: BonusScaling[] = []
+			if (state.mutantType === MutantType.Metamorphosis) {
+				const intervalSeconds = activeEffect.variables['MutantMetamorphosisGrowthRate']
+				const amountARMR = activeEffect.variables['MutantMetamorphosisArmorMR']
+				const amountADAP = activeEffect.variables['MutantMetamorphosisADAP']
+				if (intervalSeconds != null && amountADAP != null && amountARMR != null) {
+					scalings.push(
+						{
+							source: MutantType.Metamorphosis,
+							activatedAt: 0,
+							stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
+							intervalAmount: amountADAP,
+							intervalSeconds,
+						},
+						{
+							source: MutantType.Metamorphosis,
+							activatedAt: 0,
+							stats: [BonusKey.Armor, BonusKey.MagicResist],
+							intervalAmount: amountARMR,
+							intervalSeconds,
+						},
+					)
+				} else {
+					console.log('ERR Invalid Metamorphosis', activeEffect.variables)
+				}
+			}
+			return [[], scalings]
+		},
 		team: (activeEffect: TraitEffectData) => {
+			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.BioLeeching) {
-				const variables: BonusVariable[] = []
 				const omnivamp = activeEffect.variables['MutantBioLeechingOmnivamp']
 				if (omnivamp != null) {
 					variables.push([BonusKey.VampOmni, omnivamp])
 				} else {
 					console.log('Invalid effect', 'Mutant', state.mutantType, activeEffect.variables)
 				}
-				return [variables, []]
 			}
-			return [[], []]
+			return [variables, []]
 		},
 	},
 
@@ -64,4 +97,4 @@ export default {
 		},
 	},
 
-} as { [key in TraitKey]?: {team?: TraitEffectFn} }
+} as { [key in TraitKey]?: TraitFns }

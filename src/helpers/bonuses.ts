@@ -66,6 +66,14 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 				variables.push([key, value])
 			}
 		}
+		if (unitHasTrait) {
+			const soloTraitFn = traitEffects[trait.name as TraitKey]?.solo
+			if (soloTraitFn) {
+				const [bonusVariables, bonusScalings] = soloTraitFn(activeEffect)
+				variables.push(...bonusVariables)
+				scalings.push(...bonusScalings)
+			}
+		}
 		if (variables.length) {
 			bonuses.push([trait.name as TraitKey, variables])
 		}
