@@ -1,4 +1,4 @@
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch, watchEffect } from 'vue'
 
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
@@ -14,6 +14,7 @@ import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
 import { buildBoard } from '#/helpers/boardUtils'
+import { getStorageInt, getStorageString, setStorage, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
@@ -30,14 +31,13 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
-	stageNumber: 4,
-	mutantType: MutantType.Cybernetic,
+	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
+	mutantType: ref((getStorageString(StorageKey.Mutant) as keyof typeof MutantType) ?? MutantType.Cybernetic),
 })
 
 // Getters
 
 export const getters = {
-	mutantType: computed(() => state.mutantType),
 	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
 
 	synergiesByTeam: computed(() => {
@@ -75,7 +75,13 @@ export const getters = {
 
 // Watch
 
-watch([getters.augmentCount, getters.mutantType], () => {
+watchEffect(() => {
+	setStorage(StorageKey.Mutant, state.mutantType)
+})
+watchEffect(() => {
+	setStorage(StorageKey.StageNumber, state.stageNumber)
+})
+watch([getters.augmentCount, ref(state.mutantType)], () => { //TODO ref wrapper suppress warning
 	resetUnitsAfterCreatingOrMoving()
 })
 

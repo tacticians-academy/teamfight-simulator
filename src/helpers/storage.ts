@@ -13,6 +13,26 @@ export function saveUnits() {
 	window.localStorage.setItem('TFTSIM_units', JSON.stringify(output))
 }
 
+export const enum StorageKey {
+	Mutant = 'TFTSIM_mutant',
+	StageNumber = 'TFTSIM_stage',
+}
+
+export function getStorageInt(key: StorageKey, defaultValue: number = 0) {
+	const value = window.localStorage.getItem(key)
+	if (value == null) {
+		return defaultValue
+	}
+	const int = parseInt(value, 10)
+	return isNaN(int) ? defaultValue : int
+}
+export function getStorageString(key: StorageKey) {
+	return window.localStorage.getItem(key)
+}
+export function setStorage(key: StorageKey, value: Object) {
+	return window.localStorage.setItem(key, value.toString())
+}
+
 export function getSavedUnits() {
 	const raw = window.localStorage.getItem('TFTSIM_units')
 	return raw != null && raw.length ? JSON.parse(raw) as StorageChampion[] : []
