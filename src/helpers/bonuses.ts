@@ -2,28 +2,27 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import traitEffects from '#/data/set6/traits'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
 import type { BonusScaling, BonusVariable, SynergyData } from '#/helpers/types'
 
-function getInnateEffectForUnitWith(trait: TraitKey, unitTraitNames: string[], teamSynergies: SynergyData[]) {
-	if (!unitTraitNames.includes(trait)) {
-		return undefined
-	}
+function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
 	const synergy = teamSynergies.find(synergy => synergy[0].name === trait)
 	return synergy?.[2] ?? synergy?.[0].effects[0]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: string[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
+export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	const scalings: BonusScaling[] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
-		if (activeEffect == null) { return }
+		if (activeEffect == null) {
+			return
+		}
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
-		const unitHasTrait = unitTraitNames.includes(trait.name)
+		const unitHasTrait = unitTraitNames.includes(trait.name as TraitKey)
 		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		const variables: BonusVariable[] = []
 		if (teamTraitFn) {
@@ -78,21 +77,16 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 			bonuses.push([trait.name as TraitKey, variables])
 		}
 	})
-
-	// Innate bonuses (not handled in data)
-	const colossusEffect = getInnateEffectForUnitWith(TraitKey.Colossus, unitTraitNames, teamSynergies)
-	if (colossusEffect) {
-		const value = colossusEffect.variables[`Bonus${BonusKey.Health}Tooltip`]
-		if (value != null) {
-			bonuses.push([TraitKey.Colossus, [[BonusKey.Health, value]]])
-		} else {
-			console.log('Missing Colossus HP bonus', colossusEffect)
+	for (const trait of unitTraitNames) {
+		const innateTraitFn = traitEffects[trait]?.innate
+		if (innateTraitFn) {
+			const innateEffect = getInnateEffectForUnitWith(trait, teamSynergies)
+			if (innateEffect) {
+				const [bonusVariables, bonusScalings] = innateTraitFn(innateEffect)
+				bonuses.push([trait, bonusVariables])
+				scalings.push(...bonusScalings)
+			}
 		}
-	}
-	const sniperEffect = getInnateEffectForUnitWith(TraitKey.Sniper, unitTraitNames, teamSynergies)
-	if (sniperEffect) {
-		const value = sniperEffect.variables[BonusKey.HexRangeIncrease]
-		bonuses.push([TraitKey.Sniper, [[BonusKey.HexRangeIncrease, value]]])
 	}
 	return [bonuses, scalings]
 }

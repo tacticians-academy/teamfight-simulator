@@ -10,6 +10,7 @@ import type { BonusVariable, BonusScaling, TraitEffectFn } from '#/helpers/types
 interface TraitFns {
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
+	innate?: TraitEffectFn,
 }
 
 export default {
@@ -28,6 +29,19 @@ export default {
 				variables.push([BonusKey.AttackSpeed, bonusAS * 100])
 			} else {
 				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
+			}
+			return [variables, []]
+		},
+	},
+
+	[TraitKey.Colossus]: {
+		innate: (innateEffect: TraitEffectData) => {
+			const variables: BonusVariable[] = []
+			const bonusHealth = innateEffect.variables[`Bonus${BonusKey.Health}Tooltip`]
+			if (bonusHealth != null) {
+				variables.push([BonusKey.Health, bonusHealth])
+			} else {
+				console.log('Missing Colossus HP bonus', innateEffect.variables)
 			}
 			return [variables, []]
 		},
@@ -94,6 +108,19 @@ export default {
 				console.log('Invalid effect', 'Scholar', activeEffect.variables)
 			}
 			return [[], scalings]
+		},
+	},
+
+	[TraitKey.Sniper]: {
+		innate: (innateEffect: TraitEffectData) => {
+			const variables: BonusVariable[] = []
+			const rangeIncrease = innateEffect.variables[BonusKey.HexRangeIncrease]
+			if (rangeIncrease != null) {
+				variables.push([BonusKey.HexRangeIncrease, rangeIncrease])
+			} else {
+				console.log('Missing Sniper range increase', innateEffect.variables)
+			}
+			return [variables, []]
 		},
 	},
 
