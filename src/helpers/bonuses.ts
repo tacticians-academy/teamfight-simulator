@@ -14,7 +14,7 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 	return synergy?.[2] ?? synergy?.[0].effects[0]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitNames: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
+export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	const scalings: BonusScaling[] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
@@ -22,7 +22,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 			return
 		}
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
-		const unitHasTrait = unitTraitNames.includes(trait.name as TraitKey)
+		const unitHasTrait = unitTraitKeys.includes(trait.name as TraitKey)
 		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		const variables: BonusVariable[] = []
 		if (teamTraitFn) {
@@ -77,7 +77,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitN
 			bonuses.push([trait.name as TraitKey, variables])
 		}
 	})
-	for (const trait of unitTraitNames) {
+	for (const trait of unitTraitKeys) {
 		const innateTraitFn = traitEffects[trait]?.innate
 		if (innateTraitFn) {
 			const innateEffect = getInnateEffectForUnitWith(trait, teamSynergies)
