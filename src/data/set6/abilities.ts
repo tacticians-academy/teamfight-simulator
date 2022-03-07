@@ -41,8 +41,10 @@ export default {
 			damage: champion.attackDamage(),
 			onCollision: () => {
 				const allASBonuses = champion.getBonusesFor(SpellKey.ASBoost)
-				if (allASBonuses.length < 5) {
-					champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, 30]]])
+				const maxStacks = champion.getSpellValue(SpellKey.MaxStacks)
+				if (allASBonuses.length < maxStacks) {
+					const asBoost = champion.getSpellValue(SpellKey.ASBoost)
+					champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, asBoost * 100]]]) //TODO scale AP
 				}
 			},
 		})
