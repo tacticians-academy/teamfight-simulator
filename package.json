@@ -3,9 +3,9 @@
 	"version": "0.1.0",
 	"license": "ISC",
 	"type": "module",
-	"engines" : {
-		"node" : ">=16",
-		"pnpm" : ">=6"
+	"engines": {
+		"node": ">=16",
+		"pnpm": ">=6"
 	},
 	"scripts": {
 		"dev": "vite",
@@ -13,7 +13,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
-		"@tacticians-academy/academy-library": "^0.4.1",
+		"@tacticians-academy/academy-library": "^0.4.2",
 		"@tailwindcss/forms": "^0.5.0",
 		"tailwindcss": "^3.0.23",
 		"vue": "^3.2.31"
