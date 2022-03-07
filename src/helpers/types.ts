@@ -57,6 +57,8 @@ export interface TraitEffectResults {
 }
 export type TraitEffectFn = (activeEffect: TraitEffectData, teamNumber: TeamNumber) => TraitEffectResults
 
+export type CollisionFn = (unit: ChampionUnit) => void
+
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',
 	BioLeeching = 'BioLeeching',

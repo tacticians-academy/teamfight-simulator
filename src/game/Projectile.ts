@@ -4,7 +4,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-import type { DamageType, HexCoord, TeamNumber } from '#/helpers/types'
+import type { CollisionFn, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -20,6 +20,7 @@ export interface ProjectileData {
 	missile?: ChampionSpellMissileData
 	target: ChampionUnit
 	retargetOnTargetDeath?: boolean
+	onCollision?: CollisionFn
 }
 
 export class Projectile {
@@ -36,6 +37,7 @@ export class Projectile {
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	retargetOnTargetDeath?: boolean
+	onCollision?: CollisionFn
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
 		this.instanceID = `p${instanceIndex += 1}`
@@ -54,6 +56,7 @@ export class Projectile {
 		this.collidesWith = data.collidesWith
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
+		this.onCollision = data.onCollision
 	}
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
@@ -80,6 +83,7 @@ export class Projectile {
 		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 		if (Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
 			this.applyDamage(elapsedMS, this.target, units, gameOver)
+			this.onCollision?.(this.target)
 			return false
 		}
 
@@ -108,6 +112,7 @@ export class Projectile {
 				if (xDist * xDist + yDist * yDist < hexRadius) {
 					this.applyDamage(elapsedMS, this.target, units, gameOver)
 					if (this.destroysOnCollision === true) {
+						this.onCollision?.(unit)
 						return false
 					}
 				}

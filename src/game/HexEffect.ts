@@ -3,7 +3,7 @@ import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { DamageType } from '#/helpers/types'
-import type { HexCoord } from '#/helpers/types'
+import type { CollisionFn, HexCoord } from '#/helpers/types'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
@@ -34,7 +34,7 @@ export class HexEffect {
 	damage?: number | null
 	damageType?: DamageType | null
 	stunMS: number | null
-	onCollision: (unit: ChampionUnit) => void
+	onCollision?: CollisionFn
 
 	activated = false
 
@@ -50,6 +50,6 @@ export class HexEffect {
 		this.damage = data.damage ?? null
 		this.damageType = data.damage != null ? data.damageType ?? DamageType.magic : null
 		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
-		this.onCollision = data.onCollision != null ? data.onCollision : () => {}
+		this.onCollision = data.onCollision
 	}
 }
