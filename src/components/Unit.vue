@@ -66,11 +66,20 @@ function onInfo(event: Event) {
 	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"
 >
 	<div class="overlay bars">
-		<div class="bar">
+		<div class="bar  bg-red-500">
 			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
-			<div class="bar-health">{{ Math.ceil(unit.health) }}</div>
+			<div class="bar-container bar-health">
+				<div class="bar-container  flex justify-end">
+					<div
+						v-for="(shield, index) in unit.shields" :key="index"
+						:style="{ width: shield.isSpellShield ? '7%' : `${100 * shield.amount / unit.healthMax}%` }"
+						:class="shield.isSpellShield ? 'bg-purple-600' : 'bg-gray-300'"
+					/>
+				</div>
+				<span class="ml-px relative z-50">{{ Math.ceil(unit.health) }}</span>
+			</div>
 		</div>
-		<div v-if="unit.data.stats.mana > 0" class="bar bar-small">
+		<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%` }" />
 		</div>
 		<div class="flex">
@@ -124,12 +133,15 @@ function onInfo(event: Event) {
 }
 
 .bar {
-	@apply relative w-full bg-white border border-gray-800;
+	@apply relative w-full border border-gray-800;
 	margin-bottom: -1px;
 	height: 0.9vw;
 }
+.bar-container {
+	@apply absolute inset-0;
+}
 .bar-health {
-	@apply mx-px absolute inset-0 text-black;
+	@apply text-black;
 	font-size: 0.7vw;
 	line-height: 0.7vw;
 }
