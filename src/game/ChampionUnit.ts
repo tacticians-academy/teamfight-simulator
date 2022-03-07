@@ -341,6 +341,11 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
+	gainHealth(amount: number) {
+		//TODO grievous wounds
+		this.health = Math.min(this.healthMax, this.health + amount)
+	}
+
 	setMana(amount: number) {
 		this.mana = Math.min(this.manaMax(), amount)
 	}
