@@ -225,7 +225,7 @@ export class ChampionUnit {
 							damageType: DamageType.physical,
 						})
 					}
-					this.gainMana(elapsedMS, 10)
+					this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
 					if (canReProcAttack) {
 						const multiAttackProcChance = this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
 						if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
