@@ -4,7 +4,7 @@
 	"license": "ISC",
 	"type": "module",
 	"engines" : {
-		"node" : ">=17",
+		"node" : ">=16",
 		"pnpm" : ">=6"
 	},
 	"scripts": {
