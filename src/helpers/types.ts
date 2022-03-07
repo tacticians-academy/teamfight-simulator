@@ -40,6 +40,12 @@ export interface BonusScaling {
 	intervalSeconds: number
 }
 
+export interface ShieldData {
+	isSpellShield?: boolean
+	amount: number
+	expiresAtMS?: DOMHighResTimeStamp
+}
+
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
 export type TraitEffectResults = [BonusVariable[], BonusScaling[]]
 export type TraitEffectFn = (activeEffect: TraitEffectData) => TraitEffectResults
