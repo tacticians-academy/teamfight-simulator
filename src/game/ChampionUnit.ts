@@ -401,15 +401,17 @@ export class ChampionUnit {
 			//TODO AOEDamageReduction
 		}
 		let healthDamage = takingDamage
-		this.shields.forEach(shield => {
-			const protectingDamage = Math.min(shield.amount, healthDamage)
-			if (protectingDamage >= shield.amount) {
-				this.shields.delete(shield)
-			} else {
-				shield.amount -= protectingDamage
-			}
-			healthDamage -= protectingDamage
-		})
+		Array.from(this.shields)
+			.filter(shield => shield.isSpellShield == null)
+			.forEach(shield => {
+				const protectingDamage = Math.min(shield.amount, healthDamage)
+				if (protectingDamage >= shield.amount) {
+					this.shields.delete(shield)
+				} else {
+					shield.amount -= protectingDamage
+				}
+				healthDamage -= protectingDamage
+			})
 		if (this.health <= healthDamage) {
 			this.die(units, gameOver)
 		} else {
