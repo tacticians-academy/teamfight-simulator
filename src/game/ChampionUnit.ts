@@ -21,7 +21,7 @@ import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } 
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType, MutantType, MutantBonus } from '#/helpers/types'
-import type { AbilityFn, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
+import type { AbilityFn, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -56,10 +56,12 @@ export class ChampionUnit {
 	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
-	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
-	scalings = new Set<BonusScaling>()
 	transformIndex = 0
 	ability: AbilityFn | undefined
+
+	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
+	scalings = new Set<BonusScaling>()
+	shields = new Set<ShieldData>()
 
 	pending = {
 		hexEffects: new Set<HexEffect>(),
@@ -108,6 +110,7 @@ export class ChampionUnit {
 		const [synergyTraitBonuses, synergyScalings] = calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitKeys)
 		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
 		this.scalings = new Set([...synergyScalings, ...calculateItemScalings(this.items)])
+		this.shields.clear()
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
@@ -131,10 +134,15 @@ export class ChampionUnit {
 			if (hexRange != null) {
 				const isRowEffect = [ItemKey.BansheesClaw, ItemKey.ChaliceOfPower, ItemKey.LocketOfTheIronSolari, ItemKey.ZekesHerald].includes(item.id)
 				if (isRowEffect) {
-					const shield = item.effects[`${this.starLevel}StarShieldValue`]
+					const shieldValue = item.effects[`${this.starLevel}StarShieldValue`]
+					const shieldDuration = item.effects['ShieldDuration']
 					let bonus: BonusVariable | undefined
-					if (shield != null) {
-						console.log(shield) //TODO shield
+					let shield: ShieldData | undefined
+					if (shieldValue != null && shieldDuration != null) {
+						shield = {
+							amount: shieldValue,
+							expiresAtMS: shieldDuration * 1000,
+						}
 					} else {
 						const attackSpeed = item.effects['AS']
 						if (attackSpeed != null) {
@@ -146,7 +154,10 @@ export class ChampionUnit {
 							} else {
 								const damageCap = item.effects['DamageCap']
 								if (damageCap != null) {
-									console.log(damageCap) //TODO spell-shield
+									shield = {
+										isSpellShield: true,
+										amount: damageCap,
+									}
 								} else {
 									console.log('ERR missing HexRange row effect', item.name, item.effects)
 								}
@@ -155,9 +166,13 @@ export class ChampionUnit {
 					}
 
 					const buffedUnits = getAdjacentRowUnitsTo(hexRange, this.startPosition, units)
-					if (bonus !== undefined) {
+					if (bonus != null) {
 						const buffBonus = bonus
 						buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, buffBonus))
+					} else if (shield != null) {
+						const buffShield = shield
+						buffedUnits.push(this)
+						buffedUnits.forEach(unit => unit.shields.add(buffShield))
 					}
 				}
 			}
@@ -247,6 +262,14 @@ export class ChampionUnit {
 				}
 			}
 			this.addBonuses(scaling.source as TraitKey, ...bonuses)
+		})
+	}
+
+	updateShields(elapsedMS: DOMHighResTimeStamp) {
+		this.shields.forEach(shield => {
+			if (shield.expiresAtMS != null && shield.expiresAtMS <= elapsedMS) {
+				this.shields.delete(shield)
+			}
 		})
 	}
 
@@ -374,10 +397,20 @@ export class ChampionUnit {
 			}
 			//TODO AOEDamageReduction
 		}
-		if (this.health <= takingDamage) {
+		let healthDamage = takingDamage
+		this.shields.forEach(shield => {
+			const protectingDamage = Math.min(shield.amount, healthDamage)
+			if (protectingDamage >= shield.amount) {
+				this.shields.delete(shield)
+			} else {
+				shield.amount -= protectingDamage
+			}
+			healthDamage -= protectingDamage
+		})
+		if (this.health <= healthDamage) {
 			this.die(units, gameOver)
 		} else {
-			this.health -= takingDamage
+			this.health -= healthDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 			this.gainMana(elapsedMS, manaGain)
 		}

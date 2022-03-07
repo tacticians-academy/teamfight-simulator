@@ -64,6 +64,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			continue
 		}
 		unit.updateRegen(elapsedMS)
+		unit.updateShields(elapsedMS)
 
 		if (unit.banishUntilMS != null && unit.banishUntilMS <= elapsedMS) {
 			unit.banishUntil(null)
