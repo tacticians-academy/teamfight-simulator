@@ -1,5 +1,4 @@
-dist
-*.local
-src/data/set6/champion/
-node_modules
 .idea
+dist
+node_modules
+package-lock.json

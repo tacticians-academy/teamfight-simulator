@@ -1,21 +1,19 @@
-import { getDistanceUnit, getRowOfMost } from '#/helpers/abilityUtils'
+import type { ChampionUnit } from '#/game/ChampionUnit'
+
+import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { getSurrounding } from '#/helpers/boardUtils'
 import type { AbilityFn } from '#/helpers/types'
-import {ChampionUnit} from "#/game/ChampionUnit"
 
 export default {
 	Caitlyn: (elapsedMS, spell, champion) => {
-		const doesTargetNearest = false
-		const target = getDistanceUnit(doesTargetNearest, champion)
-		if (!target) {
-			return console.log('No target', champion.name, champion.team)
-		}
+		const target = getDistanceUnit(false, champion)
+		if (!target) { return console.log('No target', champion.name, champion.team) }
 		champion.queueProjectile(elapsedMS, {
 			spell,
 			target,
 			collidesWith: champion.opposingTeam(),
 			destroysOnCollision: true,
-			retargetOnTargetDeath: doesTargetNearest,
+			retargetOnTargetDeath: true,
 		})
 	},
 	Darius: (elapsedMS, spell, champion) => {
@@ -30,7 +28,7 @@ export default {
 	Zyra: (elapsedMS, spell, champion) => {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
-			hexes: getRowOfMost(champion.opposingTeam()),
+			hexes: getRowOfMostAttackable(champion.opposingTeam()),
 			stunSeconds: champion.getSpellValue('StunDuration'),
 		})
 	},

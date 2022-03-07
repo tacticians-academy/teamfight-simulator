@@ -37,7 +37,7 @@ export const LOCKED_STAR_LEVEL_BY_UNIT_API_NAME: Record<string, StarLevel> = {
 export const TEAM_EFFECT_TRAITS: Record<string, boolean | number | BonusKey[]> = {
 	Set6_Arcanist: false,
 	Set6_Bruiser: 2,
-	Set6_Clockwork: true,
+	// Set6_Clockwork: true,
 	Set6_Enchanter: [BonusKey.MagicResist],
-	Set6_Scholar: true,
+	// Set6_Scholar: true,
 }

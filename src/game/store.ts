@@ -1,8 +1,9 @@
-import { computed, reactive } from 'vue'
+import { computed, reactive, ref, watch, watchEffect } from 'vue'
 
+import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { items } from '@tacticians-academy/academy-library/dist/set6/items'
+import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -13,9 +14,12 @@ import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
 import { buildBoard } from '#/helpers/boardUtils'
+import { getStorageInt, getStorageString, setStorage, StorageKey } from '#/helpers/storage'
+import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
-import { removeFirstFromArray } from '#/helpers/utils'
 import { getSavedUnits, saveUnits } from '#/helpers/storage'
+
+// State
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
 
@@ -27,9 +31,15 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
+	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
+	mutantType: ref((getStorageString(StorageKey.Mutant) as keyof typeof MutantType) ?? MutantType.Cybernetic),
 })
 
-const getters = {
+// Getters
+
+export const getters = {
+	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
+
 	synergiesByTeam: computed(() => {
 		const teamSynergies: [SynergyCount, SynergyCount] = [new Map(), new Map()]
 		state.units.forEach(unit => {
@@ -63,13 +73,28 @@ const getters = {
 	}),
 }
 
+// Watch
+
+watchEffect(() => {
+	setStorage(StorageKey.Mutant, state.mutantType)
+})
+watchEffect(() => {
+	setStorage(StorageKey.StageNumber, state.stageNumber)
+})
+watch([getters.augmentCount, ref(state.mutantType)], () => { //TODO ref wrapper suppress warning
+	resetUnitsAfterCreatingOrMoving()
+})
+
+// Store
+
 function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
+	state.units.forEach(unit => unit.postReset(state.units))
 }
 
 function getItemFrom(name: string) {
-	const item = items.find(item => item.name === name)
+	const item = currentItems.find(item => item.name === name)
 	if (!item) {
 		console.log('Invalid item', name)
 	}
@@ -87,10 +112,11 @@ const store = {
 			const units = getSavedUnits()
 				.map(storageChampion => {
 					const championItems = storageChampion.items
-						.map(itemKey => items.find(item => item.id === itemKey))
+						.map(itemKey => currentItems.find(item => item.id === itemKey))
 						.filter((item): item is ItemData => !!item)
-					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel, synergiesByTeam)
+					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel)
 					champion.items = championItems
+					champion.reset(synergiesByTeam)
 					return champion
 				})
 			state.units.push(...units)
@@ -100,22 +126,27 @@ const store = {
 
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
-		unit.reset(getters.synergiesByTeam.value)
+		resetUnitsAfterCreatingOrMoving()
 		saveUnits()
 	},
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
-		removeFirstFromArray(fromUnit.items, (item) => item.name === itemName)
+		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
 		fromUnit.reset(getters.synergiesByTeam.value)
 		saveUnits()
+		resetUnitsAfterCreatingOrMoving()
 	},
-	addItem(item: ItemData, champion: ChampionUnit) {
+	_addItem(item: ItemData, champion: ChampionUnit) {
 		if (!champion.traits.length) {
 			console.log('Spawns cannot hold items')
 			return false
 		}
 		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name) != null) {
 			console.log('Unique item per champion', item.name)
+			return false
+		}
+		if (item.id === ItemKey.BlueBuff && champion.manaMax() <= 0) {
+			console.log('Manaless champions cannot hold', item.name)
 			return false
 		}
 		if (item.name.endsWith('Emblem')) {
@@ -134,26 +165,33 @@ const store = {
 			champion.items.shift()
 		}
 		champion.items.push(item)
-		champion.reset(getters.synergiesByTeam.value)
 		saveUnits()
 		return true
 	},
 	addItemName(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
-		return !!item && store.addItem(item, champion)
+		if (!!item && store._addItem(item, champion)) {
+			resetUnitsAfterCreatingOrMoving()
+			return true
+		}
+		return false
 	},
 	copyItem(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
 		if (!item) {
 			return
 		}
-		store.addItem(item, champion)
+		if (store._addItem(item, champion)) {
+			resetUnitsAfterCreatingOrMoving()
+		}
 		state.dragUnit = null
 	},
 	moveItem(itemName: string, toUnit: ChampionUnit, fromUnit: ChampionUnit | null) {
 		if (store.addItemName(itemName, toUnit)) {
 			if (fromUnit) {
 				store.deleteItem(itemName, fromUnit)
+			} else {
+				resetUnitsAfterCreatingOrMoving()
 			}
 		}
 		state.dragUnit = null
@@ -168,36 +206,41 @@ const store = {
 		state.dragUnit = dragUnit
 		event.stopPropagation()
 	},
-	deleteUnit(position: HexCoord) {
-		removeFirstFromArray(state.units, (unit) => unit.isStartAt(position))
+	_deleteUnit(position: HexCoord) {
+		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(position))
 		state.dragUnit = null
 		saveUnits()
+	},
+	deleteUnit(position: HexCoord) {
+		store._deleteUnit(position)
 		resetUnitsAfterCreatingOrMoving()
 	},
 	addUnit(name: string, position: HexCoord, starLevel: StarLevel) {
-		state.units.push(new ChampionUnit(name, position, starLevel, getters.synergiesByTeam.value))
+		const unit = new ChampionUnit(name, position, starLevel)
+		state.units.push(unit)
+		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterCreatingOrMoving() //TODO fix need to call twice (one pass doesn't apply new traits to all units)
 	},
 	copyUnit(unit: ChampionUnit, position: HexCoord) {
-		store.deleteUnit(position)
-		this.addUnit(unit.name, position, unit.starLevel)
+		store._deleteUnit(position)
+		store.addUnit(unit.name, position, unit.starLevel)
 		//TODO copy star level, items, etc
 		state.dragUnit = null
-		resetUnitsAfterCreatingOrMoving()
 	},
 	moveUnit(unit: ChampionUnit | string, position: HexCoord) {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
-			store.deleteUnit(position)
-			this.addUnit(unit, position, 1)
+			store._deleteUnit(position)
+			store.addUnit(unit, position, 1)
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
 				existingUnit.reposition(unit.startPosition)
 			}
 			unit.reposition(position)
+			resetUnitsAfterCreatingOrMoving()
 		}
 		state.dragUnit = null
-		resetUnitsAfterCreatingOrMoving()
 	},
 	dropUnit(event: DragEvent, name: string, hex: HexCoord) {
 		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
@@ -209,19 +252,18 @@ const store = {
 
 	resetGame() {
 		state.projectiles = new Set()
-		const synergiesByTeam = getters.synergiesByTeam.value
-		for (const unit of state.units) {
-			unit.reset(synergiesByTeam)
-		}
+		resetUnitsAfterCreatingOrMoving()
 	},
-}
-
-export function coordinatePosition([col, row]: HexCoord) {
-	return state.hexRowsCols[row][col].position
 }
 
 export function useStore() {
 	return store
+}
+
+// Helpers
+
+export function coordinatePosition([col, row]: HexCoord) {
+	return state.hexRowsCols[row][col].position
 }
 
 export function gameOver(forTeam: TeamNumber) {

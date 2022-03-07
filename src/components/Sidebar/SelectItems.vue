@@ -1,26 +1,16 @@
 <script setup lang="ts">
+import { getIconURL } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { items } from '@tacticians-academy/academy-library/dist/set6/items'
+import { completedItems, componentItems, ItemKey, spatulaItems } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import { useStore } from '#/game/store'
 
-import { getIconURL } from '#/helpers/utils'
-
 const { state, startDragging } = useStore()
 
-const itemGroups: [[string, ItemData[]], [string, ItemData[]], [string, ItemData[]]] = [['Combined', []], ['Emblems', []], ['Components', []]]
-for (const item of items) {
-	let index
-	if (item.id < 10) { // Component
-		index = 2
-	} else if (!item.from.length || item.from.includes(8)) { // Emblem
-		index = 1
-	} else { // Combined
-		index = 0
-	}
-	itemGroups[index][1].push(item)
-}
+const IGNORE_ITEMS = [ItemKey.TacticiansCrown]
+
+const itemGroups: [string, ItemData[]][] = [['Combined', completedItems.filter(item => !IGNORE_ITEMS.includes(item.id))], ['Emblems', spatulaItems], ['Components', componentItems]]
 itemGroups.forEach(group => group[1].sort((a, b) => a.name.localeCompare(b.name)))
 
 function onDrag(event: DragEvent, name: string) {

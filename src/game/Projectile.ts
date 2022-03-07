@@ -2,7 +2,7 @@ import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { getDistanceUnit, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import type { DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 
@@ -100,7 +100,7 @@ export class Projectile {
 		this.position[1] += Math.sin(angle) * speed
 		const [projectileX, projectileY] = this.position
 		if (this.collidesWith !== undefined) {
-			const collisionUnits = getAttackableUnitsOfTeam(this.collidesWith)
+			const collisionUnits = getInteractableUnitsOfTeam(this.collidesWith)
 			for (const unit of collisionUnits) {
 				const [unitX, unitY] = unit.coordinatePosition()
 				const xDist = (unitX - projectileX) * 100

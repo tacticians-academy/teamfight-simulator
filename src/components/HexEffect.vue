@@ -5,7 +5,7 @@ import type { HexEffect } from '#/game/HexEffect'
 import { coordinatePosition } from '#/game/store'
 
 const props = defineProps<{
-	hexEffect: HexEffect,
+	hexEffect: HexEffect
 }>()
 
 const hexPositions = props.hexEffect.hexes.map(coordinatePosition)

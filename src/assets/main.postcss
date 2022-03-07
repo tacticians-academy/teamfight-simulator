@@ -8,6 +8,9 @@
 	.bg-primary {
 		@apply bg-gray-100 dark:bg-black;
 	}
+	.bg-faint {
+		@apply bg-gray-100 dark:bg-black;
+	}
 	.bg-secondary {
 		@apply bg-gray-200 dark:bg-gray-900;
 	}
@@ -20,6 +23,9 @@
 
 	.text-primary {
 		@apply text-black dark:text-white;
+	}
+	.text-inverted {
+		@apply text-white dark:text-black;
 	}
 	.text-secondary {
 		@apply text-gray-600 dark:text-gray-400;
@@ -35,6 +41,10 @@
 		@apply h-11 m-1 rounded-lg text-lg text-white font-medium;
 		@apply bg-quaternary hover:bg-tertiary active:bg-primary;
 		@apply disabled:bg-secondary disabled:text-secondary;
+	}
+
+	select {
+		@apply bg-faint text-primary;
 	}
 }
 

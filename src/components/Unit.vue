@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, defineProps, ref } from 'vue'
 
+import { getIconURL } from '@tacticians-academy/academy-library'
+
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
 import type { DraggableType } from '#/game/dragDrop'
 import { useStore } from '#/game/store'
 
 import { HEX_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/helpers/constants'
-import { getIconURL } from '#/helpers/utils'
 import type { StarLevel } from '#/helpers/types'
 
 const { state, setStarLevel, startDragging, copyItem, moveItem, dropUnit } = useStore()
@@ -59,17 +60,26 @@ function onInfo(event: Event) {
 
 <template>
 <div
-	class="unit  group"
+	class="unit  group" :class="!unit.interacts ? 'opacity-50' : (unit.ghosting ? 'opacity-75' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
 	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"
 >
 	<div class="overlay bars">
-		<div class="bar">
+		<div class="bar  bg-red-500">
 			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
-			<div class="bar-health">{{ Math.ceil(unit.health) }}</div>
+			<div class="bar-container bar-health">
+				<div class="bar-container  flex justify-end">
+					<div
+						v-for="(shield, index) in unit.shields" :key="index"
+						:style="{ width: shield.isSpellShield ? '7%' : `${100 * shield.amount / unit.healthMax}%` }"
+						:class="shield.isSpellShield ? 'bg-purple-600' : 'bg-gray-300'"
+					/>
+				</div>
+				<span class="ml-px relative z-50">{{ Math.ceil(unit.health) }}</span>
+			</div>
 		</div>
-		<div v-if="unit.data.stats.mana > 0" class="bar bar-small">
+		<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%` }" />
 		</div>
 		<div class="flex">
@@ -91,12 +101,19 @@ function onInfo(event: Event) {
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>
-	<div v-if="showInfo" class="p-1 bg-tertiary">
-		AR:&nbsp;{{ unit.armor() }}
-		MR:&nbsp;{{ unit.magicResist() }}
-		AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}
-		AD:&nbsp;{{ unit.attackDamage() }}
-		AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}
+	<div v-if="showInfo" class="p-1 space-x-1 bg-tertiary  inline-flex">
+		<div>
+			<div>AD:&nbsp;{{ Math.round(unit.attackDamage()) }}</div>
+			<div>AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}</div>
+			<div>AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}</div>
+			<div>Crit:&nbsp;{{ Math.round(unit.critChance() * 100) }}%</div>
+		</div>
+		<div>
+			<div>AR:&nbsp;{{ unit.armor() }}</div>
+			<div>MR:&nbsp;{{ unit.magicResist() }}</div>
+			<div>Range:&nbsp;{{ unit.range() }}</div>
+			<div>(+{{ Math.round(unit.critMultiplier() * 100) }}%)</div>
+		</div>
 	</div>
 </div>
 </template>
@@ -116,12 +133,15 @@ function onInfo(event: Event) {
 }
 
 .bar {
-	@apply relative w-full bg-white border border-gray-800;
+	@apply relative w-full border border-gray-800;
 	margin-bottom: -1px;
 	height: 0.9vw;
 }
+.bar-container {
+	@apply absolute inset-0;
+}
 .bar-health {
-	@apply mx-px absolute inset-0 text-black;
+	@apply text-black;
 	font-size: 0.7vw;
 	line-height: 0.7vw;
 }
