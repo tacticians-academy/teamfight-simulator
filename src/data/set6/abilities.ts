@@ -2,7 +2,7 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { getSurrounding } from '#/helpers/boardUtils'
-import { EffectKey } from '#/helpers/types'
+import { SpellKey } from '#/helpers/types'
 import type { AbilityFn } from '#/helpers/types'
 
 export default {
@@ -22,7 +22,7 @@ export default {
 			spell,
 			hexes: getSurrounding(champion.activePosition, 1),
 			onCollision: (affectedUnit) => {
-				champion.gainHealth(champion.getSpellValue('Heal')) //TODO scale AP
+				champion.gainHealth(champion.getSpellValue(SpellKey.Heal)) //TODO scale AP
 			},
 		})
 	},
@@ -40,9 +40,9 @@ export default {
 			retargetOnTargetDeath: doesTargetNearest,
 			damage: champion.attackDamage(),
 			onCollision: () => {
-				const allASBonuses = champion.getBonusFor(EffectKey.AS)
+				const allASBonuses = champion.getBonusesFor(SpellKey.ASBoost)
 				if (allASBonuses.length < 5) {
-					champion.bonuses.push([EffectKey.AS, [[BonusKey.AttackSpeed, 30]]])
+					champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, 30]]])
 				}
 			},
 		})
@@ -57,14 +57,14 @@ export default {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
 			hexes: getSurrounding(targetPosition, 1),
-			damage: champion.getSpellValue('Damage') * 0.5,
+			damage: champion.getSpellValue(SpellKey.Damage) * 0.5,
 		})
 	},
 	Zyra: (elapsedMS, spell, champion) => {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
 			hexes: getRowOfMostAttackable(champion.opposingTeam()),
-			stunSeconds: champion.getSpellValue('StunDuration'),
+			stunSeconds: champion.getSpellValue(SpellKey.StunDuration),
 		})
 	},
 } as Record<string, AbilityFn>

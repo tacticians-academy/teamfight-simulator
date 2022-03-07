@@ -1,6 +1,7 @@
 import type { BonusKey, ChampionSpellData, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
+import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
@@ -51,7 +52,17 @@ export interface ShieldData {
 
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
 
-export enum EffectKey { AS = 'ChampSpecificAS', AD = 'ChampSpecificAD', AP = 'ChampSpecificAP', Mana = 'ChampSpecificMana', Armor = 'ChampSpecificArmor', MR = 'ChampSpecificMR', Health = 'ChampSpecificHealth' }
+export const enum SpellKey {
+	ADFromAttackSpeed = 'ADFromAttackSpeed',
+	ASBoost = 'ASBoost',
+	AttackSpeed = 'AttackSpeed',
+	Damage = 'Damage',
+	Heal = 'Heal',
+	MaxStacks = 'MaxStacks',
+	StunDuration = 'StunDuration',
+}
+
+export type BonusLabelKey = TraitKey | ItemKey | SpellKey
 
 export interface TraitEffectResults {
 	variables?: BonusVariable[]
