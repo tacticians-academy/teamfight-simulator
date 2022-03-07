@@ -5,11 +5,17 @@ import { BOARD_COL_COUNT } from '#/helpers/constants'
 import type { HexCoord, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
+export function getUnitsOfTeam(team: TeamNumber | null) {
+	return state.units.filter(unit => (team == null || unit.team === team))
+}
 export function getAttackableUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team) && unit.isAttackable())
 }
+export function getInteractableUnitsOfTeam(team: TeamNumber | null) {
+	return state.units.filter(unit => (team == null || unit.team === team) && unit.isInteractable())
+}
 
-export function getRowOfMost(team: TeamNumber | null) {
+export function getRowOfMostAttackable(team: TeamNumber | null) {
 	const units = getAttackableUnitsOfTeam(team)
 	const unitRows = units.map(unit => unit.activePosition[1])
 	const unitsPerRow = getArrayValueCounts(unitRows)
@@ -20,7 +26,7 @@ export function getRowOfMost(team: TeamNumber | null) {
 }
 
 export function getDistanceUnit(closest: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
-	const units = getAttackableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
+	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 	let bestUnit: ChampionUnit | undefined
 	let bestDistance = closest ? 99 : 0
 	for (const targetUnit of units) {

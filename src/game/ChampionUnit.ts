@@ -330,6 +330,9 @@ export class ChampionUnit {
 	isAttackable() {
 		return !this.dead && !this.ghosting
 	}
+	isInteractable() {
+		return !this.dead && this.interacts
+	}
 	hasCollision() {
 		return !this.dead && this.collides
 	}

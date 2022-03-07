@@ -1,4 +1,4 @@
-import { getDistanceUnit, getRowOfMost } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import type { AbilityFn } from '#/helpers/types'
 
 export default {
@@ -16,7 +16,7 @@ export default {
 	Zyra: (elapsedMS, spell, champion) => {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
-			hexes: getRowOfMost(champion.opposingTeam()),
+			hexes: getRowOfMostAttackable(champion.opposingTeam()),
 			stunSeconds: champion.getSpellValue('StunDuration'),
 		})
 	},
