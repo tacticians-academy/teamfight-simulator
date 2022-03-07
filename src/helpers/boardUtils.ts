@@ -1,7 +1,9 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
+import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
 import type { HexCoord, TeamNumber } from '#/helpers/types'
+import { randomItem } from '#/helpers/utils'
 
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
@@ -29,8 +31,35 @@ function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): He
 	return null
 }
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitPositions = units.filter(unit => unit.hasCollision()).map(unit => unit.activePosition)
+	const unitPositions = units.filter(unit => unit.interacts && unit.hasCollision()).map(unit => unit.activePosition)
 	return nearestAvailableRecursive(startHex, unitPositions)
+}
+
+export function getClosesUnitOfTeamTo(targetHex: HexCoord, teamNumber: TeamNumber | null, units: ChampionUnit[]) {
+	let minDistance = Number.MAX_SAFE_INTEGER
+	let closestUnits: ChampionUnit[] = []
+	getInteractableUnitsOfTeam(teamNumber).forEach(unit => {
+		const dist = unit.hexDistanceToHex(targetHex)
+		if (dist < minDistance) {
+			minDistance = dist
+			closestUnits = [unit]
+		} else if (dist === minDistance) {
+			closestUnits.push(unit)
+		}
+	})
+	return randomItem(closestUnits)
+}
+export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, units: ChampionUnit[]) {
+	const [targetCol, targetRow] = targetHex
+	return units
+		.filter(unit => {
+			const [unitCol, unitRow] = unit.startPosition
+			return unitRow === targetRow && unitCol !== targetCol && Math.abs(targetCol - unitCol) <= maxDistance
+		})
+}
+
+export function getInverseHex(hex: HexCoord): HexCoord {
+	return [BOARD_COL_COUNT - hex[0] - 1, BOARD_ROW_COUNT - hex[1] - 1]
 }
 
 const surroundings = [

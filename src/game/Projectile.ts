@@ -2,9 +2,9 @@ import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { getDistanceUnit, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-import type { DamageType, HexCoord, TeamNumber } from '#/helpers/types'
+import type { CollisionFn, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -20,7 +20,7 @@ export interface ProjectileData {
 	missile?: ChampionSpellMissileData
 	target: ChampionUnit
 	retargetOnTargetDeath?: boolean
-	onCollision?: () => void
+	onCollision?: CollisionFn
 }
 
 export class Projectile {
@@ -37,7 +37,7 @@ export class Projectile {
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	retargetOnTargetDeath?: boolean
-	onCollision: () => void
+	onCollision?: CollisionFn
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
 		this.instanceID = `p${instanceIndex += 1}`
@@ -56,11 +56,11 @@ export class Projectile {
 		this.collidesWith = data.collidesWith
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
-		this.onCollision = data.onCollision != null ? data.onCollision : () => {}
+		this.onCollision = data.onCollision
 	}
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
-		this.onCollision()
+		this.onCollision?.(unit)
 		unit.damage(elapsedMS, this.damage, this.damageType, this.source, units, gameOver)
 	}
 
@@ -104,7 +104,7 @@ export class Projectile {
 		this.position[1] += Math.sin(angle) * speed
 		const [projectileX, projectileY] = this.position
 		if (this.collidesWith !== undefined) {
-			const collisionUnits = getAttackableUnitsOfTeam(this.collidesWith)
+			const collisionUnits = getInteractableUnitsOfTeam(this.collidesWith)
 			for (const unit of collisionUnits) {
 				const [unitX, unitY] = unit.coordinatePosition()
 				const xDist = (unitX - projectileX) * 100

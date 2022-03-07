@@ -30,6 +30,7 @@ function updateHexEffects(elapsedMS: DOMHighResTimeStamp) {
 			if (hexEffect.stunMS != null) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)
 			}
+			hexEffect.onCollision?.(unit)
 		}
 	})
 }
@@ -63,6 +64,16 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS) {
 			continue
 		}
+		unit.updateRegen(elapsedMS)
+		unit.updateShields(elapsedMS)
+
+		if (unit.banishUntilMS != null && unit.banishUntilMS <= elapsedMS) {
+			unit.banishUntil(null)
+		}
+		if (!unit.interacts) {
+			continue
+		}
+
 		for (const pendingHexEffect of unit.pending.hexEffects) {
 			if (elapsedMS >= pendingHexEffect.startsAtMS) {
 				state.hexEffects.add(pendingHexEffect)

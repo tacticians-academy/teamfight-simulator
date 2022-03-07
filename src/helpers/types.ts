@@ -1,4 +1,4 @@
-import type { ChampionSpellData, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+import type { BonusKey, ChampionSpellData, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
@@ -25,13 +25,63 @@ export type UnitLevelStats = [number, number?, number?]
 export const enum DamageType {
 	physical, magic, true
 }
+export const enum DamageSourceType {
+	attack, spell, item
+}
 
 export type SynergyCount = Map<TraitData, string[]>
 
 export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
 
 export type BonusVariable = [key: string, value: number | null]
+export interface BonusScaling {
+	source: string
+	activatedAt: DOMHighResTimeStamp
+	expiresAfter?: DOMHighResTimeStamp
+	stats: BonusKey[]
+	intervalAmount: number
+	intervalSeconds: number
+}
+
+export interface ShieldData {
+	isSpellShield?: boolean
+	amount: number
+	expiresAtMS?: DOMHighResTimeStamp
+}
 
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
 
-export enum EffectKey { AS = 'ChampSpecificAS', AD = 'ChampSpecificAD', AP = 'ChampSpecificAP', Mana = 'ChampSpecificMana', Armor = 'ChampSpecificArmor', MR = 'ChampSpecificMR', Health = 'ChampSpecificHealth' }  
+export enum EffectKey { AS = 'ChampSpecificAS', AD = 'ChampSpecificAD', AP = 'ChampSpecificAP', Mana = 'ChampSpecificMana', Armor = 'ChampSpecificArmor', MR = 'ChampSpecificMR', Health = 'ChampSpecificHealth' }
+
+export interface TraitEffectResults {
+	variables?: BonusVariable[]
+	scalings?: BonusScaling[]
+	shields?: ShieldData[]
+}
+export type TraitEffectFn = (activeEffect: TraitEffectData, teamNumber: TeamNumber) => TraitEffectResults
+
+export type CollisionFn = (unit: ChampionUnit) => void
+
+export enum MutantType {
+	AdrenalineRush = 'Adrenaline',
+	BioLeeching = 'BioLeeching',
+	Cybernetic = 'Cyber',
+	Metamorphosis = 'Metamorphosis',
+	SynapticWeb = 'Synaptic',
+	Voidborne = 'Voidborne',
+	VoraciousAppetite = 'Voracious',
+}
+export const enum MutantBonus {
+	VoraciousADAP = 'ADAP',
+	MetamorphosisArmorMR = 'ArmorMR',
+	MetamorphosisGrowthRate = 'GrowthRate',
+	BioLeechingOmnivamp = 'Omnivamp',
+	VoidborneExecuteThreshold = 'ExecuteThreshold',
+	AdrenalineAD = 'AD',
+	SynapticManaCost = 'ManaCost',
+	MetamorphosisADAP = 'ADAP',
+	VoidborneTrueDamagePercent = 'TrueDamagePercent',
+	CyberAD = 'AD',
+	AdrenalineProcChance = 'ProcChance',
+	SynapticAP = 'AP',
+}

@@ -39,7 +39,7 @@ let previousUnitPositions: HexCoord[] = []
 export function updatePaths(units: ChampionUnit[]) {
 	const searchFromHexes: [HexCoord[], HexCoord[]] = [[], []]
 	for (const unit of units) {
-		if (!unit.isAttackable()) {
+		if (!unit.hasCollision()) {
 			continue
 		}
 		searchFromHexes[unit.team].push(unit.activePosition)

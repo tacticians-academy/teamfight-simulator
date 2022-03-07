@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const traitTexture = `url(${ASSET_PREFIX}/assets/ux/tft/tft_traits_texture_atlas.png)`
 
-const iconURL = getIconURL(props.trait, true)
+const iconURL = getIconURL(props.trait)
 const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
 const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
 

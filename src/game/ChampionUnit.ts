@@ -14,14 +14,14 @@ import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
+import { coordinatePosition, state } from '#/game/store'
 
-import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
+import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { coordinatePosition } from '#/game/store'
-import { DamageType, EffectKey } from '#/helpers/types'
-import type { AbilityFn, BonusVariable, HexCoord, StarLevel, TeamNumber, SynergyData } from '#/helpers/types'
+import { DamageType, MutantType, MutantBonus } from '#/helpers/types'
+import type { AbilityFn, BonusScaling, BonusVariable, EffectKey, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -44,7 +44,11 @@ export class ChampionUnit {
 	fixedAS: number | undefined = undefined
 	instantAttack: boolean
 
+	collides = true
+	interacts = true
 	ghosting = false
+
+	banishUntilMS: DOMHighResTimeStamp | null = null
 	cachedTargetDistance = 0
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moveUntilMS: DOMHighResTimeStamp = 0
@@ -52,16 +56,19 @@ export class ChampionUnit {
 	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
-	bonuses: [TraitKey | ItemKey | EffectKey, BonusVariable[]][] = []
 	transformIndex = 0
 	ability: AbilityFn | undefined
+
+	bonuses: [TraitKey | ItemKey | EffectKey, BonusVariable[]][] = []
+	scalings = new Set<BonusScaling>()
+	shields = new Set<ShieldData>()
 
 	pending = {
 		hexEffects: new Set<HexEffect>(),
 		projectiles: new Set<Projectile>(),
 	}
 
-	constructor(name: string, position: HexCoord, starLevel: StarLevel, synergiesByTeam: SynergyData[][]) {
+	constructor(name: string, position: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = champions.find(unit => unit.name === name) ?? champions[0]
 		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]
@@ -73,12 +80,11 @@ export class ChampionUnit {
 		this.instantAttack = this.data.stats.range <= 1
 		this.startPosition = position
 		this.activePosition = position
-		this.reset(synergiesByTeam)
 		this.reposition(position)
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
-		this.starMultiplier = this.starLevel === 1 ? 1 : (this.starLevel - 1) * 1.8
+		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
 		this.target = null
 		this.activePosition = this.startPosition
@@ -87,25 +93,94 @@ export class ChampionUnit {
 		this.moveUntilMS = 0
 		this.manaLockUntilMS = 0
 		this.stunnedUntilMS = 0
-		this.ghosting = this.jumpsToBackline()
-		if (this.data.apiName === 'TFT6_Jayce') {
+		const jumpToBackline = this.jumpsToBackline()
+		this.collides = !jumpToBackline
+		this.ghosting = jumpToBackline
+		this.interacts = true
+		this.banishUntilMS = 0
+		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activePosition[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
 		} else {
 			this.transformIndex = 0
 		}
 
-		const unitTraitNames = this.data.traits.concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '')))
-		this.traits = Array.from(new Set(unitTraitNames)).map(traitName => traits.find(trait => trait.name === traitName)).filter((trait): trait is TraitData => trait != null)
-		this.bonuses = [...calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitNames), ...calculateItemBonuses(this.items)]
+		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
+		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
+		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(synergiesByTeam[this.team], this.team, unitTraitKeys)
+		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
+		this.scalings = new Set([...synergyScalings, ...calculateItemScalings(this.items)])
+		this.shields = new Set([...synergyShields])
 
-		this.mana = this.data.stats.initialMana + this.getBonuses(BonusKey.Mana)
+		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellValue('AttackSpeed')
 
 		this.pending.hexEffects.clear()
 		this.pending.projectiles.clear()
+	}
+	postReset(units: ChampionUnit[]) {
+		const banishDuration = this.getBonuses('BanishDuration' as BonusKey)
+		if (banishDuration) {
+			const targetHex = getInverseHex(this.startPosition)
+			const target = getClosesUnitOfTeamTo(targetHex, this.opposingTeam(), units) //TODO not random
+			if (target) {
+				target.banishUntil(banishDuration * 1000)
+			}
+		}
+		for (const item of this.items) {
+			const hexRange = item.effects['HexRange']
+			if (hexRange != null) {
+				const isRowEffect = [ItemKey.BansheesClaw, ItemKey.ChaliceOfPower, ItemKey.LocketOfTheIronSolari, ItemKey.ZekesHerald].includes(item.id)
+				if (isRowEffect) {
+					const shieldValue = item.effects[`${this.starLevel}StarShieldValue`]
+					const shieldDuration = item.effects['ShieldDuration']
+					let bonus: BonusVariable | undefined
+					let shield: ShieldData | undefined
+					if (shieldValue != null && shieldDuration != null) {
+						shield = {
+							amount: shieldValue,
+							expiresAtMS: shieldDuration * 1000,
+						}
+					} else {
+						const attackSpeed = item.effects['AS']
+						if (attackSpeed != null) {
+							bonus = [BonusKey.AttackSpeed, attackSpeed]
+						} else {
+							const bonusAP = item.effects['BonusAP']
+							if (bonusAP != null) {
+								bonus = [BonusKey.AbilityPower, bonusAP]
+							} else {
+								const damageCap = item.effects['DamageCap']
+								if (damageCap != null) {
+									shield = {
+										isSpellShield: true,
+										amount: damageCap,
+									}
+								} else {
+									console.log('ERR missing HexRange row effect', item.name, item.effects)
+								}
+							}
+						}
+					}
+
+					const buffedUnits = getAdjacentRowUnitsTo(hexRange, this.startPosition, units)
+					if (bonus != null) {
+						const buffBonus = bonus
+						buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, buffBonus))
+					} else if (shield != null) {
+						const buffShield = shield
+						buffedUnits.push(this)
+						buffedUnits.forEach(unit => unit.shields.add(buffShield))
+					}
+				}
+			}
+		}
+	}
+
+	addBonuses(key: TraitKey | ItemKey, ...bonuses: BonusVariable[]) {
+		this.bonuses.push([key, bonuses])
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -134,6 +209,7 @@ export class ChampionUnit {
 				if (this.attackStartAtMS <= 0) {
 					this.attackStartAtMS = elapsedMS
 				} else {
+					const canReProcAttack = this.attackStartAtMS > 1
 					const damage = this.attackDamage()
 					if (this.instantAttack) {
 						this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver)
@@ -149,17 +225,62 @@ export class ChampionUnit {
 							damageType: DamageType.physical,
 						})
 					}
-					this.gainMana(elapsedMS, 10)
+					this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
+					if (canReProcAttack) {
+						const multiAttackProcChance = this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
+						if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
+							this.attackStartAtMS = 1
+						}
+					}
 				}
 			}
 		}
 	}
 
-	critChance() {
+	updateRegen(elapsedMS: DOMHighResTimeStamp) {
+		this.scalings.forEach(scaling => {
+			if (scaling.activatedAt === 0) {
+				scaling.activatedAt = elapsedMS
+				return
+			}
+			if (scaling.expiresAfter != null && scaling.activatedAt + scaling.expiresAfter >= elapsedMS) {
+				this.scalings.delete(scaling)
+				return
+			}
+			if (elapsedMS < scaling.activatedAt + scaling.intervalSeconds * 1000) {
+				return
+			}
+			scaling.activatedAt = elapsedMS
+			const bonuses: BonusVariable[] = []
+			for (const stat of scaling.stats) {
+				if (stat === BonusKey.Health) {
+					//TODO
+				} else if (stat === BonusKey.Mana) {
+					this.addMana(scaling.intervalAmount)
+				} else {
+					bonuses.push([stat, scaling.intervalAmount])
+				}
+			}
+			this.addBonuses(scaling.source as TraitKey, ...bonuses)
+		})
+	}
+
+	updateShields(elapsedMS: DOMHighResTimeStamp) {
+		this.shields.forEach(shield => {
+			if (shield.expiresAtMS != null && shield.expiresAtMS <= elapsedMS) {
+				this.shields.delete(shield)
+			}
+		})
+	}
+
+	rawCritChance() {
 		return (this.data.stats.critChance ?? 0) + this.getBonuses(BonusKey.CritChance) / 100
 	}
+	critChance() {
+		return Math.min(1, this.rawCritChance())
+	}
 	critMultiplier() {
-		const excessCritChance = this.critChance() - 1
+		const excessCritChance = this.rawCritChance() - 1
 		return this.data.stats.critMultiplier + Math.max(0, excessCritChance) + this.getBonuses(BonusKey.CritMultiplier) / 100
 	}
 	critReduction() {
@@ -187,7 +308,7 @@ export class ChampionUnit {
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
 		this.ability?.(elapsedMS, this.getCurrentSpell(), this)
-		this.mana = 0
+		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -196,31 +317,60 @@ export class ChampionUnit {
 		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.ghosting = false
+		this.collides = true
+	}
+
+	banishUntil(ms: DOMHighResTimeStamp | null) {
+		const banishing = ms != null
+		this.ghosting = banishing
+		this.interacts = !banishing
+		this.banishUntilMS = ms ?? null
 	}
 
 	isAttackable() {
 		return !this.dead && !this.ghosting
 	}
+	isInteractable() {
+		return !this.dead && this.interacts
+	}
 	hasCollision() {
-		return !this.dead && !this.ghosting
+		return !this.dead && this.collides
 	}
 
 	isMoving(elapsedMS: DOMHighResTimeStamp) {
 		return elapsedMS < this.moveUntilMS
 	}
 
+	gainHealth(amount: number) {
+		//TODO grievous wounds
+		this.health = Math.min(this.healthMax, this.health + amount)
+	}
+
+	setMana(amount: number) {
+		this.mana = Math.min(this.manaMax(), amount)
+	}
+	addMana(amount: number) {
+		this.setMana(this.mana + amount)
+	}
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
 		if (elapsedMS < this.manaLockUntilMS) {
 			return
 		}
-		this.mana = Math.min(this.manaMax(), this.mana + amount)
+		this.addMana(amount)
 	}
 
 	die(units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		this.health = 0
 		this.dead = true
-		if (units.find(unit => unit.team === this.team && !unit.dead)) {
+		const teamUnits = units.filter(unit => !unit.dead && unit.team === this.team)
+		if (teamUnits.length) {
 			updatePaths(units)
+			teamUnits.forEach(unit => {
+				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
+				if (increaseADAP > 0) {
+					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
+				}
+			})
 		} else {
 			gameOver(this.team)
 		}
@@ -243,18 +393,50 @@ export class ChampionUnit {
 			}
 		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
-		const takingDamage = rawDamage * defenseMultiplier
-		if (this.health <= takingDamage) {
+		let takingDamage = rawDamage * defenseMultiplier
+		if (type !== DamageType.true) {
+			const damageReduction = this.getBonuses('DamageReduction' as BonusKey) //TODO BonusKey.DamageReduction
+			if (damageReduction > 0) {
+				if (damageReduction >= 1) {
+					console.log('ERR', 'damageReduction must be between 0–1.')
+				} else {
+					takingDamage *= 1 - damageReduction
+				}
+			}
+			//TODO AOEDamageReduction
+		}
+		let healthDamage = takingDamage
+		Array.from(this.shields)
+			.filter(shield => shield.isSpellShield == null)
+			.forEach(shield => {
+				const protectingDamage = Math.min(shield.amount, healthDamage)
+				if (protectingDamage >= shield.amount) {
+					this.shields.delete(shield)
+				} else {
+					shield.amount -= protectingDamage
+				}
+				healthDamage -= protectingDamage
+			})
+		if (this.health <= healthDamage) {
 			this.die(units, gameOver)
 		} else {
-			this.health -= takingDamage
+			this.health -= healthDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 			this.gainMana(elapsedMS, manaGain)
+		}
+
+		const sourceVamp = source.getVamp(type)
+		if (sourceVamp > 0) {
+			console.log('Heal', sourceVamp, takingDamage * sourceVamp / 100)
+			// source.heal(takingDamage * sourceVamp / 100) //TODO
 		}
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
-		return hexDistanceFrom(this.activePosition, unit.activePosition)
+		return this.hexDistanceToHex(unit.activePosition)
+	}
+	hexDistanceToHex(hex: HexCoord) {
+		return hexDistanceFrom(this.activePosition, hex)
 	}
 
 	isAt(position: HexCoord) {
@@ -289,6 +471,12 @@ export class ChampionUnit {
 	getBonusVariants(bonus: BonusKey) {
 		return this.getBonuses(bonus, `Bonus${bonus}` as BonusKey, `${this.starLevel}Star${bonus}` as BonusKey)
 	}
+	getMutantBonus(mutantType: MutantType, bonus: MutantBonus) {
+		if (state.mutantType !== mutantType) {
+			return 0
+		}
+		return this.getBonuses(`Mutant${state.mutantType}${bonus}` as BonusKey)
+	}
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
 			.reduce((accumulator, bonus: [TraitKey | ItemKey | EffectKey, BonusVariable[]]) => {
@@ -311,7 +499,7 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
+		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
 		if (this.fixedAS != null) {
 			const multiplier = this.getSpellValue('ADFromAttackSpeed')
 			if (multiplier != null) {
@@ -321,10 +509,14 @@ export class ChampionUnit {
 		return ad
 	}
 	abilityPowerMultiplier() {
-		return (100 + this.getBonusVariants(BonusKey.AbilityPower)) / 100
+		const apBonus = this.getBonusVariants(BonusKey.AbilityPower) + this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticAP)
+		return (100 + apBonus) / 100
 	}
 	manaMax() {
-		return this.data.stats.mana //TODO yordle mutant
+		const maxManaMultiplier = this.getBonuses('PercentManaReduction' as BonusKey)
+		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier / 100)
+		const maxManaReduction = this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticManaCost)
+		return (this.data.stats.mana - maxManaReduction) * multiplier
 	}
 	armor() {
 		return this.data.stats.armor + this.getBonusVariants(BonusKey.Armor)
@@ -343,6 +535,21 @@ export class ChampionUnit {
 	}
 	moveSpeed() {
 		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
+	}
+
+	dodgeChance() {
+		return this.getBonuses('DodgeChance' as BonusKey)
+	}
+
+	getVamp(damageType: DamageType) {
+		const vampBonuses = [BonusKey.VampOmni]
+		if (damageType === DamageType.physical) {
+			vampBonuses.push(BonusKey.VampPhysical)
+		}
+		if (damageType === DamageType.magic || damageType === DamageType.true) {
+			vampBonuses.push(BonusKey.VampSpell)
+		}
+		return this.getBonuses(...vampBonuses)
 	}
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
