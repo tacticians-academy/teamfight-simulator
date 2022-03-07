@@ -16,7 +16,7 @@ import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, state } from '#/game/store'
 
-import { containsHex, getClosestHexAvailableTo, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { containsHex, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -44,7 +44,11 @@ export class ChampionUnit {
 	fixedAS: number | undefined = undefined
 	instantAttack: boolean
 
+	collides = true
+	interacts = true
 	ghosting = false
+
+	banishUntilMS: DOMHighResTimeStamp | null = null
 	cachedTargetDistance = 0
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moveUntilMS: DOMHighResTimeStamp = 0
@@ -87,7 +91,11 @@ export class ChampionUnit {
 		this.moveUntilMS = 0
 		this.manaLockUntilMS = 0
 		this.stunnedUntilMS = 0
-		this.ghosting = this.jumpsToBackline()
+		const jumpToBackline = this.jumpsToBackline()
+		this.collides = !jumpToBackline
+		this.ghosting = jumpToBackline
+		this.interacts = true
+		this.banishUntilMS = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activePosition[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
@@ -108,6 +116,16 @@ export class ChampionUnit {
 
 		this.pending.hexEffects.clear()
 		this.pending.projectiles.clear()
+	}
+	postReset(units: ChampionUnit[]) {
+		const banishDuration = this.getBonuses('BanishDuration' as BonusKey)
+		if (banishDuration) {
+			const targetHex = getInverseHex(this.startPosition)
+			const target = getClosesUnitOfTeamTo(targetHex, this.opposingTeam(), units)
+			if (target) {
+				target.banishUntil(banishDuration * 1000)
+			}
+		}
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -236,13 +254,21 @@ export class ChampionUnit {
 		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.ghosting = false
+		this.collides = true
+	}
+
+	banishUntil(ms: DOMHighResTimeStamp | null) {
+		const banishing = ms != null
+		this.ghosting = banishing
+		this.interacts = !banishing
+		this.banishUntilMS = ms ?? null
 	}
 
 	isAttackable() {
 		return !this.dead && !this.ghosting
 	}
 	hasCollision() {
-		return !this.dead && !this.ghosting
+		return !this.dead && this.collides
 	}
 
 	isMoving(elapsedMS: DOMHighResTimeStamp) {
@@ -324,7 +350,10 @@ export class ChampionUnit {
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
-		return hexDistanceFrom(this.activePosition, unit.activePosition)
+		return this.hexDistanceToHex(unit.activePosition)
+	}
+	hexDistanceToHex(hex: HexCoord) {
+		return hexDistanceFrom(this.activePosition, hex)
 	}
 
 	isAt(position: HexCoord) {

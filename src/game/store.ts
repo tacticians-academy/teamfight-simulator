@@ -90,6 +90,7 @@ watch([getters.augmentCount, ref(state.mutantType)], () => { //TODO ref wrapper 
 function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
+	state.units.forEach(unit => unit.postReset(state.units))
 }
 
 function getItemFrom(name: string) {
@@ -125,7 +126,7 @@ const store = {
 
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
-		unit.reset(getters.synergiesByTeam.value)
+		resetUnitsAfterCreatingOrMoving()
 		saveUnits()
 	},
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
@@ -251,10 +252,7 @@ const store = {
 
 	resetGame() {
 		state.projectiles = new Set()
-		const synergiesByTeam = getters.synergiesByTeam.value
-		for (const unit of state.units) {
-			unit.reset(synergiesByTeam)
-		}
+		resetUnitsAfterCreatingOrMoving()
 	},
 }
 
