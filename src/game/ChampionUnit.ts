@@ -157,11 +157,15 @@ export class ChampionUnit {
 					const buffedUnits = getAdjacentRowUnitsTo(hexRange, this.startPosition, units)
 					if (bonus !== undefined) {
 						const buffBonus = bonus
-						buffedUnits.forEach(unit => unit.bonuses.push([item.id as ItemKey, [buffBonus]]))
+						buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, buffBonus))
 					}
 				}
 			}
 		}
+	}
+
+	addBonuses(key: TraitKey | ItemKey, ...bonuses: BonusVariable[]) {
+		this.bonuses.push([key, bonuses])
 	}
 
 	updateTarget(units: ChampionUnit[]) {
@@ -242,7 +246,7 @@ export class ChampionUnit {
 					bonuses.push([stat, scaling.intervalAmount])
 				}
 			}
-			this.bonuses.push([scaling.source as TraitKey, bonuses])
+			this.addBonuses(scaling.source as TraitKey, ...bonuses)
 		})
 	}
 
@@ -333,7 +337,7 @@ export class ChampionUnit {
 			teamUnits.forEach(unit => {
 				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
 				if (increaseADAP > 0) {
-					unit.bonuses.push([TraitKey.Mutant, [[BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP]]])
+					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
 				}
 			})
 		} else {
