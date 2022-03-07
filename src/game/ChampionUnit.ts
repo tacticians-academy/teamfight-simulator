@@ -20,8 +20,8 @@ import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getCloses
 import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { DamageType, MutantType, MutantBonus } from '#/helpers/types'
-import type { AbilityFn, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import { DamageType, MutantType, MutantBonus, SpellKey } from '#/helpers/types'
+import type { AbilityFn, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -59,7 +59,7 @@ export class ChampionUnit {
 	transformIndex = 0
 	ability: AbilityFn | undefined
 
-	bonuses: [TraitKey | ItemKey, BonusVariable[]][] = []
+	bonuses: [BonusLabelKey, BonusVariable[]][] = []
 	scalings = new Set<BonusScaling>()
 	shields = new Set<ShieldData>()
 
@@ -115,7 +115,7 @@ export class ChampionUnit {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
-		this.fixedAS = this.getSpellValue('AttackSpeed')
+		this.fixedAS = this.getSpellValue(SpellKey.AttackSpeed)
 
 		this.pending.hexEffects.clear()
 		this.pending.projectiles.clear()
@@ -179,7 +179,7 @@ export class ChampionUnit {
 		}
 	}
 
-	addBonuses(key: TraitKey | ItemKey, ...bonuses: BonusVariable[]) {
+	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
 		this.bonuses.push([key, bonuses])
 	}
 
@@ -461,11 +461,11 @@ export class ChampionUnit {
 	getCurrentSpell() {
 		return this.data.spells[this.transformIndex]
 	}
-	getSpellValue(name: string) {
-		return this.getCurrentSpell().variables[name]?.[this.starLevel]
+	getSpellValue(key: SpellKey) {
+		return this.getCurrentSpell().variables[key]?.[this.starLevel]
 	}
 
-	getBonusFor(sourceKey: TraitKey | ItemKey) {
+	getBonusesFor(sourceKey: BonusLabelKey) {
 		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
 	}
 	getBonusVariants(bonus: BonusKey) {
@@ -479,13 +479,13 @@ export class ChampionUnit {
 	}
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
-			.reduce((accumulator, bonus: [TraitKey | ItemKey, BonusVariable[]]) => {
+			.reduce((accumulator, bonus: [BonusLabelKey, BonusVariable[]]) => {
 				const variables = bonus[1].filter(variable => variableNames.includes(variable[0] as BonusKey))
 				return accumulator + variables.reduce((total, v) => total + (v[1] ?? 0), 0)
 			}, 0)
 	}
 
-	hasActive(name: TraitKey | ItemKey) {
+	hasActive(name: BonusLabelKey) {
 		return !!this.bonuses.find(bonus => bonus[0] === name)
 	}
 	hasItem(key: ItemKey) {
@@ -501,7 +501,7 @@ export class ChampionUnit {
 	attackDamage() {
 		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
 		if (this.fixedAS != null) {
-			const multiplier = this.getSpellValue('ADFromAttackSpeed')
+			const multiplier = this.getSpellValue(SpellKey.ADFromAttackSpeed)
 			if (multiplier != null) {
 				return ad + this.bonusAttackSpeed() * 100 * multiplier
 			}
@@ -554,7 +554,7 @@ export class ChampionUnit {
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
 		if (data.damage === undefined) {
-			data.damage = this.getSpellValue('Damage')
+			data.damage = this.getSpellValue(SpellKey.Damage)
 		}
 		if (data.damageType === undefined) {
 			data.damageType = DamageType.magic
@@ -568,7 +568,7 @@ export class ChampionUnit {
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
 		if (data.damage === undefined) {
-			data.damage = this.getSpellValue('Damage')
+			data.damage = this.getSpellValue(SpellKey.Damage)
 		}
 		if (data.damageType === undefined) {
 			data.damageType = DamageType.magic

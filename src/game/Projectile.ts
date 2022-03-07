@@ -60,6 +60,7 @@ export class Projectile {
 	}
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+		this.onCollision?.(unit)
 		unit.damage(elapsedMS, this.damage, this.damageType, this.source, units, gameOver)
 	}
 
@@ -83,7 +84,6 @@ export class Projectile {
 		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 		if (Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
 			this.applyDamage(elapsedMS, this.target, units, gameOver)
-			this.onCollision?.(this.target)
 			return false
 		}
 
@@ -112,7 +112,6 @@ export class Projectile {
 				if (xDist * xDist + yDist * yDist < hexRadius) {
 					this.applyDamage(elapsedMS, this.target, units, gameOver)
 					if (this.destroysOnCollision === true) {
-						this.onCollision?.(unit)
 						return false
 					}
 				}
