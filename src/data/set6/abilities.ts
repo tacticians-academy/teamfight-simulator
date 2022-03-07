@@ -17,12 +17,25 @@ export default {
 		})
 	},
 	Darius: (elapsedMS, spell, champion) => {
-		champion.queueHexEffect(elapsedMS, {
+		champion.queueHexEffect(elapsedMS, { //TODO use coordinate-based collision
 			spell,
 			hexes: getSurrounding(champion.activePosition, 1),
-			onCollision: (affectedUnit: ChampionUnit) => {
-				champion.gainHealth(champion.getSpellValue('Heal'))
+			onCollision: (affectedUnit) => {
+				champion.gainHealth(champion.getSpellValue('Heal')) //TODO scale AP
 			},
+		})
+	},
+	Ziggs: (elapsedMS, spell, champion) => {
+		const targetPosition = champion.target?.activePosition
+		if (!targetPosition) { return console.log('No target', champion.name, champion.team) }
+		champion.queueHexEffect(elapsedMS, {
+			spell,
+			hexes: [targetPosition],
+		})
+		champion.queueHexEffect(elapsedMS, {
+			spell,
+			hexes: getSurrounding(targetPosition, 1),
+			damage: champion.getSpellValue('Damage') * 0.5,
 		})
 	},
 	Zyra: (elapsedMS, spell, champion) => {
@@ -30,21 +43,6 @@ export default {
 			spell,
 			hexes: getRowOfMostAttackable(champion.opposingTeam()),
 			stunSeconds: champion.getSpellValue('StunDuration'),
-		})
-	},
-	Ziggs: (elapsedMS, spell, champion) => {
-		const target = champion.target
-		if (!target) {
-			return console.log('No target', champion.name, champion.team)
-		}
-		champion.queueHexEffect(elapsedMS, {
-			spell,
-			hexes: [target.activePosition],
-		})
-		champion.queueHexEffect(elapsedMS, {
-			spell,
-			hexes: getSurrounding(target.activePosition, 1),
-			damage: champion.getSpellValue('Damage') * 0.5,
 		})
 	},
 } as Record<string, AbilityFn>

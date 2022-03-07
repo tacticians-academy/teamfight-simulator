@@ -342,6 +342,7 @@ export class ChampionUnit {
 	}
 
 	gainHealth(amount: number) {
+		//TODO grievous wounds
 		this.health = Math.min(this.healthMax, this.health + amount)
 	}
 
