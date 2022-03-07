@@ -107,10 +107,10 @@ export class ChampionUnit {
 
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
-		const [synergyTraitBonuses, synergyScalings] = calculateSynergyBonuses(synergiesByTeam[this.team], unitTraitKeys)
+		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(synergiesByTeam[this.team], this.team, unitTraitKeys)
 		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
 		this.scalings = new Set([...synergyScalings, ...calculateItemScalings(this.items)])
-		this.shields.clear()
+		this.shields = new Set([...synergyShields])
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)

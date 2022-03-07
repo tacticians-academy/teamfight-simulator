@@ -7,16 +7,17 @@ import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/tra
 import traitEffects from '#/data/set6/traits'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
-import type { BonusScaling, BonusVariable, SynergyData } from '#/helpers/types'
+import type { BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
 	const synergy = teamSynergies.find(synergy => synergy[0].name === trait)
 	return synergy?.[2] ?? synergy?.[0].effects[0]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
+export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber: TeamNumber, unitTraitKeys: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[], ShieldData[]] {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	const bonusScalings: BonusScaling[] = []
+	const bonusShields: ShieldData[] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
 		if (activeEffect == null) {
 			return
@@ -26,9 +27,10 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitK
 		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		const bonusVariables: BonusVariable[] = []
 		if (teamTraitFn) {
-			const { variables, scalings } = teamTraitFn(activeEffect)
+			const { variables, scalings, shields } = teamTraitFn(activeEffect, teamNumber)
 			if (variables) { bonusVariables.push(...variables) }
 			if (scalings) { bonusScalings.push(...scalings) }
+			if (shields) { bonusShields.push(...shields) }
 		}
 		if (teamEffect != null || unitHasTrait) {
 			// console.log(trait.name, teamEffect, activeEffect.variables)
@@ -68,9 +70,10 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitK
 		if (unitHasTrait) {
 			const soloTraitFn = traitEffects[trait.name as TraitKey]?.solo
 			if (soloTraitFn) {
-				const { variables, scalings } = soloTraitFn(activeEffect)
+				const { variables, scalings, shields } = soloTraitFn(activeEffect, teamNumber)
 				if (variables) { bonusVariables.push(...variables) }
 				if (scalings) { bonusScalings.push(...scalings) }
+				if (shields) { bonusShields.push(...shields) }
 			}
 		}
 		if (bonusVariables.length) {
@@ -82,13 +85,14 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitK
 		if (innateTraitFn) {
 			const innateEffect = getInnateEffectForUnitWith(trait, teamSynergies)
 			if (innateEffect) {
-				const { variables, scalings } = innateTraitFn(innateEffect)
+				const { variables, scalings, shields } = innateTraitFn(innateEffect, teamNumber)
 				if (variables) { bonuses.push([trait, variables]) }
 				if (scalings) { bonusScalings.push(...scalings) }
+				if (shields) { bonusShields.push(...shields) }
 			}
 		}
 	}
-	return [bonuses, bonusScalings]
+	return [bonuses, bonusScalings, bonusShields]
 }
 
 export function calculateItemBonuses(items: ItemData[]) {

@@ -25,6 +25,9 @@ export type UnitLevelStats = [number, number?, number?]
 export const enum DamageType {
 	physical, magic, true
 }
+export const enum DamageSourceType {
+	attack, spell, item
+}
 
 export type SynergyCount = Map<TraitData, string[]>
 
@@ -52,7 +55,7 @@ export interface TraitEffectResults {
 	scalings?: BonusScaling[]
 	shields?: ShieldData[]
 }
-export type TraitEffectFn = (activeEffect: TraitEffectData) => TraitEffectResults
+export type TraitEffectFn = (activeEffect: TraitEffectData, teamNumber: TeamNumber) => TraitEffectResults
 
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',

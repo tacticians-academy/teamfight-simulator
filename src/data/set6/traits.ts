@@ -1,11 +1,12 @@
-import { BonusKey } from '@tacticians-academy/academy-library'
+import { BonusKey, COMPONENT_ITEM_IDS } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { getters, state } from '#/game/store'
 
+import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { MutantType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, TraitEffectFn } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, ShieldData, TeamNumber, TraitEffectFn } from '#/helpers/types'
 
 interface TraitFns {
 	solo?: TraitEffectFn,
@@ -112,8 +113,19 @@ export default {
 	},
 
 	[TraitKey.Scrap]: {
-		team: (activeEffect: TraitEffectData) => {
-			return {} //TODO
+		team: (activeEffect: TraitEffectData, teamNumber: TeamNumber) => {
+			const shields: ShieldData[] = []
+			const amountPerComponent = activeEffect.variables['HPShieldAmount']
+			if (amountPerComponent != null) {
+				const amount = getUnitsOfTeam(teamNumber)
+					.reduce((unitAcc, unit) => {
+						return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
+					}, 0)
+				shields.push({
+					amount,
+				})
+			}
+			return { shields }
 		},
 	},
 
