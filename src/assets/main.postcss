@@ -21,6 +21,9 @@
 	.text-primary {
 		@apply text-black dark:text-white;
 	}
+	.text-inverted {
+		@apply text-white dark:text-black;
+	}
 	.text-secondary {
 		@apply text-gray-600 dark:text-gray-400;
 	}
@@ -35,6 +38,10 @@
 		@apply h-11 m-1 rounded-lg text-lg text-white font-medium;
 		@apply bg-quaternary hover:bg-tertiary active:bg-primary;
 		@apply disabled:bg-secondary disabled:text-secondary;
+	}
+
+	select {
+		@apply text-inverted;
 	}
 }
 
