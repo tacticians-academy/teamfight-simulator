@@ -16,7 +16,7 @@ import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, state } from '#/game/store'
 
-import { containsHex, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -121,9 +121,45 @@ export class ChampionUnit {
 		const banishDuration = this.getBonuses('BanishDuration' as BonusKey)
 		if (banishDuration) {
 			const targetHex = getInverseHex(this.startPosition)
-			const target = getClosesUnitOfTeamTo(targetHex, this.opposingTeam(), units)
+			const target = getClosesUnitOfTeamTo(targetHex, this.opposingTeam(), units) //TODO not random
 			if (target) {
 				target.banishUntil(banishDuration * 1000)
+			}
+		}
+		for (const item of this.items) {
+			const hexRange = item.effects['HexRange']
+			if (hexRange != null) {
+				const isRowEffect = [ItemKey.BansheesClaw, ItemKey.ChaliceOfPower, ItemKey.LocketOfTheIronSolari, ItemKey.ZekesHerald].includes(item.id)
+				if (isRowEffect) {
+					const shield = item.effects[`${this.starLevel}StarShieldValue`]
+					let bonus: BonusVariable | undefined
+					if (shield != null) {
+						console.log(shield) //TODO shield
+					} else {
+						const attackSpeed = item.effects['AS']
+						if (attackSpeed != null) {
+							bonus = [BonusKey.AttackSpeed, attackSpeed]
+						} else {
+							const bonusAP = item.effects['BonusAP']
+							if (bonusAP != null) {
+								bonus = [BonusKey.AbilityPower, bonusAP]
+							} else {
+								const damageCap = item.effects['DamageCap']
+								if (damageCap != null) {
+									console.log(damageCap) //TODO spell-shield
+								} else {
+									console.log('ERR missing HexRange row effect', item.name, item.effects)
+								}
+							}
+						}
+					}
+
+					const buffedUnits = getAdjacentRowUnitsTo(hexRange, this.startPosition, units)
+					if (bonus !== undefined) {
+						const buffBonus = bonus
+						buffedUnits.forEach(unit => unit.bonuses.push([item.id as ItemKey, [buffBonus]]))
+					}
+				}
 			}
 		}
 	}

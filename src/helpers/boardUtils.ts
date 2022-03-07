@@ -49,6 +49,14 @@ export function getClosesUnitOfTeamTo(targetHex: HexCoord, teamNumber: TeamNumbe
 	})
 	return randomItem(closestUnits)
 }
+export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, units: ChampionUnit[]) {
+	const [targetCol, targetRow] = targetHex
+	return units
+		.filter(unit => {
+			const [unitCol, unitRow] = unit.startPosition
+			return unitRow === targetRow && unitCol !== targetCol && Math.abs(targetCol - unitCol) <= maxDistance
+		})
+}
 
 export function getInverseHex(hex: HexCoord): HexCoord {
 	return [BOARD_COL_COUNT - hex[0] - 1, BOARD_ROW_COUNT - hex[1] - 1]
