@@ -1,7 +1,7 @@
 import { markRaw } from 'vue'
 
 import { BonusKey } from '@tacticians-academy/academy-library'
-import type { ChampionData, ItemData, TraitData } from '@tacticians-academy/academy-library'
+import type { ChampionData, ChampionSpellData, ItemData, TraitData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -307,7 +307,10 @@ export class ChampionUnit {
 		return !!this.ability && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
-		this.ability?.(elapsedMS, this.getCurrentSpell(), this)
+		const spell = this.getCurrentSpell()
+		if (spell) {
+			this.ability?.(elapsedMS, spell, this)
+		}
 		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
 
@@ -458,11 +461,11 @@ export class ChampionUnit {
 		return coordinatePosition(this.activePosition)
 	}
 
-	getCurrentSpell() {
+	getCurrentSpell(): ChampionSpellData | undefined {
 		return this.data.spells[this.transformIndex]
 	}
 	getSpellValue(key: SpellKey) {
-		return this.getCurrentSpell().variables[key]?.[this.starLevel]
+		return this.getCurrentSpell()?.variables[key]?.[this.starLevel]
 	}
 
 	getBonusesFor(sourceKey: BonusLabelKey) {
