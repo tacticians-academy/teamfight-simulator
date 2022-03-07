@@ -16,7 +16,7 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 
 export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[]] {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
-	const scalings: BonusScaling[] = []
+	const bonusScalings: BonusScaling[] = []
 	teamSynergies.forEach(([trait, style, activeEffect]) => {
 		if (activeEffect == null) {
 			return
@@ -24,11 +24,11 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitK
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
 		const unitHasTrait = unitTraitKeys.includes(trait.name as TraitKey)
 		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
-		const variables: BonusVariable[] = []
+		const bonusVariables: BonusVariable[] = []
 		if (teamTraitFn) {
-			const [bonusVariables, bonusScalings] = teamTraitFn(activeEffect)
-			variables.push(...bonusVariables)
-			scalings.push(...bonusScalings)
+			const { variables, scalings } = teamTraitFn(activeEffect)
+			if (variables) { bonusVariables.push(...variables) }
+			if (scalings) { bonusScalings.push(...scalings) }
 		}
 		if (teamEffect != null || unitHasTrait) {
 			// console.log(trait.name, teamEffect, activeEffect.variables)
@@ -62,19 +62,19 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitK
 						}
 					}
 				}
-				variables.push([key, value])
+				bonusVariables.push([key, value])
 			}
 		}
 		if (unitHasTrait) {
 			const soloTraitFn = traitEffects[trait.name as TraitKey]?.solo
 			if (soloTraitFn) {
-				const [bonusVariables, bonusScalings] = soloTraitFn(activeEffect)
-				variables.push(...bonusVariables)
-				scalings.push(...bonusScalings)
+				const { variables, scalings } = soloTraitFn(activeEffect)
+				if (variables) { bonusVariables.push(...variables) }
+				if (scalings) { bonusScalings.push(...scalings) }
 			}
 		}
-		if (variables.length) {
-			bonuses.push([trait.name as TraitKey, variables])
+		if (bonusVariables.length) {
+			bonuses.push([trait.name as TraitKey, bonusVariables])
 		}
 	})
 	for (const trait of unitTraitKeys) {
@@ -82,13 +82,13 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], unitTraitK
 		if (innateTraitFn) {
 			const innateEffect = getInnateEffectForUnitWith(trait, teamSynergies)
 			if (innateEffect) {
-				const [bonusVariables, bonusScalings] = innateTraitFn(innateEffect)
-				bonuses.push([trait, bonusVariables])
-				scalings.push(...bonusScalings)
+				const { variables, scalings } = innateTraitFn(innateEffect)
+				if (variables) { bonuses.push([trait, variables]) }
+				if (scalings) { bonusScalings.push(...scalings) }
 			}
 		}
 	}
-	return [bonuses, scalings]
+	return [bonuses, bonusScalings]
 }
 
 export function calculateItemBonuses(items: ItemData[]) {

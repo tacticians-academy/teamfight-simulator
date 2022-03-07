@@ -47,7 +47,11 @@ export interface ShieldData {
 }
 
 export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
-export type TraitEffectResults = [BonusVariable[], BonusScaling[]]
+export interface TraitEffectResults {
+	variables?: BonusVariable[]
+	scalings?: BonusScaling[]
+	shields?: ShieldData[]
+}
 export type TraitEffectFn = (activeEffect: TraitEffectData) => TraitEffectResults
 
 export enum MutantType {

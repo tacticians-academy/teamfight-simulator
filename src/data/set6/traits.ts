@@ -30,7 +30,7 @@ export default {
 			} else {
 				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
 			}
-			return [variables, []]
+			return { variables }
 		},
 	},
 
@@ -43,11 +43,11 @@ export default {
 			} else {
 				console.log('Missing Colossus HP bonus', innateEffect.variables)
 			}
-			return [variables, []]
+			return { variables }
 		},
 	},
 
-	Mutant: {
+	[TraitKey.Mutant]: {
 		solo: (activeEffect: TraitEffectData) => {
 			const scalings: BonusScaling[] = []
 			if (state.mutantType === MutantType.Metamorphosis) {
@@ -75,7 +75,7 @@ export default {
 					console.log('ERR Invalid Metamorphosis', activeEffect.variables)
 				}
 			}
-			return [[], scalings]
+			return { scalings }
 		},
 		team: (activeEffect: TraitEffectData) => {
 			const variables: BonusVariable[] = []
@@ -87,7 +87,7 @@ export default {
 					console.log('Invalid effect', 'Mutant', state.mutantType, activeEffect.variables)
 				}
 			}
-			return [variables, []]
+			return { variables }
 		},
 	},
 
@@ -107,7 +107,13 @@ export default {
 			} else {
 				console.log('Invalid effect', 'Scholar', activeEffect.variables)
 			}
-			return [[], scalings]
+			return { scalings }
+		},
+	},
+
+	[TraitKey.Scrap]: {
+		team: (activeEffect: TraitEffectData) => {
+			return {} //TODO
 		},
 	},
 
@@ -120,7 +126,7 @@ export default {
 			} else {
 				console.log('Missing Sniper range increase', innateEffect.variables)
 			}
-			return [variables, []]
+			return { variables }
 		},
 	},
 
