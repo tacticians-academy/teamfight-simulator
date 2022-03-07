@@ -2,7 +2,7 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { getSurrounding } from '#/helpers/boardUtils'
-import { SpellKey } from '#/helpers/types'
+import { DamageType, SpellKey } from '#/helpers/types'
 import type { AbilityFn } from '#/helpers/types'
 
 export default {
@@ -27,18 +27,15 @@ export default {
 		})
 	},
 	Ezreal: (elapsedMS, spell, champion) => {
-		const doesTargetNearest = true
-		const target = getDistanceUnit(doesTargetNearest, champion)
-		if (!target) {
-			return console.log('No target', champion.name, champion.team)
-		}
+		const target = champion.target
+		if (!target) { return console.log('No target', champion.name, champion.team) }
 		champion.queueProjectile(elapsedMS, {
 			spell,
-			target,
+			target, //TODO target hex, not champion
 			collidesWith: champion.opposingTeam(),
-			destroysOnCollision: false,
-			retargetOnTargetDeath: doesTargetNearest,
+			destroysOnCollision: true,
 			damage: champion.attackDamage(),
+			damageType: DamageType.physical,
 			onCollision: () => {
 				const allASBonuses = champion.getBonusesFor(SpellKey.ASBoost)
 				const maxStacks = champion.getSpellValue(SpellKey.MaxStacks)
