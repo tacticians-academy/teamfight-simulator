@@ -5,6 +5,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import type { CollisionFn, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
+import { coordinatePosition } from '#/game/store'
 
 let instanceIndex = 0
 
@@ -18,9 +19,13 @@ export interface ProjectileData {
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	missile?: ChampionSpellMissileData
-	target: ChampionUnit
+	target: ChampionUnit | HexCoord
 	retargetOnTargetDeath?: boolean
 	onCollision?: CollisionFn
+}
+
+function isUnit(arg: ChampionUnit | HexCoord): arg is ChampionUnit {
+	return 'name' in arg
 }
 
 export class Projectile {
@@ -33,7 +38,8 @@ export class Projectile {
 	damage: number
 	damageType: DamageType
 	source: ChampionUnit
-	target: ChampionUnit
+	target: ChampionUnit | HexCoord
+	targetCoordinates: HexCoord
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	retargetOnTargetDeath?: boolean
@@ -57,6 +63,8 @@ export class Projectile {
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
 		this.onCollision = data.onCollision
+
+		this.targetCoordinates = isUnit(this.target) ? this.target.coordinatePosition() : coordinatePosition(this.target)
 	}
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
@@ -65,24 +73,30 @@ export class Projectile {
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void): boolean {
-		if (this.target.dead) {
-			if (this.retargetOnTargetDeath != null) {
-				const newTarget = getDistanceUnit(this.retargetOnTargetDeath, this.source)
-				if (newTarget) {
-					this.target = newTarget
-				}
-			}
-			return false
-		}
 		if (elapsedMS < this.startsAtMS) {
 			return true
 		}
+		if (elapsedMS - this.startsAtMS > 5 * 1000) {
+			return false
+		}
+		if (isUnit(this.target)) {
+			if (this.target.dead) {
+				if (this.retargetOnTargetDeath != null) {
+					const newTarget = getDistanceUnit(this.retargetOnTargetDeath, this.source)
+					if (newTarget) {
+						this.target = newTarget
+					}
+				}
+				return false
+			}
+			this.targetCoordinates = this.target.coordinatePosition()
+		}
 		const [currentX, currentY] = this.position
-		const [targetX, targetY] = this.target.coordinatePosition()
+		const [targetX, targetY] = this.targetCoordinates
 		const differenceX = targetX - currentX
 		const differenceY = targetY - currentY
 		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
-		if (Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
+		if (isUnit(this.target) && Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
 			this.applyDamage(elapsedMS, this.target, units, gameOver)
 			return false
 		}
@@ -110,7 +124,7 @@ export class Projectile {
 				const xDist = (unitX - projectileX) * 100
 				const yDist = (unitY - projectileY) * 100
 				if (xDist * xDist + yDist * yDist < hexRadius) {
-					this.applyDamage(elapsedMS, this.target, units, gameOver)
+					this.applyDamage(elapsedMS, unit, units, gameOver)
 					if (this.destroysOnCollision === true) {
 						return false
 					}

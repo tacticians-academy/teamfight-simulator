@@ -31,7 +31,7 @@ export default {
 		if (!target) { return console.log('No target', champion.name, champion.team) }
 		champion.queueProjectile(elapsedMS, {
 			spell,
-			target, //TODO target hex, not champion
+			target: target.activePosition,
 			collidesWith: champion.opposingTeam(),
 			destroysOnCollision: true,
 			damage: champion.attackDamage(),
