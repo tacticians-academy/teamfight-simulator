@@ -6,8 +6,9 @@ import { getters, state } from '#/game/store'
 
 import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { MutantType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, ShieldData, TeamNumber, TraitEffectFn } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
 
+type TraitEffectFn = (activeEffect: TraitEffectData, teamNumber: TeamNumber) => EffectResults
 interface TraitFns {
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,

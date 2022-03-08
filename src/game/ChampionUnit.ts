@@ -17,7 +17,7 @@ import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, state } from '#/game/store'
 
 import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateItemScalings, calculateSynergyBonuses } from '#/helpers/bonuses'
+import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType, MutantType, MutantBonus, SpellKey } from '#/helpers/types'
@@ -108,9 +108,10 @@ export class ChampionUnit {
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
 		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(synergiesByTeam[this.team], this.team, unitTraitKeys)
-		this.bonuses = [...synergyTraitBonuses, ...calculateItemBonuses(this.items)]
-		this.scalings = new Set([...synergyScalings, ...calculateItemScalings(this.items)])
-		this.shields = new Set([...synergyShields])
+		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this.items)
+		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
+		this.scalings = new Set([...synergyScalings, ...itemScalings])
+		this.shields = new Set([...synergyShields, ...itemShields])
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)

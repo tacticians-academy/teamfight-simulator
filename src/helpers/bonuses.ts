@@ -1,20 +1,22 @@
-import { BonusKey } from '@tacticians-academy/academy-library'
-import type { ItemData } from '@tacticians-academy/academy-library'
+import type { BonusKey, ItemData } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
-import type { BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
+import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
 	const synergy = teamSynergies.find(synergy => synergy[0].name === trait)
 	return synergy?.[2] ?? synergy?.[0].effects[0]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber: TeamNumber, unitTraitKeys: TraitKey[]): [[TraitKey, BonusVariable[]][], BonusScaling[], ShieldData[]] {
+type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
+
+export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber: TeamNumber, unitTraitKeys: TraitKey[]): BonusResults {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	const bonusScalings: BonusScaling[] = []
 	const bonusShields: ShieldData[] = []
@@ -95,32 +97,26 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber
 	return [bonuses, bonusScalings, bonusShields]
 }
 
-export function calculateItemBonuses(items: ItemData[]) {
+export function calculateItemBonuses(items: ItemData[]): BonusResults {
 	const bonuses: [ItemKey, BonusVariable[]][] = []
+	const bonusScalings: BonusScaling[] = []
+	const bonusShields: ShieldData[] = []
 	items.forEach(item => {
 		const variables: BonusVariable[] = []
 		for (const key in item.effects) {
 			variables.push([key, item.effects[key]])
 		}
-		bonuses.push([item.id, variables])
-	})
-	return bonuses
-}
 
-export function calculateItemScalings(items: ItemData[]) {
-	const scalings: BonusScaling[] = []
-	items.forEach(item => {
-		const intervalAmount = item.effects['APPerInterval']
-		const intervalSeconds = item.effects['IntervalSeconds']
-		if (intervalAmount != null && intervalSeconds != null) {
-			scalings.push({
-				activatedAt: 0,
-				source: item.name,
-				stats: [BonusKey.AbilityPower],
-				intervalAmount,
-				intervalSeconds,
-			})
+		const itemFn = itemEffects[item.id as ItemKey]?.innate
+		if (itemFn) {
+			const { variables, scalings, shields } = itemFn(item)
+			if (variables) { variables.push(...variables) }
+			if (scalings) { bonusScalings.push(...scalings) }
+			if (shields) { bonusShields.push(...shields) }
+		}
+		if (variables.length) {
+			bonuses.push([item.id, variables])
 		}
 	})
-	return scalings
+	return [bonuses, bonusScalings, bonusShields]
 }

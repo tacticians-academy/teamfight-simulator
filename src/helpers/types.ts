@@ -64,12 +64,11 @@ export const enum SpellKey {
 
 export type BonusLabelKey = TraitKey | ItemKey | SpellKey
 
-export interface TraitEffectResults {
+export interface EffectResults {
 	variables?: BonusVariable[]
 	scalings?: BonusScaling[]
 	shields?: ShieldData[]
 }
-export type TraitEffectFn = (activeEffect: TraitEffectData, teamNumber: TeamNumber) => TraitEffectResults
 
 export type CollisionFn = (unit: ChampionUnit) => void
 
