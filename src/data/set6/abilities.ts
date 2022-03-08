@@ -25,7 +25,7 @@ export default {
 			spell,
 			hexes: getSurrounding(champion.activePosition, 1),
 			onCollision: (affectedUnit) => {
-				champion.gainHealth(champion.getSpellValue(SpellKey.Heal)) //TODO scale AP
+				champion.gainHealth(champion.getSpellValue(SpellKey.Heal)!) //TODO scale AP
 			},
 		})
 	},
@@ -41,10 +41,10 @@ export default {
 			damage: champion.attackDamage(),
 			damageType: DamageType.physical,
 			onCollision: () => {
-				const allASBonuses = champion.getBonusesFor(SpellKey.ASBoost)
-				const maxStacks = champion.getSpellValue(SpellKey.MaxStacks)
+				const allASBonuses = champion.getBonusesFor(SpellKey.ASBoost)!
+				const maxStacks = champion.getSpellValue(SpellKey.MaxStacks)!
 				if (allASBonuses.length < maxStacks) {
-					const asBoost = champion.getSpellValue(SpellKey.ASBoost)
+					const asBoost = champion.getSpellValue(SpellKey.ASBoost)!
 					champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, asBoost * 100]]]) //TODO scale AP
 				}
 			},
@@ -61,7 +61,7 @@ export default {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
 			hexes: getSurrounding(targetPosition, 1),
-			damage: champion.getSpellValue(SpellKey.Damage) * 0.5,
+			damage: champion.getSpellValue(SpellKey.Damage)! * 0.5,
 		})
 	},
 
