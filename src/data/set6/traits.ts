@@ -161,6 +161,18 @@ export default {
 	},
 
 	[TraitKey.Sniper]: {
+		damageDealtByHolder: (activeEffect, elapsedMS, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
+				const key = 'PercentDamageIncrease'
+				const percentBonusDamagePerHex = activeEffect.variables[key]
+				if (percentBonusDamagePerHex == null) {
+					return console.log('ERR', 'Missing', key, activeEffect)
+				}
+				const hexDistance = source.hexDistanceTo(target)
+				const damageCalculation = createDamageCalculation(key, takingDamage * percentBonusDamagePerHex / 100 * hexDistance, damageType)
+				target.damage(elapsedMS, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
+			}
+		},
 		innate: (unit, innateEffect) => {
 			const variables: BonusVariable[] = []
 			const rangeIncrease = innateEffect.variables[BonusKey.HexRangeIncrease]
