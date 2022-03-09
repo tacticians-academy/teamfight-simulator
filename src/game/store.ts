@@ -32,7 +32,7 @@ export const state = reactive({
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
 	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
-	mutantType: ref((getStorageString(StorageKey.Mutant) as keyof typeof MutantType) ?? MutantType.Cybernetic),
+	mutantType: ref((getStorageString(StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
 })
 
 // Getters
@@ -77,11 +77,12 @@ export const getters = {
 
 watchEffect(() => {
 	setStorage(StorageKey.Mutant, state.mutantType)
+	resetUnitsAfterCreatingOrMoving()
 })
 watchEffect(() => {
 	setStorage(StorageKey.StageNumber, state.stageNumber)
 })
-watch([getters.augmentCount, ref(state.mutantType)], () => { //TODO ref wrapper suppress warning
+watch([getters.augmentCount], () => {
 	resetUnitsAfterCreatingOrMoving()
 })
 
