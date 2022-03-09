@@ -78,7 +78,7 @@ export default {
 			}
 			const repeatsEveryMS = frequency * 1000
 			const shield: ShieldData = {
-				amount: shieldAmount * 10,
+				amount: shieldAmount,
 				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
 				expiresAtMS: durationSeconds * 1000,
 				activatesAtMS: repeatsEveryMS,
