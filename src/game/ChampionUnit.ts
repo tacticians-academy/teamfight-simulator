@@ -246,12 +246,9 @@ export class ChampionUnit {
 				})
 			}
 			this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
-			if (canReProcAttack) {
-				const multiAttackProcChance = this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
-				if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
-					this.attackStartAtMS = 1
-				}
-			}
+
+			this.items.forEach(item => itemEffects[item.id as ItemKey]?.basicAttack?.(item, this.target!, this, canReProcAttack))
+			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
 	}
 

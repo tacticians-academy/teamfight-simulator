@@ -7,7 +7,7 @@ import { gameOver, getters, state } from '#/game/store'
 
 import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
-import { DamageSourceType, MutantType } from '#/helpers/types'
+import { DamageSourceType, MutantBonus, MutantType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData } from '#/helpers/types'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
@@ -15,6 +15,7 @@ interface TraitFns {
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
 	innate?: TraitEffectFn,
+	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }
 
@@ -89,6 +90,16 @@ export default {
 	},
 
 	[TraitKey.Mutant]: {
+		basicAttack: (activeEffect, target, source, canReProc) => {
+			if (state.mutantType === MutantType.AdrenalineRush) {
+				if (canReProc) {
+					const multiAttackProcChance = source.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
+					if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
+						source.attackStartAtMS = 1
+					}
+				}
+			}
+		},
 		damageDealtByHolder: (activeEffect, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (state.mutantType === MutantType.Voidborne) {
 				const executeThreshold = activeEffect.variables['MutantVoidborneExecuteThreshold']

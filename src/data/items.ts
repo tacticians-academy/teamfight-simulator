@@ -12,6 +12,7 @@ interface ItemFns {
 	innate?: (item: ItemData) => EffectResults,
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, unit: ChampionUnit) => EffectResults,
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	basicAttack?: (item: ItemData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 }
 
 export default {
