@@ -62,4 +62,4 @@ npm run dev
 
 The largest outstanding project is to script the abilities of each unit. Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.
 
-Check out [`set6/abilities`](src/data/set6/abilities.ts). Pick an unimplemented champion from the [current Set milestone](#current-set-support), and using existing implementations as a template, give it a try!
+Check out [`set6/champions`](src/data/set6/champions.ts). Pick an unimplemented champion from the [current Set milestone](#current-set-support), and using existing implementations as a template, give it a try!

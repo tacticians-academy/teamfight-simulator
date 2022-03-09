@@ -50,7 +50,8 @@ export interface ShieldData {
 	expiresAtMS?: DOMHighResTimeStamp
 }
 
-export type AbilityFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+type ChampionFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+export type ChampionFns = {cast?: ChampionFn, passive?: ChampionFn}
 
 export const enum SpellKey {
 	ADFromAttackSpeed = 'ADFromAttackSpeed',

@@ -7,7 +7,7 @@ import { champions } from '@tacticians-academy/academy-library/dist/set6/champio
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import abilities from '#/data/set6/abilities'
+import championFns from '#/data/set6/champions'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
 import { Projectile } from '#/game/Projectile'
@@ -21,7 +21,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, solveSpellCalculationFor
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType, MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
-import type { AbilityFn, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { ChampionFns, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
 
@@ -57,7 +57,9 @@ export class ChampionUnit {
 	items: ItemData[] = []
 	traits: TraitData[] = []
 	transformIndex = 0
-	ability: AbilityFn | undefined
+
+	nextAttack: SpellCalculation | undefined //TODO
+	championFns: ChampionFns | undefined
 
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
 	scalings = new Set<BonusScaling>()
@@ -76,7 +78,7 @@ export class ChampionUnit {
 		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLockedLevel ?? starLevel
-		this.ability = abilities[name]
+		this.championFns = championFns[name]
 		this.instantAttack = this.data.stats.range <= 1
 		this.startPosition = position
 		this.activePosition = position
@@ -314,12 +316,12 @@ export class ChampionUnit {
 	}
 
 	readyToCast() {
-		return !!this.ability && this.mana >= this.manaMax()
+		return !!this.championFns?.cast && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
 		const spell = this.getCurrentSpell()
 		if (spell) {
-			this.ability?.(elapsedMS, spell, this)
+			this.championFns?.cast?.(elapsedMS, spell, this)
 		}
 		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
