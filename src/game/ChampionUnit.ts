@@ -487,6 +487,7 @@ export class ChampionUnit {
 		}
 
 		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		this.items.forEach(item => itemEffects[item.id as ItemKey]?.damageTaken?.(item, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 
 		if (sourceType === DamageSourceType.attack) {
