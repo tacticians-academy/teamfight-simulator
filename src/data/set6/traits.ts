@@ -20,6 +20,21 @@ interface TraitFns {
 
 export default {
 
+	[TraitKey.Bodyguard]: {
+		solo: (unit, activeEffect) => {
+			const shieldAmount = activeEffect.variables['ShieldAmount']
+			if (shieldAmount == null) {
+				return console.log('ERR', 'Missing', 'shieldAmount', activeEffect)
+			}
+			const shield: ShieldData = {
+				activatesAfterMS: 1000, //TODO experimentally determine
+				amount: shieldAmount,
+			}
+			//TODO Taunt
+			return { shields: [shield] }
+		},
+	},
+
 	[TraitKey.Clockwork]: {
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
