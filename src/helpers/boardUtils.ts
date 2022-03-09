@@ -16,7 +16,7 @@ function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): He
 	if (!containsHex(hex, unitPositions)) {
 		return hex
 	}
-	const surroundingHexes = getSurrounding(hex)
+	const surroundingHexes = getHexRing(hex)
 	for (const surroundingHex of surroundingHexes) {
 		if (!containsHex(surroundingHex, unitPositions)) {
 			return surroundingHex
@@ -68,7 +68,15 @@ const surroundings = [
 	[[3, 0], [2, 1], [2, 2], [1, 3], [0, 3], [-1, 3], [-2, 3], [-2, 2], [-3, 1]],
 ]
 
-export function getSurrounding([col, row]: HexCoord, atDistance: number = 1): HexCoord[] {
+export function getSurroundingWithin(hex: HexCoord, maxDistance: number = 1): HexCoord[] {
+	const results: HexCoord[] = []
+	for (let distance = 1; distance <= maxDistance; distance += 1) {
+		results.push(...getHexRing(hex, distance))
+	}
+	return results
+}
+
+export function getHexRing([col, row]: HexCoord, atDistance: number = 1): HexCoord[] {
 	if (atDistance < 1) {
 		return [[col, row]]
 	}
@@ -100,8 +108,8 @@ export function getDensestTargetHexes(units: ChampionUnit[], team: TeamNumber | 
 			continue
 		}
 		const position = unit.activePosition
-		for (let distance = 0; distance <= maxDistance; distance += 1) {
-			getSurrounding(position, distance).forEach(([col, row]) => {
+		for (let distance = 1; distance <= maxDistance; distance += 1) {
+			getHexRing(position, distance).forEach(([col, row]) => {
 				const newValue = densityBoard[row][col] + maxDistance + 1 - distance
 				densityBoard[row][col] = newValue
 				if (newValue > densestHexValue) {
@@ -147,7 +155,7 @@ export function getNearestEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], 
 	while (checkHexes.length && !enemies.length) {
 		const visitedSurroundingHexes: HexCoord[] = []
 		for (const checkHex of checkHexes) {
-			for (const surroundingHex of getSurrounding(checkHex)) {
+			for (const surroundingHex of getHexRing(checkHex)) {
 				if (!containsHex(surroundingHex, checkedHexes)) {
 					checkedHexes.push(surroundingHex)
 					visitedSurroundingHexes.push(surroundingHex)

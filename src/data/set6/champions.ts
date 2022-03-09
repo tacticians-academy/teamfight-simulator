@@ -1,7 +1,7 @@
 import { BonusKey } from '@tacticians-academy/academy-library'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
-import { getSurrounding } from '#/helpers/boardUtils'
+import { getSurroundingWithin } from '#/helpers/boardUtils'
 import { SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
@@ -24,7 +24,7 @@ export default {
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
-				hexes: getSurrounding(champion.activePosition, 1),
+				hexes: getSurroundingWithin(champion.activePosition, 1),
 				onCollision: (affectedUnit) => {
 					champion.gainHealth(champion.getSpellCalculationResult(SpellKey.Heal)!)
 				},
@@ -60,7 +60,7 @@ export default {
 				hexes: [targetPosition],
 			})
 			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: getSurrounding(targetPosition, 1),
+				hexes: getSurroundingWithin(targetPosition, 1),
 				damageModifier: 0.5,
 			})
 		},
