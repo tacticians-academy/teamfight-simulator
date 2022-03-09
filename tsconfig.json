@@ -12,6 +12,8 @@
 		"lib": ["esnext", "dom"],
 		"paths": {
 			"#/*": ["./src/*"],
+			// "@tacticians-academy/academy-library/*": ["../academy-library/*"], //SAMPLE
+			// "@tacticians-academy/academy-library": ["../academy-library/dist/index.ts"], //SAMPLE
 		},
 	},
 	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"]
