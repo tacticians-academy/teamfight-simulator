@@ -43,10 +43,12 @@ export interface BonusScaling {
 
 export interface ShieldData {
 	activated?: boolean
-	activatesAfterMS?: DOMHighResTimeStamp
+	activatesAtMS?: DOMHighResTimeStamp
 	isSpellShield?: boolean
 	amount: number
+	repeatAmount?: number
 	expiresAtMS?: DOMHighResTimeStamp
+	repeatsEveryMS?: DOMHighResTimeStamp
 }
 
 type ChampionFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void

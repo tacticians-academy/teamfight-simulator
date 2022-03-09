@@ -27,7 +27,7 @@ export default {
 				return console.log('ERR', 'Missing', 'shieldAmount', activeEffect)
 			}
 			const shield: ShieldData = {
-				activatesAfterMS: 1000, //TODO experimentally determine
+				activatesAtMS: 1000, //TODO experimentally determine
 				amount: shieldAmount,
 			}
 			//TODO Taunt

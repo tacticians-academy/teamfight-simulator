@@ -277,14 +277,27 @@ export class ChampionUnit {
 
 	updateShields(elapsedMS: DOMHighResTimeStamp) {
 		this.shields.forEach(shield => {
-			if (shield.expiresAtMS != null && shield.expiresAtMS <= elapsedMS) {
-				this.shields.delete(shield)
-				return
+			if (shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
+				if (shield.repeatsEveryMS == null) {
+					this.shields.delete(shield)
+					return
+				}
+				shield.activated = false
 			}
+
 			if (shield.activated !== true) {
-				if (shield.activatesAfterMS != null) {
-					if (elapsedMS > shield.activatesAfterMS) {
+				if (shield.activatesAtMS != null) {
+					if (elapsedMS >= shield.activatesAtMS) {
 						shield.activated = true
+						if (shield.repeatsEveryMS != null) {
+							shield.activatesAtMS += shield.repeatsEveryMS
+							if (shield.expiresAtMS != null) {
+								shield.expiresAtMS += shield.repeatsEveryMS
+							}
+						}
+						if (shield.repeatAmount != null) {
+							shield.amount = shield.repeatAmount
+						}
 					}
 				} else {
 					shield.activated = true
@@ -435,7 +448,11 @@ export class ChampionUnit {
 			.forEach(shield => {
 				const protectingDamage = Math.min(shield.amount, healthDamage)
 				if (protectingDamage >= shield.amount) {
-					this.shields.delete(shield)
+					if (shield.repeatsEveryMS != null) {
+						shield.amount = 0
+					} else {
+						this.shields.delete(shield)
+					}
 				} else {
 					shield.amount -= protectingDamage
 				}
