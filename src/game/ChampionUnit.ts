@@ -441,10 +441,9 @@ export class ChampionUnit {
 			this.gainMana(elapsedMS, manaGain)
 		}
 
-		const sourceVamp = source.getVamp(damageType!)
+		const sourceVamp = source.getVamp(damageType!, sourceType)
 		if (sourceVamp > 0) {
-			console.log('Heal', sourceVamp, takingDamage * sourceVamp / 100)
-			// source.heal(takingDamage * sourceVamp / 100) //TODO
+			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
 	}
 
@@ -594,13 +593,15 @@ export class ChampionUnit {
 		return this.getBonuses('DodgeChance' as BonusKey)
 	}
 
-	getVamp(damageType: DamageType) {
+	getVamp(damageType: DamageType, damageSource: DamageSourceType) {
 		const vampBonuses = [BonusKey.VampOmni]
-		if (damageType === DamageType.physical) {
-			vampBonuses.push(BonusKey.VampPhysical)
-		}
-		if (damageType === DamageType.magic || damageType === DamageType.true) {
-			vampBonuses.push(BonusKey.VampSpell)
+		if (damageSource !== DamageSourceType.item) {
+			if (damageType === DamageType.physical) {
+				vampBonuses.push(BonusKey.VampPhysical)
+			}
+			if (damageType === DamageType.magic || damageType === DamageType.true) {
+				vampBonuses.push(BonusKey.VampSpell)
+			}
 		}
 		return this.getBonuses(...vampBonuses)
 	}
