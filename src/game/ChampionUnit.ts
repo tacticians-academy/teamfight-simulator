@@ -7,7 +7,7 @@ import { champions } from '@tacticians-academy/academy-library/dist/set6/champio
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import championFns from '#/data/set6/champions'
+import championEffects from '#/data/set6/champions'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
 import { Projectile } from '#/game/Projectile'
@@ -59,7 +59,7 @@ export class ChampionUnit {
 	transformIndex = 0
 
 	nextAttack: SpellCalculation | undefined //TODO
-	championFns: ChampionFns | undefined
+	championEffects: ChampionFns | undefined
 
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
 	scalings = new Set<BonusScaling>()
@@ -78,7 +78,7 @@ export class ChampionUnit {
 		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLockedLevel ?? starLevel
-		this.championFns = championFns[name]
+		this.championEffects = championEffects[name]
 		this.instantAttack = this.data.stats.range <= 1
 		this.startPosition = position
 		this.activePosition = position
@@ -316,12 +316,12 @@ export class ChampionUnit {
 	}
 
 	readyToCast() {
-		return !!this.championFns?.cast && this.mana >= this.manaMax()
+		return !!this.championEffects?.cast && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp) {
 		const spell = this.getCurrentSpell()
 		if (spell) {
-			this.championFns?.cast?.(elapsedMS, spell, this)
+			this.championEffects?.cast?.(elapsedMS, spell, this)
 		}
 		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
