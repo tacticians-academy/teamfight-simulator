@@ -35,6 +35,19 @@ export default {
 		},
 	},
 
+	[ItemKey.FrozenHeart]: {
+		update: (elapsedMS, item, unit) => {
+			const slowAS = item.effects['ASSlow']
+			const hexRadius = item.effects['HexRadius']
+			const durationSeconds = 0.5 //NOTE hardcoded apparently??
+			if (hexRadius == null || slowAS == null) {
+				return console.log('ERR', ItemKey.FrozenHeart, item.effects)
+			}
+			const affectedUnits = unit.getUnitsWithin(hexRadius, unit.opposingTeam())
+			affectedUnits.forEach(unit => unit.applyAttackSpeedSlow(elapsedMS, durationSeconds * 1000, slowAS))
+		},
+	},
+
 	[ItemKey.HextechGunblade]: {
 		damageDealtByHolder: (target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
