@@ -43,7 +43,7 @@ export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellC
 	return [calculation.asPercent === true ? total * 100 : total, damageType]
 }
 
-export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber: TeamNumber, unitTraitKeys: TraitKey[]): BonusResults {
+export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]): BonusResults {
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	const bonusScalings: BonusScaling[] = []
 	const bonusShields: ShieldData[] = []
@@ -56,7 +56,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber
 		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		const bonusVariables: BonusVariable[] = []
 		if (teamTraitFn) {
-			const { variables, scalings, shields } = teamTraitFn(activeEffect, teamNumber)
+			const { variables, scalings, shields } = teamTraitFn(unit, activeEffect)
 			if (variables) { bonusVariables.push(...variables) }
 			if (scalings) { bonusScalings.push(...scalings) }
 			if (shields) { bonusShields.push(...shields) }
@@ -99,7 +99,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber
 		if (unitHasTrait) {
 			const soloTraitFn = traitEffects[trait.name as TraitKey]?.solo
 			if (soloTraitFn) {
-				const { variables, scalings, shields } = soloTraitFn(activeEffect, teamNumber)
+				const { variables, scalings, shields } = soloTraitFn(unit, activeEffect)
 				if (variables) { bonusVariables.push(...variables) }
 				if (scalings) { bonusScalings.push(...scalings) }
 				if (shields) { bonusShields.push(...shields) }
@@ -114,7 +114,7 @@ export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber
 		if (innateTraitFn) {
 			const innateEffect = getInnateEffectForUnitWith(trait, teamSynergies)
 			if (innateEffect) {
-				const { variables, scalings, shields } = innateTraitFn(innateEffect, teamNumber)
+				const { variables, scalings, shields } = innateTraitFn(unit, innateEffect)
 				if (variables) { bonuses.push([trait, variables]) }
 				if (scalings) { bonusScalings.push(...scalings) }
 				if (shields) { bonusShields.push(...shields) }

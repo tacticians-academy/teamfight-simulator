@@ -2,13 +2,14 @@ import { BonusKey, COMPONENT_ITEM_IDS } from '@tacticians-academy/academy-librar
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { MutantType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
 
-type TraitEffectFn = (activeEffect: TraitEffectData, teamNumber: TeamNumber) => EffectResults
+type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
@@ -18,7 +19,7 @@ interface TraitFns {
 export default {
 
 	[TraitKey.Clockwork]: {
-		team: (activeEffect: TraitEffectData) => {
+		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
 			const bonusPerAugment = activeEffect.variables['BonusPerAugment']
 			const bonusAS = activeEffect.variables['ASBonus']
@@ -37,7 +38,7 @@ export default {
 	},
 
 	[TraitKey.Colossus]: {
-		innate: (innateEffect: TraitEffectData) => {
+		innate: (unit, innateEffect) => {
 			const variables: BonusVariable[] = []
 			const bonusHealth = innateEffect.variables[`Bonus${BonusKey.Health}Tooltip`]
 			if (bonusHealth != null) {
@@ -50,7 +51,7 @@ export default {
 	},
 
 	[TraitKey.Mutant]: {
-		solo: (activeEffect: TraitEffectData) => {
+		solo: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
 			if (state.mutantType === MutantType.Metamorphosis) {
 				const intervalSeconds = activeEffect.variables['MutantMetamorphosisGrowthRate']
@@ -79,7 +80,7 @@ export default {
 			}
 			return { scalings }
 		},
-		team: (activeEffect: TraitEffectData) => {
+		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.BioLeeching) {
 				const omnivamp = activeEffect.variables['MutantBioLeechingOmnivamp']
@@ -94,7 +95,7 @@ export default {
 	},
 
 	[TraitKey.Scholar]: {
-		team: (activeEffect: TraitEffectData) => {
+		team: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
 			const intervalAmount = activeEffect.variables['ManaPerTick']
 			const intervalSeconds = activeEffect.variables['TickRate']
@@ -114,11 +115,11 @@ export default {
 	},
 
 	[TraitKey.Scrap]: {
-		team: (activeEffect: TraitEffectData, teamNumber: TeamNumber) => {
+		team: (unit, activeEffect) => {
 			const shields: ShieldData[] = []
 			const amountPerComponent = activeEffect.variables['HPShieldAmount']
 			if (amountPerComponent != null) {
-				const amount = getUnitsOfTeam(teamNumber)
+				const amount = getUnitsOfTeam(unit.team)
 					.reduce((unitAcc, unit) => {
 						return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
 					}, 0)
@@ -131,7 +132,7 @@ export default {
 	},
 
 	[TraitKey.Sniper]: {
-		innate: (innateEffect: TraitEffectData) => {
+		innate: (unit, innateEffect) => {
 			const variables: BonusVariable[] = []
 			const rangeIncrease = innateEffect.variables[BonusKey.HexRangeIncrease]
 			if (rangeIncrease != null) {
