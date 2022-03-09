@@ -32,6 +32,13 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		startedAtMS = frameMS
 		updatePaths(state.units)
 		didBacklineJump = false
+		state.units.forEach(unit => {
+			unit.shields.forEach(shield => {
+				if (shield.activatesAfterMS != null) {
+					shield.activated = false
+				}
+			})
+		})
 	}
 	const elapsedMS = frameMS - startedAtMS
 	if (elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {

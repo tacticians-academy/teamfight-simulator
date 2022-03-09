@@ -42,6 +42,8 @@ export interface BonusScaling {
 }
 
 export interface ShieldData {
+	activated?: boolean
+	activatesAfterMS?: DOMHighResTimeStamp
 	isSpellShield?: boolean
 	amount: number
 	expiresAtMS?: DOMHighResTimeStamp

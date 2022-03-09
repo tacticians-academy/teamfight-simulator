@@ -70,11 +70,13 @@ function onInfo(event: Event) {
 			<div class="h-full bg-green-500" :style="{ width: `${100 * unit.health / unit.healthMax}%` }" />
 			<div class="bar-container bar-health">
 				<div class="bar-container  flex justify-end">
-					<div
-						v-for="(shield, index) in unit.shields" :key="index"
-						:style="{ width: shield.isSpellShield ? '7%' : `${100 * shield.amount / unit.healthMax}%` }"
-						:class="shield.isSpellShield ? 'bg-purple-600' : 'bg-gray-300'"
-					/>
+					<template v-for="(shield, index) in unit.shields" :key="index">
+						<div
+							v-if="shield.activated !== false"
+							:style="{ width: shield.isSpellShield ? '7%' : `${100 * shield.amount / unit.healthMax}%` }"
+							:class="shield.isSpellShield ? 'bg-purple-600' : 'bg-gray-300'"
+						/>
+					</template>
 				</div>
 				<span class="ml-px relative z-50">{{ Math.ceil(unit.health) }}</span>
 			</div>

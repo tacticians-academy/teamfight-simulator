@@ -279,6 +279,16 @@ export class ChampionUnit {
 		this.shields.forEach(shield => {
 			if (shield.expiresAtMS != null && shield.expiresAtMS <= elapsedMS) {
 				this.shields.delete(shield)
+				return
+			}
+			if (shield.activated !== true) {
+				if (shield.activatesAfterMS != null) {
+					if (elapsedMS > shield.activatesAfterMS) {
+						shield.activated = true
+					}
+				} else {
+					shield.activated = true
+				}
 			}
 		})
 	}
