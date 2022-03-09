@@ -11,8 +11,7 @@ export default {
 	[ChampionKey.Caitlyn]: (elapsedMS, spell, champion) => {
 		const target = getDistanceUnit(false, champion)
 		if (!target) { return console.log('No target', champion.name, champion.team) }
-		champion.queueProjectile(elapsedMS, {
-			spell,
+		champion.queueProjectile(elapsedMS, spell, {
 			target,
 			collidesWith: champion.opposingTeam(),
 			destroysOnCollision: true,
@@ -21,8 +20,7 @@ export default {
 	},
 
 	[ChampionKey.Darius]: (elapsedMS, spell, champion) => {
-		champion.queueHexEffect(elapsedMS, { //TODO use coordinate-based collision
-			spell,
+		champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
 			hexes: getSurrounding(champion.activePosition, 1),
 			onCollision: (affectedUnit) => {
 				champion.gainHealth(champion.getSpellCalculationResult(SpellKey.Heal)!)
@@ -33,8 +31,7 @@ export default {
 	[ChampionKey.Ezreal]: (elapsedMS, spell, champion) => {
 		const target = champion.target
 		if (!target) { return console.log('No target', champion.name, champion.team) }
-		champion.queueProjectile(elapsedMS, {
-			spell,
+		champion.queueProjectile(elapsedMS, spell, {
 			target: target.activePosition,
 			collidesWith: champion.opposingTeam(),
 			destroysOnCollision: true,
@@ -52,20 +49,17 @@ export default {
 	[ChampionKey.Ziggs]: (elapsedMS, spell, champion) => {
 		const targetPosition = champion.target?.activePosition
 		if (!targetPosition) { return console.log('No target', champion.name, champion.team) }
-		champion.queueHexEffect(elapsedMS, {
-			spell,
+		champion.queueHexEffect(elapsedMS, spell, {
 			hexes: [targetPosition],
 		})
-		champion.queueHexEffect(elapsedMS, {
-			spell,
+		champion.queueHexEffect(elapsedMS, spell, {
 			hexes: getSurrounding(targetPosition, 1),
 			damageModifier: 0.5,
 		})
 	},
 
 	[ChampionKey.Zyra]: (elapsedMS, spell, champion) => {
-		champion.queueHexEffect(elapsedMS, {
-			spell,
+		champion.queueHexEffect(elapsedMS, spell, {
 			hexes: getRowOfMostAttackable(champion.opposingTeam()),
 			stunSeconds: champion.getSpellVariable(SpellKey.StunDuration),
 		})

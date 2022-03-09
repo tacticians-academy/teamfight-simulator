@@ -2,13 +2,12 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { CollisionFn, DamageSourceType, HexCoord } from '#/helpers/types'
+import type { CollisionFn, DamageSourceType, HexCoord, TeamNumber } from '#/helpers/types'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
 
 export interface HexEffectData {
-	spell: ChampionSpellData
 	expiresAfterMS?: DOMHighResTimeStamp
 	hexes: HexCoord[]
 	targetTeam?: number
@@ -39,10 +38,10 @@ export class HexEffect {
 
 	activated = false
 
-	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
+	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, data: HexEffectData) {
 		this.instanceID = `h${instanceIndex += 1}`
-		this.startsAtMS = elapsedMS + (data.spell.castTime ?? DEFAULT_CAST_TIME) * 1000
-		this.activatesAfterMS = data.spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME * 1000
+		this.startsAtMS = elapsedMS + (spell.castTime ?? DEFAULT_CAST_TIME) * 1000
+		this.activatesAfterMS = spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME * 1000
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.source = source
@@ -53,5 +52,26 @@ export class HexEffect {
 		this.damageSourceType = data.damageSourceType
 		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
 		this.onCollision = data.onCollision
+	}
+
+	update(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+		if (this.activated && elapsedMS > this.expiresAtMS) {
+			return false
+		}
+		if (elapsedMS < this.activatesAtMS) {
+			return true
+		}
+		this.activated = true
+		const affectingUnits = this.targetTeam === 2 ? units : units.filter(unit => unit.team === this.targetTeam)
+		for (const unit of affectingUnits.filter(unit => unit.isIn(this.hexes))) {
+			if (this.damageCalculation != null) {
+				unit.damage(elapsedMS, this.source, this.damageSourceType!, this.damageCalculation!, this.damageModifier, true, units, gameOver)
+			}
+			if (this.stunMS != null) {
+				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
+			}
+			this.onCollision?.(unit)
+		}
+		return true
 	}
 }

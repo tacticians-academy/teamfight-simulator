@@ -12,29 +12,6 @@ const MOVE_LOCKOUT_MELEE_MS = 1000
 
 let didBacklineJump = false
 
-function updateHexEffects(elapsedMS: DOMHighResTimeStamp) {
-	state.hexEffects.forEach(hexEffect => {
-		if (hexEffect.activated && elapsedMS > hexEffect.expiresAtMS) {
-			state.hexEffects.delete(hexEffect)
-			return
-		}
-		if (elapsedMS < hexEffect.activatesAtMS) {
-			return
-		}
-		hexEffect.activated = true
-		const affectingUnits = hexEffect.targetTeam === 2 ? state.units : state.units.filter(unit => unit.team === hexEffect.targetTeam)
-		for (const unit of affectingUnits.filter(unit => unit.isIn(hexEffect.hexes))) {
-			if (hexEffect.damageCalculation != null) {
-				unit.damage(elapsedMS, hexEffect.source, hexEffect.damageSourceType!, hexEffect.damageCalculation!, hexEffect.damageModifier, true, state.units, gameOver)
-			}
-			if (hexEffect.stunMS != null) {
-				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)
-			}
-			hexEffect.onCollision?.(unit)
-		}
-	})
-}
-
 function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (unanimated === true) {
 		runLoop(frameMS + GAME_TICK_MS, true)
@@ -109,13 +86,18 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			unit.updateMove(elapsedMS, state.units)
 		}
 	}
-	updateHexEffects(elapsedMS)
 
-	for (const projectile of state.projectiles) {
+	state.hexEffects.forEach(hexEffect => {
+		if (!hexEffect.update(elapsedMS, state.units, gameOver)) {
+			state.hexEffects.delete(hexEffect)
+		}
+	})
+	state.projectiles.forEach(projectile => {
 		if (!projectile.update(elapsedMS, diffMS, state.units, gameOver)) {
 			state.projectiles.delete(projectile)
 		}
-	}
+	})
+
 	if (isFirstLoop) {
 		updatePaths(state.units)
 	}

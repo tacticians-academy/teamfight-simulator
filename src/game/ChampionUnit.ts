@@ -225,7 +225,7 @@ export class ChampionUnit {
 						this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
 						this.attackStartAtMS = elapsedMS
 					} else {
-						this.queueProjectile(elapsedMS, {
+						this.queueProjectile(elapsedMS, undefined, {
 							startsAfterMS: msBetweenAttacks / 4, //TODO from data
 							missile: {
 								speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
@@ -596,25 +596,26 @@ export class ChampionUnit {
 		return this.getBonuses(...vampBonuses)
 	}
 
-	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
+	queueProjectile(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
 		if (!data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
 		if (!data.sourceType) {
 			data.sourceType = DamageSourceType.spell
 		}
+		data.spell = spell
 		const projectile = new Projectile(this, elapsedMS, data)
 		this.pending.projectiles.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
-		if (data.spell) {
+		if (spell) {
 			this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
 		}
 	}
-	queueHexEffect(elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
+	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, data: HexEffectData) {
 		if (data.damageCalculation === undefined) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
-		const hexEffect = new HexEffect(this, elapsedMS, data)
+		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
 		this.pending.hexEffects.add(hexEffect)
 		this.attackStartAtMS = hexEffect.startsAtMS
 		this.manaLockUntilMS = hexEffect.startsAtMS + DEFAULT_MANA_LOCK_MS
