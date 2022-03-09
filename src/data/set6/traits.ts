@@ -53,6 +53,7 @@ export default {
 	[TraitKey.Mutant]: {
 		solo: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
+			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.Metamorphosis) {
 				const intervalSeconds = activeEffect.variables['MutantMetamorphosisGrowthRate']
 				const amountARMR = activeEffect.variables['MutantMetamorphosisArmorMR']
@@ -77,8 +78,17 @@ export default {
 				} else {
 					console.log('ERR Invalid Metamorphosis', activeEffect.variables)
 				}
+			} else if (state.mutantType === MutantType.Cybernetic) {
+				if (unit.items.length) {
+					const cyberHP = activeEffect.variables['MutantCyberHP']
+					const cyberAD = activeEffect.variables['MutantCyberAD']
+					if (cyberHP != null && cyberAD != null) {
+						variables.push([BonusKey.Health, cyberHP])
+						variables.push([BonusKey.AttackDamage, cyberAD])
+					}
+				}
 			}
-			return { scalings }
+			return { scalings, variables }
 		},
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
