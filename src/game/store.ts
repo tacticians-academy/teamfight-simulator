@@ -39,6 +39,7 @@ export const state = reactive({
 
 export const getters = {
 	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
+	mutantType: computed(() => state.mutantType),
 
 	synergiesByTeam: computed(() => {
 		const teamSynergies: [SynergyCount, SynergyCount] = [new Map(), new Map()]
@@ -75,7 +76,7 @@ export const getters = {
 
 // Watch
 
-watchEffect(() => {
+watch([getters.mutantType], () => {
 	setStorage(StorageKey.Mutant, state.mutantType)
 	resetUnitsAfterCreatingOrMoving()
 })
