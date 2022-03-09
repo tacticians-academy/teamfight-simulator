@@ -20,13 +20,14 @@ function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 }
 export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
-	const diffMS = frameMS - previousFrameMS
+	let diffMS = frameMS - previousFrameMS
 	if (diffMS < GAME_TICK_MS - 1) {
 		requestNextFrame(frameMS, unanimated)
 		return
 	}
 	const isFirstLoop = !startedAtMS
 	if (isFirstLoop) {
+		diffMS = 0
 		previousFrameMS = frameMS
 		startedAtMS = frameMS
 		updatePaths(state.units)

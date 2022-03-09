@@ -53,8 +53,8 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 		}
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
 		const unitHasTrait = unitTraitKeys.includes(trait.name as TraitKey)
-		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		const bonusVariables: BonusVariable[] = []
+		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
 		if (teamTraitFn) {
 			const { variables, scalings, shields } = teamTraitFn(unit, activeEffect)
 			if (variables) { bonusVariables.push(...variables) }

@@ -23,6 +23,7 @@ import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MA
 import { saveUnits } from '#/helpers/storage'
 import { DamageType, MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
 import type { ChampionFns, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import { randomItem } from '#/helpers/utils'
 
 let instanceIndex = 0
 
@@ -199,7 +200,7 @@ export class ChampionUnit {
 		if (this.target == null) {
 			const targets = getNearestEnemies(this, units)
 			if (targets.length) {
-				this.target = targets[0] //TODO choose random
+				this.target = randomItem(targets)! //TODO random
 				this.cachedTargetDistance = this.hexDistanceTo(this.target)
 				// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
 			}
@@ -207,44 +208,46 @@ export class ChampionUnit {
 	}
 
 	updateAttack(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
-		if (this.target != null) {
-			const msBetweenAttacks = 1000 / this.attackSpeed()
-			if (elapsedMS >= this.attackStartAtMS + msBetweenAttacks) {
-				if (this.attackStartAtMS <= 0) {
-					this.attackStartAtMS = elapsedMS
-				} else {
-					const canReProcAttack = this.attackStartAtMS > 1
-					const damageCalculation: SpellCalculation = {
-						parts: [{
-							subparts: [{
-								variable: BonusKey.AttackDamage,
-								starValues: [1, 1, 1, 1],
-								stat: BonusKey.AttackDamage,
-								ratio: 1,
-							}],
-						}],
-					}
-					if (this.instantAttack) {
-						this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
-						this.attackStartAtMS = elapsedMS
-					} else {
-						this.queueProjectile(elapsedMS, undefined, {
-							startsAfterMS: msBetweenAttacks / 4, //TODO from data
-							missile: {
-								speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
-							},
-							sourceType: DamageSourceType.attack,
-							target: this.target,
-							damageCalculation,
-						})
-					}
-					this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
-					if (canReProcAttack) {
-						const multiAttackProcChance = this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
-						if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
-							this.attackStartAtMS = 1
-						}
-					}
+		if (this.target == null) {
+			return
+		}
+		const msBetweenAttacks = 1000 / this.attackSpeed()
+		if (elapsedMS < this.attackStartAtMS + msBetweenAttacks) {
+			return
+		}
+		if (this.attackStartAtMS <= 0) {
+			this.attackStartAtMS = elapsedMS
+		} else {
+			const canReProcAttack = this.attackStartAtMS > 1
+			const damageCalculation: SpellCalculation = {
+				parts: [{
+					subparts: [{
+						variable: BonusKey.AttackDamage,
+						starValues: [1, 1, 1, 1],
+						stat: BonusKey.AttackDamage,
+						ratio: 1,
+					}],
+				}],
+			}
+			if (this.instantAttack) {
+				this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
+				this.attackStartAtMS = elapsedMS
+			} else {
+				this.queueProjectile(elapsedMS, undefined, {
+					startsAfterMS: msBetweenAttacks / 4, //TODO from data
+					missile: {
+						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
+					},
+					sourceType: DamageSourceType.attack,
+					target: this.target,
+					damageCalculation,
+				})
+			}
+			this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
+			if (canReProcAttack) {
+				const multiAttackProcChance = this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
+				if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
+					this.attackStartAtMS = 1
 				}
 			}
 		}
