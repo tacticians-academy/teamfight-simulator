@@ -46,6 +46,10 @@ export class ChampionUnit {
 	isStarLocked: boolean
 	fixedAS: number | undefined = undefined
 	instantAttack: boolean
+	attackSpeedSlow = {
+		expiresAt: 0,
+		amount: 0,
+	}
 
 	collides = true
 	interacts = true
@@ -214,7 +218,11 @@ export class ChampionUnit {
 		if (this.target == null) {
 			return
 		}
-		const msBetweenAttacks = 1000 / this.attackSpeed()
+		let attackSpeed = this.attackSpeed()
+		if (elapsedMS < this.attackSpeedSlow.expiresAt) {
+			attackSpeed *= 1 - this.attackSpeedSlow.amount / 100
+		}
+		const msBetweenAttacks = 1000 / attackSpeed
 		if (elapsedMS < this.attackStartAtMS + msBetweenAttacks) {
 			return
 		}
@@ -330,6 +338,14 @@ export class ChampionUnit {
 			return true
 		}
 		return false
+	}
+
+	applyAttackSpeedSlow(elapsedMS: DOMHighResTimeStamp, durationMS: DOMHighResTimeStamp, amount: number) {
+		const expireAt = elapsedMS + durationMS
+		if (expireAt > this.attackSpeedSlow.expiresAt) {
+			this.attackSpeedSlow.expiresAt = expireAt
+			this.attackSpeedSlow.amount = amount
+		}
 	}
 
 	opposingTeam(): TeamNumber {
@@ -650,6 +666,16 @@ export class ChampionUnit {
 			}
 		}
 		return this.getBonuses(...vampBonuses)
+	}
+
+	getUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
+		const hexes = getSurroundingWithin(this.activePosition, distance)
+		return state.units.filter(unit => {
+			if (team != null && unit.team !== team) {
+				return false
+			}
+			return unit.isIn(hexes)
+		})
 	}
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
