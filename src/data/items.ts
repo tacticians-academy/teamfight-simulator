@@ -3,11 +3,15 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
+import type { ChampionUnit } from '#/game/ChampionUnit'
+
+import { DamageType } from '#/helpers/types'
 import type { BonusScaling, EffectResults, ShieldData } from '#/helpers/types'
 
 type ItemEffectFn = (item: ItemData) => EffectResults
 interface ItemFns {
 	innate?: ItemEffectFn,
+	damageDealtByHolder: (target: ChampionUnit, source: ChampionUnit, damage: number, damageType: DamageType) => void
 }
 
 export default {
@@ -29,6 +33,27 @@ export default {
 				console.log('Missing effects', item)
 			}
 			return { scalings }
+		},
+	},
+
+	[ItemKey.HextechGunblade]: {
+		damageDealtByHolder: (target, source, damage, damageType) => {
+			if (damageType !== DamageType.physical) {
+				const hextechHeal = source.getBonusesFromKey(ItemKey.HextechGunblade, BonusKey.VampSpell)
+				if (hextechHeal > 0) {
+					let lowestHP = Number.MAX_SAFE_INTEGER
+					let lowestUnit: ChampionUnit | undefined
+					source.alliedUnits().forEach(unit => {
+						if (unit.health < lowestHP) {
+							lowestHP = unit.health
+							lowestUnit = unit
+						}
+					})
+					if (lowestUnit) {
+						lowestUnit.gainHealth(damage * hextechHeal / 100)
+					}
+				}
+			}
 		},
 	},
 

@@ -8,6 +8,7 @@ import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import championEffects from '#/data/set6/champions'
+import itemEffects from '#/data/items'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
 import { Projectile } from '#/game/Projectile'
@@ -377,7 +378,7 @@ export class ChampionUnit {
 	die(units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		this.health = 0
 		this.dead = true
-		const teamUnits = units.filter(unit => !unit.dead && unit.team === this.team)
+		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
 			updatePaths(units)
 			teamUnits.forEach(unit => {
@@ -441,10 +442,18 @@ export class ChampionUnit {
 			this.gainMana(elapsedMS, manaGain)
 		}
 
+		// `source` effects
+
 		const sourceVamp = source.getVamp(damageType!, sourceType)
 		if (sourceVamp > 0) {
 			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
+
+		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder(this, source, takingDamage, damageType!))
+	}
+
+	alliedUnits(): ChampionUnit[] {
+		return state.units.filter(unit => unit !== this && !unit.dead && unit.team === this.team)
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
