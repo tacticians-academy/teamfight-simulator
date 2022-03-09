@@ -6,6 +6,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { gameOver, getters, state } from '#/game/store'
 
 import { getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, MutantType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, DamageType, EffectResults, ShieldData } from '#/helpers/types'
 
@@ -63,15 +64,7 @@ export default {
 				} else if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
-						const damage = rawDamage * trueDamageBonus / 100
-						const damageCalculation: SpellCalculation = {
-							parts: [{
-								subparts: [{
-									variable: 'MutantVoidborneTrueDamagePercent',
-									starValues: [damage, damage, damage, damage],
-								}],
-							}],
-						}
+						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100)
 						target.damage(elapsedMS, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
 					}
 				}

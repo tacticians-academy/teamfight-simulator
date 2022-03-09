@@ -20,6 +20,19 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 
 type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
 
+export function createDamageCalculation(variable: string, value: number, stat?: BonusKey, ratio?: number): SpellCalculation {
+	return {
+		parts: [{
+			subparts: [{
+				variable: variable,
+				starValues: [value, value, value, value],
+				stat,
+				ratio,
+			}],
+		}],
+	}
+}
+
 export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
 	let damageType: DamageType | undefined
 	const total = calculation.parts.reduce((acc, part) => {

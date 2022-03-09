@@ -19,7 +19,7 @@ import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, state } from '#/game/store'
 
 import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses, solveSpellCalculationFor } from '#/helpers/bonuses'
+import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { DamageType, MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
@@ -222,16 +222,7 @@ export class ChampionUnit {
 			this.attackStartAtMS = elapsedMS
 		} else {
 			const canReProcAttack = this.attackStartAtMS > 1
-			const damageCalculation: SpellCalculation = {
-				parts: [{
-					subparts: [{
-						variable: BonusKey.AttackDamage,
-						starValues: [1, 1, 1, 1],
-						stat: BonusKey.AttackDamage,
-						ratio: 1,
-					}],
-				}],
-			}
+			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, BonusKey.AttackDamage, 1)
 			if (this.instantAttack) {
 				this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
 				this.attackStartAtMS = elapsedMS
