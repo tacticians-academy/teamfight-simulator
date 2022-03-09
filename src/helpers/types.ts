@@ -1,4 +1,4 @@
-import type { BonusKey, ChampionSpellData, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+import type { BonusKey, ChampionSpellData, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
@@ -49,6 +49,7 @@ export interface ShieldData {
 	repeatAmount?: number
 	expiresAtMS?: DOMHighResTimeStamp
 	repeatsEveryMS?: DOMHighResTimeStamp
+	bonusDamage?: SpellCalculation
 }
 
 type ChampionFn = (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
