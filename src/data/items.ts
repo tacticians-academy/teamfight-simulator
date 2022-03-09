@@ -10,7 +10,7 @@ import type { BonusScaling, DamageSourceType, EffectResults, ShieldData } from '
 type ItemEffectFn = (item: ItemData) => EffectResults
 interface ItemFns {
 	innate?: ItemEffectFn,
-	damageDealtByHolder: (target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	damageDealtByHolder?: (target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 }
 
 export default {

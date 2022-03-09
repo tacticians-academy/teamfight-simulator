@@ -446,7 +446,7 @@ export class ChampionUnit {
 			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
 
-		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder(this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(this, source, sourceType, rawDamage, takingDamage, damageType!))
 		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, this, source, sourceType, rawDamage, takingDamage, damageType!))
 	}
 
