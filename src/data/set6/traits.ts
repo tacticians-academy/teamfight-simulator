@@ -15,7 +15,7 @@ interface TraitFns {
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
 	innate?: TraitEffectFn,
-	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
+	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }
 
 export default {
@@ -89,7 +89,7 @@ export default {
 	},
 
 	[TraitKey.Mutant]: {
-		damageDealtByHolder: (activeEffect, elapsedMS, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (activeEffect, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (state.mutantType === MutantType.Voidborne) {
 				const executeThreshold = activeEffect.variables['MutantVoidborneExecuteThreshold']
 				if (executeThreshold == null) {
@@ -97,11 +97,11 @@ export default {
 				}
 				if (target.healthProportion() <= executeThreshold / 100) {
 					target.die(state.units, gameOver)
-				} else if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
+				} else if (originalSource) {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
 						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100, DamageType.true)
-						target.damage(elapsedMS, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
+						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
 					}
 				}
 			}
@@ -197,8 +197,8 @@ export default {
 	},
 
 	[TraitKey.Sniper]: {
-		damageDealtByHolder: (activeEffect, elapsedMS, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
+		damageDealtByHolder: (activeEffect, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource) {
 				const key = 'PercentDamageIncrease'
 				const percentBonusDamagePerHex = activeEffect.variables[key]
 				if (percentBonusDamagePerHex == null) {
@@ -206,7 +206,7 @@ export default {
 				}
 				const hexDistance = source.hexDistanceTo(target)
 				const damageCalculation = createDamageCalculation(key, takingDamage * percentBonusDamagePerHex / 100 * hexDistance, damageType)
-				target.damage(elapsedMS, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
+				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
 			}
 		},
 		innate: (unit, innateEffect) => {

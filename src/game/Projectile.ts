@@ -69,7 +69,7 @@ export class Projectile {
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		this.onCollision?.(unit)
-		unit.damage(elapsedMS, this.source, this.sourceType, this.damageCalculation, undefined, false, units, gameOver)
+		unit.damage(elapsedMS, true, this.source, this.sourceType, this.damageCalculation, undefined, false, units, gameOver)
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void): boolean {

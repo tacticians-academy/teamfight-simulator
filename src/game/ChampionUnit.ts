@@ -232,7 +232,7 @@ export class ChampionUnit {
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			if (this.instantAttack) {
-				this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
+				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
 				this.attackStartAtMS = elapsedMS
 			} else {
 				this.queueProjectile(elapsedMS, undefined, {
@@ -428,7 +428,7 @@ export class ChampionUnit {
 		}
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
 		if (damageModifier != null) {
 			rawDamage *= damageModifier
@@ -489,13 +489,13 @@ export class ChampionUnit {
 			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
 
-		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(this, source, sourceType, rawDamage, takingDamage, damageType!))
-		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {
 				if (shield.activated !== false && shield.bonusDamage) {
-					this.damage(elapsedMS, source, DamageSourceType.trait, shield.bonusDamage, undefined, false, units, gameOver)
+					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, undefined, false, units, gameOver)
 				}
 			})
 		}

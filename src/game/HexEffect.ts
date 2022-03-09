@@ -65,7 +65,7 @@ export class HexEffect {
 		const affectingUnits = this.targetTeam === 2 ? units : units.filter(unit => unit.team === this.targetTeam)
 		for (const unit of affectingUnits.filter(unit => unit.isIn(this.hexes))) {
 			if (this.damageCalculation != null) {
-				unit.damage(elapsedMS, this.source, this.damageSourceType!, this.damageCalculation!, this.damageModifier, true, units, gameOver)
+				unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, this.damageModifier, true, units, gameOver)
 			}
 			if (this.stunMS != null) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)

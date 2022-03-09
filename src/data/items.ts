@@ -5,12 +5,13 @@ import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { BonusScaling, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
+import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
 
 interface ItemFns {
+	apply?: (item: ItemData) => EffectResults,
 	innate?: (item: ItemData) => EffectResults,
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, unit: ChampionUnit) => EffectResults,
-	damageDealtByHolder?: (target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 }
 
 export default {
@@ -49,7 +50,7 @@ export default {
 	},
 
 	[ItemKey.HextechGunblade]: {
-		damageDealtByHolder: (target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
 				const hextechHeal = source.getBonusesFromKey(ItemKey.HextechGunblade, BonusKey.VampSpell)
 				if (hextechHeal > 0) {
