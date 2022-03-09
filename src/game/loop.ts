@@ -63,13 +63,12 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 				unit.pending.projectiles.delete(pendingProjectile)
 			}
 		}
-		if (unit.readyToCast()) {
-			unit.castAbility(elapsedMS)
-		}
 		if (didBacklineJump) {
 			unit.updateTarget(state.units)
 		}
-		if (unit.target) {
+		if (didBacklineJump && unit.readyToCast()) {
+			unit.castAbility(elapsedMS)
+		} else if (unit.target) {
 			unit.updateAttack(elapsedMS, state.units, gameOver)
 		} else {
 			if (elapsedMS < MOVE_LOCKOUT_MELEE_MS) {
