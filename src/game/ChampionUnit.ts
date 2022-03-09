@@ -1,6 +1,6 @@
 import { markRaw } from 'vue'
 
-import { BonusKey } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
@@ -22,8 +22,8 @@ import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getCloses
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { DamageType, MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
-import type { ChampionFns, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import { MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
+import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -222,7 +222,7 @@ export class ChampionUnit {
 			this.attackStartAtMS = elapsedMS
 		} else {
 			const canReProcAttack = this.attackStartAtMS > 1
-			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, BonusKey.AttackDamage, 1)
+			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			if (this.instantAttack) {
 				this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
 				this.attackStartAtMS = elapsedMS

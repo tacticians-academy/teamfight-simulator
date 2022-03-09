@@ -1,4 +1,4 @@
-import { BonusKey } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'

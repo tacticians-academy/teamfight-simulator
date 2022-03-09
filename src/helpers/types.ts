@@ -23,9 +23,6 @@ export interface StorageChampion {
 
 export type UnitLevelStats = [number, number?, number?]
 
-export const enum DamageType {
-	physical, magic, true
-}
 export const enum DamageSourceType {
 	attack, spell, item, trait
 }

@@ -4,7 +4,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-import type { CollisionFn, DamageSourceType, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
+import type { CollisionFn, DamageSourceType, HexCoord, TeamNumber } from '#/helpers/types'
 import { coordinatePosition } from '#/game/store'
 
 let instanceIndex = 0

@@ -1,11 +1,10 @@
-import { BonusKey } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { DamageType } from '#/helpers/types'
 import type { BonusScaling, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
 
 type ItemEffectFn = (item: ItemData) => EffectResults
