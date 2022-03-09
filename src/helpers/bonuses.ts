@@ -10,7 +10,6 @@ import traitEffects from '#/data/set6/traits'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
-import { DamageType } from '#/helpers/types'
 import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
@@ -20,8 +19,9 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 
 type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
 
-export function createDamageCalculation(variable: string, value: number, stat?: BonusKey, ratio?: number): SpellCalculation {
+export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number): SpellCalculation {
 	return {
+		damageType: damageType,
 		parts: [{
 			subparts: [{
 				variable: variable,
@@ -34,7 +34,7 @@ export function createDamageCalculation(variable: string, value: number, stat?: 
 }
 
 export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
-	let damageType: DamageType | undefined
+	let damageType = calculation.damageType
 	const total = calculation.parts.reduce((acc, part) => {
 		const multiplyParts = part.operator === 'product'
 		return acc + part.subparts.reduce((subAcc, subpart) => {
