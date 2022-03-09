@@ -1,3 +1,7 @@
+import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
+
+import itemEffects from '#/data/items'
+
 import { state, gameOver } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
@@ -49,16 +53,21 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 
 	for (const unit of state.units) {
-		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS) {
+		if (unit.dead) {
 			continue
 		}
 		unit.updateRegen(elapsedMS)
 		unit.updateShields(elapsedMS)
-
 		if (unit.banishUntilMS != null && unit.banishUntilMS <= elapsedMS) {
 			unit.banishUntil(null)
 		}
-		if (!unit.interacts) {
+		unit.items.forEach(item => {
+			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, unit)
+		})
+	}
+
+	for (const unit of state.units) {
+		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS || !unit.interacts) {
 			continue
 		}
 

@@ -7,9 +7,9 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { BonusScaling, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
 
-type ItemEffectFn = (item: ItemData) => EffectResults
 interface ItemFns {
-	innate?: ItemEffectFn,
+	innate?: (item: ItemData) => EffectResults,
+	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, unit: ChampionUnit) => EffectResults,
 	damageDealtByHolder?: (target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 }
 
