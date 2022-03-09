@@ -1,9 +1,8 @@
-import type { ChampionSpellData } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { DamageType } from '#/helpers/types'
-import type { CollisionFn, HexCoord } from '#/helpers/types'
+import type { CollisionFn, DamageSourceType, HexCoord } from '#/helpers/types'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
@@ -13,8 +12,9 @@ export interface HexEffectData {
 	expiresAfterMS?: DOMHighResTimeStamp
 	hexes: HexCoord[]
 	targetTeam?: number
-	damage?: number
-	damageType?: DamageType
+	damageCalculation?: SpellCalculation
+	damageModifier?: number,
+	damageSourceType?: DamageSourceType
 	stunSeconds?: number
 	onCollision?: (unit: ChampionUnit) => void
 }
@@ -31,8 +31,9 @@ export class HexEffect {
 	source: ChampionUnit
 	targetTeam: number | null
 	hexes: HexCoord[]
-	damage?: number | null
-	damageType?: DamageType | null
+	damageCalculation?: SpellCalculation
+	damageModifier?: number
+	damageSourceType?: DamageSourceType
 	stunMS: number | null
 	onCollision?: CollisionFn
 
@@ -47,8 +48,9 @@ export class HexEffect {
 		this.source = source
 		this.targetTeam = data.targetTeam ?? source.opposingTeam()
 		this.hexes = data.hexes
-		this.damage = data.damage ?? null
-		this.damageType = data.damage != null ? data.damageType ?? DamageType.magic : null
+		this.damageCalculation = data.damageCalculation
+		this.damageModifier = data.damageModifier
+		this.damageSourceType = data.damageSourceType
 		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
 		this.onCollision = data.onCollision
 	}

@@ -1,7 +1,7 @@
 import { markRaw } from 'vue'
 
 import { BonusKey } from '@tacticians-academy/academy-library'
-import type { ChampionData, ChampionSpellData, ItemData, TraitData } from '@tacticians-academy/academy-library'
+import type { ChampionData, ChampionSpellData, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -17,10 +17,10 @@ import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, state } from '#/game/store'
 
 import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses } from '#/helpers/bonuses'
+import { calculateItemBonuses, calculateSynergyBonuses, solveSpellCalculationFor } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { DamageType, MutantType, MutantBonus, SpellKey } from '#/helpers/types'
+import { DamageType, MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
 import type { AbilityFn, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 
 let instanceIndex = 0
@@ -116,7 +116,7 @@ export class ChampionUnit {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
-		this.fixedAS = this.getSpellValue(SpellKey.AttackSpeed)
+		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed) //TODO Jhin set data
 
 		this.pending.hexEffects.clear()
 		this.pending.projectiles.clear()
@@ -211,9 +211,18 @@ export class ChampionUnit {
 					this.attackStartAtMS = elapsedMS
 				} else {
 					const canReProcAttack = this.attackStartAtMS > 1
-					const damage = this.attackDamage()
+					const damageCalculation: SpellCalculation = {
+						parts: [{
+							subparts: [{
+								variable: BonusKey.AttackDamage,
+								starValues: [1, 1, 1, 1],
+								stat: BonusKey.AttackDamage,
+								ratio: 1,
+							}],
+						}],
+					}
 					if (this.instantAttack) {
-						this.target.damage(elapsedMS, damage, DamageType.physical, this, units, gameOver)
+						this.target.damage(elapsedMS, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
 						this.attackStartAtMS = elapsedMS
 					} else {
 						this.queueProjectile(elapsedMS, {
@@ -221,9 +230,9 @@ export class ChampionUnit {
 							missile: {
 								speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 							},
+							sourceType: DamageSourceType.attack,
 							target: this.target,
-							damage,
-							damageType: DamageType.physical,
+							damageCalculation,
 						})
 					}
 					this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
@@ -380,16 +389,17 @@ export class ChampionUnit {
 		}
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, rawDamage: number, type: DamageType, source: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
-		const defenseStat = type === DamageType.physical
+	damage(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
+		if (damageModifier != null) {
+			rawDamage *= damageModifier
+		}
+		const defenseStat = damageType === DamageType.physical
 			? this.armor()
-			: type === DamageType.magic
+			: damageType === DamageType.magic
 				? this.magicResist()
 				: null
-		if (type === DamageType.magic) {
-			rawDamage *= source.abilityPowerMultiplier()
-		}
-		if (type === DamageType.physical || (type === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
+		if (damageType === DamageType.physical || (damageType === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
 			const critReduction = this.critReduction()
 			if (critReduction < 1) {
 				const critDamage = rawDamage * source.critChance() * source.critMultiplier()
@@ -398,7 +408,7 @@ export class ChampionUnit {
 		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
 		let takingDamage = rawDamage * defenseMultiplier
-		if (type !== DamageType.true) {
+		if (damageType !== DamageType.true) {
 			const damageReduction = this.getBonuses('DamageReduction' as BonusKey) //TODO BonusKey.DamageReduction
 			if (damageReduction > 0) {
 				if (damageReduction >= 1) {
@@ -407,7 +417,7 @@ export class ChampionUnit {
 					takingDamage *= 1 - damageReduction
 				}
 			}
-			//TODO AOEDamageReduction
+			// if (isAOE) //TODO AOEDamageReduction
 		}
 		let healthDamage = takingDamage
 		Array.from(this.shields)
@@ -429,7 +439,7 @@ export class ChampionUnit {
 			this.gainMana(elapsedMS, manaGain)
 		}
 
-		const sourceVamp = source.getVamp(type)
+		const sourceVamp = source.getVamp(damageType!)
 		if (sourceVamp > 0) {
 			console.log('Heal', sourceVamp, takingDamage * sourceVamp / 100)
 			// source.heal(takingDamage * sourceVamp / 100) //TODO
@@ -462,11 +472,43 @@ export class ChampionUnit {
 		return coordinatePosition(this.activePosition)
 	}
 
+	getStat(key: BonusKey) {
+		if (key === BonusKey.AttackDamage) {
+			return this.attackDamage()
+		}
+		if (key === BonusKey.AbilityPower) {
+			return this.abilityPower()
+		}
+		if (key === BonusKey.Health) {
+			return this.healthMax
+		}
+		console.log('ERR', 'Missing stat', key)
+		return 0
+	}
+
 	getCurrentSpell(): ChampionSpellData | undefined {
 		return this.data.spells[this.transformIndex]
 	}
-	getSpellValue(key: SpellKey) {
+
+	getSpellVariable(key: SpellKey) {
 		return this.getCurrentSpell()?.variables[key]?.[this.starLevel]
+	}
+	getSpellCalculationResult(key: SpellKey) {
+		const calculation = this.getSpellCalculation(key)
+		return calculation ? solveSpellCalculationFor(this, calculation)[0] : 0
+	}
+	getSpellCalculation(key: SpellKey) {
+		const spell = this.getCurrentSpell()
+		if (!spell) {
+			console.log('ERR', 'No spell', this.name, key)
+			return undefined
+		}
+		const calculation = spell.calculations[key]
+		if (calculation == null) {
+			console.log('ERR', 'Missing calculation for', spell.name, key)
+			return undefined
+		}
+		return calculation
 	}
 
 	getBonusesFor(sourceKey: BonusLabelKey) {
@@ -504,17 +546,15 @@ export class ChampionUnit {
 
 	attackDamage() {
 		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
-		if (this.fixedAS != null) {
-			const multiplier = this.getSpellValue(SpellKey.ADFromAttackSpeed)
-			if (multiplier != null) {
-				return ad + this.bonusAttackSpeed() * 100 * multiplier
-			}
+		const multiplier = this.getSpellVariable(SpellKey.ADFromAttackSpeed)
+		if (multiplier != null) {
+			return ad + this.bonusAttackSpeed() * 100 * multiplier
 		}
 		return ad
 	}
-	abilityPowerMultiplier() {
+	abilityPower() {
 		const apBonus = this.getBonusVariants(BonusKey.AbilityPower) + this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticAP)
-		return (100 + apBonus) / 100
+		return 100 + apBonus
 	}
 	manaMax() {
 		const maxManaMultiplier = this.getBonuses('PercentManaReduction' as BonusKey)
@@ -557,11 +597,11 @@ export class ChampionUnit {
 	}
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
-		if (data.damage === undefined) {
-			data.damage = this.getSpellValue(SpellKey.Damage)
+		if (!data.damageCalculation) {
+			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
-		if (data.damageType === undefined) {
-			data.damageType = DamageType.magic
+		if (!data.sourceType) {
+			data.sourceType = DamageSourceType.spell
 		}
 		const projectile = new Projectile(this, elapsedMS, data)
 		this.pending.projectiles.add(projectile)
@@ -571,11 +611,8 @@ export class ChampionUnit {
 		}
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, data: HexEffectData) {
-		if (data.damage === undefined) {
-			data.damage = this.getSpellValue(SpellKey.Damage)
-		}
-		if (data.damageType === undefined) {
-			data.damageType = DamageType.magic
+		if (data.damageCalculation === undefined) {
+			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, data)
 		this.pending.hexEffects.add(hexEffect)

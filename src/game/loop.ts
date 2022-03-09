@@ -24,8 +24,8 @@ function updateHexEffects(elapsedMS: DOMHighResTimeStamp) {
 		hexEffect.activated = true
 		const affectingUnits = hexEffect.targetTeam === 2 ? state.units : state.units.filter(unit => unit.team === hexEffect.targetTeam)
 		for (const unit of affectingUnits.filter(unit => unit.isIn(hexEffect.hexes))) {
-			if (hexEffect.damage != null) {
-				unit.damage(elapsedMS, hexEffect.damage, hexEffect.damageType!, hexEffect.source, state.units, gameOver)
+			if (hexEffect.damageCalculation != null) {
+				unit.damage(elapsedMS, hexEffect.source, hexEffect.damageSourceType!, hexEffect.damageCalculation!, hexEffect.damageModifier, true, state.units, gameOver)
 			}
 			if (hexEffect.stunMS != null) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + hexEffect.stunMS)

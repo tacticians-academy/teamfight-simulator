@@ -1,4 +1,5 @@
-import type { BonusKey, ItemData } from '@tacticians-academy/academy-library'
+import { BonusKey } from '@tacticians-academy/academy-library'
+import type { ItemData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
@@ -6,7 +7,10 @@ import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/tra
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
+import type { ChampionUnit } from '#/game/ChampionUnit'
+
 import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
+import { DamageType } from '#/helpers/types'
 import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
@@ -15,6 +19,29 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 }
 
 type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
+
+export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
+	let damageType: DamageType | undefined
+	const total = calculation.parts.reduce((acc, part) => {
+		const multiplyParts = part.operator === 'product'
+		return acc + part.subparts.reduce((subAcc, subpart) => {
+			let value = subpart.starValues[unit.starLevel]
+			if (subpart.stat != null) {
+				if (subpart.stat === BonusKey.AttackDamage) {
+					damageType = DamageType.physical
+				}
+				if (subpart.stat === BonusKey.AttackDamage) {
+					damageType = DamageType.physical
+				} else if (!damageType && subpart.stat === BonusKey.AbilityPower) {
+					damageType = DamageType.magic
+				}
+				value *= unit.getStat(subpart.stat as BonusKey) * subpart.ratio!
+			}
+			return multiplyParts ? (subAcc * value) : (subAcc + value)
+		}, multiplyParts ? 1 : 0)
+	}, 0)
+	return [calculation.asPercent === true ? total * 100 : total, damageType]
+}
 
 export function calculateSynergyBonuses(teamSynergies: SynergyData[], teamNumber: TeamNumber, unitTraitKeys: TraitKey[]): BonusResults {
 	const bonuses: [TraitKey, BonusVariable[]][] = []

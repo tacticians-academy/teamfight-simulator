@@ -2,7 +2,7 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { getSurrounding } from '#/helpers/boardUtils'
-import { DamageType, SpellKey } from '#/helpers/types'
+import { SpellKey } from '#/helpers/types'
 import type { AbilityFn } from '#/helpers/types'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
@@ -25,7 +25,7 @@ export default {
 			spell,
 			hexes: getSurrounding(champion.activePosition, 1),
 			onCollision: (affectedUnit) => {
-				champion.gainHealth(champion.getSpellValue(SpellKey.Heal)!) //TODO scale AP
+				champion.gainHealth(champion.getSpellCalculationResult(SpellKey.Heal)!)
 			},
 		})
 	},
@@ -38,14 +38,12 @@ export default {
 			target: target.activePosition,
 			collidesWith: champion.opposingTeam(),
 			destroysOnCollision: true,
-			damage: champion.attackDamage(),
-			damageType: DamageType.physical,
 			onCollision: () => {
-				const allASBonuses = champion.getBonusesFor(SpellKey.ASBoost)!
-				const maxStacks = champion.getSpellValue(SpellKey.MaxStacks)!
-				if (allASBonuses.length < maxStacks) {
-					const asBoost = champion.getSpellValue(SpellKey.ASBoost)!
-					champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, asBoost * 100]]]) //TODO scale AP
+				const allASBoosts = champion.getBonusesFor(SpellKey.ASBoost)!
+				const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)!
+				if (allASBoosts.length < maxStacks) {
+					const boostAS = champion.getSpellCalculationResult(SpellKey.ASBoost)! / 5
+					champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, boostAS]]])
 				}
 			},
 		})
@@ -61,7 +59,7 @@ export default {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
 			hexes: getSurrounding(targetPosition, 1),
-			damage: champion.getSpellValue(SpellKey.Damage)! * 0.5,
+			damageModifier: 0.5,
 		})
 	},
 
@@ -69,7 +67,7 @@ export default {
 		champion.queueHexEffect(elapsedMS, {
 			spell,
 			hexes: getRowOfMostAttackable(champion.opposingTeam()),
-			stunSeconds: champion.getSpellValue(SpellKey.StunDuration),
+			stunSeconds: champion.getSpellVariable(SpellKey.StunDuration),
 		})
 	},
 

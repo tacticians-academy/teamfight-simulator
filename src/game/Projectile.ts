@@ -1,10 +1,10 @@
-import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData, ChampionSpellMissileData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-import type { CollisionFn, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
+import type { CollisionFn, DamageSourceType, DamageType, HexCoord, TeamNumber } from '#/helpers/types'
 import { coordinatePosition } from '#/game/store'
 
 let instanceIndex = 0
@@ -13,9 +13,9 @@ const hexRadius = HEX_PROPORTION * 2 * 100
 
 export interface ProjectileData {
 	spell?: ChampionSpellData
+	sourceType?: DamageSourceType
 	startsAfterMS?: DOMHighResTimeStamp
-	damage?: number
-	damageType?: DamageType
+	damageCalculation?: SpellCalculation
 	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	missile?: ChampionSpellMissileData
@@ -35,9 +35,9 @@ export class Projectile {
 	position: HexCoord
 	missile: ChampionSpellMissileData
 	currentSpeed: number
-	damage: number
-	damageType: DamageType
+	damageCalculation: SpellCalculation
 	source: ChampionUnit
+	sourceType: DamageSourceType
 	target: ChampionUnit | HexCoord
 	targetCoordinates: HexCoord
 	collidesWith?: TeamNumber | null
@@ -55,9 +55,9 @@ export class Projectile {
 		this.position = [x, y]
 		this.missile = data.spell?.missile ?? data.missile!
 		this.currentSpeed = this.missile.speedInitial! //TODO .travelTime
-		this.damage = data.damage!
-		this.damageType = data.damageType!
+		this.damageCalculation = data.damageCalculation!
 		this.source = source
+		this.sourceType = data.sourceType!
 		this.target = data.target
 		this.collidesWith = data.collidesWith
 		this.destroysOnCollision = data.destroysOnCollision
@@ -69,7 +69,7 @@ export class Projectile {
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
 		this.onCollision?.(unit)
-		unit.damage(elapsedMS, this.damage, this.damageType, this.source, units, gameOver)
+		unit.damage(elapsedMS, this.source, this.sourceType, this.damageCalculation, undefined, false, units, gameOver)
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void): boolean {

@@ -104,7 +104,7 @@ function onInfo(event: Event) {
 	<div v-if="showInfo" class="p-1 space-x-1 bg-tertiary  inline-flex">
 		<div>
 			<div>AD:&nbsp;{{ Math.round(unit.attackDamage()) }}</div>
-			<div>AP:&nbsp;{{ Math.round(unit.abilityPowerMultiplier() * 100) }}</div>
+			<div>AP:&nbsp;{{ Math.round(unit.abilityPower()) }}</div>
 			<div>AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}</div>
 			<div>Crit:&nbsp;{{ Math.round(unit.critChance() * 100) }}%</div>
 		</div>
