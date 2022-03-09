@@ -7,8 +7,9 @@ import { champions } from '@tacticians-academy/academy-library/dist/set6/champio
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import championEffects from '#/data/set6/champions'
 import itemEffects from '#/data/items'
+import championEffects from '#/data/set6/champions'
+import traitEffects from '#/data/set6/traits'
 
 import { getNextHex, updatePaths } from '#/game/pathfind'
 import { Projectile } from '#/game/Projectile'
@@ -58,6 +59,7 @@ export class ChampionUnit {
 	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
+	activeSynergies: SynergyData[] = []
 	transformIndex = 0
 
 	nextAttack: SpellCalculation | undefined //TODO
@@ -111,7 +113,8 @@ export class ChampionUnit {
 
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
-		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, synergiesByTeam[this.team], unitTraitKeys)
+		this.activeSynergies = synergiesByTeam[this.team]
+		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, this.activeSynergies, unitTraitKeys)
 		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this.items)
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
 		this.scalings = new Set([...synergyScalings, ...itemScalings])
@@ -452,7 +455,8 @@ export class ChampionUnit {
 			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
 
-		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder(this, source, takingDamage, damageType!))
+		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder(this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, this, source, sourceType, rawDamage, takingDamage, damageType!))
 	}
 
 	alliedUnits(): ChampionUnit[] {
@@ -599,6 +603,10 @@ export class ChampionUnit {
 	}
 	moveSpeed() {
 		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
+	}
+
+	healthProportion() {
+		return this.health / this.healthMax
 	}
 
 	dodgeChance() {

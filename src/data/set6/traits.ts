@@ -1,19 +1,20 @@
 import { BonusKey, COMPONENT_ITEM_IDS } from '@tacticians-academy/academy-library'
-import type { TraitEffectData } from '@tacticians-academy/academy-library'
+import type { SpellCalculation, TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { getters, state } from '#/game/store'
+import { gameOver, getters, state } from '#/game/store'
 
 import { getUnitsOfTeam } from '#/helpers/abilityUtils'
-import { MutantType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
+import { DamageSourceType, MutantType } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, DamageType, EffectResults, ShieldData } from '#/helpers/types'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
 	innate?: TraitEffectFn,
+	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }
 
 export default {

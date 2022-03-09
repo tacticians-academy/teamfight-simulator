@@ -27,7 +27,7 @@ export const enum DamageType {
 	physical, magic, true
 }
 export const enum DamageSourceType {
-	attack, spell, item
+	attack, spell, item, trait
 }
 
 export type SynergyCount = Map<TraitData, string[]>
