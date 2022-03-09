@@ -513,8 +513,15 @@ export class ChampionUnit {
 		return calculation
 	}
 
-	getBonusesFor(sourceKey: BonusLabelKey) {
-		return this.bonuses.filter(bonus => bonus[0] === sourceKey)
+	getBonusesFrom(sourceKey: BonusLabelKey) {
+		return this.bonuses
+			.filter(bonus => bonus[0] === sourceKey)
+	}
+	getBonusesFromKey(sourceKey: BonusLabelKey, bonusKey: BonusKey) {
+		return this.getBonusesFrom(sourceKey)
+			.flatMap(bonus => bonus[1])
+			.filter(bonus => bonus[0] === bonusKey)
+			.reduce((acc, bonus) => acc + (bonus[1] ?? 0), 0)
 	}
 	getBonusVariants(bonus: BonusKey) {
 		return this.getBonuses(bonus, `Bonus${bonus}` as BonusKey, `${this.starLevel}Star${bonus}` as BonusKey)

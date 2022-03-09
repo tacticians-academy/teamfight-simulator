@@ -41,7 +41,7 @@ export default {
 				collidesWith: champion.opposingTeam(),
 				destroysOnCollision: true,
 				onCollision: () => {
-					const allASBoosts = champion.getBonusesFor(SpellKey.ASBoost)!
+					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)!
 					const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)!
 					if (allASBoosts.length < maxStacks) {
 						const boostAS = champion.getSpellCalculationResult(SpellKey.ASBoost)! / 5
