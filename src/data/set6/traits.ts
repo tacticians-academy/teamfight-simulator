@@ -52,6 +52,31 @@ export default {
 	},
 
 	[TraitKey.Mutant]: {
+		damageDealtByHolder: (activeEffect, elapsedMS, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (state.mutantType === MutantType.Voidborne) {
+				const executeThreshold = activeEffect.variables['MutantVoidborneExecuteThreshold']
+				if (executeThreshold == null) {
+					return console.log('ERR', 'No executeThreshold', state.mutantType, activeEffect)
+				}
+				if (target.healthProportion() <= executeThreshold / 100) {
+					target.die(state.units, gameOver)
+				} else if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
+					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
+					if (trueDamageBonus != null) {
+						const damage = rawDamage * trueDamageBonus / 100
+						const damageCalculation: SpellCalculation = {
+							parts: [{
+								subparts: [{
+									variable: 'MutantVoidborneTrueDamagePercent',
+									starValues: [damage, damage, damage, damage],
+								}],
+							}],
+						}
+						target.damage(elapsedMS, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
+					}
+				}
+			}
+		},
 		solo: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
 			const variables: BonusVariable[] = []
