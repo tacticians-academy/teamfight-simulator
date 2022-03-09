@@ -67,6 +67,27 @@ export default {
 		},
 	},
 
+	[TraitKey.Hextech]: {
+		solo: (unit, activeEffect) => {
+			const shieldAmount = activeEffect.variables['ShieldAmount']
+			const durationSeconds = activeEffect.variables['ShieldDuration']
+			const damage = activeEffect.variables['MagicDamage']
+			const frequency = activeEffect.variables['Frequency']
+			if (shieldAmount == null || damage == null || durationSeconds == null || frequency == null) {
+				return console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
+			}
+			const repeatsEveryMS = frequency * 1000
+			const shield: ShieldData = {
+				amount: shieldAmount * 10,
+				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
+				expiresAtMS: durationSeconds * 1000,
+				activatesAtMS: repeatsEveryMS,
+				repeatsEveryMS,
+			}
+			return { shields: [shield]}
+		},
+	},
+
 	[TraitKey.Mutant]: {
 		damageDealtByHolder: (activeEffect, elapsedMS, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (state.mutantType === MutantType.Voidborne) {
