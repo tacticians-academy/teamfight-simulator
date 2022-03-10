@@ -231,10 +231,13 @@ export class ChampionUnit {
 		} else {
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
+			const passiveFn = this.championEffects?.passive
 			if (this.instantAttack) {
 				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, undefined, false)
 				this.attackStartAtMS = elapsedMS
+				passiveFn?.(elapsedMS, this.target, this)
 			} else {
+				const source = this
 				this.queueProjectile(elapsedMS, undefined, {
 					startsAfterMS: msBetweenAttacks / 4, //TODO from data
 					missile: {
@@ -243,6 +246,9 @@ export class ChampionUnit {
 					sourceType: DamageSourceType.attack,
 					target: this.target,
 					damageCalculation,
+					onCollision(elapsedMS, unit) {
+						passiveFn?.(elapsedMS, unit, source)
+					},
 				})
 			}
 			this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
