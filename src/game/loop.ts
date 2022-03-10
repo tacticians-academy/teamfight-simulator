@@ -5,6 +5,8 @@ import itemEffects from '#/data/items'
 import { state } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
+import { uniqueIdentifier } from '#/helpers/utils'
+
 const GAME_TICK_MS = 1000 / 30
 
 let frameID: number | null = null
@@ -61,8 +63,8 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		if (unit.banishUntilMS != null && unit.banishUntilMS <= elapsedMS) {
 			unit.banishUntil(null)
 		}
-		unit.items.forEach(item => {
-			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, unit)
+		unit.items.forEach((item, index) => {
+			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
 	}
 

@@ -1,5 +1,9 @@
 export const TESTING = process.env.NODE_ENV !== 'production'
 
+export function uniqueIdentifier(index: number, entity: {name: string}) {
+	return `${index}+${entity.name}`
+}
+
 export function getArrayValueCounts<T extends string | number | symbol>(array: T[]): [string, number][] {
 	const result: {[index in T]: number} = {} as any
 	array.forEach(el => {

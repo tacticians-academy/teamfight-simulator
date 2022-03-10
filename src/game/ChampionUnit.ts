@@ -24,13 +24,9 @@ import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MA
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
 import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
-import { randomItem } from '#/helpers/utils'
+import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
-
-function uniqueIdentifier(index: number, entity: {name: string}) {
-	return `${index}+${entity.name}`
-}
 
 export class ChampionUnit {
 	instanceID: string
