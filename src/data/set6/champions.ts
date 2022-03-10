@@ -1,10 +1,11 @@
-import { BonusKey } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { getSurroundingWithin } from '#/helpers/boardUtils'
-import { SpellKey } from '#/helpers/types'
+import { DamageSourceType, SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
+import { createDamageCalculation } from '#/helpers/bonuses'
 
 export default {
 
@@ -49,6 +50,17 @@ export default {
 					}
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Warwick]: {
+		passive: (elapsedMS, target, source) => {
+			const heal = source.getSpellCalculationResult(SpellKey.HealAmount)
+			const percentHealthDamage = source.getSpellCalculationResult(SpellKey.PercentHealth) / 100
+			console.log(heal, percentHealthDamage)
+			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
+			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, undefined, false)
+			source.gainHealth(heal)
 		},
 	},
 

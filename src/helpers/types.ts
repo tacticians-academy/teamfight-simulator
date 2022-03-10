@@ -63,7 +63,9 @@ export const enum SpellKey {
 	AttackSpeed = 'AttackSpeed',
 	Damage = 'Damage',
 	Heal = 'Heal',
+	HealAmount = 'HealAmount',
 	MaxStacks = 'MaxStacks',
+	PercentHealth = 'PercentHealth',
 	StunDuration = 'StunDuration',
 }
 
