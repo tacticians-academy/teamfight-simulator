@@ -43,7 +43,7 @@ export class HexEffect {
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, data: HexEffectData) {
 		this.instanceID = `h${instanceIndex += 1}`
 		this.startsAtMS = elapsedMS + (spell.castTime ?? DEFAULT_CAST_TIME) * 1000
-		this.activatesAfterMS = spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME * 1000
+		this.activatesAfterMS = (spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME) * 1000
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.source = source
