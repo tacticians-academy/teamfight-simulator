@@ -10,10 +10,10 @@ import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, Shie
 interface ItemFns {
 	apply?: (item: ItemData) => EffectResults,
 	innate?: (item: ItemData) => EffectResults,
-	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, unit: ChampionUnit) => EffectResults,
+	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => EffectResults,
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
-	basicAttack?: (item: ItemData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
-	damageTaken?: (item: ItemData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
+	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 }
 
 export default {
@@ -39,7 +39,7 @@ export default {
 	},
 
 	[ItemKey.FrozenHeart]: {
-		update: (elapsedMS, item, unit) => {
+		update: (elapsedMS, item, itemID, unit) => {
 			const slowAS = item.effects['ASSlow']
 			const hexRadius = item.effects['HexRadius']
 			const durationSeconds = 0.5 //NOTE hardcoded apparently??
@@ -73,12 +73,12 @@ export default {
 	},
 
 	[ItemKey.TitansResolve]: {
-		basicAttack: (item, target, source, canReProc) => {
-			applyTitansResolve(item, source)
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			applyTitansResolve(item, itemID, source)
 		},
-		damageTaken: (item, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (originalSource) {
-				applyTitansResolve(item, target)
+				applyTitansResolve(item, itemID, target)
 			}
 		},
 	},
@@ -100,7 +100,7 @@ export default {
 
 } as { [key in ItemKey]?: ItemFns }
 
-function applyTitansResolve(item: ItemData, unit: ChampionUnit) {
+function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 	const stackAD = item.effects['StackingAD']
 	const stackAP = item.effects['StackingAP']
 	const maxStacks = item.effects['StackCap']
@@ -108,13 +108,13 @@ function applyTitansResolve(item: ItemData, unit: ChampionUnit) {
 	if (stackAD == null || stackAP == null || maxStacks == null || resistsAtCap == null) {
 		return console.log('ERR', item.name, item.effects)
 	}
-	const bonuses = unit.getBonusesFrom(ItemKey.TitansResolve)
+	const bonuses = unit.getBonusesFrom(itemID)
 	if (bonuses.length < maxStacks) {
 		const variables: BonusVariable[] = []
 		variables.push([BonusKey.AttackDamage, stackAD], [BonusKey.AbilityPower, stackAP])
 		if (bonuses.length === maxStacks - 1) {
 			variables.push([BonusKey.Armor, resistsAtCap], [BonusKey.MagicResist, resistsAtCap])
 		}
-		unit.addBonuses(ItemKey.TitansResolve, ...variables)
+		unit.addBonuses(itemID, ...variables)
 	}
 }

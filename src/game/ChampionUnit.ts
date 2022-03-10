@@ -28,6 +28,10 @@ import { randomItem } from '#/helpers/utils'
 
 let instanceIndex = 0
 
+function uniqueIdentifier(index: number, entity: {name: string}) {
+	return `${index}+${entity.name}`
+}
+
 export class ChampionUnit {
 	instanceID: string
 	name: string
@@ -253,7 +257,7 @@ export class ChampionUnit {
 			}
 			this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
 
-			this.items.forEach(item => itemEffects[item.id as ItemKey]?.basicAttack?.(item, this.target!, this, canReProcAttack))
+			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
 	}
@@ -491,8 +495,8 @@ export class ChampionUnit {
 			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
 
-		source.items.forEach(item => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
-		this.items.forEach(item => itemEffects[item.id as ItemKey]?.damageTaken?.(item, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueIdentifier(index, item), originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 
 		if (sourceType === DamageSourceType.attack) {
