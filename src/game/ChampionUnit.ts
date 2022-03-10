@@ -71,7 +71,7 @@ export class ChampionUnit {
 
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
 	scalings = new Set<BonusScaling>()
-	shields = new Set<ShieldData>()
+	shields: ShieldData[] = []
 
 	pending = {
 		hexEffects: new Set<HexEffect>(),
@@ -122,7 +122,7 @@ export class ChampionUnit {
 		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this.items)
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
 		this.scalings = new Set([...synergyScalings, ...itemScalings])
-		this.shields = new Set([...synergyShields, ...itemShields])
+		this.shields = [...synergyShields, ...itemShields]
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
@@ -184,7 +184,7 @@ export class ChampionUnit {
 					} else if (shield != null) {
 						const buffShield = shield
 						buffedUnits.push(this)
-						buffedUnits.forEach(unit => unit.shields.add(buffShield))
+						buffedUnits.forEach(unit => unit.shields.push(buffShield))
 					}
 				}
 			}
@@ -290,7 +290,6 @@ export class ChampionUnit {
 		this.shields.forEach(shield => {
 			if (shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
 				if (shield.repeatsEveryMS == null) {
-					this.shields.delete(shield)
 					return
 				}
 				shield.activated = false
@@ -470,7 +469,7 @@ export class ChampionUnit {
 					if (shield.repeatsEveryMS != null) {
 						shield.amount = 0
 					} else {
-						this.shields.delete(shield)
+						shield.activated = false
 					}
 				} else {
 					shield.amount -= protectingDamage
