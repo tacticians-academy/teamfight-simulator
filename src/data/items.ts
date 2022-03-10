@@ -38,6 +38,24 @@ export default {
 		},
 	},
 
+	[ItemKey.Bloodthirster]: {
+		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			const healthThreshold = item.effects['HPThreshold']
+			const shieldHPPercent = item.effects['ShieldHPPercent']
+			const shieldDurationSeconds = item.effects['ShieldDuration']
+			if (healthThreshold == null || shieldHPPercent == null || shieldDurationSeconds == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			if (!target.shields.some(shield => shield.id === itemID) && target.healthProportion() <= healthThreshold / 100) {
+				target.shields.push({
+					id: itemID,
+					amount: shieldHPPercent / 100 * target.healthMax,
+					expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
+				})
+			}
+		},
+	},
+
 	[ItemKey.FrozenHeart]: {
 		update: (elapsedMS, item, itemID, unit) => {
 			const slowAS = item.effects['ASSlow']
