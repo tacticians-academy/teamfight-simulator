@@ -436,6 +436,12 @@ export class ChampionUnit {
 
 	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean) {
 		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
+		if (sourceType === DamageSourceType.attack) {
+			const dodgeChance = this.dodgeChance()
+			if (dodgeChance) {
+				rawDamage *= 1 - dodgeChance
+			}
+		}
 		if (damageModifier != null) {
 			rawDamage *= damageModifier
 		}
@@ -659,7 +665,7 @@ export class ChampionUnit {
 	}
 
 	dodgeChance() {
-		return this.getBonuses('DodgeChance' as BonusKey)
+		return this.getBonuses(BonusKey.DodgeChance) / 100
 	}
 
 	getVamp(damageType: DamageType, damageSource: DamageSourceType) {
