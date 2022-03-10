@@ -3,7 +3,7 @@ import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { gameOver, getters, state } from '#/game/store'
+import { getters, state } from '#/game/store'
 
 import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
@@ -107,12 +107,12 @@ export default {
 					return console.log('ERR', 'No executeThreshold', state.mutantType, activeEffect)
 				}
 				if (target.healthProportion() <= executeThreshold / 100) {
-					target.die(state.units, gameOver)
+					target.die()
 				} else if (originalSource) {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
 						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100, DamageType.true)
-						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
+						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false)
 					}
 				}
 			}
@@ -217,7 +217,7 @@ export default {
 				}
 				const hexDistance = source.hexDistanceTo(target)
 				const damageCalculation = createDamageCalculation(key, takingDamage * percentBonusDamagePerHex / 100 * hexDistance, damageType)
-				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false, state.units, gameOver)
+				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false)
 			}
 		},
 		innate: (unit, innateEffect) => {

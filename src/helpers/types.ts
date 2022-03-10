@@ -73,7 +73,7 @@ export interface EffectResults {
 	shields?: ShieldData[]
 }
 
-export type CollisionFn = (unit: ChampionUnit) => void
+export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',

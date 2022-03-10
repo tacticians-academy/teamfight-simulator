@@ -16,7 +16,7 @@ import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
-import { coordinatePosition, state } from '#/game/store'
+import { coordinatePosition, gameOver, state } from '#/game/store'
 
 import { containsHex, getAdjacentRowUnitsTo, getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
@@ -132,11 +132,11 @@ export class ChampionUnit {
 		this.pending.hexEffects.clear()
 		this.pending.projectiles.clear()
 	}
-	postReset(units: ChampionUnit[]) {
+	postReset() {
 		const banishDuration = this.getBonuses('BanishDuration' as BonusKey)
 		if (banishDuration) {
 			const targetHex = getInverseHex(this.startPosition)
-			const target = getClosesUnitOfTeamTo(targetHex, this.opposingTeam(), units) //TODO not random
+			const target = getClosesUnitOfTeamTo(targetHex, this.opposingTeam(), state.units) //TODO not random
 			if (target) {
 				target.banishUntil(banishDuration * 1000)
 			}
@@ -177,7 +177,7 @@ export class ChampionUnit {
 						}
 					}
 
-					const buffedUnits = getAdjacentRowUnitsTo(hexRange, this.startPosition, units)
+					const buffedUnits = getAdjacentRowUnitsTo(hexRange, this.startPosition, state.units)
 					if (bonus != null) {
 						const buffBonus = bonus
 						buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, buffBonus))
@@ -195,7 +195,7 @@ export class ChampionUnit {
 		this.bonuses.push([key, bonuses])
 	}
 
-	updateTarget(units: ChampionUnit[]) {
+	updateTarget() {
 		if (this.target != null) {
 			const targetDistance = this.hexDistanceTo(this.target)
 			if (!this.target.isAttackable() || targetDistance > this.range()) {
@@ -205,7 +205,7 @@ export class ChampionUnit {
 			}
 		}
 		if (this.target == null) {
-			const targets = getNearestEnemies(this, units)
+			const targets = getNearestEnemies(this, state.units)
 			if (targets.length) {
 				this.target = randomItem(targets)! //TODO random
 				this.cachedTargetDistance = this.hexDistanceTo(this.target)
@@ -214,7 +214,7 @@ export class ChampionUnit {
 		}
 	}
 
-	updateAttack(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	updateAttack(elapsedMS: DOMHighResTimeStamp) {
 		if (this.target == null) {
 			return
 		}
@@ -232,7 +232,7 @@ export class ChampionUnit {
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			if (this.instantAttack) {
-				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, undefined, false, units, gameOver)
+				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, undefined, false)
 				this.attackStartAtMS = elapsedMS
 			} else {
 				this.queueProjectile(elapsedMS, undefined, {
@@ -325,13 +325,13 @@ export class ChampionUnit {
 		return this.getBonuses(BonusKey.CritReduction) / 100
 	}
 
-	updateMove(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
+	updateMove(elapsedMS: DOMHighResTimeStamp) {
 		const nextHex = getNextHex(this)
 		if (nextHex) {
 			const msPerHex = 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
 			this.moveUntilMS = elapsedMS + msPerHex
 			this.activePosition = nextHex
-			updatePaths(units)
+			updatePaths(state.units)
 			return true
 		}
 		return false
@@ -360,10 +360,10 @@ export class ChampionUnit {
 		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
 
-	jumpToBackline(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
+	jumpToBackline(elapsedMS: DOMHighResTimeStamp) {
 		const [col, row] = this.activePosition
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		this.activePosition = getClosestHexAvailableTo(targetHex, units) ?? this.activePosition
+		this.activePosition = getClosestHexAvailableTo(targetHex, state.units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.ghosting = false
 		this.collides = true
@@ -408,12 +408,12 @@ export class ChampionUnit {
 		this.addMana(amount)
 	}
 
-	die(units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	die() {
 		this.health = 0
 		this.dead = true
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
-			updatePaths(units)
+			updatePaths(state.units)
 			teamUnits.forEach(unit => {
 				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
 				if (increaseADAP > 0) {
@@ -425,7 +425,7 @@ export class ChampionUnit {
 		}
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean) {
 		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
 		if (damageModifier != null) {
 			rawDamage *= damageModifier
@@ -472,7 +472,7 @@ export class ChampionUnit {
 				healthDamage -= protectingDamage
 			})
 		if (this.health <= healthDamage) {
-			this.die(units, gameOver)
+			this.die()
 		} else {
 			this.health -= healthDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
@@ -493,7 +493,7 @@ export class ChampionUnit {
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {
 				if (shield.activated !== false && shield.bonusDamage) {
-					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, undefined, false, units, gameOver)
+					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, undefined, false)
 				}
 			})
 		}

@@ -2,7 +2,7 @@ import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/item
 
 import itemEffects from '#/data/items'
 
-import { state, gameOver } from '#/game/store'
+import { state } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
 const GAME_TICK_MS = 1000 / 30
@@ -84,35 +84,35 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			}
 		}
 		if (didBacklineJump) {
-			unit.updateTarget(state.units)
+			unit.updateTarget()
 		}
 		if (didBacklineJump && unit.readyToCast()) {
 			unit.castAbility(elapsedMS)
 		} else if (unit.target) {
-			unit.updateAttack(elapsedMS, state.units, gameOver)
+			unit.updateAttack(elapsedMS)
 		} else {
 			if (elapsedMS < MOVE_LOCKOUT_MELEE_MS) {
 				if (!didBacklineJump) {
 					if (!unit.jumpsToBackline()) {
 						continue
 					}
-					unit.jumpToBackline(elapsedMS, state.units)
+					unit.jumpToBackline(elapsedMS)
 					continue
 				} else if (unit.range() > 1) {
 					continue
 				}
 			}
-			unit.updateMove(elapsedMS, state.units)
+			unit.updateMove(elapsedMS)
 		}
 	}
 
 	state.hexEffects.forEach(hexEffect => {
-		if (!hexEffect.update(elapsedMS, state.units, gameOver)) {
+		if (!hexEffect.update(elapsedMS, state.units)) {
 			state.hexEffects.delete(hexEffect)
 		}
 	})
 	state.projectiles.forEach(projectile => {
-		if (!projectile.update(elapsedMS, diffMS, state.units, gameOver)) {
+		if (!projectile.update(elapsedMS, diffMS)) {
 			state.projectiles.delete(projectile)
 		}
 	})

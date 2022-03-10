@@ -15,7 +15,7 @@ export interface HexEffectData {
 	damageModifier?: number,
 	damageSourceType?: DamageSourceType
 	stunSeconds?: number
-	onCollision?: (unit: ChampionUnit) => void
+	onCollision?: CollisionFn
 }
 
 let instanceIndex = 0
@@ -54,7 +54,7 @@ export class HexEffect {
 		this.onCollision = data.onCollision
 	}
 
-	update(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[], gameOver: (team: TeamNumber) => void) {
+	update(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		if (this.activated && elapsedMS > this.expiresAtMS) {
 			return false
 		}
@@ -65,12 +65,12 @@ export class HexEffect {
 		const affectingUnits = this.targetTeam === 2 ? units : units.filter(unit => unit.team === this.targetTeam)
 		for (const unit of affectingUnits.filter(unit => unit.isIn(this.hexes))) {
 			if (this.damageCalculation != null) {
-				unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, this.damageModifier, true, units, gameOver)
+				unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, this.damageModifier, true)
 			}
 			if (this.stunMS != null) {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
 			}
-			this.onCollision?.(unit)
+			this.onCollision?.(elapsedMS, unit)
 		}
 		return true
 	}

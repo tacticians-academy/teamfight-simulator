@@ -25,7 +25,7 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
 				hexes: getSurroundingWithin(champion.activePosition, 1),
-				onCollision: (affectedUnit) => {
+				onCollision: (elapsedMS, affectedUnit) => {
 					champion.gainHealth(champion.getSpellCalculationResult(SpellKey.Heal)!)
 				},
 			})
@@ -40,7 +40,7 @@ export default {
 				target: target.activePosition,
 				collidesWith: champion.opposingTeam(),
 				destroysOnCollision: true,
-				onCollision: () => {
+				onCollision: (elapsedMS, unit) => {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)!
 					const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)!
 					if (allASBoosts.length < maxStacks) {
