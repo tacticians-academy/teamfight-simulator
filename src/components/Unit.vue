@@ -109,6 +109,7 @@ function onInfo(event: Event) {
 			<div>AP:&nbsp;{{ Math.round(unit.abilityPower()) }}</div>
 			<div>AS:&nbsp;{{ unit.attackSpeed().toFixed(2) }}</div>
 			<div>Crit:&nbsp;{{ Math.round(unit.critChance() * 100) }}%</div>
+			<div v-if="unit.dodgeChance() > 0">Dodge:&nbsp;{{ Math.round(unit.dodgeChance() * 100) }}%</div>
 		</div>
 		<div>
 			<div>AR:&nbsp;{{ unit.armor() }}</div>
