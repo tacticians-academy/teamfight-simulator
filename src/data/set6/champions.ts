@@ -44,7 +44,7 @@ export default {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)!
 					const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)!
 					if (allASBoosts.length < maxStacks) {
-						const boostAS = champion.getSpellCalculationResult(SpellKey.ASBoost)! / 5
+						const boostAS = champion.getSpellCalculationResult(SpellKey.ASBoost)! / maxStacks
 						champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, boostAS]]])
 					}
 				},
