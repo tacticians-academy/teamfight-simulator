@@ -12,7 +12,8 @@ export interface HexEffectData {
 	hexes: HexCoord[]
 	targetTeam?: number
 	damageCalculation?: SpellCalculation
-	damageModifier?: number,
+	damageMultiplier?: number,
+	damageIncrease?: number,
 	damageSourceType?: DamageSourceType
 	stunSeconds?: number
 	onCollision?: CollisionFn
@@ -31,7 +32,8 @@ export class HexEffect {
 	targetTeam: number | null
 	hexes: HexCoord[]
 	damageCalculation?: SpellCalculation
-	damageModifier?: number
+	damageMultiplier?: number
+	damageIncrease?: number
 	damageSourceType?: DamageSourceType
 	stunMS: number | null
 	onCollision?: CollisionFn
@@ -48,10 +50,21 @@ export class HexEffect {
 		this.targetTeam = data.targetTeam ?? source.opposingTeam()
 		this.hexes = data.hexes
 		this.damageCalculation = data.damageCalculation
-		this.damageModifier = data.damageModifier
+		this.damageMultiplier = data.damageMultiplier
+		this.damageIncrease = data.damageIncrease
 		this.damageSourceType = data.damageSourceType
 		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
 		this.onCollision = data.onCollision
+	}
+
+	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+		if (this.damageCalculation != null) {
+			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, this.damageIncrease, this.damageMultiplier)
+		}
+		if (this.stunMS != null) {
+			unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
+		}
+		this.onCollision?.(elapsedMS, unit)
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -64,13 +77,7 @@ export class HexEffect {
 		this.activated = true
 		const affectingUnits = this.targetTeam === 2 ? units : units.filter(unit => unit.team === this.targetTeam)
 		for (const unit of affectingUnits.filter(unit => unit.isIn(this.hexes))) {
-			if (this.damageCalculation != null) {
-				unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, this.damageModifier, true)
-			}
-			if (this.stunMS != null) {
-				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
-			}
-			this.onCollision?.(elapsedMS, unit)
+			this.apply(elapsedMS, unit)
 		}
 		return true
 	}

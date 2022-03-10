@@ -233,7 +233,7 @@ export class ChampionUnit {
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			const passiveFn = this.championEffects?.passive
 			if (this.instantAttack) {
-				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, undefined, false)
+				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false)
 				this.attackStartAtMS = elapsedMS
 				passiveFn?.(elapsedMS, this.target, this)
 			} else {
@@ -430,7 +430,7 @@ export class ChampionUnit {
 		}
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, damageModifier: number | undefined, isAOE: boolean) {
+	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
 		if (sourceType === DamageSourceType.attack) {
 			const dodgeChance = this.dodgeChance()
@@ -438,8 +438,11 @@ export class ChampionUnit {
 				rawDamage *= 1 - dodgeChance
 			}
 		}
-		if (damageModifier != null) {
-			rawDamage *= damageModifier
+		if (damageIncrease != null) {
+			rawDamage += damageIncrease
+		}
+		if (damageMultiplier != null) {
+			rawDamage *= damageMultiplier
 		}
 		const defenseStat = damageType === DamageType.physical
 			? this.armor()
@@ -504,7 +507,7 @@ export class ChampionUnit {
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {
 				if (shield.activated !== false && shield.bonusDamage) {
-					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, undefined, false)
+					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
 				}
 			})
 		}

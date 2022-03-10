@@ -67,9 +67,9 @@ export class Projectile {
 		this.targetCoordinates = isUnit(this.target) ? this.target.coordinatePosition() : coordinatePosition(this.target)
 	}
 
-	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
 		this.onCollision?.(elapsedMS, unit)
-		unit.damage(elapsedMS, true, this.source, this.sourceType, this.damageCalculation, undefined, false)
+		unit.damage(elapsedMS, true, this.source, this.sourceType, this.damageCalculation, false)
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp): boolean {
@@ -97,7 +97,7 @@ export class Projectile {
 		const differenceY = targetY - currentY
 		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 		if (isUnit(this.target) && Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
-			this.applyDamage(elapsedMS, this.target)
+			this.apply(elapsedMS, this.target)
 			return false
 		}
 
@@ -124,7 +124,7 @@ export class Projectile {
 				const xDist = (unitX - projectileX) * 100
 				const yDist = (unitY - projectileY) * 100
 				if (xDist * xDist + yDist * yDist < hexRadius) {
-					this.applyDamage(elapsedMS, unit)
+					this.apply(elapsedMS, unit)
 					if (this.destroysOnCollision === true) {
 						return false
 					}

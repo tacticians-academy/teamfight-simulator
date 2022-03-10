@@ -57,9 +57,8 @@ export default {
 		passive: (elapsedMS, target, source) => {
 			const heal = source.getSpellCalculationResult(SpellKey.HealAmount)
 			const percentHealthDamage = source.getSpellCalculationResult(SpellKey.PercentHealth) / 100
-			console.log(heal, percentHealthDamage)
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
-			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, undefined, false)
+			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, false)
 			source.gainHealth(heal)
 		},
 	},
@@ -73,7 +72,7 @@ export default {
 			})
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getSurroundingWithin(targetPosition, 1),
-				damageModifier: 0.5,
+				damageMultiplier: 0.5,
 			})
 		},
 	},

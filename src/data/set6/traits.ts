@@ -112,7 +112,7 @@ export default {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
 						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100, DamageType.true)
-						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false)
+						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, false)
 					}
 				}
 			}
@@ -217,7 +217,7 @@ export default {
 				}
 				const hexDistance = source.hexDistanceTo(target)
 				const damageCalculation = createDamageCalculation(key, takingDamage * percentBonusDamagePerHex / 100 * hexDistance, damageType)
-				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, undefined, false)
+				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, false)
 			}
 		},
 		innate: (unit, innateEffect) => {
