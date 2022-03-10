@@ -289,10 +289,10 @@ export class ChampionUnit {
 	updateShields(elapsedMS: DOMHighResTimeStamp) {
 		this.shields.forEach(shield => {
 			if (shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
+				shield.activated = false
 				if (shield.repeatsEveryMS == null) {
 					return
 				}
-				shield.activated = false
 			}
 
 			if (shield.activated !== true) {
@@ -470,8 +470,8 @@ export class ChampionUnit {
 			// if (isAOE) //TODO AOEDamageReduction
 		}
 		let healthDamage = takingDamage
-		Array.from(this.shields)
-			.filter(shield => shield.isSpellShield == null)
+		this.shields
+			.filter(shield => shield.isSpellShield !== true)
 			.forEach(shield => {
 				const protectingDamage = Math.min(shield.amount, healthDamage)
 				if (protectingDamage >= shield.amount) {
@@ -711,7 +711,7 @@ export class ChampionUnit {
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
 		this.pending.hexEffects.add(hexEffect)
-		this.attackStartAtMS = hexEffect.startsAtMS
-		this.manaLockUntilMS = hexEffect.startsAtMS + DEFAULT_MANA_LOCK_MS
+		this.attackStartAtMS = hexEffect.activatesAtMS
+		this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 	}
 }

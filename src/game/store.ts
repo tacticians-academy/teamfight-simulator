@@ -92,7 +92,7 @@ watch([getters.augmentCount], () => {
 function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
-	state.units.forEach(unit => unit.postReset(state.units))
+	state.units.forEach(unit => unit.postReset())
 }
 
 function getItemFrom(name: string) {
