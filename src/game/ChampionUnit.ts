@@ -184,7 +184,7 @@ export class ChampionUnit {
 					} else if (shield != null) {
 						const buffShield = shield
 						buffedUnits.push(this)
-						buffedUnits.forEach(unit => unit.shields.push(buffShield))
+						buffedUnits.forEach(unit => unit.shields.push({...buffShield}))
 					}
 				}
 			}
