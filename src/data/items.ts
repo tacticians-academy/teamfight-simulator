@@ -7,20 +7,16 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { state } from '#/game/store'
 
 import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
-import { getAdjacentRowUnitsTo, getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
+import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
 
 interface ItemFns {
+	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => EffectResults,
 	apply?: (item: ItemData, unit: ChampionUnit) => EffectResults,
 	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults,
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => EffectResults,
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
-}
-
-function getAdjacentHexRangeUnits(item: ItemData, unit: ChampionUnit) {
-	const hexRange = item.effects['HexRange']
-	return hexRange != null ? getAdjacentRowUnitsTo(hexRange, unit.startPosition, state.units) : null
 }
 
 export default {
@@ -46,52 +42,16 @@ export default {
 	},
 
 	[ItemKey.BansheesClaw]: {
-		apply: (item, unit) => {
-			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
+		adjacentHexBuff: (item, unit, adjacentUnits) => {
 			const damageCap = item.effects['DamageCap']
-			if (buffedUnits == null || damageCap == null) {
+			if (damageCap == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			buffedUnits.push(unit)
-			buffedUnits.forEach(unit => unit.shields.push({
+			adjacentUnits.push(unit)
+			adjacentUnits.forEach(unit => unit.shields.push({
 				isSpellShield: true,
 				amount: damageCap,
 			}))
-		},
-	},
-	[ItemKey.ChaliceOfPower]: {
-		apply: (item, unit) => {
-			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
-			const bonusAP = item.effects['BonusAP']
-			if (buffedUnits == null || bonusAP == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
-			buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AbilityPower, bonusAP]))
-		},
-	},
-	[ItemKey.LocketOfTheIronSolari]: {
-		apply: (item, unit) => {
-			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
-			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
-			const shieldDuration = item.effects['ShieldDuration']
-			if (buffedUnits == null || shieldValue == null || shieldDuration == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
-			buffedUnits.push(unit)
-			buffedUnits.forEach(unit => unit.shields.push({
-				amount: shieldValue,
-				expiresAtMS: shieldDuration * 1000,
-			}))
-		},
-	},
-	[ItemKey.ZekesHerald]: {
-		apply: (item, unit) => {
-			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
-			const bonusAS = item.effects['AS']
-			if (buffedUnits == null || bonusAS == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
-			buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
 		},
 	},
 
@@ -110,6 +70,16 @@ export default {
 					expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
 				})
 			}
+		},
+	},
+
+	[ItemKey.ChaliceOfPower]: {
+		adjacentHexBuff: (item, unit, adjacentUnits) => {
+			const bonusAP = item.effects['BonusAP']
+			if (bonusAP == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AbilityPower, bonusAP]))
 		},
 	},
 
@@ -147,6 +117,21 @@ export default {
 		},
 	},
 
+	[ItemKey.LocketOfTheIronSolari]: {
+		adjacentHexBuff: (item, unit, adjacentUnits) => {
+			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
+			const shieldDuration = item.effects['ShieldDuration']
+			if (shieldValue == null || shieldDuration == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			adjacentUnits.push(unit)
+			adjacentUnits.forEach(unit => unit.shields.push({
+				amount: shieldValue,
+				expiresAtMS: shieldDuration * 1000,
+			}))
+		},
+	},
+
 	[ItemKey.TitansResolve]: {
 		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
 			applyTitansResolve(item, itemID, source)
@@ -170,6 +155,16 @@ export default {
 				})
 			}
 			return { shields }
+		},
+	},
+
+	[ItemKey.ZekesHerald]: {
+		adjacentHexBuff: (item, unit, adjacentUnits) => {
+			const bonusAS = item.effects['AS']
+			if (bonusAS == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
 		},
 	},
 

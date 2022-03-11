@@ -15,7 +15,7 @@ import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
-import { buildBoard } from '#/helpers/boardUtils'
+import { buildBoard, getAdjacentRowUnitsTo } from '#/helpers/boardUtils'
 import { getStorageInt, getStorageString, setStorage, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
@@ -95,7 +95,20 @@ function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
 	state.units.forEach(unit => {
-		unit.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.apply?.(item, unit))
+		unit.items.forEach((item, index) => {
+			const itemEffect = itemEffects[item.id as ItemKey]
+			if (itemEffect) {
+				itemEffect.apply?.(item, unit)
+				if (itemEffect.adjacentHexBuff) {
+					const hexRange = item.effects['HexRange']
+					if (hexRange != null) {
+						itemEffect.adjacentHexBuff(item, unit, getAdjacentRowUnitsTo(hexRange, unit.startPosition, state.units))
+					} else {
+						console.log('ERR', 'adjacentHexBuff', item.name, item.effects)
+					}
+				}
+			}
+		})
 	})
 }
 
