@@ -19,8 +19,9 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 
 type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
 
-export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number): SpellCalculation {
+export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number, asPercent?: boolean): SpellCalculation {
 	return {
+		asPercent: asPercent,
 		damageType: damageType,
 		parts: [{
 			subparts: [{

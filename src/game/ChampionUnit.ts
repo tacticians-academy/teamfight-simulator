@@ -651,7 +651,7 @@ export class ChampionUnit {
 		if (!data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
-		if (!data.sourceType) {
+		if (!data.sourceType && spell) {
 			data.sourceType = DamageSourceType.spell
 		}
 		data.spell = spell
@@ -665,6 +665,9 @@ export class ChampionUnit {
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, data: HexEffectData) {
 		if (data.damageCalculation === undefined) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
+		}
+		if (data.damageCalculation && !data.damageSourceType) {
+			data.damageSourceType = DamageSourceType.spell
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
 		this.pending.hexEffects.add(hexEffect)
