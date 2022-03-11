@@ -10,7 +10,7 @@ const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
 export interface HexEffectData {
 	expiresAfterMS?: DOMHighResTimeStamp
 	hexes: HexCoord[]
-	targetTeam?: number
+	targetTeam?: TeamNumber
 	damageCalculation?: SpellCalculation
 	damageMultiplier?: number,
 	damageIncrease?: number,
@@ -29,7 +29,7 @@ export class HexEffect {
 	activatesAtMS: DOMHighResTimeStamp
 	expiresAtMS: DOMHighResTimeStamp
 	source: ChampionUnit
-	targetTeam: number | null
+	targetTeam: TeamNumber | null
 	hexes: HexCoord[]
 	damageCalculation?: SpellCalculation
 	damageMultiplier?: number
@@ -47,7 +47,7 @@ export class HexEffect {
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.source = source
-		this.targetTeam = data.targetTeam ?? source.opposingTeam()
+		this.targetTeam = data.targetTeam === undefined ? source.opposingTeam() : data.targetTeam
 		this.hexes = data.hexes
 		this.damageCalculation = data.damageCalculation
 		this.damageMultiplier = data.damageMultiplier
@@ -75,8 +75,8 @@ export class HexEffect {
 			return true
 		}
 		this.activated = true
-		const affectingUnits = this.targetTeam === 2 ? units : units.filter(unit => unit.team === this.targetTeam)
-		for (const unit of affectingUnits.filter(unit => unit.isIn(this.hexes))) {
+		const targetingUnits = this.targetTeam == null ? units : units.filter(unit => unit.team === this.targetTeam)
+		for (const unit of targetingUnits.filter(unit => unit.isInteractable() && unit.isIn(this.hexes))) {
 			this.apply(elapsedMS, unit)
 		}
 		return true
