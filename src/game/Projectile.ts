@@ -4,7 +4,8 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-import type { CollisionFn, DamageSourceType, HexCoord, TeamNumber } from '#/helpers/types'
+import { DamageSourceType } from '#/helpers/types'
+import type { CollisionFn, HexCoord, TeamNumber } from '#/helpers/types'
 import { coordinatePosition } from '#/game/store'
 
 let instanceIndex = 0
@@ -68,8 +69,12 @@ export class Projectile {
 	}
 
 	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
-		this.onCollision?.(elapsedMS, unit)
-		unit.damage(elapsedMS, true, this.source, this.sourceType, this.damageCalculation, false)
+		const spellShield = this.sourceType === DamageSourceType.spell ? unit.consumeSpellShield() : undefined
+		const damageIncrease = spellShield ? -spellShield.amount : undefined
+		unit.damage(elapsedMS, true, this.source, this.sourceType, this.damageCalculation, false, damageIncrease)
+		if (!spellShield) {
+			this.onCollision?.(elapsedMS, unit)
+		}
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp): boolean {

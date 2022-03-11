@@ -513,6 +513,16 @@ export class ChampionUnit {
 		}
 	}
 
+	consumeSpellShield() {
+		const shield = this.shields
+			.filter(shield => shield.activated !== false && shield.isSpellShield === true)
+			.sort((a, b) => a.amount - b.amount)[0] as ShieldData | undefined
+		if (shield && shield.amount > 0) {
+			shield.activated = false
+		}
+		return shield
+	}
+
 	alliedUnits(): ChampionUnit[] {
 		return state.units.filter(unit => unit !== this && !unit.dead && unit.team === this.team)
 	}

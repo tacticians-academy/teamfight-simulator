@@ -58,13 +58,20 @@ export class HexEffect {
 	}
 
 	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+		const spellShield = unit.consumeSpellShield()
 		if (this.damageCalculation != null) {
-			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, this.damageIncrease, this.damageMultiplier)
+			let damageIncrease = this.damageIncrease ?? 0
+			if (spellShield) {
+				damageIncrease -= spellShield.amount
+			}
+			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, this.damageMultiplier)
 		}
-		if (this.stunMS != null) {
-			unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
+		if (spellShield == null) {
+			if (this.stunMS != null) {
+				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
+			}
+			this.onCollision?.(elapsedMS, unit)
 		}
-		this.onCollision?.(elapsedMS, unit)
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
