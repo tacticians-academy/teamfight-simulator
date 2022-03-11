@@ -36,7 +36,7 @@ export default {
 					intervalSeconds,
 				})
 			} else {
-				console.log('Missing effects', item)
+				return console.log('ERR', item.name, item.effects)
 			}
 			return { scalings }
 		},
@@ -90,7 +90,7 @@ export default {
 			const hexRadius = item.effects['HexRadius']
 			const durationSeconds = 0.5 //NOTE hardcoded apparently??
 			if (hexRadius == null || slowAS == null) {
-				return console.log('ERR', ItemKey.FrozenHeart, item.effects)
+				return console.log('ERR', item.name, item.effects)
 			}
 			const affectedUnits = unit.getUnitsWithin(hexRadius, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyAttackSpeedSlow(elapsedMS, durationSeconds * 1000, slowAS))
@@ -186,6 +186,8 @@ export default {
 					amount: 0, //TODO does not break
 					expiresAtMS: shieldDuration * 1000,
 				})
+			} else {
+				return console.log('ERR', item.name, item.effects)
 			}
 			return { shields }
 		},
