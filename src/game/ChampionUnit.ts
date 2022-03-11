@@ -604,7 +604,7 @@ export class ChampionUnit {
 		return this.getBonusVariants(BonusKey.AttackSpeed) / 100
 	}
 	attackSpeed() {
-		return this.fixedAS ?? this.data.stats.attackSpeed + this.bonusAttackSpeed()
+		return Math.min(5, this.fixedAS ?? this.data.stats.attackSpeed + this.bonusAttackSpeed())
 	}
 	range() {
 		return this.data.stats.range + this.getBonuses(BonusKey.HexRangeIncrease)
