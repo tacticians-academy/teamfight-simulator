@@ -40,9 +40,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		didBacklineJump = false
 		state.units.forEach(unit => {
 			unit.shields.forEach(shield => {
-				if (shield.activatesAtMS != null) {
-					shield.activated = false
-				}
+				shield.activated = shield.activatesAtMS == null
 				if (shield.repeatsEveryMS != null) {
 					shield.repeatAmount = shield.amount
 				}

@@ -309,8 +309,6 @@ export class ChampionUnit {
 							shield.amount = shield.repeatAmount
 						}
 					}
-				} else {
-					shield.activated = true
 				}
 			}
 		})
@@ -440,6 +438,9 @@ export class ChampionUnit {
 		}
 		if (damageIncrease != null) {
 			rawDamage += damageIncrease
+		}
+		if (rawDamage <= 0) {
+			return
 		}
 		if (damageMultiplier != null) {
 			rawDamage *= damageMultiplier
