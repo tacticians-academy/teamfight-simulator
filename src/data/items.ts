@@ -8,7 +8,9 @@ import { state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
-import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
+import { createDamageCalculation } from '#/helpers/bonuses'
+import { DamageSourceType } from '#/helpers/types'
+import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
 
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => EffectResults,
@@ -18,6 +20,22 @@ interface ItemFns {
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+}
+
+const itemsActivatedAtMS: Record<string, number | undefined> = {}
+
+function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string) {
+	const activatedAtMS = itemsActivatedAtMS[itemID]
+	const itemCooldownSeconds = item.effects['ICD']
+	if (itemCooldownSeconds == null) {
+		console.log('ERR icd', item.name, item.effects)
+		return true
+	}
+	if (activatedAtMS != null && elapsedMS < activatedAtMS + itemCooldownSeconds * 1000) {
+		return false
+	}
+	itemsActivatedAtMS[itemID] = elapsedMS
+	return true
 }
 
 export default {
@@ -69,6 +87,21 @@ export default {
 					id: itemID,
 					amount: shieldHPPercent / 100 * target.healthMax,
 					expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
+				})
+			}
+		},
+	},
+
+	[ItemKey.BrambleVest]: {
+		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID)) {
+				const aoeDamage = item.effects[`${target.starLevel}StarAoEDamage`]
+				if (aoeDamage == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				target.getUnitsWithin(1, target.opposingTeam()).forEach(unit => {
+					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
+					unit.damage(elapsedMS, false, target, DamageSourceType.item, damageCalculation, true)
 				})
 			}
 		},
