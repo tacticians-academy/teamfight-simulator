@@ -119,6 +119,16 @@ export default {
 		},
 	},
 
+	[ItemKey.GuinsoosRageblade]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			const perStackAS = item.effects['ASPerStack']
+			if (perStackAS == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			source.addBonuses(itemID as any, [BonusKey.AttackSpeed, perStackAS])
+		},
+	},
+
 	[ItemKey.HextechGunblade]: {
 		damageDealtByHolder: (originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
