@@ -137,7 +137,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 	return [bonuses, bonusScalings, bonusShields]
 }
 
-export function calculateItemBonuses(items: ItemData[]): BonusResults {
+export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): BonusResults {
 	const bonuses: [ItemKey, BonusVariable[]][] = []
 	const bonusScalings: BonusScaling[] = []
 	const bonusShields: ShieldData[] = []
@@ -149,7 +149,7 @@ export function calculateItemBonuses(items: ItemData[]): BonusResults {
 
 		const itemFn = itemEffects[item.id as ItemKey]?.innate
 		if (itemFn) {
-			const { variables, scalings, shields } = itemFn(item)
+			const { variables, scalings, shields } = itemFn(item, unit)
 			if (variables) { variables.push(...variables) }
 			if (scalings) { bonusScalings.push(...scalings) }
 			if (shields) { bonusShields.push(...shields) }

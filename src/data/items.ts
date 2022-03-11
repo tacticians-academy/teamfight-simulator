@@ -4,22 +4,29 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { state } from '#/game/store'
 
 import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
+import { getAdjacentRowUnitsTo, getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
 
 interface ItemFns {
-	apply?: (item: ItemData) => EffectResults,
-	innate?: (item: ItemData) => EffectResults,
+	apply?: (item: ItemData, unit: ChampionUnit) => EffectResults,
+	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults,
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => EffectResults,
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 }
 
+function getAdjacentHexRangeUnits(item: ItemData, unit: ChampionUnit) {
+	const hexRange = item.effects['HexRange']
+	return hexRange != null ? getAdjacentRowUnitsTo(hexRange, unit.startPosition, state.units) : null
+}
+
 export default {
 
 	[ItemKey.ArchangelsStaff]: {
-		innate: (item) => {
+		innate: (item, unit) => {
 			const scalings: BonusScaling[] = []
 			const intervalAmount = item.effects['APPerInterval']
 			const intervalSeconds = item.effects['IntervalSeconds']
@@ -35,6 +42,56 @@ export default {
 				console.log('Missing effects', item)
 			}
 			return { scalings }
+		},
+	},
+
+	[ItemKey.BansheesClaw]: {
+		apply: (item, unit) => {
+			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
+			const damageCap = item.effects['DamageCap']
+			if (buffedUnits == null || damageCap == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			buffedUnits.push(unit)
+			buffedUnits.forEach(unit => unit.shields.push({
+				isSpellShield: true,
+				amount: damageCap,
+			}))
+		},
+	},
+	[ItemKey.ChaliceOfPower]: {
+		apply: (item, unit) => {
+			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
+			const bonusAP = item.effects['BonusAP']
+			if (buffedUnits == null || bonusAP == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AbilityPower, bonusAP]))
+		},
+	},
+	[ItemKey.LocketOfTheIronSolari]: {
+		apply: (item, unit) => {
+			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
+			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
+			const shieldDuration = item.effects['ShieldDuration']
+			if (buffedUnits == null || shieldValue == null || shieldDuration == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			buffedUnits.push(unit)
+			buffedUnits.forEach(unit => unit.shields.push({
+				amount: shieldValue,
+				expiresAtMS: shieldDuration * 1000,
+			}))
+		},
+	},
+	[ItemKey.ZekesHerald]: {
+		apply: (item, unit) => {
+			const buffedUnits = getAdjacentHexRangeUnits(item, unit)
+			const bonusAS = item.effects['AS']
+			if (buffedUnits == null || bonusAS == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			buffedUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
 		},
 	},
 
@@ -102,7 +159,7 @@ export default {
 	},
 
 	[ItemKey.Quicksilver]: {
-		innate: (item) => {
+		apply: (item, unit) => {
 			const shields: ShieldData[] = []
 			const shieldDuration = item.effects['SpellShieldDuration']
 			if (shieldDuration != null) {
@@ -113,6 +170,20 @@ export default {
 				})
 			}
 			return { shields }
+		},
+	},
+
+	[ItemKey.Zephyr]: {
+		apply: (item, unit) => {
+			const banishDuration = item.effects['BanishDuration']
+			if (banishDuration == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const targetHex = getInverseHex(unit.startPosition)
+			const target = getClosesUnitOfTeamTo(targetHex, unit.opposingTeam(), state.units) //TODO not random
+			if (target) {
+				target.banishUntil(banishDuration * 1000)
+			}
 		},
 	},
 

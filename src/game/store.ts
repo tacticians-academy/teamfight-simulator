@@ -7,6 +7,8 @@ import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import itemEffects from '#/data/items'
+
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'
@@ -92,7 +94,9 @@ watch([getters.augmentCount], () => {
 function resetUnitsAfterCreatingOrMoving() {
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
-	state.units.forEach(unit => unit.postReset())
+	state.units.forEach(unit => {
+		unit.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.apply?.(item, unit))
+	})
 }
 
 function getItemFrom(name: string) {
