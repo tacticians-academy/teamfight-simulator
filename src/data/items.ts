@@ -94,7 +94,7 @@ export default {
 
 	[ItemKey.BrambleVest]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID)) {
+			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID)) {
 				const aoeDamage = item.effects[`${target.starLevel}StarAoEDamage`]
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
@@ -114,6 +114,22 @@ export default {
 				return console.log('ERR', item.name, item.effects)
 			}
 			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AbilityPower, bonusAP]))
+		},
+	},
+
+	[ItemKey.DragonsClaw]: {
+		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, item, itemID)) {
+				target.queueProjectile(elapsedMS, undefined, {
+					target: source,
+					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
+					sourceType: DamageSourceType.item,
+					startsAfterMS: 0,
+					missile: {
+						speedInitial: 500, //TODO experimentally determine
+					},
+				})
+			}
 		},
 	},
 
