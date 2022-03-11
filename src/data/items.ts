@@ -6,8 +6,9 @@ import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { state } from '#/game/store'
 
-import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
+import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
+import type { BonusScaling, BonusVariable, DamageSourceType, EffectResults, ShieldData } from '#/helpers/types'
 
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => EffectResults,
@@ -93,6 +94,28 @@ export default {
 			}
 			const affectedUnits = unit.getUnitsWithin(hexRadius, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyAttackSpeedSlow(elapsedMS, durationSeconds * 1000, slowAS))
+		},
+	},
+
+	[ItemKey.GargoyleStoneplate]: {
+		update: (elapsedMS, item, itemID, unit) => {
+			const perEnemyArmor = item.effects['ArmorPerEnemy']
+			const perEnemyMR = item.effects['MRPerEnemy']
+			if (perEnemyArmor == null || perEnemyMR == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const unitsTargeting = getInteractableUnitsOfTeam(unit.opposingTeam())
+				.filter(enemy => enemy.target === unit)
+				.length
+			const bonuses = unit.getBonusesFrom(itemID as any)
+			const bonus = bonuses[0] ?? [itemID as any, []]
+			if (!bonuses.length) {
+				unit.bonuses.push(bonus)
+			}
+			bonus[1] = [
+				[BonusKey.Armor, perEnemyArmor * unitsTargeting],
+				[BonusKey.MagicResist, perEnemyMR * unitsTargeting],
+			]
 		},
 	},
 
