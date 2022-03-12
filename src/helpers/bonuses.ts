@@ -65,10 +65,12 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 		if (activeEffect == null) {
 			return
 		}
+
 		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
 		const unitHasTrait = unitTraitKeys.includes(trait.name as TraitKey)
 		const bonusVariables: BonusVariable[] = []
-		const teamTraitFn = traitEffects[trait.name as TraitKey]?.team
+		const traitEffectData = traitEffects[trait.name as TraitKey]
+		const teamTraitFn = traitEffectData?.team
 		if (teamTraitFn) {
 			const { variables, scalings, shields } = teamTraitFn(unit, activeEffect)
 			if (variables) { bonusVariables.push(...variables) }
@@ -77,7 +79,11 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 		}
 		if (teamEffect != null || unitHasTrait) {
 			// console.log(trait.name, teamEffect, activeEffect.variables)
+			const disableDefaultVariables = traitEffectData?.disableDefaultVariables
 			for (let key in activeEffect.variables) {
+				if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(key as BonusKey))) {
+					continue
+				}
 				let value = activeEffect.variables[key]
 				if (unitHasTrait) {
 					if (teamEffect === false) {
@@ -111,7 +117,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 			}
 		}
 		if (unitHasTrait) {
-			const soloTraitFn = traitEffects[trait.name as TraitKey]?.solo
+			const soloTraitFn = traitEffectData?.solo
 			if (soloTraitFn) {
 				const { variables, scalings, shields } = soloTraitFn(unit, activeEffect)
 				if (variables) { bonusVariables.push(...variables) }
@@ -143,8 +149,12 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): Bon
 	const bonusScalings: BonusScaling[] = []
 	const bonusShields: ShieldData[] = []
 	items.forEach(item => {
+		const disableDefaultVariables = itemEffects[item.id as ItemKey]?.disableDefaultVariables
 		const variables: BonusVariable[] = []
 		for (const key in item.effects) {
+			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(key as BonusKey))) {
+				continue
+			}
 			variables.push([key, item.effects[key]])
 		}
 

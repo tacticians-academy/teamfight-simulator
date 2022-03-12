@@ -12,6 +12,7 @@ import type { BonusVariable, BonusScaling, EffectResults, ShieldData } from '#/h
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
+	disableDefaultVariables?: true | BonusKey[]
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
 	innate?: TraitEffectFn,
@@ -46,6 +47,10 @@ export default {
 			}
 			return { shields }
 		},
+	},
+
+	[TraitKey.Chemtech]: {
+		disableDefaultVariables: true,
 	},
 
 	[TraitKey.Clockwork]: {

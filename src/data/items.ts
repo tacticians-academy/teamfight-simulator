@@ -15,6 +15,7 @@ import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/h
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => EffectResults,
 	apply?: (item: ItemData, unit: ChampionUnit) => EffectResults,
+	disableDefaultVariables?: true | BonusKey[]
 	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults,
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => EffectResults,
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
@@ -131,6 +132,10 @@ export default {
 				})
 			}
 		},
+	},
+
+	[ItemKey.EdgeOfNight]: {
+		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
 	},
 
 	[ItemKey.FrozenHeart]: {
