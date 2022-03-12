@@ -3,19 +3,24 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { CollisionFn, DamageSourceType, HexCoord, TeamNumber } from '#/helpers/types'
+import { getSurroundingWithin } from '#/helpers/boardUtils'
+import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
 
 export interface HexEffectData {
+	startsAfterMS?: DOMHighResTimeStamp
 	expiresAfterMS?: DOMHighResTimeStamp
-	hexes: HexCoord[]
+	hexes?: HexCoord[]
+	hexDistanceFromSource?: number
 	targetTeam?: TeamNumber
 	damageCalculation?: SpellCalculation
 	damageMultiplier?: number,
 	damageIncrease?: number,
 	damageSourceType?: DamageSourceType
 	stunSeconds?: number
+	taunts?: boolean
 	onCollision?: CollisionFn
 }
 
@@ -30,20 +35,22 @@ export class HexEffect {
 	expiresAtMS: DOMHighResTimeStamp
 	source: ChampionUnit
 	targetTeam: TeamNumber | null
-	hexes: HexCoord[]
+	hexes?: HexCoord[]
+	hexDistanceFromSource?: number
 	damageCalculation?: SpellCalculation
 	damageMultiplier?: number
 	damageIncrease?: number
 	damageSourceType?: DamageSourceType
 	stunMS: number | null
+	taunts: boolean
 	onCollision?: CollisionFn
 
 	activated = false
 
-	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, data: HexEffectData) {
+	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
 		this.instanceID = `h${instanceIndex += 1}`
-		this.startsAtMS = elapsedMS + (spell.castTime ?? DEFAULT_CAST_TIME) * 1000
-		this.activatesAfterMS = (spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME) * 1000
+		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell!.castTime ?? DEFAULT_CAST_TIME) * 1000))
+		this.activatesAfterMS = spell ? (spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME) * 1000 : 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.source = source
@@ -54,6 +61,7 @@ export class HexEffect {
 		this.damageIncrease = data.damageIncrease
 		this.damageSourceType = data.damageSourceType
 		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
+		this.taunts = data.taunts ?? false
 		this.onCollision = data.onCollision
 	}
 
@@ -72,6 +80,12 @@ export class HexEffect {
 			}
 			this.onCollision?.(elapsedMS, unit)
 		}
+		if (this.taunts) {
+			console.log(unit.name)
+			if (!this.source.dead) {
+				unit.target = this.source
+			}
+		}
 	}
 
 	update(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -83,7 +97,11 @@ export class HexEffect {
 		}
 		this.activated = true
 		const targetingUnits = this.targetTeam == null ? units : units.filter(unit => unit.team === this.targetTeam)
-		for (const unit of targetingUnits.filter(unit => unit.isInteractable() && unit.isIn(this.hexes))) {
+		if (!this.hexes) {
+			console.log(getSurroundingWithin(this.source.activePosition, this.hexDistanceFromSource!))
+			this.hexes = getSurroundingWithin(this.source.activePosition, this.hexDistanceFromSource!)
+		}
+		for (const unit of targetingUnits.filter(unit => unit.isInteractable() && unit.isIn(this.hexes!))) {
 			this.apply(elapsedMS, unit)
 		}
 		return true

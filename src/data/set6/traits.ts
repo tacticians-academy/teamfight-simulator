@@ -19,20 +19,32 @@ interface TraitFns {
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }
 
+const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
+
 export default {
 
 	[TraitKey.Bodyguard]: {
+		innate: (unit, innateEffect) => {
+			unit.queueHexEffect(0, undefined, {
+				startsAfterMS: BODYGUARD_DELAY_MS,
+				hexDistanceFromSource: 1,
+				damageMultiplier: 0.5,
+				taunts: true,
+			})
+			return {}
+		},
 		solo: (unit, activeEffect) => {
+			const shields: ShieldData[] = []
 			const shieldAmount = activeEffect.variables['ShieldAmount']
-			if (shieldAmount == null) {
-				return console.log('ERR', 'Missing', 'shieldAmount', activeEffect)
+			if (shieldAmount != null) {
+				shields.push({
+					activatesAtMS: BODYGUARD_DELAY_MS,
+					amount: shieldAmount,
+				})
+			} else {
+				console.log('ERR', 'Missing', 'shieldAmount', activeEffect)
 			}
-			const shield: ShieldData = {
-				activatesAtMS: 1000, //TODO experimentally determine
-				amount: shieldAmount,
-			}
-			//TODO Taunt
-			return { shields: [shield] }
+			return { shields }
 		},
 	},
 
@@ -70,22 +82,24 @@ export default {
 
 	[TraitKey.Hextech]: {
 		solo: (unit, activeEffect) => {
+			const shields: ShieldData[] = []
 			const shieldAmount = activeEffect.variables['ShieldAmount']
 			const durationSeconds = activeEffect.variables['ShieldDuration']
 			const damage = activeEffect.variables['MagicDamage']
 			const frequency = activeEffect.variables['Frequency']
 			if (shieldAmount == null || damage == null || durationSeconds == null || frequency == null) {
 				return console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
+			} else {
+				const repeatsEveryMS = frequency * 1000
+				shields.push({
+					amount: shieldAmount,
+					bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
+					expiresAtMS: durationSeconds * 1000,
+					activatesAtMS: repeatsEveryMS,
+					repeatsEveryMS,
+				})
 			}
-			const repeatsEveryMS = frequency * 1000
-			const shield: ShieldData = {
-				amount: shieldAmount,
-				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
-				expiresAtMS: durationSeconds * 1000,
-				activatesAtMS: repeatsEveryMS,
-				repeatsEveryMS,
-			}
-			return { shields: [shield]}
+			return { shields }
 		},
 	},
 

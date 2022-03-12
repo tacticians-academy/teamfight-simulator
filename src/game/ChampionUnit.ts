@@ -94,6 +94,9 @@ export class ChampionUnit {
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
+		this.pending.hexEffects.clear()
+		this.pending.projectiles.clear()
+
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
 		this.target = null
@@ -129,9 +132,6 @@ export class ChampionUnit {
 		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed) //TODO Jhin set data
-
-		this.pending.hexEffects.clear()
-		this.pending.projectiles.clear()
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
@@ -646,14 +646,17 @@ export class ChampionUnit {
 		return this.getBonuses(...vampBonuses)
 	}
 
-	getUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
-		const hexes = getSurroundingWithin(this.activePosition, distance)
+	getUnitsIn(hexes: HexCoord[], team: TeamNumber | null): ChampionUnit[] {
 		return state.units.filter(unit => {
 			if (team != null && unit.team !== team) {
 				return false
 			}
 			return unit.isIn(hexes)
 		})
+	}
+	getUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
+		const hexes = getSurroundingWithin(this.activePosition, distance)
+		return this.getUnitsIn(hexes, team)
 	}
 
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
@@ -671,8 +674,8 @@ export class ChampionUnit {
 			this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
 		}
 	}
-	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, data: HexEffectData) {
-		if (data.damageCalculation === undefined) {
+	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
+		if (spell && data.damageCalculation === undefined) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
