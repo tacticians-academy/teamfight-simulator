@@ -22,11 +22,17 @@ import { containsHex, getClosestHexAvailableTo, getNearestEnemies, getSurroundin
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { MutantType, MutantBonus, SpellKey, DamageSourceType } from '#/helpers/types'
+import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
+
+interface StatusEffect {
+	active: boolean
+	expiresAt: number
+	amount: number
+}
 
 export class ChampionUnit {
 	instanceID: string
@@ -46,10 +52,8 @@ export class ChampionUnit {
 	isStarLocked: boolean
 	fixedAS: number | undefined = undefined
 	instantAttack: boolean
-	attackSpeedSlow = {
-		expiresAt: 0,
-		amount: 0,
-	}
+
+	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
 	collides = true
 	interacts = true
@@ -91,6 +95,14 @@ export class ChampionUnit {
 		this.startPosition = position
 		this.activePosition = position
 		this.reposition(position)
+
+		for (const effectType in StatusEffectType) {
+			this.statusEffects[effectType as StatusEffectType] = {
+				active: false,
+				expiresAt: 0,
+				amount: 0,
+			}
+		}
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
@@ -162,8 +174,8 @@ export class ChampionUnit {
 			return
 		}
 		let attackSpeed = this.attackSpeed()
-		if (elapsedMS < this.attackSpeedSlow.expiresAt) {
-			attackSpeed *= 1 - this.attackSpeedSlow.amount / 100
+		if (elapsedMS < this.statusEffects.attackSpeedSlow.expiresAt) {
+			attackSpeed *= 1 - this.statusEffects.attackSpeedSlow.amount / 100
 		}
 		const msBetweenAttacks = 1000 / attackSpeed
 		if (elapsedMS < this.attackStartAtMS + msBetweenAttacks) {
@@ -283,11 +295,23 @@ export class ChampionUnit {
 		return false
 	}
 
-	applyAttackSpeedSlow(elapsedMS: DOMHighResTimeStamp, durationMS: DOMHighResTimeStamp, amount: number) {
+	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number) {
 		const expireAt = elapsedMS + durationMS
-		if (expireAt > this.attackSpeedSlow.expiresAt) {
-			this.attackSpeedSlow.expiresAt = expireAt
-			this.attackSpeedSlow.amount = amount
+		const statusEffect = this.statusEffects[effectType]
+		console.log(effectType, this.statusEffects)
+		if (expireAt > statusEffect.expiresAt) {
+			statusEffect.active = true
+			statusEffect.expiresAt = expireAt
+			statusEffect.amount = amount
+		}
+	}
+
+	updateStatusEffects(elapsedMS: DOMHighResTimeStamp) {
+		for (const effectType in this.statusEffects) {
+			const statusEffect = this.statusEffects[effectType as StatusEffectType]
+			if (statusEffect.active && elapsedMS >= statusEffect.expiresAt) {
+				statusEffect.active = false
+			}
 		}
 	}
 

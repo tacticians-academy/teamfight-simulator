@@ -78,6 +78,11 @@ export interface EffectResults {
 	shields?: ShieldData[]
 }
 
+export enum StatusEffectType {
+	attackSpeedSlow = 'attackSpeedSlow',
+	grievousWounds = 'grievousWounds',
+}
+
 export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 
 export enum MutantType {

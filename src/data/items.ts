@@ -9,7 +9,7 @@ import { state } from '#/game/store'
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
-import { DamageSourceType } from '#/helpers/types'
+import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
 
 interface ItemFns {
@@ -142,7 +142,7 @@ export default {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const affectedUnits = unit.getUnitsWithin(hexRadius, unit.opposingTeam())
-			affectedUnits.forEach(unit => unit.applyAttackSpeedSlow(elapsedMS, durationSeconds * 1000, slowAS))
+			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, slowAS))
 		},
 	},
 
