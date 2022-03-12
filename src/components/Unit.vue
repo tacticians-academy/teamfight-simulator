@@ -9,6 +9,7 @@ import type { DraggableType } from '#/game/dragDrop'
 import { useStore } from '#/game/store'
 
 import { HEX_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/helpers/constants'
+import { StatusEffectType } from '#/helpers/types'
 import type { StarLevel } from '#/helpers/types'
 
 const { state, setStarLevel, startDragging, copyItem, moveItem, dropUnit } = useStore()
@@ -22,6 +23,11 @@ const showInfo = ref(false)
 const currentPosition = computed(() => props.unit.coordinatePosition())
 
 const unitSize = `${100 * HEX_PROPORTION * UNIT_SIZE_HEX_PROPORTION}%`
+
+const statusEffectSymbols = {
+	[StatusEffectType.attackSpeedSlow]: '❄️',
+	[StatusEffectType.grievousWounds]: '❤️‍🔥', // 💔
+}
 
 function onDragStart(event: DragEvent, type: DraggableType, name: string) {
 	startDragging(event, type, name, props.unit)
@@ -79,6 +85,11 @@ function onInfo(event: Event) {
 					</template>
 				</div>
 				<span class="ml-px relative z-50">{{ Math.ceil(unit.health) }}</span>
+			</div>
+			<div class="mt-1  flex">
+				<template v-for="(effect, effectType) in unit.statusEffects" :key="effectType">
+					<div v-if="effect.active">{{ statusEffectSymbols[effectType] }}</div>
+				</template>
 			</div>
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
