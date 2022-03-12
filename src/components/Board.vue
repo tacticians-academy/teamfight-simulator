@@ -86,10 +86,10 @@ onMounted(() => {
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
 .hex.team-a {
-	@apply bg-violet-300/80;
+	@apply bg-violet-300/90;
 }
 .hex.team-b {
-	@apply bg-rose-300/80;
+	@apply bg-rose-300/90;
 }
 </style>
 

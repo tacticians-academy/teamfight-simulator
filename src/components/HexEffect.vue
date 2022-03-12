@@ -9,10 +9,12 @@ const props = defineProps<{
 }>()
 
 const hexPositions = props.hexEffect.hexes.map(coordinatePosition)
+
+const maxOpacity = props.hexEffect.damageMultiplier ?? 1
 </script>
 
 <template>
-<div :style="{ opacity: hexEffect.activated ? 1 : 1/3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
+<div :style="{ opacity: hexEffect.activated ? maxOpacity : maxOpacity / 3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
 	<div v-for="[col, row] in hexPositions" :key="`${row},${col}`">
 		<div
 			class="hex" :class="hexEffect.source.team === 0 ? 'team-a' : 'team-b'"
