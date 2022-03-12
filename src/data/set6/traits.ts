@@ -18,6 +18,7 @@ interface TraitFns {
 	innate?: TraitEffectFn,
 	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
+	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
@@ -51,6 +52,9 @@ export default {
 
 	[TraitKey.Chemtech]: {
 		disableDefaultVariables: true,
+		hpThreshold: (activeEffect, elapsedMS, unit) => {
+			console.log(activeEffect) //TODO
+		},
 	},
 
 	[TraitKey.Clockwork]: {

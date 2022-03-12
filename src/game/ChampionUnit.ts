@@ -1,7 +1,7 @@
 import { markRaw } from 'vue'
 
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionData, ChampionSpellData, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
+import type { ChampionData, ChampionSpellData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -33,6 +33,8 @@ interface StatusEffect {
 	expiresAt: number
 	amount: number
 }
+
+const thresholdCheck: Record<string, number> = {}
 
 export class ChampionUnit {
 	instanceID: string
@@ -474,7 +476,21 @@ export class ChampionUnit {
 		}
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
-		this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueIdentifier(index, item), originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		this.items.forEach((item, index) => {
+			const uniqueID = uniqueIdentifier(index, item)
+			itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueID, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+			const hpThresholdFn = itemEffects[item.id as ItemKey]?.hpThreshold
+			if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects)) {
+				hpThresholdFn(elapsedMS, item, uniqueID, this)
+			}
+		})
+		this.activeSynergies.forEach(([trait, style, activeEffect]) => {
+			if (!activeEffect) { return }
+			const hpThresholdFn = traitEffects[trait.name as TraitKey]?.hpThreshold
+			if (hpThresholdFn && this.checkHPThreshold(trait.name, activeEffect?.variables)) {
+				hpThresholdFn(activeEffect, elapsedMS, this)
+			}
+		})
 		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 
 		if (sourceType === DamageSourceType.attack) {
@@ -484,6 +500,20 @@ export class ChampionUnit {
 				}
 			})
 		}
+	}
+
+	checkHPThreshold(uniqueID: string, effects: EffectVariables) {
+		const hpThreshold = effects['HPThreshold']
+		if (hpThreshold != null) {
+			const activatedAt = thresholdCheck[uniqueID]
+			if (activatedAt !== hpThreshold && this.healthProportion() <= hpThreshold / 100) {
+				thresholdCheck[uniqueID] = hpThreshold
+				return true
+			}
+		} else {
+			console.log('ERR', 'HPThreshold', uniqueID, effects)
+		}
+		return false
 	}
 
 	consumeSpellShield() {

@@ -42,7 +42,6 @@ export interface BonusScaling {
 }
 
 export interface ShieldData {
-	id?: string
 	activated?: boolean
 	activatesAtMS?: DOMHighResTimeStamp
 	isSpellShield?: boolean

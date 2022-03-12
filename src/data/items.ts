@@ -21,6 +21,7 @@ interface ItemFns {
 	damageDealtByHolder?: (originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 }
 
 const itemsActivatedAtMS: Record<string, number | undefined> = {}
@@ -76,20 +77,16 @@ export default {
 	},
 
 	[ItemKey.Bloodthirster]: {
-		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			const healthThreshold = item.effects['HPThreshold']
+		hpThreshold: (elapsedMS, item, itemID, unit) => {
 			const shieldHPPercent = item.effects['ShieldHPPercent']
 			const shieldDurationSeconds = item.effects['ShieldDuration']
-			if (healthThreshold == null || shieldHPPercent == null || shieldDurationSeconds == null) {
+			if (shieldHPPercent == null || shieldDurationSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			if (!target.shields.some(shield => shield.id === itemID) && target.healthProportion() <= healthThreshold / 100) {
-				target.shields.push({
-					id: itemID,
-					amount: shieldHPPercent / 100 * target.healthMax,
-					expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
-				})
-			}
+			unit.shields.push({
+				amount: shieldHPPercent / 100 * unit.healthMax,
+				expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
+			})
 		},
 	},
 
@@ -136,6 +133,9 @@ export default {
 
 	[ItemKey.EdgeOfNight]: {
 		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
+		hpThreshold: (elapsedMS, item, itemID, unit) => {
+			console.log(itemID) //TODO
+		},
 	},
 
 	[ItemKey.FrozenHeart]: {
