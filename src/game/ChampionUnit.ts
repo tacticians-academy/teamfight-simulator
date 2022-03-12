@@ -182,8 +182,9 @@ export class ChampionUnit {
 			return
 		}
 		let attackSpeed = this.attackSpeed()
-		if (elapsedMS < this.statusEffects.attackSpeedSlow.expiresAt) {
-			attackSpeed *= 1 - this.statusEffects.attackSpeedSlow.amount / 100
+		const attackSpeedSlow = this.getStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow)
+		if (attackSpeedSlow != null) {
+			attackSpeed *= 1 - attackSpeedSlow / 100
 		}
 		const msBetweenAttacks = 1000 / attackSpeed
 		if (elapsedMS < this.attackStartAtMS + msBetweenAttacks) {
@@ -303,6 +304,12 @@ export class ChampionUnit {
 		return false
 	}
 
+	getStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType) {
+		if (elapsedMS < this.statusEffects[effectType].expiresAt) {
+			return this.statusEffects[effectType].amount
+		}
+		return undefined
+	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number) {
 		const expireAt = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
@@ -434,7 +441,7 @@ export class ChampionUnit {
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
 		let takingDamage = rawDamage * defenseMultiplier
 		if (damageType !== DamageType.true) {
-			const damageReduction = this.getBonuses('DamageReduction' as BonusKey) //TODO BonusKey.DamageReduction
+			const damageReduction = this.getBonuses(BonusKey.DamageReduction)
 			if (damageReduction > 0) {
 				if (damageReduction >= 1) {
 					console.log('ERR', 'damageReduction must be between 0–1.')
