@@ -4,7 +4,6 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { CollisionFn, DamageSourceType, HexCoord, TeamNumber } from '#/helpers/types'
 import { getSurroundingWithin } from '#/helpers/boardUtils'
-import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
@@ -80,11 +79,8 @@ export class HexEffect {
 			}
 			this.onCollision?.(elapsedMS, unit)
 		}
-		if (this.taunts) {
-			console.log(unit.name)
-			if (!this.source.dead) {
-				unit.target = this.source
-			}
+		if (this.taunts && !this.source.dead) {
+			unit.target = this.source
 		}
 	}
 

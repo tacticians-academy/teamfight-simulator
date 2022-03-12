@@ -298,7 +298,6 @@ export class ChampionUnit {
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number) {
 		const expireAt = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
-		console.log(effectType, this.statusEffects)
 		if (expireAt > statusEffect.expiresAt) {
 			statusEffect.active = true
 			statusEffect.expiresAt = expireAt
