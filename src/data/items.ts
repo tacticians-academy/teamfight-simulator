@@ -156,15 +156,7 @@ export default {
 			const unitsTargeting = getInteractableUnitsOfTeam(unit.opposingTeam())
 				.filter(enemy => enemy.target === unit)
 				.length
-			const bonuses = unit.getBonusesFrom(itemID as any)
-			const bonus = bonuses[0] ?? [itemID as any, []]
-			if (!bonuses.length) {
-				unit.bonuses.push(bonus)
-			}
-			bonus[1] = [
-				[BonusKey.Armor, perEnemyArmor * unitsTargeting],
-				[BonusKey.MagicResist, perEnemyMR * unitsTargeting],
-			]
+			unit.setBonusesFor(itemID as any, [BonusKey.Armor, perEnemyArmor * unitsTargeting], [BonusKey.MagicResist, perEnemyMR * unitsTargeting])
 		},
 	},
 

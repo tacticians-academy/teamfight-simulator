@@ -536,6 +536,15 @@ export class ChampionUnit {
 		return calculation
 	}
 
+	setBonusesFor(sourceKey: BonusLabelKey, ...bonuses: BonusVariable[]) {
+		const existingBonuses = this.getBonusesFrom(sourceKey)
+		const bonus = existingBonuses[0] ?? [sourceKey, []]
+		if (existingBonuses[0] == null) {
+			this.bonuses.push(bonus)
+		}
+		bonus[1] = bonuses
+	}
+
 	getBonusesFrom(sourceKey: BonusLabelKey) {
 		return this.bonuses
 			.filter(bonus => bonus[0] === sourceKey)
