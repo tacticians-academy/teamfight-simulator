@@ -108,6 +108,12 @@ export class ChampionUnit {
 	reset(synergiesByTeam: SynergyData[][]) {
 		this.pending.hexEffects.clear()
 		this.pending.projectiles.clear()
+		for (const effectType in this.statusEffects) {
+			const statusEffect = this.statusEffects[effectType as StatusEffectType]
+			statusEffect.active = false
+			statusEffect.amount = 0
+			statusEffect.expiresAt = 0
+		}
 
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
