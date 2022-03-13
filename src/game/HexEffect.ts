@@ -88,7 +88,7 @@ export class HexEffect {
 				}
 			}
 		}
-		if (this.taunts && !this.source.dead) {
+		if (this.taunts && !this.source.isInteractable()) {
 			unit.target = this.source
 		}
 	}
