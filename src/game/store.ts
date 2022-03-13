@@ -37,6 +37,9 @@ export const state = reactive({
 	mutantType: ref((getStorageString(StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
 })
 
+export const activatedCheck: Record<string, number | undefined> = {}
+export const thresholdCheck: Record<string, number | undefined> = {}
+
 // Getters
 
 export const getters = {
@@ -92,6 +95,9 @@ watch([getters.augmentCount], () => {
 // Store
 
 function resetUnitsAfterCreatingOrMoving() {
+	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
+	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
+
 	const _synergiesByTeam = getters.synergiesByTeam.value
 	synergiesByTeam[0] = _synergiesByTeam[0]
 	synergiesByTeam[1] = _synergiesByTeam[1]

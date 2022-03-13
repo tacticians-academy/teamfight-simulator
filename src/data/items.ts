@@ -4,7 +4,7 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { state } from '#/game/store'
+import { activatedCheck, state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
@@ -25,10 +25,8 @@ interface ItemFns {
 	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 }
 
-const itemsActivatedAtMS: Record<string, number | undefined> = {}
-
 function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
-	const activatedAtMS = itemsActivatedAtMS[itemID]
+	const activatedAtMS = activatedCheck[itemID]
 	const itemCooldownSeconds = item.effects[cooldownKey]
 	if (itemCooldownSeconds == null) {
 		console.log('ERR icd', item.name, item.effects)
@@ -37,7 +35,7 @@ function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: s
 	if (activatedAtMS != null && elapsedMS < activatedAtMS + itemCooldownSeconds * 1000) {
 		return false
 	}
-	itemsActivatedAtMS[itemID] = elapsedMS
+	activatedCheck[itemID] = elapsedMS
 	return instantlyApplies ? true : activatedAtMS != null
 }
 

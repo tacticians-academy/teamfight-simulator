@@ -16,7 +16,7 @@ import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
-import { coordinatePosition, gameOver, state } from '#/game/store'
+import { coordinatePosition, gameOver, state, thresholdCheck } from '#/game/store'
 
 import { containsHex, getClosestHexAvailableTo, getNearestEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
@@ -27,8 +27,6 @@ import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord,
 import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
-
-const thresholdCheck: Record<string, number> = {}
 
 export class ChampionUnit {
 	instanceID: string
