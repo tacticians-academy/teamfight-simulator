@@ -256,4 +256,41 @@ export default {
 		},
 	},
 
+	[TraitKey.Syndicate]: {
+		disableDefaultVariables: true,
+		update: (activeEffect, elapsedMS, units) => {
+			const syndicateArmor = activeEffect.variables['Armor']
+			const syndicateMR = activeEffect.variables['MR']
+			const syndicateOmnivamp = activeEffect.variables['PercentOmnivamp']
+			const syndicateIncrease = activeEffect.variables['SyndicateIncrease'] ?? 0
+			const traitLevel = activeEffect.variables['{Colossus/Mutant/Socialite}']
+			if (traitLevel == null || syndicateArmor == null || syndicateMR == null) {
+				return
+			}
+			const syndicateMultiplier = syndicateIncrease + 1
+			if (traitLevel === 1) {
+				let lowestHP = Number.MAX_SAFE_INTEGER
+				let lowestHPUnit: ChampionUnit | undefined
+				units.forEach(unit => {
+					if (unit.health < lowestHP) {
+						lowestHP = unit.health
+						lowestHPUnit = unit
+					}
+				})
+				if (lowestHPUnit) {
+					units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate))
+					units = [lowestHPUnit]
+				}
+			}
+			const bonuses: BonusVariable[] = [
+				[BonusKey.Armor, syndicateArmor * syndicateMultiplier],
+				[BonusKey.MagicResist, syndicateMR * syndicateMultiplier],
+			]
+			if (syndicateOmnivamp != null) {
+				bonuses.push([BonusKey.VampOmni, syndicateOmnivamp * syndicateMultiplier])
+			}
+			units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate, ...bonuses))
+		},
+	},
+
 } as { [key in TraitKey]?: TraitFns }
