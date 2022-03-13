@@ -82,6 +82,7 @@ export enum StatusEffectType {
 	armorReduction = 'armorReduction',
 	attackSpeedSlow = 'attackSpeedSlow',
 	grievousWounds = 'grievousWounds',
+	stealth = 'stealth',
 }
 
 export interface StatusEffectData {

@@ -53,7 +53,6 @@ export class ChampionUnit {
 
 	collides = true
 	interacts = true
-	stealthed = false
 
 	banishUntilMS: DOMHighResTimeStamp | null = null
 	cachedTargetDistance = 0
@@ -122,7 +121,6 @@ export class ChampionUnit {
 		this.stunnedUntilMS = 0
 		const jumpToBackline = this.jumpsToBackline()
 		this.collides = !jumpToBackline
-		this.stealthed = jumpToBackline
 		this.interacts = true
 		this.banishUntilMS = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
@@ -299,15 +297,16 @@ export class ChampionUnit {
 	}
 
 	getStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType) {
-		if (elapsedMS < this.statusEffects[effectType].expiresAt) {
-			return this.statusEffects[effectType].amount
+		const statusEffect = this.statusEffects[effectType]
+		if (statusEffect.active && elapsedMS < statusEffect.expiresAt) {
+			return statusEffect.amount
 		}
 		return undefined
 	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number) {
 		const expireAt = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
-		if (expireAt > statusEffect.expiresAt) {
+		if (!statusEffect.active || expireAt > statusEffect.expiresAt) {
 			statusEffect.active = true
 			statusEffect.expiresAt = expireAt
 			statusEffect.amount = amount
@@ -343,19 +342,18 @@ export class ChampionUnit {
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		this.activePosition = getClosestHexAvailableTo(targetHex, state.units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
-		this.stealthed = false
 		this.collides = true
+		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS, 1)
 	}
 
 	banishUntil(ms: DOMHighResTimeStamp | null) {
 		const banishing = ms != null
-		this.stealthed = banishing
 		this.interacts = !banishing
 		this.banishUntilMS = ms ?? null
 	}
 
 	isAttackable() {
-		return !this.dead && !this.stealthed
+		return this.isInteractable() && !this.statusEffects.stealth.active
 	}
 	isInteractable() {
 		return !this.dead && this.interacts
