@@ -5,6 +5,12 @@ import type { HexCoord } from '#/helpers/types'
 
 let pathsByTeam: [HexCoord[][], HexCoord[][]] = [[], []]
 
+let needsUpdate = false
+
+export function needsPathfindingUpdate() {
+	needsUpdate = true
+}
+
 function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHexes: HexCoord[] = [], results: HexCoord[][] = []): HexCoord[][] {
 	if (!results.length) {
 		results = buildBoard(false)
@@ -34,34 +40,23 @@ function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHe
 	return newSearchHexes.length ? recursiveSearch(unitPositions, newSearchHexes, checkedHexes, results) : results
 }
 
-let previousUnitPositions: HexCoord[] = []
+export function updatePathsIfNeeded(units: ChampionUnit[]) {
+	if (!needsUpdate) {
+		return
+	}
+	needsUpdate = false
 
-export function updatePaths(units: ChampionUnit[]) {
 	const searchFromHexes: [HexCoord[], HexCoord[]] = [[], []]
 	const unitPositions: HexCoord[] = []
 	for (const unit of units) {
 		if (unit.hasCollision()) {
 			unitPositions.push(unit.activePosition)
 		}
-		if (!unit.isInteractable()) {
+		if (!unit.isAttackable()) {
 			continue
 		}
 		searchFromHexes[unit.team].push(unit.activePosition)
 	}
-	const unitsCount = unitPositions.length
-	let hasChangedUnit = unitsCount !== previousUnitPositions.length
-	if (!hasChangedUnit) {
-		for (let index = 0; index < unitsCount; index += 1) {
-			if (!isSameHex(unitPositions[index], previousUnitPositions[index])) {
-				hasChangedUnit = true
-				break
-			}
-		}
-	}
-	if (!hasChangedUnit) {
-		return
-	}
-	previousUnitPositions = unitPositions
 	pathsByTeam = searchFromHexes.map(teamHexes => recursiveSearch(unitPositions, teamHexes)) as [HexCoord[][], HexCoord[][]]
 }
 

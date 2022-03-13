@@ -11,7 +11,7 @@ import itemEffects from '#/data/items'
 import championEffects from '#/data/set6/champions'
 import traitEffects from '#/data/set6/traits'
 
-import { getNextHex, updatePaths } from '#/game/pathfind'
+import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
 import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
@@ -288,7 +288,7 @@ export class ChampionUnit {
 			const msPerHex = 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
 			this.moveUntilMS = elapsedMS + msPerHex
 			this.activePosition = nextHex
-			updatePaths(state.units)
+			needsPathfindingUpdate()
 			return true
 		}
 		return false
@@ -308,6 +308,9 @@ export class ChampionUnit {
 			statusEffect.active = true
 			statusEffect.expiresAt = expireAt
 			statusEffect.amount = amount
+			if (effectType === StatusEffectType.stealth) {
+				needsPathfindingUpdate()
+			}
 		}
 	}
 
@@ -387,7 +390,7 @@ export class ChampionUnit {
 		this.dead = true
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
-			updatePaths(state.units)
+			needsPathfindingUpdate()
 			teamUnits.forEach(unit => {
 				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
 				if (increaseADAP > 0) {

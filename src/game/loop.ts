@@ -5,7 +5,7 @@ import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
 import { state } from '#/game/store'
-import { updatePaths } from '#/game/pathfind'
+import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
 
 import { uniqueIdentifier } from '#/helpers/utils'
 import { synergiesByTeam } from '#/helpers/bonuses'
@@ -39,7 +39,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		diffMS = 0
 		previousFrameMS = frameMS
 		startedAtMS = frameMS
-		updatePaths(state.units)
+		needsPathfindingUpdate()
 		didBacklineJump = false
 		state.units.forEach(unit => {
 			unit.shields.forEach(shield => {
@@ -133,9 +133,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		}
 	})
 
-	if (isFirstLoop) {
-		updatePaths(state.units)
-	}
+	updatePathsIfNeeded(state.units)
 
 	previousFrameMS = frameMS
 	requestNextFrame(frameMS, unanimated)
