@@ -447,11 +447,14 @@ export class ChampionUnit {
 			: damageType === DamageType.magic
 				? this.magicResist()
 				: null
+		let reduction: number | undefined
 		if (damageType === DamageType.physical) {
-			const armorReduction = this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction)
-			if (armorReduction != null) {
-				defenseStat! *= armorReduction
-			}
+			reduction = this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction)
+		} else if (damageType === DamageType.magic) {
+			reduction = this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction)
+		}
+		if (reduction != null) {
+			defenseStat! *= reduction
 		}
 		if (damageType === DamageType.physical || (damageType === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
 			const critReduction = this.critReduction()

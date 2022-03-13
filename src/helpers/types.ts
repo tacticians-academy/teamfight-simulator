@@ -83,6 +83,7 @@ export enum StatusEffectType {
 	armorReduction = 'armorReduction',
 	attackSpeedSlow = 'attackSpeedSlow',
 	grievousWounds = 'grievousWounds',
+	magicResistReduction = 'magicResistReduction',
 	stealth = 'stealth',
 }
 
