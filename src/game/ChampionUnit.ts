@@ -71,6 +71,7 @@ export class ChampionUnit {
 	shields: ShieldData[] = []
 
 	pending = {
+		bonuses: new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>(),
 		hexEffects: new Set<HexEffect>(),
 		projectiles: new Set<Projectile>(),
 	}
@@ -99,8 +100,8 @@ export class ChampionUnit {
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
-		this.pending.hexEffects.clear()
-		this.pending.projectiles.clear()
+		Object.keys(this.pending).forEach(key => (this.pending as Record<string, Set<any>>)[key].clear())
+
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
 			statusEffect.active = false
@@ -212,6 +213,10 @@ export class ChampionUnit {
 		}
 	}
 
+	updateBonuses(elapsedMS: DOMHighResTimeStamp) {
+		this.bonuses.forEach(bonus => bonus[1] = bonus[1].filter(variable => variable[2] == null || variable[2] > elapsedMS))
+	}
+
 	updateRegen(elapsedMS: DOMHighResTimeStamp) {
 		this.scalings.forEach(scaling => {
 			if (scaling.activatedAt === 0) {
@@ -301,7 +306,7 @@ export class ChampionUnit {
 		}
 		return undefined
 	}
-	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number) {
+	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number = 1) {
 		const expireAt = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
 		if (!statusEffect.active || expireAt > statusEffect.expiresAt) {
@@ -344,7 +349,7 @@ export class ChampionUnit {
 		this.activePosition = getClosestHexAvailableTo(targetHex, state.units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.collides = true
-		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS, 1)
+		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
 	banishUntil(ms: DOMHighResTimeStamp | null) {
@@ -748,6 +753,9 @@ export class ChampionUnit {
 		return this.getUnitsIn(hexes, team)
 	}
 
+	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {
+		this.pending.bonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
+	}
 	queueProjectile(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
 		if (!data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)

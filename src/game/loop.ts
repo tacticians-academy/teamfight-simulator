@@ -71,6 +71,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		if (unit.dead) {
 			continue
 		}
+		unit.updateBonuses(elapsedMS)
 		unit.updateRegen(elapsedMS)
 		unit.updateShields(elapsedMS)
 		unit.updateStatusEffects(elapsedMS)
@@ -87,6 +88,13 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			continue
 		}
 
+		for (const pendingBonus of unit.pending.bonuses) {
+			const [startsAtMS, key, bonuses] = pendingBonus
+			if (elapsedMS >= startsAtMS) {
+				unit.addBonuses(key, ...bonuses)
+				unit.pending.bonuses.delete(pendingBonus)
+			}
+		}
 		for (const pendingHexEffect of unit.pending.hexEffects) {
 			if (elapsedMS >= pendingHexEffect.startsAtMS) {
 				state.hexEffects.add(pendingHexEffect)

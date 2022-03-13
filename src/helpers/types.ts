@@ -31,7 +31,8 @@ export type SynergyCount = Map<TraitData, string[]>
 
 export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
 
-export type BonusVariable = [key: string, value: number | null]
+export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DOMHighResTimeStamp]
+
 export interface BonusScaling {
 	source: string
 	activatedAt: DOMHighResTimeStamp
