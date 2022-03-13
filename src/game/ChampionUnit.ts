@@ -53,7 +53,7 @@ export class ChampionUnit {
 
 	collides = true
 	interacts = true
-	ghosting = false
+	stealthed = false
 
 	banishUntilMS: DOMHighResTimeStamp | null = null
 	cachedTargetDistance = 0
@@ -122,7 +122,7 @@ export class ChampionUnit {
 		this.stunnedUntilMS = 0
 		const jumpToBackline = this.jumpsToBackline()
 		this.collides = !jumpToBackline
-		this.ghosting = jumpToBackline
+		this.stealthed = jumpToBackline
 		this.interacts = true
 		this.banishUntilMS = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
@@ -343,19 +343,19 @@ export class ChampionUnit {
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		this.activePosition = getClosestHexAvailableTo(targetHex, state.units) ?? this.activePosition
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
-		this.ghosting = false
+		this.stealthed = false
 		this.collides = true
 	}
 
 	banishUntil(ms: DOMHighResTimeStamp | null) {
 		const banishing = ms != null
-		this.ghosting = banishing
+		this.stealthed = banishing
 		this.interacts = !banishing
 		this.banishUntilMS = ms ?? null
 	}
 
 	isAttackable() {
-		return !this.dead && !this.ghosting
+		return !this.dead && !this.stealthed
 	}
 	isInteractable() {
 		return !this.dead && this.interacts

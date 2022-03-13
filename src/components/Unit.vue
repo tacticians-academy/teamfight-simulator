@@ -68,7 +68,7 @@ function onInfo(event: Event) {
 
 <template>
 <div
-	class="unit  group" :class="!unit.interacts ? 'opacity-50' : (unit.ghosting ? 'opacity-75' : null)"
+	class="unit  group" :class="!unit.interacts ? 'opacity-50' : (unit.stealthed ? 'opacity-75' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
 	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"
