@@ -201,6 +201,30 @@ export default {
 		},
 	},
 
+	[ItemKey.HandOfJustice]: {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
+				const baseHeal = item.effects['BaseHeal']
+				const increaseEffect = item.effects['AdditionalAP'] //TODO renamed
+				if (baseHeal == null || increaseEffect == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				source.gainHealth(takingDamage * (baseHeal + increaseEffect / 2) / 100) //TODO averaged increaseEffect
+			}
+		},
+		innate: (item, unit) => {
+			const variables: BonusVariable[] = []
+			const increaseEffect = item.effects['AdditionalAD'] //TODO renamed
+			if (increaseEffect != null) {
+				const increase = increaseEffect / 2 //TODO averaged increaseEffect
+				variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])
+			} else {
+				console.log('ERR', item.name, item.effects)
+			}
+			return { variables }
+		},
+	},
+
 	[ItemKey.HextechGunblade]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
