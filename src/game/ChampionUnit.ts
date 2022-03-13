@@ -411,6 +411,10 @@ export class ChampionUnit {
 
 	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
+		if (damageType === DamageType.heal) {
+			this.gainHealth(rawDamage)
+			return
+		}
 		if (sourceType === DamageSourceType.attack) {
 			const dodgeChance = this.dodgeChance() - source.dodgePrevention()
 			if (dodgeChance > 0) {
