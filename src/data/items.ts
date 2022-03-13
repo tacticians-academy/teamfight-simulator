@@ -26,9 +26,9 @@ interface ItemFns {
 
 const itemsActivatedAtMS: Record<string, number | undefined> = {}
 
-function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string) {
+function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
 	const activatedAtMS = itemsActivatedAtMS[itemID]
-	const itemCooldownSeconds = item.effects['ICD']
+	const itemCooldownSeconds = item.effects[cooldownKey]
 	if (itemCooldownSeconds == null) {
 		console.log('ERR icd', item.name, item.effects)
 		return true
@@ -37,7 +37,7 @@ function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: s
 		return false
 	}
 	itemsActivatedAtMS[itemID] = elapsedMS
-	return true
+	return instantlyApplies ? true : activatedAtMS != null
 }
 
 export default {
@@ -92,7 +92,7 @@ export default {
 
 	[ItemKey.BrambleVest]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID)) {
+			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID, true)) {
 				const aoeDamage = item.effects[`${target.starLevel}StarAoEDamage`]
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
@@ -236,6 +236,34 @@ export default {
 				return console.log('ERR', item.name, item.effects)
 			}
 			return { shields }
+		},
+	},
+
+	[ItemKey.Redemption]: {
+		update: (elapsedMS, item, itemID, unit) => {
+			if (checkCooldown(elapsedMS, item, itemID, true, 'HealTickRate')) {
+				const aoeDamageReduction = item.effects['AoEDamageReduction']
+				const missingHPHeal = item.effects['MissingHPHeal']
+				const maxHeal = item.effects['MaxHeal']
+				const hexDistanceFromSource = item.effects['HexRadius']
+				const healTickSeconds = item.effects['HealTickRate']
+				if (aoeDamageReduction == null || hexDistanceFromSource == null || missingHPHeal == null || maxHeal == null || healTickSeconds == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				const tickMS = healTickSeconds * 1000
+				unit.queueHexEffect(elapsedMS, undefined, {
+					startsAfterMS: tickMS,
+					hexDistanceFromSource,
+					statusEffects: {
+						[StatusEffectType.aoeDamageReduction]: {
+							durationMS: tickMS,
+							amount: aoeDamageReduction,
+						},
+					},
+					damageCalculation: createDamageCalculation(itemID, missingHPHeal / 100, DamageType.heal, BonusKey.MissingHealth, 1, false, maxHeal),
+					targetTeam: unit.team,
+				})
+			}
 		},
 	},
 
