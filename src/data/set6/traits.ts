@@ -253,7 +253,7 @@ export default {
 			const syndicateMR = activeEffect.variables['MR']
 			const syndicateOmnivamp = activeEffect.variables['PercentOmnivamp']
 			const syndicateIncrease = activeEffect.variables['SyndicateIncrease'] ?? 0
-			const traitLevel = activeEffect.variables['{Colossus/Mutant/Socialite}']
+			const traitLevel = activeEffect.variables['TraitLevel']
 			if (traitLevel == null || syndicateArmor == null || syndicateMR == null) {
 				return
 			}
