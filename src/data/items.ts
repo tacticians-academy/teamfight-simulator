@@ -204,19 +204,20 @@ export default {
 	[ItemKey.HextechGunblade]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
-				const hextechHeal = source.getBonusesFromKey(ItemKey.HextechGunblade, BonusKey.VampSpell)
-				if (hextechHeal > 0) {
-					let lowestHP = Number.MAX_SAFE_INTEGER
-					let lowestUnit: ChampionUnit | undefined
-					source.alliedUnits().forEach(unit => {
-						if (unit.health < lowestHP) {
-							lowestHP = unit.health
-							lowestUnit = unit
-						}
-					})
-					if (lowestUnit) {
-						lowestUnit.gainHealth(takingDamage * hextechHeal / 100)
+				const hextechHeal = item.effects[BonusKey.VampSpell]
+				if (hextechHeal == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				let lowestHP = Number.MAX_SAFE_INTEGER
+				let lowestUnit: ChampionUnit | undefined
+				source.alliedUnits().forEach(unit => {
+					if (unit.health < lowestHP) {
+						lowestHP = unit.health
+						lowestUnit = unit
 					}
+				})
+				if (lowestUnit) {
+					lowestUnit.gainHealth(takingDamage * hextechHeal / 100)
 				}
 			}
 		},
