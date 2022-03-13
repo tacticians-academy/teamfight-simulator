@@ -16,7 +16,7 @@ export interface HexRowCol {
 
 export interface StorageChampion {
 	name: string
-	position: HexCoord
+	hex: HexCoord
 	starLevel: StarLevel
 	items: ItemKey[]
 }

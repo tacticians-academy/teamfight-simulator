@@ -138,11 +138,17 @@ const store = {
 		if (!state.units.length) {
 			const synergiesByTeam = [[], []]
 			const units = getSavedUnits()
+				.filter(storageChampion => { //TODO remove
+					if (storageChampion.hex == null) {
+						storageChampion.hex = (storageChampion as any).position
+					}
+					return storageChampion.hex != null
+				})
 				.map(storageChampion => {
 					const championItems = storageChampion.items
 						.map(itemKey => currentItems.find(item => item.id === itemKey))
 						.filter((item): item is ItemData => !!item)
-					const champion = new ChampionUnit(storageChampion.name, storageChampion.position, storageChampion.starLevel)
+					const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
 					champion.items = championItems
 					champion.reset(synergiesByTeam)
 					return champion
@@ -234,38 +240,38 @@ const store = {
 		state.dragUnit = dragUnit
 		event.stopPropagation()
 	},
-	_deleteUnit(position: HexCoord) {
-		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(position))
+	_deleteUnit(hex: HexCoord) {
+		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(hex))
 		state.dragUnit = null
 		saveUnits()
 	},
-	deleteUnit(position: HexCoord) {
-		store._deleteUnit(position)
+	deleteUnit(hex: HexCoord) {
+		store._deleteUnit(hex)
 		resetUnitsAfterCreatingOrMoving()
 	},
-	addUnit(name: string, position: HexCoord, starLevel: StarLevel) {
-		const unit = new ChampionUnit(name, position, starLevel)
+	addUnit(name: string, hex: HexCoord, starLevel: StarLevel) {
+		const unit = new ChampionUnit(name, hex, starLevel)
 		state.units.push(unit)
 		resetUnitsAfterCreatingOrMoving()
 		resetUnitsAfterCreatingOrMoving() //TODO fix need to call twice (one pass doesn't apply new traits to all units)
 	},
-	copyUnit(unit: ChampionUnit, position: HexCoord) {
-		store._deleteUnit(position)
-		store.addUnit(unit.name, position, unit.starLevel)
+	copyUnit(unit: ChampionUnit, hex: HexCoord) {
+		store._deleteUnit(hex)
+		store.addUnit(unit.name, hex, unit.starLevel)
 		//TODO copy star level, items, etc
 		state.dragUnit = null
 	},
-	moveUnit(unit: ChampionUnit | string, position: HexCoord) {
+	moveUnit(unit: ChampionUnit | string, hex: HexCoord) {
 		const isNew = typeof unit === 'string'
 		if (isNew) {
-			store._deleteUnit(position)
-			store.addUnit(unit, position, 1)
+			store._deleteUnit(hex)
+			store.addUnit(unit, hex, 1)
 		} else {
-			const existingUnit = state.units.find(unit => unit.isStartAt(position))
+			const existingUnit = state.units.find(unit => unit.isStartAt(hex))
 			if (existingUnit) {
 				existingUnit.reposition(unit.startHex)
 			}
-			unit.reposition(position)
+			unit.reposition(hex)
 			resetUnitsAfterCreatingOrMoving()
 		}
 		state.dragUnit = null

@@ -568,19 +568,19 @@ export class ChampionUnit {
 		return hexDistanceFrom(this.activeHex, hex)
 	}
 
-	isAt(position: HexCoord) {
-		return isSameHex(this.activeHex, position)
+	isAt(hex: HexCoord) {
+		return isSameHex(this.activeHex, hex)
 	}
-	isStartAt(position: HexCoord) {
-		return isSameHex(this.startHex, position)
+	isStartAt(hex: HexCoord) {
+		return isSameHex(this.startHex, hex)
 	}
 	isIn(hexes: Iterable<HexCoord>) {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	reposition(position: HexCoord) {
-		this.startHex = position
-		this.team = position[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
+	reposition(hex: HexCoord) {
+		this.startHex = hex
+		this.team = hex[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
 		window.setTimeout(saveUnits)
 	}
 	coordinatePosition() {
