@@ -12,18 +12,18 @@ export function buildBoard(fillObjects: boolean | 0): any[][] {
 	return [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => (fillObjects === 0 ? 0 : (fillObjects ? {} : []))))
 }
 
-function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): HexCoord | null {
-	if (!containsHex(hex, unitPositions)) {
+function nearestAvailableRecursive(hex: HexCoord, unitHexes: HexCoord[]): HexCoord | null {
+	if (!containsHex(hex, unitHexes)) {
 		return hex
 	}
 	const surroundingHexes = getHexRing(hex)
 	for (const surroundingHex of surroundingHexes) {
-		if (!containsHex(surroundingHex, unitPositions)) {
+		if (!containsHex(surroundingHex, unitHexes)) {
 			return surroundingHex
 		}
 	}
 	for (const surroundingHex of surroundingHexes) {
-		const result = nearestAvailableRecursive(surroundingHex, unitPositions)
+		const result = nearestAvailableRecursive(surroundingHex, unitHexes)
 		if (result) {
 			return result
 		}
@@ -31,8 +31,8 @@ function nearestAvailableRecursive(hex: HexCoord, unitPositions: HexCoord[]): He
 	return null
 }
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitPositions = units.filter(unit => unit.interacts && unit.hasCollision()).map(unit => unit.activePosition)
-	return nearestAvailableRecursive(startHex, unitPositions)
+	const unitHexes = units.filter(unit => unit.interacts && unit.hasCollision()).map(unit => unit.activeHex)
+	return nearestAvailableRecursive(startHex, unitHexes)
 }
 
 export function getClosesUnitOfTeamTo(targetHex: HexCoord, teamNumber: TeamNumber | null, units: ChampionUnit[]) {
@@ -53,7 +53,7 @@ export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, 
 	const [targetCol, targetRow] = targetHex
 	return units
 		.filter(unit => {
-			const [unitCol, unitRow] = unit.startPosition
+			const [unitCol, unitRow] = unit.startHex
 			return unitRow === targetRow && unitCol !== targetCol && Math.abs(targetCol - unitCol) <= maxDistance
 		})
 }
@@ -107,7 +107,7 @@ export function getDensestTargetHexes(units: ChampionUnit[], team: TeamNumber | 
 		if (!unit.isAttackable()) {
 			continue
 		}
-		const position = unit.activePosition
+		const position = unit.activeHex
 		for (let distance = 1; distance <= maxDistance; distance += 1) {
 			getHexRing(position, distance).forEach(([col, row]) => {
 				const newValue = densityBoard[row][col] + maxDistance + 1 - distance
@@ -149,7 +149,7 @@ export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: Champi
 	if (range == null) {
 		range = unit.range()
 	}
-	let checkHexes = [unit.activePosition]
+	let checkHexes = [unit.activeHex]
 	const checkedHexes: HexCoord[] = [...checkHexes]
 	const enemies: ChampionUnit[] = []
 	while (checkHexes.length && !enemies.length) {

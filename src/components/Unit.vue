@@ -56,7 +56,7 @@ function onDrop(event: DragEvent) {
 			moveItem(name, props.unit, state.dragUnit)
 		}
 	} else {
-		dropUnit(event, name, props.unit.startPosition)
+		dropUnit(event, name, props.unit.startHex)
 	}
 }
 

@@ -6,7 +6,7 @@ export function saveUnits() {
 	const output: StorageChampion[] = state.units
 		.map(unit => ({
 			name: unit.name,
-			position: unit.startPosition,
+			position: unit.startHex,
 			starLevel: unit.starLevel,
 			items: unit.items.map(item => item.id),
 		}))

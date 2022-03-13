@@ -36,7 +36,7 @@ function onDrop(event: DragEvent) {
 		return
 	}
 	if (getDragType(event) === 'unit') {
-		deleteUnit(dragUnit.startPosition)
+		deleteUnit(dragUnit.startHex)
 	} else {
 		const name = getDragName(event)
 		if (name != null) {

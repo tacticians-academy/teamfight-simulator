@@ -31,12 +31,12 @@ let instanceIndex = 0
 export class ChampionUnit {
 	instanceID: string
 	name: string
-	startPosition: HexCoord
+	startHex: HexCoord
 	team: TeamNumber = 0
 	starLevel: StarLevel
 	data: ChampionData
 
-	activePosition: HexCoord
+	activeHex: HexCoord
 	dead = false
 	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
 	mana = 0
@@ -76,7 +76,7 @@ export class ChampionUnit {
 		projectiles: new Set<Projectile>(),
 	}
 
-	constructor(name: string, position: HexCoord, starLevel: StarLevel) {
+	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = champions.find(unit => unit.name === name) ?? champions[0]
 		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]
@@ -86,9 +86,9 @@ export class ChampionUnit {
 		this.starLevel = starLockedLevel ?? starLevel
 		this.championEffects = championEffects[name]
 		this.instantAttack = this.data.stats.range <= 1
-		this.startPosition = position
-		this.activePosition = position
-		this.reposition(position)
+		this.startHex = hex
+		this.activeHex = hex
+		this.reposition(hex)
 
 		for (const effectType in StatusEffectType) {
 			this.statusEffects[effectType as StatusEffectType] = {
@@ -112,7 +112,7 @@ export class ChampionUnit {
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
 		this.target = null
-		this.activePosition = this.startPosition
+		this.activeHex = this.startHex
 		this.cachedTargetDistance = 0
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
@@ -123,7 +123,7 @@ export class ChampionUnit {
 		this.interacts = true
 		this.banishUntilMS = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
-			const col = this.activePosition[1]
+			const col = this.activeHex[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
 		} else {
 			this.transformIndex = 0
@@ -292,7 +292,7 @@ export class ChampionUnit {
 		if (nextHex) {
 			const msPerHex = 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
 			this.moveUntilMS = elapsedMS + msPerHex
-			this.activePosition = nextHex
+			this.activeHex = nextHex
 			needsPathfindingUpdate()
 			return true
 		}
@@ -344,9 +344,9 @@ export class ChampionUnit {
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp) {
-		const [col, row] = this.activePosition
+		const [col, row] = this.activeHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		this.activePosition = getClosestHexAvailableTo(targetHex, state.units) ?? this.activePosition
+		this.activeHex = getClosestHexAvailableTo(targetHex, state.units) ?? this.activeHex
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.collides = true
 		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
@@ -562,29 +562,29 @@ export class ChampionUnit {
 	}
 
 	hexDistanceTo(unit: ChampionUnit) {
-		return this.hexDistanceToHex(unit.activePosition)
+		return this.hexDistanceToHex(unit.activeHex)
 	}
 	hexDistanceToHex(hex: HexCoord) {
-		return hexDistanceFrom(this.activePosition, hex)
+		return hexDistanceFrom(this.activeHex, hex)
 	}
 
 	isAt(position: HexCoord) {
-		return isSameHex(this.activePosition, position)
+		return isSameHex(this.activeHex, position)
 	}
 	isStartAt(position: HexCoord) {
-		return isSameHex(this.startPosition, position)
+		return isSameHex(this.startHex, position)
 	}
 	isIn(hexes: Iterable<HexCoord>) {
-		return containsHex(this.activePosition, hexes)
+		return containsHex(this.activeHex, hexes)
 	}
 
 	reposition(position: HexCoord) {
-		this.startPosition = position
+		this.startHex = position
 		this.team = position[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
 		window.setTimeout(saveUnits)
 	}
 	coordinatePosition() {
-		return coordinatePosition(this.activePosition)
+		return coordinatePosition(this.activeHex)
 	}
 
 	getStat(key: BonusKey) {
@@ -749,7 +749,7 @@ export class ChampionUnit {
 		})
 	}
 	getUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
-		const hexes = getSurroundingWithin(this.activePosition, distance)
+		const hexes = getSurroundingWithin(this.activeHex, distance)
 		return this.getUnitsIn(hexes, team)
 	}
 

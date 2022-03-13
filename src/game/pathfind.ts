@@ -11,7 +11,7 @@ export function needsPathfindingUpdate() {
 	needsUpdate = true
 }
 
-function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHexes: HexCoord[] = [], results: HexCoord[][] = []): HexCoord[][] {
+function recursiveSearch(unitHexes: HexCoord[], hexes: HexCoord[], checkedHexes: HexCoord[] = [], results: HexCoord[][] = []): HexCoord[][] {
 	if (!results.length) {
 		results = buildBoard(false)
 	}
@@ -28,7 +28,7 @@ function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHe
 				continue
 			}
 			checkedHexes.push(surroundingHex)
-			const isOccupied = containsHex(surroundingHex, unitPositions)
+			const isOccupied = containsHex(surroundingHex, unitHexes)
 			if (!isOccupied) {
 				newSearchHexes.push(surroundingHex)
 			}
@@ -37,7 +37,7 @@ function recursiveSearch(unitPositions: HexCoord[], hexes: HexCoord[], checkedHe
 			}
 		}
 	}
-	return newSearchHexes.length ? recursiveSearch(unitPositions, newSearchHexes, checkedHexes, results) : results
+	return newSearchHexes.length ? recursiveSearch(unitHexes, newSearchHexes, checkedHexes, results) : results
 }
 
 export function updatePathsIfNeeded(units: ChampionUnit[]) {
@@ -47,22 +47,22 @@ export function updatePathsIfNeeded(units: ChampionUnit[]) {
 	needsUpdate = false
 
 	const searchFromHexes: [HexCoord[], HexCoord[]] = [[], []]
-	const unitPositions: HexCoord[] = []
+	const unitHexes: HexCoord[] = []
 	for (const unit of units) {
 		if (unit.hasCollision()) {
-			unitPositions.push(unit.activePosition)
+			unitHexes.push(unit.activeHex)
 		}
 		if (!unit.isAttackable()) {
 			continue
 		}
-		searchFromHexes[unit.team].push(unit.activePosition)
+		searchFromHexes[unit.team].push(unit.activeHex)
 	}
-	pathsByTeam = searchFromHexes.map(teamHexes => recursiveSearch(unitPositions, teamHexes)) as [HexCoord[][], HexCoord[][]]
+	pathsByTeam = searchFromHexes.map(teamHexes => recursiveSearch(unitHexes, teamHexes)) as [HexCoord[][], HexCoord[][]]
 }
 
 export function getNextHex(unit: ChampionUnit): HexCoord | null {
 	const paths = pathsByTeam[unit.opposingTeam()]
-	const [col, row] = unit.activePosition
+	const [col, row] = unit.activeHex
 	const moveTo = paths[col][row]
 	return moveTo?.length ? moveTo : null
 }

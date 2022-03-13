@@ -309,7 +309,7 @@ export default {
 			if (banishDuration == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			const targetHex = getInverseHex(unit.startPosition)
+			const targetHex = getInverseHex(unit.startHex)
 			const target = getClosesUnitOfTeamTo(targetHex, unit.opposingTeam(), state.units) //TODO not random
 			if (target) {
 				target.banishUntil(banishDuration * 1000)

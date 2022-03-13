@@ -25,7 +25,7 @@ export default {
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
-				hexes: getSurroundingWithin(champion.activePosition, 1),
+				hexes: getSurroundingWithin(champion.activeHex, 1),
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.gainHealth(champion.getSpellCalculationResult(SpellKey.Heal)!)
 				},
@@ -38,7 +38,7 @@ export default {
 			const target = champion.target
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectile(elapsedMS, spell, {
-				target: target.activePosition,
+				target: target.activeHex,
 				collidesWith: champion.opposingTeam(),
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
@@ -65,13 +65,13 @@ export default {
 
 	[ChampionKey.Ziggs]: {
 		cast: (elapsedMS, spell, champion) => {
-			const targetPosition = champion.target?.activePosition
-			if (!targetPosition) { return console.log('No target', champion.name, champion.team) }
+			const targetHex = champion.target?.activeHex
+			if (!targetHex) { return console.log('No target', champion.name, champion.team) }
 			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: [targetPosition],
+				hexes: [targetHex],
 			})
 			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: getSurroundingWithin(targetPosition, 1),
+				hexes: getSurroundingWithin(targetHex, 1),
 				damageMultiplier: 0.5,
 			})
 		},

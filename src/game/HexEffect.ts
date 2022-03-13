@@ -103,7 +103,7 @@ export class HexEffect {
 		this.activated = true
 		const targetingUnits = this.targetTeam == null ? units : units.filter(unit => unit.team === this.targetTeam)
 		if (!this.hexes) {
-			const sourceHex = this.source.activePosition
+			const sourceHex = this.source.activeHex
 			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
 			hexes.push(sourceHex)
 			this.hexes = hexes

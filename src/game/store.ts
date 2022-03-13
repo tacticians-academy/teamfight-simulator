@@ -111,7 +111,7 @@ function resetUnitsAfterCreatingOrMoving() {
 				if (itemEffect.adjacentHexBuff) {
 					const hexRange = item.effects['HexRange']
 					if (hexRange != null) {
-						itemEffect.adjacentHexBuff(item, unit, getAdjacentRowUnitsTo(hexRange, unit.startPosition, state.units))
+						itemEffect.adjacentHexBuff(item, unit, getAdjacentRowUnitsTo(hexRange, unit.startHex, state.units))
 					} else {
 						console.log('ERR', 'adjacentHexBuff', item.name, item.effects)
 					}
@@ -263,7 +263,7 @@ const store = {
 		} else {
 			const existingUnit = state.units.find(unit => unit.isStartAt(position))
 			if (existingUnit) {
-				existingUnit.reposition(unit.startPosition)
+				existingUnit.reposition(unit.startHex)
 			}
 			unit.reposition(position)
 			resetUnitsAfterCreatingOrMoving()

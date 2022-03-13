@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
+import { computed, defineProps } from 'vue'
 
 import type { HexEffect } from '#/game/HexEffect'
 import { coordinatePosition } from '#/game/store'
@@ -8,7 +8,7 @@ const props = defineProps<{
 	hexEffect: HexEffect
 }>()
 
-const hexPositions = props.hexEffect.hexes.map(coordinatePosition)
+const hexPositions = computed(() => props.hexEffect.hexes?.map(coordinatePosition) ?? [])
 
 const maxOpacity = props.hexEffect.damageMultiplier ?? 1
 </script>
