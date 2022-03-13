@@ -223,6 +223,18 @@ export default {
 		},
 	},
 
+	[ItemKey.LastWhisper]: {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			//TODO official implementation applies on critical strikes, this applies after any attack (since crits are averaged)
+			const armorReductionPercent = item.effects['ArmorReductionPercent']
+			const durationSeconds = item.effects['ArmorBreakDuration']
+			if (armorReductionPercent == null || durationSeconds == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			target.applyStatusEffect(elapsedMS, StatusEffectType.armorReduction, durationSeconds * 1000, armorReductionPercent / 100)
+		},
+	},
+
 	[ItemKey.LocketOfTheIronSolari]: {
 		adjacentHexBuff: (item, unit, adjacentUnits) => {
 			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
