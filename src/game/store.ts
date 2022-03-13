@@ -16,10 +16,10 @@ import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
 import { buildBoard, getAdjacentRowUnitsTo } from '#/helpers/boardUtils'
-import { getStorageInt, getStorageString, setStorage, StorageKey } from '#/helpers/storage'
+import { synergiesByTeam } from '#/helpers/bonuses'
+import { getSavedUnits, getStorageInt, getStorageString, saveUnits, setStorage, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
-import { getSavedUnits, saveUnits } from '#/helpers/storage'
 
 // State
 
@@ -92,7 +92,10 @@ watch([getters.augmentCount], () => {
 // Store
 
 function resetUnitsAfterCreatingOrMoving() {
-	const synergiesByTeam = getters.synergiesByTeam.value
+	const _synergiesByTeam = getters.synergiesByTeam.value
+	synergiesByTeam[0] = _synergiesByTeam[0]
+	synergiesByTeam[1] = _synergiesByTeam[1]
+
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
 	state.units.forEach(unit => {
 		unit.items.forEach((item, index) => {

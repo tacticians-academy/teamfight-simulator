@@ -1,11 +1,14 @@
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
+import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import itemEffects from '#/data/items'
+import traitEffects from '#/data/set6/traits'
 
 import { state } from '#/game/store'
 import { updatePaths } from '#/game/pathfind'
 
 import { uniqueIdentifier } from '#/helpers/utils'
+import { synergiesByTeam } from '#/helpers/bonuses'
 
 const GAME_TICK_MS = 1000 / 30
 
@@ -51,6 +54,18 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {
 		didBacklineJump = true
 	}
+
+	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
+		for (const [trait, style, activeEffect] of teamSynergies) {
+			if (activeEffect) {
+				const traitKey = trait.name as TraitKey
+				const updateFn = traitEffects[traitKey]?.update
+				if (updateFn) {
+					updateFn(activeEffect, elapsedMS, state.units.filter(unit => !unit.dead && unit.team === teamNumber && unit.hasTrait(traitKey)))
+				}
+			}
+		}
+	})
 
 	for (const unit of state.units) {
 		if (unit.dead) {
