@@ -442,11 +442,17 @@ export class ChampionUnit {
 		if (damageMultiplier != null) {
 			rawDamage *= damageMultiplier
 		}
-		const defenseStat = damageType === DamageType.physical
+		let defenseStat = damageType === DamageType.physical
 			? this.armor()
 			: damageType === DamageType.magic
 				? this.magicResist()
 				: null
+		if (damageType === DamageType.physical) {
+			const armorReduction = this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction)
+			if (armorReduction != null) {
+				defenseStat! *= armorReduction
+			}
+		}
 		if (damageType === DamageType.physical || (damageType === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
 			const critReduction = this.critReduction()
 			if (critReduction < 1) {
@@ -503,7 +509,7 @@ export class ChampionUnit {
 			source.gainHealth(takingDamage * sourceVamp / 100)
 		}
 
-		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
 			itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueID, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
