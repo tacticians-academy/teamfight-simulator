@@ -692,7 +692,7 @@ export class ChampionUnit {
 		return 100 + apBonus
 	}
 	manaMax() {
-		const maxManaMultiplier = this.getBonuses('PercentManaReduction' as BonusKey)
+		const maxManaMultiplier = this.getBonuses(BonusKey.ManaReductionPercent)
 		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier / 100)
 		const maxManaReduction = this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticManaCost)
 		return (this.data.stats.mana - maxManaReduction) * multiplier
@@ -724,7 +724,7 @@ export class ChampionUnit {
 		return this.getBonuses(BonusKey.DodgeChance) / 100
 	}
 	dodgePrevention() {
-		return this.getBonuses('AttackAccuracy' as BonusKey) / 100
+		return this.getBonuses(BonusKey.AttackAccuracy) / 100
 	}
 
 	getVamp(damageType: DamageType, damageSource: DamageSourceType) {
