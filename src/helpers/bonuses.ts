@@ -156,23 +156,23 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): Bon
 	const bonusShields: ShieldData[] = []
 	items.forEach(item => {
 		const disableDefaultVariables = itemEffects[item.id as ItemKey]?.disableDefaultVariables
-		const variables: BonusVariable[] = []
+		const bonusVariables: BonusVariable[] = []
 		for (const key in item.effects) {
 			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(key as BonusKey))) {
 				continue
 			}
-			variables.push([key, item.effects[key]])
+			bonusVariables.push([key, item.effects[key]])
 		}
 
 		const itemFn = itemEffects[item.id as ItemKey]?.innate
 		if (itemFn) {
 			const { variables, scalings, shields } = itemFn(item, unit)
-			if (variables) { variables.push(...variables) }
+			if (variables) { bonusVariables.push(...variables) }
 			if (scalings) { bonusScalings.push(...scalings) }
 			if (shields) { bonusShields.push(...shields) }
 		}
-		if (variables.length) {
-			bonuses.push([item.id, variables])
+		if (bonusVariables.length) {
+			bonuses.push([item.id, bonusVariables])
 		}
 	})
 	return [bonuses, bonusScalings, bonusShields]
