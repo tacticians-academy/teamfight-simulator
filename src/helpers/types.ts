@@ -78,6 +78,8 @@ export interface EffectResults {
 }
 
 export enum StatusEffectType {
+	aoeDamageReduction = 'aoeDamageReduction',
+	armorReduction = 'armorReduction',
 	attackSpeedSlow = 'attackSpeedSlow',
 	grievousWounds = 'grievousWounds',
 }

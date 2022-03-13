@@ -24,7 +24,9 @@ const currentPosition = computed(() => props.unit.coordinatePosition())
 
 const unitSize = `${100 * HEX_PROPORTION * UNIT_SIZE_HEX_PROPORTION}%`
 
-const statusEffectSymbols = {
+const statusEffectSymbols: Record<StatusEffectType, string> = {
+	[StatusEffectType.aoeDamageReduction]: '💦',
+	[StatusEffectType.armorReduction]: '🛡',
 	[StatusEffectType.attackSpeedSlow]: '❄️',
 	[StatusEffectType.grievousWounds]: '❤️‍🔥', // 💔
 }
@@ -86,11 +88,6 @@ function onInfo(event: Event) {
 				</div>
 				<span class="ml-px relative z-50">{{ Math.ceil(unit.health) }}</span>
 			</div>
-			<div class="mt-1  flex">
-				<template v-for="(effect, effectType) in unit.statusEffects" :key="effectType">
-					<div v-if="effect.active">{{ statusEffectSymbols[effectType] }}</div>
-				</template>
-			</div>
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
 			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%` }" />
@@ -103,6 +100,11 @@ function onInfo(event: Event) {
 			>
 				<img :src="getIconURL(item)" :alt="item.name">
 			</div>
+		</div>
+		<div class="flex">
+			<template v-for="(effect, effectType) in unit.statusEffects" :key="effectType">
+				<div v-if="effect.active">{{ statusEffectSymbols[effectType] }}</div>
+			</template>
 		</div>
 	</div>
 	<!-- <div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'"> -->
