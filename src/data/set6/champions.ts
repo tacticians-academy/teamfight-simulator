@@ -27,7 +27,7 @@ export default {
 			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
 				hexes: getSurroundingWithin(champion.activeHex, 1),
 				onCollision: (elapsedMS, affectedUnit) => {
-					champion.gainHealth(champion.getSpellCalculationResult(SpellKey.Heal)!)
+					champion.gainHealth(elapsedMS, champion.getSpellCalculationResult(SpellKey.Heal)!)
 				},
 			})
 		},
@@ -59,7 +59,7 @@ export default {
 			const percentHealthDamage = source.getSpellCalculationResult(SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
 			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, false)
-			source.gainHealth(heal)
+			source.gainHealth(elapsedMS, heal)
 		},
 	},
 

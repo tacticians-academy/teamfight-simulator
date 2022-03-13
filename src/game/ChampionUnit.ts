@@ -372,9 +372,9 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
-	gainHealth(amount: number) {
-		//TODO grievous wounds
-		this.health = Math.min(this.healthMax, this.health + amount)
+	gainHealth(elapsedMS: DOMHighResTimeStamp, amount: number) {
+		const grievousWounds = this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds) ?? 1
+		this.health = Math.min(this.healthMax, this.health + amount * grievousWounds)
 	}
 
 	setMana(amount: number) {
@@ -424,7 +424,7 @@ export class ChampionUnit {
 		})
 
 		if (damageType === DamageType.heal) {
-			this.gainHealth(rawDamage)
+			this.gainHealth(elapsedMS, rawDamage)
 			return
 		}
 		if (sourceType === DamageSourceType.attack) {
@@ -509,7 +509,7 @@ export class ChampionUnit {
 
 		const sourceVamp = source.getVamp(damageType!, sourceType)
 		if (sourceVamp > 0) {
-			source.gainHealth(takingDamage * sourceVamp / 100)
+			source.gainHealth(elapsedMS, takingDamage * sourceVamp / 100)
 		}
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))

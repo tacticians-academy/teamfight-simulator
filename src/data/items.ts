@@ -209,7 +209,7 @@ export default {
 				if (baseHeal == null || increaseEffect == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				source.gainHealth(takingDamage * (baseHeal + increaseEffect / 2) / 100) //TODO averaged increaseEffect
+				source.gainHealth(elapsedMS, takingDamage * (baseHeal + increaseEffect / 2) / 100) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
@@ -241,7 +241,7 @@ export default {
 					}
 				})
 				if (lowestUnit) {
-					lowestUnit.gainHealth(takingDamage * hextechHeal / 100)
+					lowestUnit.gainHealth(elapsedMS, takingDamage * hextechHeal / 100)
 				}
 			}
 		},
