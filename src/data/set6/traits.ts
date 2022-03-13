@@ -244,16 +244,6 @@ export default {
 				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, false)
 			}
 		},
-		innate: (unit, innateEffect) => {
-			const variables: BonusVariable[] = []
-			const rangeIncrease = innateEffect.variables[BonusKey.HexRangeIncrease]
-			if (rangeIncrease != null) {
-				variables.push([BonusKey.HexRangeIncrease, rangeIncrease])
-			} else {
-				console.log('Missing Sniper range increase', innateEffect.variables)
-			}
-			return { variables }
-		},
 	},
 
 	[TraitKey.Syndicate]: {
