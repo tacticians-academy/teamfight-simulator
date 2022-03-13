@@ -18,7 +18,7 @@ import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, gameOver, state, thresholdCheck } from '#/game/store'
 
-import { containsHex, getClosestHexAvailableTo, getNearestEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { containsHex, getClosestHexAvailableTo, getNearestAttackableEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -158,7 +158,7 @@ export class ChampionUnit {
 			}
 		}
 		if (this.target == null) {
-			const targets = getNearestEnemies(this, state.units)
+			const targets = getNearestAttackableEnemies(this, state.units)
 			if (targets.length) {
 				this.target = randomItem(targets)! //TODO random
 				this.cachedTargetDistance = this.hexDistanceTo(this.target)

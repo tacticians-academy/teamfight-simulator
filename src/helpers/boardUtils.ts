@@ -144,7 +144,7 @@ export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	return false
 }
 
-export function getNearestEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number) {
+export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number) {
 	let currentRange = 0
 	if (range == null) {
 		range = unit.range()
