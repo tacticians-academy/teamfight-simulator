@@ -405,6 +405,20 @@ export class ChampionUnit {
 
 	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
+		source.items.forEach((item, index) => {
+			const modifyDamageFn = itemEffects[item.id as ItemKey]?.modifyDamageByHolder
+			if (modifyDamageFn) {
+				rawDamage = modifyDamageFn(item, originalSource, this, source, sourceType, rawDamage, damageType!)
+			}
+		})
+		source.activeSynergies.forEach(([trait, style, activeEffect]) => {
+			if (!activeEffect) { return }
+			const modifyDamageFn = traitEffects[trait.name as TraitKey]?.modifyDamageByHolder
+			if (modifyDamageFn) {
+				rawDamage = modifyDamageFn(activeEffect, originalSource, this, source, sourceType, rawDamage, damageType!)
+			}
+		})
+
 		if (damageType === DamageType.heal) {
 			this.gainHealth(rawDamage)
 			return
@@ -501,7 +515,10 @@ export class ChampionUnit {
 				hpThresholdFn(activeEffect, elapsedMS, this)
 			}
 		})
-		source.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect!, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.activeSynergies.forEach(([trait, style, activeEffect]) => {
+			if (!activeEffect) { return }
+			traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+		})
 
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {

@@ -19,6 +19,7 @@ interface TraitFns {
 	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults,
 	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
+	modifyDamageByHolder?: (activeEffect: TraitEffectData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }
 
@@ -232,7 +233,7 @@ export default {
 	},
 
 	[TraitKey.Sniper]: {
-		damageDealtByHolder: (activeEffect, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		modifyDamageByHolder: (activeEffect, originalSource, target, source, sourceType, rawDamage, damageType) => { //TODO modify damage
 			if (originalSource) {
 				const key = 'PercentDamageIncrease'
 				const percentBonusDamagePerHex = activeEffect.variables[key]
@@ -240,8 +241,7 @@ export default {
 					return console.log('ERR', 'Missing', key, activeEffect)
 				}
 				const hexDistance = source.hexDistanceTo(target)
-				const damageCalculation = createDamageCalculation(key, takingDamage * percentBonusDamagePerHex / 100 * hexDistance, damageType)
-				target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, false)
+				return rawDamage * (1 + percentBonusDamagePerHex / 100 * hexDistance)
 			}
 		},
 	},
