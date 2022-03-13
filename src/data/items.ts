@@ -166,6 +166,23 @@ export default {
 		},
 	},
 
+	[ItemKey.GiantSlayer]: {
+		modifyDamageByHolder: (item, originalSource, target, source, sourceType, rawDamage, damageType) => {
+			if (!originalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
+				return rawDamage
+			}
+			const thresholdHP = item.effects['HPThreshold']
+			const largeBonusPct = item.effects['LargeBonusPct']
+			const smallBonusPct = item.effects['SmallBonusPct']
+			if (thresholdHP == null || smallBonusPct == null || largeBonusPct == null) {
+				console.log('ERR', item.name, item.effects)
+				return rawDamage
+			}
+			const bonusPercent = target.healthMax >= thresholdHP ? largeBonusPct : smallBonusPct
+			return rawDamage * (1 + bonusPercent / 100)
+		},
+	},
+
 	[ItemKey.GuinsoosRageblade]: {
 		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
 			const perStackAS = item.effects['ASPerStack']
