@@ -453,7 +453,12 @@ export class ChampionUnit {
 					takingDamage *= 1 - damageReduction
 				}
 			}
-			// if (isAOE) //TODO AOEDamageReduction
+			if (isAOE) {
+				const aoeDamageReduction = this.getStatusEffect(elapsedMS, StatusEffectType.aoeDamageReduction)
+				if (aoeDamageReduction != null) {
+					takingDamage *= 1 - aoeDamageReduction / 100
+				}
+			}
 		}
 		let healthDamage = takingDamage
 		this.shields
