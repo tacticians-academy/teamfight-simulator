@@ -2,14 +2,12 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectData, StatusEffectType, TeamNumber } from '#/helpers/types'
+import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectsData, StatusEffectType, TeamNumber } from '#/helpers/types'
 import { getSurroundingWithin } from '#/helpers/boardUtils'
-import { solveSpellCalculationFor } from '#/helpers/bonuses'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
 
-type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
 export interface HexEffectData {
 	startsAfterMS?: DOMHighResTimeStamp
 	expiresAfterMS?: DOMHighResTimeStamp

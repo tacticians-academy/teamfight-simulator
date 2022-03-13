@@ -83,10 +83,13 @@ export enum StatusEffectType {
 	attackSpeedSlow = 'attackSpeedSlow',
 	grievousWounds = 'grievousWounds',
 }
+
 export interface StatusEffectData {
 	durationMS: number
 	amount: number
 }
+export type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
+
 export interface StatusEffect {
 	active: boolean
 	expiresAt: number
