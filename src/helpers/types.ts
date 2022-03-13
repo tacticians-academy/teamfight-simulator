@@ -83,6 +83,16 @@ export enum StatusEffectType {
 	attackSpeedSlow = 'attackSpeedSlow',
 	grievousWounds = 'grievousWounds',
 }
+export interface StatusEffectData {
+	durationMS: number
+	amount: number
+}
+export interface StatusEffect {
+	active: boolean
+	expiresAt: number
+	amount: number
+}
+export type StatusEffects = Record<StatusEffectType, StatusEffect>
 
 export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 

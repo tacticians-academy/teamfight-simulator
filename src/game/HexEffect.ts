@@ -2,18 +2,21 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { CollisionFn, DamageSourceType, HexCoord, TeamNumber } from '#/helpers/types'
+import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectData, StatusEffectType, TeamNumber } from '#/helpers/types'
 import { getSurroundingWithin } from '#/helpers/boardUtils'
+import { solveSpellCalculationFor } from '#/helpers/bonuses'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
 
+type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
 export interface HexEffectData {
 	startsAfterMS?: DOMHighResTimeStamp
 	expiresAfterMS?: DOMHighResTimeStamp
 	hexes?: HexCoord[]
 	hexDistanceFromSource?: number
 	targetTeam?: TeamNumber
+	statusEffects?: StatusEffectsData,
 	damageCalculation?: SpellCalculation
 	damageMultiplier?: number,
 	damageIncrease?: number,
@@ -36,6 +39,7 @@ export class HexEffect {
 	targetTeam: TeamNumber | null
 	hexes?: HexCoord[]
 	hexDistanceFromSource?: number
+	statusEffects?: StatusEffectsData
 	damageCalculation?: SpellCalculation
 	damageMultiplier?: number
 	damageIncrease?: number
@@ -55,6 +59,7 @@ export class HexEffect {
 		this.source = source
 		this.targetTeam = data.targetTeam === undefined ? source.opposingTeam() : data.targetTeam
 		this.hexes = data.hexes
+		this.statusEffects = data.statusEffects
 		this.damageCalculation = data.damageCalculation
 		this.damageMultiplier = data.damageMultiplier
 		this.damageIncrease = data.damageIncrease
@@ -78,6 +83,12 @@ export class HexEffect {
 				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
 			}
 			this.onCollision?.(elapsedMS, unit)
+			if (this.statusEffects) {
+				for (const key in this.statusEffects) {
+					const statusEffect = this.statusEffects[key as StatusEffectType]!
+					unit.applyStatusEffect(elapsedMS, key as StatusEffectType, statusEffect.durationMS, statusEffect.amount)
+				}
+			}
 		}
 		if (this.taunts && !this.source.dead) {
 			unit.target = this.source
@@ -94,8 +105,10 @@ export class HexEffect {
 		this.activated = true
 		const targetingUnits = this.targetTeam == null ? units : units.filter(unit => unit.team === this.targetTeam)
 		if (!this.hexes) {
-			console.log(getSurroundingWithin(this.source.activePosition, this.hexDistanceFromSource!))
-			this.hexes = getSurroundingWithin(this.source.activePosition, this.hexDistanceFromSource!)
+			const sourceHex = this.source.activePosition
+			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
+			hexes.push(sourceHex)
+			this.hexes = hexes
 		}
 		for (const unit of targetingUnits.filter(unit => unit.isInteractable() && unit.isIn(this.hexes!))) {
 			this.apply(elapsedMS, unit)

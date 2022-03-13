@@ -23,16 +23,10 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
-
-interface StatusEffect {
-	active: boolean
-	expiresAt: number
-	amount: number
-}
 
 const thresholdCheck: Record<string, number> = {}
 
@@ -215,7 +209,7 @@ export class ChampionUnit {
 					},
 				})
 			}
-			this.gainMana(elapsedMS, 10 + this.getBonuses('FlatManaRestore' as BonusKey))
+			this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
@@ -581,6 +575,10 @@ export class ChampionUnit {
 		}
 		if (key === BonusKey.Health) {
 			return this.healthMax
+		}
+
+		if (key === BonusKey.MissingHealth) {
+			return this.healthMax - this.health
 		}
 		console.log('ERR', 'Missing stat', key)
 		return 0

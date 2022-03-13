@@ -19,7 +19,7 @@ function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[
 
 type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
 
-export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number, asPercent?: boolean): SpellCalculation {
+export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
 	return {
 		asPercent: asPercent,
 		damageType: damageType,
@@ -29,6 +29,7 @@ export function createDamageCalculation(variable: string, value: number, damageT
 				starValues: [value, value, value, value],
 				stat,
 				ratio,
+				max: maximum,
 			}],
 		}],
 	}
@@ -50,6 +51,9 @@ export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellC
 					damageType = DamageType.magic
 				}
 				value *= unit.getStat(subpart.stat as BonusKey) * subpart.ratio!
+			}
+			if (subpart.max != null) {
+				value = Math.min(subpart.max, value)
 			}
 			return multiplyParts ? (subAcc * value) : (subAcc + value)
 		}, multiplyParts ? 1 : 0)
