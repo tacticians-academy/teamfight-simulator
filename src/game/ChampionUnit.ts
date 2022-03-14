@@ -788,8 +788,14 @@ export class ChampionUnit {
 		if (!data.sourceType && spell) {
 			data.sourceType = DamageSourceType.spell
 		}
-		data.spell = spell
-		const projectile = new Projectile(this, elapsedMS, data)
+		if (data.target == null) {
+			if (!this.target) {
+				console.error('ERR', 'No target for projectile', this.name, spell?.name)
+				return
+			}
+			data.target = this.target
+		}
+		const projectile = new Projectile(this, elapsedMS, data, spell)
 		this.pending.projectiles.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
 		if (spell) {

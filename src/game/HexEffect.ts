@@ -9,18 +9,31 @@ const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
 const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
 
 export interface HexEffectData {
+	/** The windup delay before the HexEffect appears. */
 	startsAfterMS?: DOMHighResTimeStamp
+	/** The delay until the HexEffect should stop applying. Defaults to 0 (only applying once). */
 	expiresAfterMS?: DOMHighResTimeStamp
+	/** The hexes that any units of the `targetTeam` standing on will be hit. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexes?: HexCoord[]
+	/** Distance from the source unit that this HexEffect applies to at the time of activation. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexDistanceFromSource?: number
+	/** The team whose units inside `hexes`/`hexDistanceFromSource` will be hit. */
 	targetTeam?: TeamNumber
+	/** `StatusEffects` to apply to any affected units. */
 	statusEffects?: StatusEffectsData,
+	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
+	/** Multiplies the result of `damageCalculation`. */
 	damageMultiplier?: number,
+	/** Adds to the result of `damageCalculation`. */
 	damageIncrease?: number,
+	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
+	/** Stuns affected units. */
 	stunSeconds?: number
+	/** Taunts affected units to the source unit. */
 	taunts?: boolean
+	/** Callback for each unit the HexEffect applies to. */
 	onCollision?: CollisionFn
 }
 
@@ -57,6 +70,7 @@ export class HexEffect {
 		this.source = source
 		this.targetTeam = data.targetTeam === undefined ? source.opposingTeam() : data.targetTeam
 		this.hexes = data.hexes
+		this.hexDistanceFromSource = data.hexDistanceFromSource
 		this.statusEffects = data.statusEffects
 		this.damageCalculation = data.damageCalculation
 		this.damageMultiplier = data.damageMultiplier
