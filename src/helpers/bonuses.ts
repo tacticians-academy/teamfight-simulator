@@ -37,7 +37,7 @@ export function createDamageCalculation(variable: string, value: number, damageT
 	}
 }
 
-export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
+export function solveSpellCalculationFrom(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
 	let damageType = calculation.damageType
 	const total = calculation.parts.reduce((acc, part) => {
 		const multiplyParts = part.operator === 'product'

@@ -19,7 +19,7 @@ import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, gameOver, state, thresholdCheck } from '#/game/store'
 
 import { containsHex, getClosestHexAvailableTo, getNearestAttackableEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
+import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
@@ -433,7 +433,7 @@ export class ChampionUnit {
 	}
 
 	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
-		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
+		let [rawDamage, damageType] = solveSpellCalculationFrom(source, damageCalculation)
 		source.items.forEach((item, index) => {
 			const modifyDamageFn = itemEffects[item.id as ItemKey]?.modifyDamageByHolder
 			if (modifyDamageFn) {
@@ -656,7 +656,7 @@ export class ChampionUnit {
 	}
 	getSpellCalculationResult(key: SpellKey) {
 		const calculation = this.getSpellCalculation(key)
-		return calculation ? solveSpellCalculationFor(this, calculation)[0] : 0
+		return calculation ? solveSpellCalculationFrom(this, calculation)[0] : 0
 	}
 	getSpellCalculation(key: SpellKey) {
 		const spell = this.getCurrentSpell()
