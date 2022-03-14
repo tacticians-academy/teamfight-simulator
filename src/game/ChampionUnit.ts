@@ -419,6 +419,9 @@ export class ChampionUnit {
 	}
 
 	die() {
+		if (this.dead) {
+			return console.warn('Already dead', this.name, this.instanceID)
+		}
 		this.health = 0
 		this.dead = true
 		const teamUnits = this.alliedUnits()
@@ -789,17 +792,17 @@ export class ChampionUnit {
 		return this.getBonuses(...vampBonuses)
 	}
 
-	getUnitsIn(hexes: HexCoord[], team: TeamNumber | null): ChampionUnit[] {
+	getInteractableUnitsIn(hexes: HexCoord[], team: TeamNumber | null): ChampionUnit[] {
 		return state.units.filter(unit => {
-			if (team != null && unit.team !== team) {
+			if ((team != null && unit.team !== team) || !unit.isInteractable()) {
 				return false
 			}
 			return unit.isIn(hexes)
 		})
 	}
-	getUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
+	getInteractableUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
 		const hexes = getSurroundingWithin(this.activeHex, distance)
-		return this.getUnitsIn(hexes, team)
+		return this.getInteractableUnitsIn(hexes, team)
 	}
 
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {

@@ -96,7 +96,7 @@ export default {
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				target.getUnitsWithin(1, target.opposingTeam()).forEach(unit => {
+				target.getInteractableUnitsWithin(1, target.opposingTeam()).forEach(unit => {
 					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
 					unit.damage(elapsedMS, false, target, DamageSourceType.item, damageCalculation, true)
 				})
@@ -154,7 +154,7 @@ export default {
 			if (hexRadius == null || slowAS == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			const affectedUnits = unit.getUnitsWithin(hexRadius, unit.opposingTeam())
+			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, slowAS))
 		},
 	},
