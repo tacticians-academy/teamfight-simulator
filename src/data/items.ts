@@ -1,13 +1,14 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
-import type { ChampionUnit } from '#/game/ChampionUnit'
+import { ChampionUnit } from '#/game/ChampionUnit'
 import { activatedCheck, state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
@@ -388,6 +389,18 @@ export default {
 			const target = getClosesUnitOfTeamTo(targetHex, unit.opposingTeam(), state.units) //TODO not random
 			if (target) {
 				target.banishUntil(banishDuration * 1000)
+			}
+		},
+	},
+
+	[ItemKey.ZzRotPortal]: {
+		deathOfHolder: (elapsedMS, item, itemID, unit) => {
+			const hex = getClosestHexAvailableTo(unit.activeHex, state.units)
+			if (hex) {
+				const voidling = new ChampionUnit(ChampionKey.VoidSpawn, hex, 1)
+				voidling.reset([[], []])
+				voidling.team = unit.team
+				state.units.push(voidling)
 			}
 		},
 	},

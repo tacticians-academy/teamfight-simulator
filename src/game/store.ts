@@ -20,6 +20,7 @@ import { synergiesByTeam } from '#/helpers/bonuses'
 import { getSavedUnits, getStorageInt, getStorageString, saveUnits, setStorage, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 // State
 
@@ -96,6 +97,7 @@ watch([getters.augmentCount], () => {
 function resetUnitsAfterCreatingOrMoving() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
+	state.units = state.units.filter(unit => unit.name !== ChampionKey.VoidSpawn)
 
 	const _synergiesByTeam = getters.synergiesByTeam.value
 	synergiesByTeam[0] = _synergiesByTeam[0]
