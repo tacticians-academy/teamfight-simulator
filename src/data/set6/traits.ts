@@ -132,7 +132,7 @@ export default {
 					return console.log('ERR', 'No executeThreshold', state.mutantType, activeEffect)
 				}
 				if (target.healthProportion() <= executeThreshold / 100) {
-					target.die()
+					target.die(elapsedMS)
 				} else if (originalSource) {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
