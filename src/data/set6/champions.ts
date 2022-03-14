@@ -53,6 +53,22 @@ export default {
 		},
 	},
 
+	[ChampionKey.Kassadin]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return console.log('No target', champion.name, champion.team) }
+			champion.queueProjectile(elapsedMS, spell, {
+				spell,
+				target,
+				collidesWith: champion.opposingTeam(),
+				destroysOnCollision: true,
+				onCollision: () => {
+					target.bonuses.push([SpellKey.Mana, [[BonusKey.ManaReductionPercent, -0.5]]]) // TO DO: only let this "bonus" hold for one cast
+				},
+			})
+		}
+	},
+
 	[ChampionKey.Warwick]: {
 		passive: (elapsedMS, target, source) => {
 			const heal = source.getSpellCalculationResult(SpellKey.HealAmount)

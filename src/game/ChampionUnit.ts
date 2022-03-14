@@ -702,7 +702,7 @@ export class ChampionUnit {
 	}
 	manaMax() {
 		const maxManaMultiplier = this.getBonuses(BonusKey.ManaReductionPercent)
-		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier / 100)
+		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier)
 		const maxManaReduction = this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticManaCost)
 		return (this.data.stats.mana - maxManaReduction) * multiplier
 	}
