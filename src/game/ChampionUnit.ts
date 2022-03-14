@@ -28,6 +28,10 @@ import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
 
+function stageIndex() {
+	return Math.min(Math.max(2, state.stageNumber), 5) - 2
+}
+
 export class ChampionUnit {
 	instanceID: string
 	name: string
@@ -148,12 +152,11 @@ export class ChampionUnit {
 	}
 
 	baseHP() {
-		if (this.data.stats.hp) {
+		if (this.data.stats.hp != null) {
 			return this.data.stats.hp
 		}
 		// TFT_VoidSpawn
-		const stageIndex = Math.min(Math.max(2, state.stageNumber), 5) - 2
-		return [1500, 1800, 2100, 2500][stageIndex]
+		return [1500, 1800, 2100, 2500][stageIndex()]
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
@@ -722,10 +725,14 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
-		const multiplier = this.getSpellVariable(SpellKey.ADFromAttackSpeed)
-		if (multiplier != null) {
-			return ad + this.bonusAttackSpeed() * 100 * multiplier
+		let baseAD = this.data.stats.damage
+		if (baseAD === 0) {
+			baseAD = [100, 100, 125, 140][stageIndex()]
+		}
+		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
+		const multiplyAttackSpeed = this.getSpellVariable(SpellKey.ADFromAttackSpeed)
+		if (multiplyAttackSpeed != null) {
+			return ad + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
 		}
 		return ad
 	}
