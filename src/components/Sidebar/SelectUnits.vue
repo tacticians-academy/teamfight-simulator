@@ -14,6 +14,7 @@ function onDrag(event: DragEvent, name: string) {
 
 const unitGroups: [[string, ChampionData[]], [string, ChampionData[]]] = [['Champions', []], ['Spawns', []]]
 champions.forEach(champion => {
+	if (champion.stats.hp == null) { return }
 	unitGroups[champion.traits.length ? 0 : 1][1].push(champion)
 })
 unitGroups[0][1].sort((a, b) => a.name.localeCompare(b.name))

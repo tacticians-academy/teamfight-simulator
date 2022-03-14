@@ -204,7 +204,7 @@ export default {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 				const baseHeal = item.effects['BaseHeal']
-				const increaseEffect = item.effects['AdditionalAP'] //TODO renamed
+				const increaseEffect = item.effects['AdditionalHeal']
 				if (baseHeal == null || increaseEffect == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
@@ -213,7 +213,7 @@ export default {
 		},
 		innate: (item, unit) => {
 			const variables: BonusVariable[] = []
-			const increaseEffect = item.effects['AdditionalAD'] //TODO renamed
+			const increaseEffect = item.effects['AdditionalADAP']
 			if (increaseEffect != null) {
 				const increase = increaseEffect / 2 //TODO averaged increaseEffect
 				variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])

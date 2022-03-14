@@ -142,9 +142,18 @@ export class ChampionUnit {
 		this.shields = [...synergyShields, ...itemShields]
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
-		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
+		this.health = this.baseHP() * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed) //TODO Jhin set data
+	}
+
+	baseHP() {
+		if (this.data.stats.hp) {
+			return this.data.stats.hp
+		}
+		// TFT_VoidSpawn
+		const stageIndex = Math.min(Math.max(2, state.stageNumber), 5) - 2
+		return [1500, 1800, 2100, 2500][stageIndex]
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
