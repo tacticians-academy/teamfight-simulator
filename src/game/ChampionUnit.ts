@@ -564,6 +564,14 @@ export class ChampionUnit {
 			const activatedAt = thresholdCheck[uniqueID]
 			if (activatedAt !== hpThreshold && this.healthProportion() <= hpThreshold / 100) {
 				thresholdCheck[uniqueID] = hpThreshold
+				const damageReduction = effects[BonusKey.DamageReduction]
+				if (damageReduction != null) {
+					if (damageReduction === 100) {
+						this.health = this.healthMax * hpThreshold / 100
+					} else {
+						console.log('ERR', uniqueID, effects, BonusKey.DamageReduction)
+					}
+				}
 				return true
 			}
 		} else {

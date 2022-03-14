@@ -134,9 +134,8 @@ export default {
 		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
 		hpThreshold: (elapsedMS, item, itemID, unit) => {
 			const attackSpeed = item.effects[BonusKey.AttackSpeed]
-			const damageReduction = item.effects[BonusKey.DamageReduction]
 			const stealthDuration = item.effects['StealthDuration']
-			if (attackSpeed == null || damageReduction == null || stealthDuration == null) {
+			if (attackSpeed == null || stealthDuration == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const stealthMS = stealthDuration * 1000
