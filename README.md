@@ -11,7 +11,7 @@ See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simula
 ## Capabilities
 
 ### Data gathering
-- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library))
+- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library)).
 
 ### Units setup
 - Place/move any units onto 2 teams
@@ -62,4 +62,4 @@ npm run dev
 
 The largest outstanding project is to script the abilities of each unit. Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.
 
-Check out [`set6/champions`](src/data/set6/champions.ts). Pick an unimplemented champion from the [current Set milestone](#current-set-support), and using existing implementations as a template, give it a try!
+Check out [`set6/champions`](src/data/set6/champions.ts). Pick an unimplemented champion from the [current Set milestone](#current-set-support), refer to its spell data in [academy-library/champions](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2), and using existing implementations as a template, give it a try!
