@@ -274,6 +274,44 @@ export default {
 		},
 	},
 
+	[ItemKey.Morellonomicon]: {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
+				const grievousWounds = item.effects['GrievousWoundsPercent']
+				const totalBurn = item.effects['BurnPercent']
+				const durationSeconds = item.effects['BurnDuration']
+				const ticksPerSecond = item.effects['TicksPerSecond']
+				if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
+
+				const sourceID = 'BURN'
+				const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === sourceID)
+				const repeatsEverySeconds = 1 / ticksPerSecond
+				const repeatsEveryMS = repeatsEverySeconds * 1000
+				const tickCount = durationSeconds / repeatsEverySeconds
+				const damage = totalBurn / tickCount / 100
+				const damageCalculation = createDamageCalculation(sourceID, damage, DamageType.true, BonusKey.Health, 1)
+				if (existing) {
+					existing.remainingIterations = tickCount
+					existing.damageCalculation = damageCalculation
+					existing.source = source
+					existing.repeatsEveryMS = repeatsEveryMS
+				} else {
+					target.bleeds.add({
+						sourceID,
+						source,
+						damageCalculation,
+						activatesAtMS: elapsedMS + repeatsEveryMS,
+						repeatsEveryMS,
+						remainingIterations: tickCount,
+					})
+				}
+			}
+		},
+	},
+
 	[ItemKey.TitansResolve]: {
 		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
 			applyTitansResolve(item, itemID, source)
