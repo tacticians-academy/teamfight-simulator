@@ -71,6 +71,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		if (unit.dead) {
 			continue
 		}
+		unit.updateBleeds(elapsedMS)
 		unit.updateBonuses(elapsedMS)
 		unit.updateRegen(elapsedMS)
 		unit.updateShields(elapsedMS)

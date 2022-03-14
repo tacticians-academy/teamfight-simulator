@@ -23,7 +23,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -69,6 +69,7 @@ export class ChampionUnit {
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
 	scalings = new Set<BonusScaling>()
 	shields: ShieldData[] = []
+	bleeds = new Set<BleedData>()
 
 	pending = {
 		bonuses: new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>(),
@@ -101,6 +102,7 @@ export class ChampionUnit {
 
 	reset(synergiesByTeam: SynergyData[][]) {
 		Object.keys(this.pending).forEach(key => (this.pending as Record<string, Set<any>>)[key].clear())
+		this.bleeds.clear()
 
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
@@ -211,6 +213,20 @@ export class ChampionUnit {
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
+	}
+
+	updateBleeds(elapsedMS: DOMHighResTimeStamp) {
+		this.bleeds.forEach(bleed => {
+			if (elapsedMS >= bleed.activatesAtMS) {
+				bleed.activatesAtMS += bleed.repeatsEveryMS
+				bleed.remainingIterations -= 1
+				this.damage(elapsedMS, false, bleed.source, DamageSourceType.item, bleed.damageCalculation, false)
+				console.log(bleed)
+				if (bleed.remainingIterations <= 0) {
+					this.bleeds.delete(bleed)
+				}
+			}
+		})
 	}
 
 	updateBonuses(elapsedMS: DOMHighResTimeStamp) {
