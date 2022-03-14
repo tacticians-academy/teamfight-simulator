@@ -66,7 +66,7 @@ export default {
 					target.bonuses.push([SpellKey.Mana, [[BonusKey.ManaReductionPercent, -0.5]]]) // TO DO: only let this "bonus" hold for one cast
 				},
 			})
-		}
+		},
 	},
 
 	[ChampionKey.Warwick]: {
