@@ -424,6 +424,8 @@ export class ChampionUnit {
 		}
 		this.health = 0
 		this.dead = true
+		this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
+
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
 			needsPathfindingUpdate()
@@ -627,6 +629,9 @@ export class ChampionUnit {
 	}
 
 	reposition(hex: HexCoord) {
+		if (state.isRunning) {
+			return
+		}
 		this.startHex = hex
 		this.team = hex[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
 		window.setTimeout(saveUnits)
