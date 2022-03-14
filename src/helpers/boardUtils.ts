@@ -28,6 +28,7 @@ function nearestAvailableRecursive(hex: HexCoord, unitHexes: HexCoord[]): HexCoo
 			return result
 		}
 	}
+	console.error('No available hex', hex, unitHexes)
 	return null
 }
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {

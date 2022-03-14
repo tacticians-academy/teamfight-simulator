@@ -65,11 +65,10 @@ export const getters = {
 			.map(team => team.entries())
 			.map(teamCountSynergies => {
 				return Array.from(teamCountSynergies)
-					.map((countSynergy): SynergyData => {
-						const uniqueUnitCount = countSynergy[1].length
-						const trait = countSynergy[0]
+					.map(([trait, uniqueUnits]): SynergyData => {
+						const uniqueUnitCount = uniqueUnits.length
 						const currentEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
-						return [trait, currentEffect?.style ?? 0, currentEffect, Array.from(countSynergy[1])]
+						return [trait, currentEffect?.style ?? 0, currentEffect, Array.from(uniqueUnits)]
 					})
 					.sort((a, b) => {
 						const styleDiff = b[1] - a[1]

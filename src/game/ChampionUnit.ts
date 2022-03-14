@@ -427,7 +427,7 @@ export class ChampionUnit {
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
 			needsPathfindingUpdate()
-			teamUnits.forEach(unit => {
+			teamUnits.forEach(unit => { //TODO refactor to set6/traits
 				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
 				if (increaseADAP > 0) {
 					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
