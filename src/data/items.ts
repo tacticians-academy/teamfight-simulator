@@ -134,9 +134,8 @@ export default {
 		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
 		hpThreshold: (elapsedMS, item, itemID, unit) => {
 			const attackSpeed = item.effects[BonusKey.AttackSpeed]
-			const damageReduction = item.effects[BonusKey.DamageReduction]
 			const stealthDuration = item.effects['StealthDuration']
-			if (attackSpeed == null || damageReduction == null || stealthDuration == null) {
+			if (attackSpeed == null || stealthDuration == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const stealthMS = stealthDuration * 1000
@@ -209,7 +208,7 @@ export default {
 				if (baseHeal == null || increaseEffect == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				source.gainHealth(takingDamage * (baseHeal + increaseEffect / 2) / 100) //TODO averaged increaseEffect
+				source.gainHealth(elapsedMS, takingDamage * (baseHeal + increaseEffect / 2) / 100) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
@@ -241,7 +240,7 @@ export default {
 					}
 				})
 				if (lowestUnit) {
-					lowestUnit.gainHealth(takingDamage * hextechHeal / 100)
+					lowestUnit.gainHealth(elapsedMS, takingDamage * hextechHeal / 100)
 				}
 			}
 		},
@@ -271,6 +270,44 @@ export default {
 				amount: shieldValue,
 				expiresAtMS: shieldDuration * 1000,
 			}))
+		},
+	},
+
+	[ItemKey.Morellonomicon]: {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
+				const grievousWounds = item.effects['GrievousWoundsPercent']
+				const totalBurn = item.effects['BurnPercent']
+				const durationSeconds = item.effects['BurnDuration']
+				const ticksPerSecond = item.effects['TicksPerSecond']
+				if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
+
+				const sourceID = 'BURN'
+				const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === sourceID)
+				const repeatsEverySeconds = 1 / ticksPerSecond
+				const repeatsEveryMS = repeatsEverySeconds * 1000
+				const tickCount = durationSeconds / repeatsEverySeconds
+				const damage = totalBurn / tickCount / 100
+				const damageCalculation = createDamageCalculation(sourceID, damage, DamageType.true, BonusKey.Health, 1)
+				if (existing) {
+					existing.remainingIterations = tickCount
+					existing.damageCalculation = damageCalculation
+					existing.source = source
+					existing.repeatsEveryMS = repeatsEveryMS
+				} else {
+					target.bleeds.add({
+						sourceID,
+						source,
+						damageCalculation,
+						activatesAtMS: elapsedMS + repeatsEveryMS,
+						repeatsEveryMS,
+						remainingIterations: tickCount,
+					})
+				}
+			}
 		},
 	},
 

@@ -13,20 +13,28 @@ let instanceIndex = 0
 const hexRadius = HEX_PROPORTION * 2 * 100
 
 export interface ProjectileData {
-	spell?: ChampionSpellData
+	/** Inferred to be `spell` if passing with a `spell` object. */
 	sourceType?: DamageSourceType
+	/** The windup delay before the Projectile should start moving towards its target. */
 	startsAfterMS?: DOMHighResTimeStamp
+	/** Inferred as the `Damage` spell calculation if passing with a `spell` object. */
 	damageCalculation?: SpellCalculation
+	/** If specified, the Projectile should collide with any unit of the given team(s), instead of traveling directly to the specified target. */
 	collidesWith?: TeamNumber | null
+	/** Whether the Projectile should complete after the first time it collides with a unit. Requires `collidesWith`. */
 	destroysOnCollision?: boolean
+	/** Only include if not providing a `spell` object. */
 	missile?: ChampionSpellMissileData
-	target: ChampionUnit | HexCoord
+	/** If targeting a HexCoord, `collidesWith` must be set or the Projectile can never hit. Defaults to the source unit's attack target unit. */
+	target?: ChampionUnit | HexCoord
+	/** If the Projectile should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
 	retargetOnTargetDeath?: boolean
+	/** Callback upon each unit the Projectile collides with if `collidesWith` is set, or upon hitting its `target` unit otherwise. */
 	onCollision?: CollisionFn
 }
 
-function isUnit(arg: ChampionUnit | HexCoord): arg is ChampionUnit {
-	return 'name' in arg
+function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
+	return 'name' in target
 }
 
 export class Projectile {
@@ -46,20 +54,20 @@ export class Projectile {
 	retargetOnTargetDeath?: boolean
 	onCollision?: CollisionFn
 
-	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData) {
+	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData, spell?: ChampionSpellData) {
 		this.instanceID = `p${instanceIndex += 1}`
 
-		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : data.spell!.castTime! * 1000
-		const startDelay = data.spell?.missile?.startDelay
+		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : spell!.castTime! * 1000
+		const startDelay = spell?.missile?.startDelay
 		this.startsAtMS = elapsedMS + startsAfterMS + (startDelay != null ? startDelay * 1000 : 0)
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
 		this.position = [x, y]
-		this.missile = data.spell?.missile ?? data.missile!
-		this.currentSpeed = this.missile.speedInitial! //TODO .travelTime
+		this.missile = spell?.missile ?? data.missile!
+		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
 		this.damageCalculation = data.damageCalculation!
 		this.source = source
 		this.sourceType = data.sourceType!
-		this.target = data.target
+		this.target = data.target!
 		this.collidesWith = data.collidesWith
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath

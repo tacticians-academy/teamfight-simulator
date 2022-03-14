@@ -23,7 +23,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { randomItem, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -69,6 +69,7 @@ export class ChampionUnit {
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
 	scalings = new Set<BonusScaling>()
 	shields: ShieldData[] = []
+	bleeds = new Set<BleedData>()
 
 	pending = {
 		bonuses: new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>(),
@@ -101,6 +102,7 @@ export class ChampionUnit {
 
 	reset(synergiesByTeam: SynergyData[][]) {
 		Object.keys(this.pending).forEach(key => (this.pending as Record<string, Set<any>>)[key].clear())
+		this.bleeds.clear()
 
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
@@ -211,6 +213,20 @@ export class ChampionUnit {
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
+	}
+
+	updateBleeds(elapsedMS: DOMHighResTimeStamp) {
+		this.bleeds.forEach(bleed => {
+			if (elapsedMS >= bleed.activatesAtMS) {
+				bleed.activatesAtMS += bleed.repeatsEveryMS
+				bleed.remainingIterations -= 1
+				this.damage(elapsedMS, false, bleed.source, DamageSourceType.item, bleed.damageCalculation, false)
+				console.log(bleed)
+				if (bleed.remainingIterations <= 0) {
+					this.bleeds.delete(bleed)
+				}
+			}
+		})
 	}
 
 	updateBonuses(elapsedMS: DOMHighResTimeStamp) {
@@ -372,9 +388,9 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
-	gainHealth(amount: number) {
-		//TODO grievous wounds
-		this.health = Math.min(this.healthMax, this.health + amount)
+	gainHealth(elapsedMS: DOMHighResTimeStamp, amount: number) {
+		const grievousWounds = this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds) ?? 1
+		this.health = Math.min(this.healthMax, this.health + amount * grievousWounds)
 	}
 
 	setMana(amount: number) {
@@ -424,7 +440,7 @@ export class ChampionUnit {
 		})
 
 		if (damageType === DamageType.heal) {
-			this.gainHealth(rawDamage)
+			this.gainHealth(elapsedMS, rawDamage)
 			return
 		}
 		if (sourceType === DamageSourceType.attack) {
@@ -509,7 +525,7 @@ export class ChampionUnit {
 
 		const sourceVamp = source.getVamp(damageType!, sourceType)
 		if (sourceVamp > 0) {
-			source.gainHealth(takingDamage * sourceVamp / 100)
+			source.gainHealth(elapsedMS, takingDamage * sourceVamp / 100)
 		}
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
@@ -548,6 +564,14 @@ export class ChampionUnit {
 			const activatedAt = thresholdCheck[uniqueID]
 			if (activatedAt !== hpThreshold && this.healthProportion() <= hpThreshold / 100) {
 				thresholdCheck[uniqueID] = hpThreshold
+				const damageReduction = effects[BonusKey.DamageReduction]
+				if (damageReduction != null) {
+					if (damageReduction === 100) {
+						this.health = this.healthMax * hpThreshold / 100
+					} else {
+						console.log('ERR', uniqueID, effects, BonusKey.DamageReduction)
+					}
+				}
 				return true
 			}
 		} else {
@@ -772,8 +796,14 @@ export class ChampionUnit {
 		if (!data.sourceType && spell) {
 			data.sourceType = DamageSourceType.spell
 		}
-		data.spell = spell
-		const projectile = new Projectile(this, elapsedMS, data)
+		if (data.target == null) {
+			if (!this.target) {
+				console.error('ERR', 'No target for projectile', this.name, spell?.name)
+				return
+			}
+			data.target = this.target
+		}
+		const projectile = new Projectile(this, elapsedMS, data, spell)
 		this.pending.projectiles.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
 		if (spell) {

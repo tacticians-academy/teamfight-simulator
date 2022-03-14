@@ -42,6 +42,15 @@ export interface BonusScaling {
 	intervalSeconds: number
 }
 
+export interface BleedData {
+	sourceID: string
+	source: ChampionUnit
+	damageCalculation: SpellCalculation
+	activatesAtMS: DOMHighResTimeStamp
+	repeatsEveryMS: DOMHighResTimeStamp
+	remainingIterations: number
+}
+
 export interface ShieldData {
 	activated?: boolean
 	activatesAtMS?: DOMHighResTimeStamp
