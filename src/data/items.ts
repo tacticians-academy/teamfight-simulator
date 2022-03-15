@@ -31,8 +31,9 @@ interface ItemFns {
 	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 }
 
-function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
-	const activatedAtMS = activatedCheck[itemID]
+function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
+	const checkKey = unit.instanceID + itemID
+	const activatedAtMS = activatedCheck[checkKey]
 	const itemCooldownSeconds = item.effects[cooldownKey]
 	if (itemCooldownSeconds == null) {
 		console.log('ERR icd', item.name, item.effects)
@@ -41,7 +42,7 @@ function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: s
 	if (activatedAtMS != null && elapsedMS < activatedAtMS + itemCooldownSeconds * 1000) {
 		return false
 	}
-	activatedCheck[itemID] = elapsedMS
+	activatedCheck[checkKey] = elapsedMS
 	return instantlyApplies ? true : activatedAtMS != null
 }
 
@@ -97,7 +98,7 @@ export default {
 
 	[ItemKey.BrambleVest]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID, true)) {
+			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, target, item, itemID, true)) {
 				const aoeDamage = item.effects[`${target.starLevel}StarAoEDamage`]
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
@@ -122,7 +123,7 @@ export default {
 
 	[ItemKey.DragonsClaw]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, item, itemID, true)) {
+			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, target, item, itemID, true)) {
 				target.queueProjectile(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
@@ -332,7 +333,7 @@ export default {
 
 	[ItemKey.Redemption]: {
 		update: (elapsedMS, item, itemID, unit) => {
-			if (checkCooldown(elapsedMS, item, itemID, true, 'HealTickRate')) {
+			if (checkCooldown(elapsedMS, unit, item, itemID, true, 'HealTickRate')) {
 				const aoeDamageReduction = item.effects['AoEDamageReduction']
 				const missingHPHeal = item.effects['MissingHPHeal']
 				const maxHeal = item.effects['MaxHeal']
@@ -412,7 +413,7 @@ export default {
 
 	[ItemKey.SunfireCape]: {
 		update: (elapsedMS, item, itemID, holder) => {
-			if (checkCooldown(elapsedMS, item, itemID, true)) {
+			if (checkCooldown(elapsedMS, holder, item, itemID, true)) {
 				const hexRange = item.effects['HexRange']
 				if (hexRange == null) {
 					return console.log('ERR', item.name, item.effects)

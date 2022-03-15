@@ -600,6 +600,7 @@ export class ChampionUnit {
 	}
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables) {
+		uniqueID += this.instanceID
 		const hpThreshold = effects['HPThreshold']
 		if (hpThreshold != null) {
 			const activatedAt = thresholdCheck[uniqueID]
