@@ -12,6 +12,7 @@ import type { BonusVariable, BonusScaling, EffectResults, ShieldData } from '#/h
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
+	teamEffect: boolean | number | BonusKey[]
 	disableDefaultVariables?: true | BonusKey[]
 	solo?: TraitEffectFn,
 	team?: TraitEffectFn,
@@ -26,6 +27,10 @@ interface TraitFns {
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
 
 export default {
+
+	[TraitKey.Arcanist]: {
+		teamEffect: false,
+	},
 
 	[TraitKey.Bodyguard]: {
 		innate: (unit, innateEffect) => {
@@ -50,6 +55,10 @@ export default {
 			}
 			return { shields }
 		},
+	},
+
+	[TraitKey.Bruiser]: {
+		teamEffect: 2,
 	},
 
 	[TraitKey.Chemtech]: {
@@ -129,6 +138,10 @@ export default {
 			}
 			return { shields }
 		},
+	},
+
+	[TraitKey.Enchanter]: {
+		teamEffect: [BonusKey.MagicResist],
 	},
 
 	[TraitKey.Mutant]: {

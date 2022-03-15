@@ -9,7 +9,6 @@ import traitEffects from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
 import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
 export const synergiesByTeam: SynergyData[][] = []
@@ -72,10 +71,10 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 			return
 		}
 
-		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
 		const unitHasTrait = unitTraitKeys.includes(trait.name as TraitKey)
 		const bonusVariables: BonusVariable[] = []
 		const traitEffectData = traitEffects[trait.name as TraitKey]
+		const teamEffect = traitEffectData?.teamEffect
 		const teamTraitFn = traitEffectData?.team
 		if (teamTraitFn) {
 			const { variables, scalings, shields } = teamTraitFn(unit, activeEffect)
