@@ -70,11 +70,17 @@ export const getters = {
 					.map(([trait, uniqueUnits]): SynergyData => {
 						const uniqueUnitCount = uniqueUnits.length
 						const activeEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
-						return [trait, activeEffect?.style ?? 0, activeEffect, Array.from(uniqueUnits)]
+						return {
+							key: trait.name as TraitKey,
+							trait,
+							activeStyle: activeEffect?.style ?? 0,
+							activeEffect,
+							uniqueUnitNames: Array.from(uniqueUnits),
+						}
 					})
 					.sort((a, b) => {
-						const styleDiff = b[1] - a[1]
-						return styleDiff !== 0 ? styleDiff : a[3].length - b[3].length
+						const styleDiff = b.activeStyle - a.activeStyle
+						return styleDiff !== 0 ? styleDiff : a.uniqueUnitNames.length - b.uniqueUnitNames.length
 					})
 			})
 	}),
@@ -122,9 +128,9 @@ function resetUnitsAfterCreatingOrMoving() {
 		})
 	})
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
-		teamSynergies.forEach(([trait, style, activeEffect, unitNames]) => {
+		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			traitEffects[trait.name as TraitKey]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber)
+			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber)
 		})
 	})
 }

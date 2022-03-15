@@ -29,7 +29,13 @@ export const enum DamageSourceType {
 
 export type SynergyCount = Map<TraitData, string[]>
 
-export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
+export interface SynergyData {
+	key: TraitKey
+	trait: TraitData
+	activeStyle: number
+	activeEffect: TraitEffectData | undefined
+	uniqueUnitNames: string[]
+}
 
 export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DOMHighResTimeStamp]
 

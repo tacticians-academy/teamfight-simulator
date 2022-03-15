@@ -135,7 +135,7 @@ export class ChampionUnit {
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
 		const teamSynergies = synergiesByTeam[this.team]
-		this.activeSynergies = teamSynergies.filter(([trait, style, activeEffect]) => !!activeEffect)
+		this.activeSynergies = teamSynergies.filter(({ activeEffect }) => !!activeEffect)
 		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
 		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this, this.items)
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
@@ -226,7 +226,7 @@ export class ChampionUnit {
 			}
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
-			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
+			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
 	}
 
@@ -451,14 +451,13 @@ export class ChampionUnit {
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
-				teamSynergies.forEach(([trait, style, activeEffect]) => {
+				teamSynergies.forEach(({ key, activeEffect }) => {
 					if (!activeEffect) { return }
-					const traitKey = trait.name as TraitKey
-					const traitEffect = traitEffects[traitKey]
+					const traitEffect = traitEffects[key]
 					if (!traitEffect) { return }
 					const deathFn = teamNumber === this.team ? traitEffect.allyDeath : traitEffect.enemyDeath
 					if (!deathFn) { return }
-					const traitUnits = getUnitsOfTeam(teamNumber as TeamNumber).filter(unit => !unit.dead && unit.hasTrait(traitKey))
+					const traitUnits = getUnitsOfTeam(teamNumber as TeamNumber).filter(unit => !unit.dead && unit.hasTrait(key))
 					deathFn(activeEffect, elapsedMS, this, traitUnits)
 				})
 			})
@@ -476,9 +475,9 @@ export class ChampionUnit {
 				rawDamage = modifyDamageFn(item, originalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
-		source.activeSynergies.forEach(([trait, style, activeEffect]) => {
+		source.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			const modifyDamageFn = traitEffects[trait.name as TraitKey]?.modifyDamageByHolder
+			const modifyDamageFn = traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
 				rawDamage = modifyDamageFn(activeEffect, originalSource, this, source, sourceType, rawDamage, damageType!)
 			}
@@ -583,16 +582,16 @@ export class ChampionUnit {
 				hpThresholdFn(elapsedMS, item, uniqueID, this)
 			}
 		})
-		this.activeSynergies.forEach(([trait, style, activeEffect]) => {
+		this.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			const hpThresholdFn = traitEffects[trait.name as TraitKey]?.hpThreshold
-			if (hpThresholdFn && this.checkHPThreshold(trait.name, activeEffect?.variables)) {
+			const hpThresholdFn = traitEffects[key]?.hpThreshold
+			if (hpThresholdFn && this.checkHPThreshold(key, activeEffect?.variables)) {
 				hpThresholdFn(activeEffect, elapsedMS, this)
 			}
 		})
-		source.activeSynergies.forEach(([trait, style, activeEffect]) => {
+		source.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+			traitEffects[key]?.damageDealtByHolder?.(activeEffect, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 		})
 
 		if (sourceType === DamageSourceType.attack) {
