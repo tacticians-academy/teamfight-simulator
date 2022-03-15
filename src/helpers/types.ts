@@ -58,6 +58,7 @@ export interface BleedData {
 }
 
 export interface ShieldData {
+	source: ChampionUnit | undefined
 	activated?: boolean
 	activatesAtMS?: DOMHighResTimeStamp
 	isSpellShield?: boolean

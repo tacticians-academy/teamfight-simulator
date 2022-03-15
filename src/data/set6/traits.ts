@@ -50,6 +50,7 @@ export default {
 			const shieldAmount = activeEffect.variables['ShieldAmount']
 			if (shieldAmount != null) {
 				shields.push({
+					source: unit,
 					activatesAtMS: BODYGUARD_DELAY_MS,
 					amount: shieldAmount,
 				})
@@ -191,6 +192,7 @@ export default {
 			} else {
 				const repeatsEveryMS = frequency * 1000
 				shields.push({
+					source: unit,
 					amount: shieldAmount,
 					bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
 					expiresAtMS: durationSeconds * 1000,
@@ -317,6 +319,7 @@ export default {
 						return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
 					}, 0)
 				shields.push({
+					source: unit,
 					amount,
 				})
 			}
