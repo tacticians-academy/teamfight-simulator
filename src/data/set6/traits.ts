@@ -141,11 +141,9 @@ export default {
 	[TraitKey.Enforcer]: {
 		onceForTeam: (activeEffect, teamNumber) => {
 			const detainCount = activeEffect.variables['DetainCount']
-			const detainSeconds = activeEffect.variables['DetainDuration']
-			if (detainCount == null || detainSeconds == null) {
+			if (detainCount == null) {
 				return console.log('ERR', TraitKey.Enforcer, activeEffect)
 			}
-			const stunMS = detainSeconds * 1000
 			const stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
 			if (detainCount >= 1) {
 				let highestHP = 0
@@ -157,7 +155,7 @@ export default {
 					}
 				})
 				if (bestUnit) {
-					bestUnit.applyStatusEffect(0, StatusEffectType.stunned, stunMS)
+					applyEnforcerDetain(activeEffect, bestUnit)
 				}
 			}
 			if (detainCount >= 2) { //NOTE option for user to target
@@ -175,7 +173,7 @@ export default {
 					}
 				})
 				if (bestUnit) {
-					bestUnit.applyStatusEffect(0, StatusEffectType.stunned, stunMS)
+					applyEnforcerDetain(activeEffect, bestUnit)
 				}
 			}
 		},
@@ -378,3 +376,13 @@ export default {
 	},
 
 } as { [key in TraitKey]?: TraitFns }
+
+function applyEnforcerDetain(activeEffect: TraitEffectData, unit: ChampionUnit) {
+	const detainSeconds = activeEffect.variables['DetainDuration']
+	const healthPercent = activeEffect.variables['HPPercent']
+	if (detainSeconds == null || healthPercent == null) {
+		return console.log('ERR', TraitKey.Enforcer, activeEffect)
+	}
+	const healthThreshold = unit.health - healthPercent * unit.healthMax
+	unit.applyStatusEffect(0, StatusEffectType.stunned, detainSeconds * 1000, healthThreshold)
+}

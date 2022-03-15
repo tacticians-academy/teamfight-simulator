@@ -352,8 +352,14 @@ export class ChampionUnit {
 	updateStatusEffects(elapsedMS: DOMHighResTimeStamp) {
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
-			if (statusEffect.active && elapsedMS >= statusEffect.expiresAtMS) {
-				statusEffect.active = false
+			if (statusEffect.active) {
+				if (elapsedMS >= statusEffect.expiresAtMS) {
+					statusEffect.active = false
+				} else if (effectType === StatusEffectType.stunned && statusEffect.amount) {
+					if (this.health <= statusEffect.amount) {
+						statusEffect.active = false
+					}
+				}
 			}
 		}
 	}
