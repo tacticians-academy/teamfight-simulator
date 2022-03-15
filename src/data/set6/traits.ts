@@ -79,7 +79,7 @@ export default {
 				activatedAtMS: elapsedMS,
 				expiresAfterMS: durationMS,
 				stats: [BonusKey.Health],
-				intervalAmount: healthRegen,
+				intervalAmount: healthRegen / 100 * unit.healthMax,
 				intervalSeconds: 1,
 			})
 		},
