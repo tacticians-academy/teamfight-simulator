@@ -5,10 +5,10 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
-import { DamageSourceType, MutantBonus, MutantType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, EffectResults, ShieldData } from '#/helpers/types'
+import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -115,6 +115,49 @@ export default {
 				console.log('Missing Colossus HP bonus', innateEffect.variables)
 			}
 			return { variables }
+		},
+	},
+
+	[TraitKey.Enforcer]: {
+		onceForTeam: (activeEffect, teamNumber) => {
+			const detainCount = activeEffect.variables['DetainCount']
+			const detainSeconds = activeEffect.variables['DetainDuration']
+			if (detainCount == null || detainSeconds == null) {
+				return console.log('ERR', TraitKey.Enforcer, activeEffect)
+			}
+			const stunMS = detainSeconds * 1000
+			const stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
+			if (detainCount >= 1) {
+				let highestHP = 0
+				let bestUnit: ChampionUnit | undefined
+				stunnableUnits.forEach(unit => {
+					if (unit.healthMax > highestHP) {
+						highestHP = unit.healthMax
+						bestUnit = unit
+					}
+				})
+				if (bestUnit) {
+					bestUnit.applyStatusEffect(0, StatusEffectType.stunned, stunMS)
+				}
+			}
+			if (detainCount >= 2) { //NOTE option for user to target
+				let highestScore = 0
+				let bestUnit: ChampionUnit | undefined
+				stunnableUnits.forEach(unit => {
+					if (unit.statusEffects.stunned.active) { return }
+					const attackDPS = unit.attackDamage() * unit.attackSpeed()
+					const starCostItems = (unit.data.cost ?? 1) * unit.starMultiplier + Math.pow(unit.items.length, 2)
+					const magicDPSScore = (unit.abilityPower() - 90) / 10
+					const score = starCostItems + attackDPS / 20 + magicDPSScore
+					if (score > highestScore) {
+						highestScore = score
+						bestUnit = unit
+					}
+				})
+				if (bestUnit) {
+					bestUnit.applyStatusEffect(0, StatusEffectType.stunned, stunMS)
+				}
+			}
 		},
 	},
 
