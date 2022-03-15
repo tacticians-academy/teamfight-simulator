@@ -20,13 +20,13 @@ export interface HexEffectData {
 	/** The team whose units inside `hexes`/`hexDistanceFromSource` will be hit. */
 	targetTeam?: TeamNumber
 	/** `StatusEffects` to apply to any affected units. */
-	statusEffects?: StatusEffectsData,
+	statusEffects?: StatusEffectsData
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
 	/** Multiplies the result of `damageCalculation`. */
-	damageMultiplier?: number,
+	damageMultiplier?: number
 	/** Adds to the result of `damageCalculation`. */
-	damageIncrease?: number,
+	damageIncrease?: number
 	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
 	/** Stuns affected units. */

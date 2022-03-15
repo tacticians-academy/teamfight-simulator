@@ -14,10 +14,10 @@ type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => Effe
 interface TraitFns {
 	teamEffect: boolean | number | BonusKey[]
 	disableDefaultVariables?: true | BonusKey[]
-	solo?: TraitEffectFn,
-	team?: TraitEffectFn,
-	innate?: TraitEffectFn,
-	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults,
+	solo?: TraitEffectFn
+	team?: TraitEffectFn
+	innate?: TraitEffectFn
+	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
 	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 	modifyDamageByHolder?: (activeEffect: TraitEffectData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number

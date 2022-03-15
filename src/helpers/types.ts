@@ -62,9 +62,9 @@ export interface ShieldData {
 	bonusDamage?: SpellCalculation
 }
 
-export type ChampionFns = {
-	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void,
-	passive?: (elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit) => void,
+export interface ChampionFns {
+	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+	passive?: (elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit) => void
 }
 
 export const enum SpellKey {

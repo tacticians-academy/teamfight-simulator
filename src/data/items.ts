@@ -17,11 +17,11 @@ import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/h
 const BURN_ID = 'BURN'
 
 interface ItemFns {
-	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void,
+	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
 	apply?: (item: ItemData, unit: ChampionUnit) => void
 	disableDefaultVariables?: true | BonusKey[]
-	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults,
-	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void,
+	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
+	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	modifyDamageByHolder?: (item: ItemData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
