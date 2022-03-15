@@ -37,7 +37,7 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
 			champion.queueProjectile(elapsedMS, spell, {
-				target: target.activeHex,
+				target: target?.activeHex,
 				collidesWith: champion.opposingTeam(),
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
@@ -57,6 +57,7 @@ export default {
 			const target = champion.target
 			const manaReave = champion.getSpellVariable(SpellKey.ManaReave) ?? 0
 			const castTime = champion.getCurrentSpell()?.castTime ?? 0
+			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectile(elapsedMS, spell, {
 				target,
 				onCollision: () => {
