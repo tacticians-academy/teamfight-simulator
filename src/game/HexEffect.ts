@@ -6,7 +6,7 @@ import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectsData, Status
 import { getSurroundingWithin } from '#/helpers/boardUtils'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
-const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
+const DEFAULT_TRAVEL_TIME = 0.25 // TODO confirm default travel time
 
 export interface HexEffectData {
 	/** The windup delay before the HexEffect appears. */

@@ -241,7 +241,6 @@ export class ChampionUnit {
 				bleed.activatesAtMS += bleed.repeatsEveryMS
 				bleed.remainingIterations -= 1
 				this.damage(elapsedMS, false, bleed.source, DamageSourceType.item, bleed.damageCalculation, false)
-				console.log(bleed)
 				if (bleed.remainingIterations <= 0) {
 					this.bleeds.delete(bleed)
 				}

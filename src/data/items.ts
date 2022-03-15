@@ -15,11 +15,11 @@ import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
 
 interface ItemFns {
-	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => EffectResults,
-	apply?: (item: ItemData, unit: ChampionUnit) => EffectResults,
+	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void,
+	apply?: (item: ItemData, unit: ChampionUnit) => void
 	disableDefaultVariables?: true | BonusKey[]
 	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults,
-	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => EffectResults,
+	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void,
 	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	modifyDamageByHolder?: (item: ItemData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
@@ -59,7 +59,7 @@ export default {
 					intervalSeconds,
 				})
 			} else {
-				return console.log('ERR', item.name, item.effects)
+				console.log('ERR', item.name, item.effects)
 			}
 			return { scalings }
 		},
