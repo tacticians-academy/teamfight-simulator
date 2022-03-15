@@ -36,8 +36,9 @@ export default {
 	[ChampionKey.Ezreal]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
+			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectile(elapsedMS, spell, {
-				target: target?.activeHex,
+				target: target.activeHex,
 				collidesWith: champion.opposingTeam(),
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
