@@ -5,6 +5,7 @@ import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champ
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
+import { needsPathfindingUpdate } from '#/game/pathfind'
 import { activatedCheck, state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
@@ -401,6 +402,7 @@ export default {
 				voidling.reset([[], []])
 				voidling.team = unit.team
 				state.units.push(voidling)
+				needsPathfindingUpdate()
 			}
 		},
 	},

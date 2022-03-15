@@ -127,6 +127,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 					continue
 				}
 			}
+			updatePathsIfNeeded(state.units)
 			unit.updateMove(elapsedMS)
 		}
 	}
