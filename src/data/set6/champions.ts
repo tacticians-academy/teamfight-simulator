@@ -58,12 +58,9 @@ export default {
 			const target = champion.target
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectile(elapsedMS, spell, {
-				spell,
 				target,
-				collidesWith: champion.opposingTeam(),
-				destroysOnCollision: true,
 				onCollision: () => {
-					target.bonuses.push([SpellKey.Mana, [[BonusKey.ManaReductionPercent, -0.5]]]) // TO DO: only let this "bonus" hold for one cast
+					target.bonuses.push([SpellKey.ManaReave, [[BonusKey.ManaReductionPercent, -0.5]]]) // TO DO: only let this "bonus" hold for one cast
 				},
 			})
 		},
