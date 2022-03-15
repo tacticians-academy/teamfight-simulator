@@ -369,6 +369,22 @@ export class ChampionUnit {
 		if (spell) {
 			this.championEffects?.cast?.(elapsedMS, spell, this)
 		}
+		state.units.forEach(unit => {
+			if (unit === this) { return }
+			unit.items.forEach((item, index) => {
+				const effectFn = itemEffects[item.id as ItemKey]?.castWithinHexRange
+				if (effectFn) {
+					const hexRange = item.effects['HexRange']
+					if (hexRange == null) {
+						return console.log('ERR', 'HexRange', item.name, item.effects)
+					}
+					if (this.hexDistanceTo(unit) <= hexRange) {
+						effectFn(elapsedMS, item, uniqueIdentifier(index, item), this, unit)
+					}
+				}
+			})
+		})
+
 		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
 
