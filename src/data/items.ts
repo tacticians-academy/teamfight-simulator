@@ -55,8 +55,9 @@ export default {
 			const intervalSeconds = item.effects['IntervalSeconds']
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
+					source: unit,
+					sourceID: item.id,
 					activatedAtMS: 0,
-					source: item.name,
 					stats: [BonusKey.AbilityPower],
 					intervalAmount,
 					intervalSeconds,
@@ -217,7 +218,7 @@ export default {
 				if (baseHeal == null || increaseEffect == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				holder.gainHealth(elapsedMS, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
+				holder.gainHealth(elapsedMS, holder, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
@@ -249,7 +250,7 @@ export default {
 					}
 				})
 				if (lowestUnit) {
-					lowestUnit.gainHealth(elapsedMS, takingDamage * hextechHeal / 100, true)
+					lowestUnit.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}
 			}
 		},

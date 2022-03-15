@@ -37,61 +37,9 @@ export interface SynergyData {
 	uniqueUnitNames: string[]
 }
 
-export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DOMHighResTimeStamp]
-
-export interface BonusScaling {
-	source: string
-	activatedAtMS: DOMHighResTimeStamp
-	expiresAfterMS?: DOMHighResTimeStamp
-	stats: BonusKey[]
-	intervalAmount: number
-	intervalSeconds: number
-}
-
-export interface BleedData {
-	sourceID: string
-	source: ChampionUnit
-	damageCalculation: SpellCalculation
-	activatesAtMS: DOMHighResTimeStamp
-	repeatsEveryMS: DOMHighResTimeStamp
-	remainingIterations: number
-}
-
-export interface ShieldData {
-	source: ChampionUnit | undefined
-	activated?: boolean
-	activatesAtMS?: DOMHighResTimeStamp
-	isSpellShield?: boolean
-	amount: number
-	repeatAmount?: number
-	expiresAtMS?: DOMHighResTimeStamp
-	repeatsEveryMS?: DOMHighResTimeStamp
-	bonusDamage?: SpellCalculation
-}
-
 export interface ChampionFns {
 	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
 	passive?: (elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit) => void
-}
-
-export const enum SpellKey {
-	ADFromAttackSpeed = 'ADFromAttackSpeed',
-	ASBoost = 'ASBoost',
-	AttackSpeed = 'AttackSpeed',
-	Damage = 'Damage',
-	Heal = 'Heal',
-	HealAmount = 'HealAmount',
-	MaxStacks = 'MaxStacks',
-	PercentHealth = 'PercentHealth',
-	StunDuration = 'StunDuration',
-}
-
-export type BonusLabelKey = TraitKey | ItemKey | SpellKey
-
-export interface EffectResults {
-	variables?: BonusVariable[]
-	scalings?: BonusScaling[]
-	shields?: ShieldData[]
 }
 
 export enum StatusEffectType {
@@ -142,4 +90,57 @@ export const enum MutantBonus {
 	CyberAD = 'AD',
 	AdrenalineProcChance = 'ProcChance',
 	SynapticAP = 'AP',
+}
+
+export const enum SpellKey {
+	ADFromAttackSpeed = 'ADFromAttackSpeed',
+	ASBoost = 'ASBoost',
+	AttackSpeed = 'AttackSpeed',
+	Damage = 'Damage',
+	Heal = 'Heal',
+	HealAmount = 'HealAmount',
+	MaxStacks = 'MaxStacks',
+	PercentHealth = 'PercentHealth',
+	StunDuration = 'StunDuration',
+}
+
+export type BonusLabelKey = TraitKey | ItemKey | SpellKey | MutantType
+
+export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DOMHighResTimeStamp]
+
+export interface BonusScaling {
+	source: ChampionUnit | undefined
+	sourceID: BonusLabelKey
+	activatedAtMS: DOMHighResTimeStamp
+	expiresAfterMS?: DOMHighResTimeStamp
+	stats: BonusKey[]
+	intervalAmount: number
+	intervalSeconds: number
+}
+
+export interface BleedData {
+	sourceID: string
+	source: ChampionUnit
+	damageCalculation: SpellCalculation
+	activatesAtMS: DOMHighResTimeStamp
+	repeatsEveryMS: DOMHighResTimeStamp
+	remainingIterations: number
+}
+
+export interface ShieldData {
+	source: ChampionUnit | undefined
+	activated?: boolean
+	activatesAtMS?: DOMHighResTimeStamp
+	isSpellShield?: boolean
+	amount: number
+	repeatAmount?: number
+	expiresAtMS?: DOMHighResTimeStamp
+	repeatsEveryMS?: DOMHighResTimeStamp
+	bonusDamage?: SpellCalculation
+}
+
+export interface EffectResults {
+	variables?: BonusVariable[]
+	scalings?: BonusScaling[]
+	shields?: ShieldData[]
 }

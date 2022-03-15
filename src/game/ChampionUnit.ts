@@ -264,14 +264,16 @@ export class ChampionUnit {
 			const bonuses: BonusVariable[] = []
 			for (const stat of scaling.stats) {
 				if (stat === BonusKey.Health) {
-					this.gainHealth(elapsedMS, scaling.intervalAmount, false)
+					this.gainHealth(elapsedMS, scaling.source, scaling.intervalAmount, false)
 				} else if (stat === BonusKey.Mana) {
 					this.addMana(scaling.intervalAmount)
 				} else {
 					bonuses.push([stat, scaling.intervalAmount])
 				}
 			}
-			this.addBonuses(scaling.source as TraitKey, ...bonuses)
+			if (bonuses.length) {
+				this.addBonuses(scaling.sourceID, ...bonuses)
+			}
 		})
 	}
 
@@ -421,7 +423,7 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
-	gainHealth(elapsedMS: DOMHighResTimeStamp, amount: number, isAffectedByGrievousWounds: boolean) {
+	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
 		const grievousWounds = isAffectedByGrievousWounds ? this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds) : undefined
 		this.health = Math.min(this.healthMax, this.health + amount * (grievousWounds ?? 1))
 	}
@@ -490,7 +492,7 @@ export class ChampionUnit {
 		})
 
 		if (damageType === DamageType.heal) {
-			this.gainHealth(elapsedMS, rawDamage, true)
+			this.gainHealth(elapsedMS, source, rawDamage, true)
 			return
 		}
 		if (sourceType === DamageSourceType.attack) {
@@ -576,7 +578,7 @@ export class ChampionUnit {
 
 		const sourceVamp = source.getVamp(damageType!, sourceType)
 		if (sourceVamp > 0) {
-			source.gainHealth(elapsedMS, takingDamage * sourceVamp / 100, true)
+			source.gainHealth(elapsedMS, source, takingDamage * sourceVamp / 100, true)
 		}
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))

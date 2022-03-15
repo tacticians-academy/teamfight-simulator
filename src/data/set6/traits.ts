@@ -97,7 +97,8 @@ export default {
 			const expiresAtMS = elapsedMS + durationMS
 			unit.addBonuses(TraitKey.Chemtech, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])
 			unit.scalings.add({
-				source: TraitKey.Chemtech,
+				source: unit,
+				sourceID: TraitKey.Chemtech,
 				activatedAtMS: elapsedMS,
 				expiresAfterMS: durationMS,
 				stats: [BonusKey.Health],
@@ -246,14 +247,16 @@ export default {
 				if (intervalSeconds != null && amountADAP != null && amountARMR != null) {
 					scalings.push(
 						{
-							source: MutantType.Metamorphosis,
+							source: unit,
+							sourceID: state.mutantType,
 							activatedAtMS: 0,
 							stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
 							intervalAmount: amountADAP,
 							intervalSeconds,
 						},
 						{
-							source: MutantType.Metamorphosis,
+							source: unit,
+							sourceID: state.mutantType,
 							activatedAtMS: 0,
 							stats: [BonusKey.Armor, BonusKey.MagicResist],
 							intervalAmount: amountARMR,
@@ -296,7 +299,8 @@ export default {
 			const intervalSeconds = activeEffect.variables['TickRate']
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
-					source: TraitKey.Scholar,
+					source: undefined,
+					sourceID: TraitKey.Scholar,
 					activatedAtMS: 0,
 					stats: [BonusKey.Mana],
 					intervalAmount,
