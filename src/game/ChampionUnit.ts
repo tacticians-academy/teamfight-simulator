@@ -66,6 +66,7 @@ export class ChampionUnit {
 	traits: TraitData[] = []
 	activeSynergies: SynergyData[] = []
 	transformIndex = 0
+	basicAttackCount = 0
 
 	nextAttack: SpellCalculation | undefined //TODO
 	championEffects: ChampionFns | undefined
@@ -128,6 +129,7 @@ export class ChampionUnit {
 		this.collides = !jumpToBackline
 		this.interacts = true
 		this.banishUntilMS = 0
+		this.basicAttackCount = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activeHex[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
@@ -182,6 +184,10 @@ export class ChampionUnit {
 		}
 	}
 
+	isNthBasicAttack(n: number) {
+		return this.basicAttackCount % n === 1
+	}
+
 	updateAttack(elapsedMS: DOMHighResTimeStamp) {
 		if (this.target == null) {
 			return
@@ -198,6 +204,7 @@ export class ChampionUnit {
 		if (this.attackStartAtMS <= 0) {
 			this.attackStartAtMS = elapsedMS
 		} else {
+			this.basicAttackCount += 1
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			const passiveFn = this.championEffects?.passive
