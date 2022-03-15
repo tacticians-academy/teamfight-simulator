@@ -1,5 +1,5 @@
+import { BonusKey } from '@tacticians-academy/academy-library'
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
@@ -44,6 +44,10 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		state.units.forEach(unit => {
 			unit.shields.forEach(shield => {
 				shield.activated = shield.activatesAtMS == null
+				const healShieldBoost = shield.source?.getBonuses(BonusKey.HealShieldBoost)
+				if (shield.amount && healShieldBoost != null) {
+					shield.amount *= (1 + healShieldBoost)
+				}
 				if (shield.repeatsEveryMS != null) {
 					shield.repeatAmount = shield.amount
 				}
