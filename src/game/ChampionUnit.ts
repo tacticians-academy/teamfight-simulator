@@ -205,6 +205,7 @@ export class ChampionUnit {
 				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false)
 				this.attackStartAtMS = elapsedMS
 				passiveFn?.(elapsedMS, this.target, this)
+				this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 			} else {
 				const source = this
 				this.queueProjectile(elapsedMS, undefined, {
@@ -217,10 +218,10 @@ export class ChampionUnit {
 					damageCalculation,
 					onCollision(elapsedMS, unit) {
 						passiveFn?.(elapsedMS, unit, source)
+						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 					},
 				})
 			}
-			this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
