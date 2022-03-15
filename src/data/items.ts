@@ -9,7 +9,7 @@ import { needsPathfindingUpdate } from '#/game/pathfind'
 import { activatedCheck, state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
@@ -365,6 +365,31 @@ export default {
 					},
 					damageCalculation: createDamageCalculation(itemID, missingHPHeal / 100, DamageType.heal, BonusKey.MissingHealth, 1, false, maxHeal),
 					targetTeam: unit.team,
+				})
+			}
+		},
+	},
+
+	[ItemKey.RunaansHurricane]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			const boltCount = item.effects['AdditionalTargets']
+			const damageMultiplier = item.effects['MultiplierForDamage']
+			if (boltCount == null || damageMultiplier == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const additionalTargets = getNearestAttackableEnemies(source, [...state.units].filter(unit => unit !== target), 99, boltCount)
+			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, damageMultiplier / 100)
+			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
+				const target = additionalTargets[boltIndex]
+				if (target == null) { continue }
+				source.queueProjectile(elapsedMS, undefined, {
+					startsAfterMS: 0,
+					missile: {
+						speedInitial: 1000, //TODO determine
+					},
+					sourceType: DamageSourceType.attack,
+					target,
+					damageCalculation,
 				})
 			}
 		},

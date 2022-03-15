@@ -145,7 +145,7 @@ export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	return false
 }
 
-export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number) {
+export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
 	let currentRange = 0
 	if (range == null) {
 		range = unit.range()
@@ -153,7 +153,7 @@ export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: Champi
 	let checkHexes = [unit.activeHex]
 	const checkedHexes: HexCoord[] = [...checkHexes]
 	const enemies: ChampionUnit[] = []
-	while (checkHexes.length && !enemies.length) {
+	while (checkHexes.length && enemies.length < minimumUnits) {
 		const visitedSurroundingHexes: HexCoord[] = []
 		for (const checkHex of checkHexes) {
 			for (const surroundingHex of getHexRing(checkHex)) {
