@@ -35,8 +35,8 @@ export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DO
 
 export interface BonusScaling {
 	source: string
-	activatedAt: DOMHighResTimeStamp
-	expiresAfter?: DOMHighResTimeStamp
+	activatedAtMS: DOMHighResTimeStamp
+	expiresAfterMS?: DOMHighResTimeStamp
 	stats: BonusKey[]
 	intervalAmount: number
 	intervalSeconds: number
@@ -104,7 +104,7 @@ export type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
 
 export interface StatusEffect {
 	active: boolean
-	expiresAt: number
+	expiresAtMS: number
 	amount: number
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>

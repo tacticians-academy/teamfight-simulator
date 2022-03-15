@@ -55,7 +55,7 @@ export default {
 			const intervalSeconds = item.effects['IntervalSeconds']
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
-					activatedAt: 0,
+					activatedAtMS: 0,
 					source: item.name,
 					stats: [BonusKey.AbilityPower],
 					intervalAmount,

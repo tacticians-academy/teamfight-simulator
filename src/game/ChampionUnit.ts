@@ -99,7 +99,7 @@ export class ChampionUnit {
 		for (const effectType in StatusEffectType) {
 			this.statusEffects[effectType as StatusEffectType] = {
 				active: false,
-				expiresAt: 0,
+				expiresAtMS: 0,
 				amount: 0,
 			}
 		}
@@ -113,7 +113,7 @@ export class ChampionUnit {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
 			statusEffect.active = false
 			statusEffect.amount = 0
-			statusEffect.expiresAt = 0
+			statusEffect.expiresAtMS = 0
 		}
 
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
@@ -254,18 +254,18 @@ export class ChampionUnit {
 
 	updateRegen(elapsedMS: DOMHighResTimeStamp) {
 		this.scalings.forEach(scaling => {
-			if (scaling.activatedAt === 0) {
-				scaling.activatedAt = elapsedMS
+			if (scaling.activatedAtMS === 0) {
+				scaling.activatedAtMS = elapsedMS
 				return
 			}
-			if (scaling.expiresAfter != null && scaling.activatedAt + scaling.expiresAfter >= elapsedMS) {
+			if (scaling.expiresAfterMS != null && scaling.activatedAtMS + scaling.expiresAfterMS >= elapsedMS) {
 				this.scalings.delete(scaling)
 				return
 			}
-			if (elapsedMS < scaling.activatedAt + scaling.intervalSeconds * 1000) {
+			if (elapsedMS < scaling.activatedAtMS + scaling.intervalSeconds * 1000) {
 				return
 			}
-			scaling.activatedAt = elapsedMS
+			scaling.activatedAtMS = elapsedMS
 			const bonuses: BonusVariable[] = []
 			for (const stat of scaling.stats) {
 				if (stat === BonusKey.Health) {
@@ -336,17 +336,17 @@ export class ChampionUnit {
 
 	getStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType) {
 		const statusEffect = this.statusEffects[effectType]
-		if (statusEffect.active && elapsedMS < statusEffect.expiresAt) {
+		if (statusEffect.active && elapsedMS < statusEffect.expiresAtMS) {
 			return statusEffect.amount
 		}
 		return undefined
 	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number = 1) {
-		const expireAt = elapsedMS + durationMS
+		const expireAtMS = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
-		if (!statusEffect.active || expireAt > statusEffect.expiresAt) {
+		if (!statusEffect.active || expireAtMS > statusEffect.expiresAtMS) {
 			statusEffect.active = true
-			statusEffect.expiresAt = expireAt
+			statusEffect.expiresAtMS = expireAtMS
 			statusEffect.amount = amount
 			if (effectType === StatusEffectType.stealth) {
 				needsPathfindingUpdate()
@@ -357,7 +357,7 @@ export class ChampionUnit {
 	updateStatusEffects(elapsedMS: DOMHighResTimeStamp) {
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
-			if (statusEffect.active && elapsedMS >= statusEffect.expiresAt) {
+			if (statusEffect.active && elapsedMS >= statusEffect.expiresAtMS) {
 				statusEffect.active = false
 			}
 		}
