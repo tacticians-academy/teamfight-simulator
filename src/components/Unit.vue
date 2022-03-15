@@ -97,7 +97,7 @@ function onInfo(event: Event) {
 		<div class="flex">
 			<div
 				v-for="item in unit.items" :key="item.name"
-				class="w-1/3"
+				class="w-1/3" :class="state.isRunning ? 'pointer-events-none' : null"
 				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
 			>
 				<img :src="getIconURL(item)" :alt="item.name">
