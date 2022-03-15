@@ -59,7 +59,6 @@ export default {
 			const castTime = champion.getCurrentSpell()?.castTime ?? 0
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectile(elapsedMS, spell, {
-				target,
 				onCollision: () => {
 					if (!target.getBonusesFrom(SpellKey.ManaReave).length) {
 						target.bonuses.push([SpellKey.ManaReave, [[BonusKey.ManaReductionPercent, -100 * manaReave, elapsedMS + castTime]]]) 
