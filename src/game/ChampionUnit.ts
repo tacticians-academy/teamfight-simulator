@@ -284,13 +284,13 @@ export class ChampionUnit {
 	updateShields(elapsedMS: DOMHighResTimeStamp) {
 		this.shields.forEach(shield => {
 			if (shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
-				shield.activated = false
+				shield.activated = shield.repeatsEveryMS == null ? undefined : false
 				if (shield.repeatsEveryMS == null) {
 					return
 				}
 			}
 
-			if (shield.activated !== true) {
+			if (shield.activated === false) {
 				if (shield.activatesAtMS != null) {
 					if (elapsedMS >= shield.activatesAtMS) {
 						shield.activated = true
@@ -546,8 +546,9 @@ export class ChampionUnit {
 				if (protectingDamage >= shield.amount) {
 					if (shield.repeatsEveryMS != null) {
 						shield.amount = 0
-					} else {
 						shield.activated = false
+					} else {
+						shield.activated = undefined
 					}
 				} else {
 					shield.amount -= protectingDamage
@@ -592,7 +593,7 @@ export class ChampionUnit {
 
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {
-				if (shield.activated !== false && shield.bonusDamage) {
+				if (shield.activated === true && shield.bonusDamage) {
 					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
 				}
 			})
@@ -623,7 +624,7 @@ export class ChampionUnit {
 
 	consumeSpellShield() {
 		const shield = this.shields
-			.filter(shield => shield.activated !== false && shield.isSpellShield === true)
+			.filter(shield => shield.activated === true && shield.isSpellShield === true)
 			.sort((a, b) => a.amount - b.amount)[0] as ShieldData | undefined
 		if (shield && shield.amount > 0) {
 			shield.activated = false

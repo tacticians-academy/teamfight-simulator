@@ -82,7 +82,7 @@ function onInfo(event: Event) {
 				<div class="bar-container  flex justify-end">
 					<template v-for="(shield, index) in unit.shields" :key="index">
 						<div
-							v-if="shield.activated !== false"
+							v-if="shield.activated === true"
 							:style="{ width: shield.isSpellShield ? '7%' : `${100 * shield.amount / unit.healthMax}%` }"
 							:class="shield.isSpellShield ? 'bg-purple-600' : 'bg-gray-300'"
 						/>
