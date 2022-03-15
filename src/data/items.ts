@@ -9,7 +9,7 @@ import { needsPathfindingUpdate } from '#/game/pathfind'
 import { activatedCheck, state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getClosesUnitOfTeamTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
@@ -435,7 +435,7 @@ export default {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const targetHex = getInverseHex(unit.startHex)
-			const target = getClosesUnitOfTeamTo(targetHex, unit.opposingTeam(), state.units) //TODO not random
+			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined, state.units) //TODO not random
 			if (target) {
 				target.banishUntil(banishDuration * 1000)
 			}

@@ -36,11 +36,15 @@ export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit
 	return nearestAvailableRecursive(startHex, unitHexes)
 }
 
-export function getClosesUnitOfTeamTo(targetHex: HexCoord, teamNumber: TeamNumber | null, units: ChampionUnit[]) {
+export function getClosestUnitOfTeamWithinRangeTo(targetHex: HexCoord, teamNumber: TeamNumber | null, maxDistance: number | undefined, units: ChampionUnit[]) {
 	let minDistance = Number.MAX_SAFE_INTEGER
 	let closestUnits: ChampionUnit[] = []
-	getInteractableUnitsOfTeam(teamNumber).forEach(unit => {
+	units.forEach(unit => {
+		if ((teamNumber != null && unit.team !== teamNumber) || !unit.isInteractable()) {
+			return
+		}
 		const dist = unit.hexDistanceToHex(targetHex)
+		if (maxDistance != null && dist > maxDistance) { return }
 		if (dist < minDistance) {
 			minDistance = dist
 			closestUnits = [unit]

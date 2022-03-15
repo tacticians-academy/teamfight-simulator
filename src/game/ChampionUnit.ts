@@ -18,13 +18,13 @@ import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, gameOver, state, thresholdCheck } from '#/game/store'
 
-import { containsHex, getClosestHexAvailableTo, getNearestAttackableEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
-import { randomItem, uniqueIdentifier } from '#/helpers/utils'
+import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
 
@@ -105,7 +105,7 @@ export class ChampionUnit {
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
-		Object.keys(this.pending).forEach(key => (this.pending as Record<string, Set<any>>)[key].clear())
+		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
 		this.bleeds.clear()
 
 		for (const effectType in this.statusEffects) {
@@ -173,10 +173,10 @@ export class ChampionUnit {
 			}
 		}
 		if (this.target == null) {
-			const targets = getNearestAttackableEnemies(this, state.units)
-			if (targets.length) {
-				this.target = randomItem(targets)! //TODO random
-				this.cachedTargetDistance = this.hexDistanceTo(this.target)
+			const target = getClosestUnitOfTeamWithinRangeTo(this.activeHex, this.opposingTeam(), this.range(), state.units)
+			if (target != null) {
+				this.target = target
+				this.cachedTargetDistance = this.hexDistanceTo(target)
 				// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
 			}
 		}
