@@ -313,43 +313,6 @@ export default {
 		},
 	},
 
-	[ItemKey.StatikkShiv]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
-			if (!source.isNthBasicAttack(3)) { return }
-			const totalUnits = item.effects[`${target.starLevel}StarBounces`]
-			const damage = item.effects['Damage']
-			const shredDurationSeconds = item.effects['MRShredDuration']
-			const mrShred = item.effects['MRShred']
-			if (totalUnits == null || damage == null || shredDurationSeconds == null || mrShred == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
-			const units: ChampionUnit[] = []
-			let currentBounceTarget = target
-			const team = source.opposingTeam()
-			while (units.length < totalUnits) {
-				units.push(currentBounceTarget)
-				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, [...state.units].filter(unit => !units.includes(unit)))
-				if (!newTarget) { break }
-				currentBounceTarget = newTarget
-			}
-			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)
-			units.forEach(unit => {
-				unit.damage(elapsedMS, false, source, DamageSourceType.item, damageCalculation, true)
-				unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, shredDurationSeconds * 1000, mrShred / 100)
-			})
-		},
-	},
-	[ItemKey.TitansResolve]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
-			applyTitansResolve(item, itemID, source)
-		},
-		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource) {
-				applyTitansResolve(item, itemID, target)
-			}
-		},
-	},
-
 	[ItemKey.Quicksilver]: {
 		apply: (item, unit) => {
 			const shields: ShieldData[] = []
@@ -420,6 +383,33 @@ export default {
 		},
 	},
 
+	[ItemKey.StatikkShiv]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			if (!source.isNthBasicAttack(3)) { return }
+			const totalUnits = item.effects[`${target.starLevel}StarBounces`]
+			const damage = item.effects['Damage']
+			const shredDurationSeconds = item.effects['MRShredDuration']
+			const mrShred = item.effects['MRShred']
+			if (totalUnits == null || damage == null || shredDurationSeconds == null || mrShred == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const units: ChampionUnit[] = []
+			let currentBounceTarget = target
+			const team = source.opposingTeam()
+			while (units.length < totalUnits) {
+				units.push(currentBounceTarget)
+				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, [...state.units].filter(unit => !units.includes(unit)))
+				if (!newTarget) { break }
+				currentBounceTarget = newTarget
+			}
+			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)
+			units.forEach(unit => {
+				unit.damage(elapsedMS, false, source, DamageSourceType.item, damageCalculation, true)
+				unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, shredDurationSeconds * 1000, mrShred / 100)
+			})
+		},
+	},
+
 	[ItemKey.SunfireCape]: {
 		update: (elapsedMS, item, itemID, holder) => {
 			if (checkCooldown(elapsedMS, item, itemID, true)) {
@@ -452,6 +442,17 @@ export default {
 				if (bestTarget) {
 					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified
 				}
+			}
+		},
+	},
+
+	[ItemKey.TitansResolve]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			applyTitansResolve(item, itemID, source)
+		},
+		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource) {
+				applyTitansResolve(item, itemID, target)
 			}
 		},
 	},
