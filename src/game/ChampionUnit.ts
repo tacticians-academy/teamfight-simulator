@@ -424,8 +424,17 @@ export class ChampionUnit {
 	}
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
-		const grievousWounds = isAffectedByGrievousWounds ? this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds) : undefined
-		this.health = Math.min(this.healthMax, this.health + amount * (grievousWounds ?? 1))
+		const healShieldBoost = source?.getBonuses(BonusKey.HealShieldBoost) ?? 0
+		if (healShieldBoost > 0) {
+			amount *= (1 + healShieldBoost)
+		}
+		if (isAffectedByGrievousWounds) {
+			const grievousWounds = this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds)
+			if (grievousWounds != null) {
+				amount *= grievousWounds
+			}
+		}
+		this.health = Math.min(this.healthMax, this.health + amount)
 	}
 
 	setMana(amount: number) {
