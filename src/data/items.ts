@@ -22,10 +22,10 @@ interface ItemFns {
 	disableDefaultVariables?: true | BonusKey[]
 	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
-	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
-	modifyDamageByHolder?: (item: ItemData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
-	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
-	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	modifyDamageByHolder?: (item: ItemData, originalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
+	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, holder: ChampionUnit, canReProc: boolean) => void
+	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, holder: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
 	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
@@ -55,8 +55,9 @@ export default {
 			const intervalSeconds = item.effects['IntervalSeconds']
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
+					source: unit,
+					sourceID: item.id,
 					activatedAtMS: 0,
-					source: item.name,
 					stats: [BonusKey.AbilityPower],
 					intervalAmount,
 					intervalSeconds,
@@ -69,13 +70,14 @@ export default {
 	},
 
 	[ItemKey.BansheesClaw]: {
-		adjacentHexBuff: (item, unit, adjacentUnits) => {
+		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const damageCap = item.effects['DamageCap']
 			if (damageCap == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			adjacentUnits.push(unit)
+			adjacentUnits.push(holder)
 			adjacentUnits.forEach(unit => unit.shields.push({
+				source: holder,
 				isSpellShield: true,
 				amount: damageCap,
 			}))
@@ -83,36 +85,37 @@ export default {
 	},
 
 	[ItemKey.Bloodthirster]: {
-		hpThreshold: (elapsedMS, item, itemID, unit) => {
+		hpThreshold: (elapsedMS, item, itemID, holder) => {
 			const shieldHPPercent = item.effects['ShieldHPPercent']
 			const shieldDurationSeconds = item.effects['ShieldDuration']
 			if (shieldHPPercent == null || shieldDurationSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			unit.shields.push({
-				amount: shieldHPPercent / 100 * unit.healthMax,
+			holder.shields.push({
+				source: holder,
+				amount: shieldHPPercent / 100 * holder.healthMax,
 				expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
 			})
 		},
 	},
 
 	[ItemKey.BrambleVest]: {
-		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, target, item, itemID, true)) {
-				const aoeDamage = item.effects[`${target.starLevel}StarAoEDamage`]
+		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+				const aoeDamage = item.effects[`${holder.starLevel}StarAoEDamage`]
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				target.getInteractableUnitsWithin(1, target.opposingTeam()).forEach(unit => {
+				holder.getInteractableUnitsWithin(1, holder.opposingTeam()).forEach(unit => {
 					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
-					unit.damage(elapsedMS, false, target, DamageSourceType.item, damageCalculation, true)
+					unit.damage(elapsedMS, false, holder, DamageSourceType.item, damageCalculation, true)
 				})
 			}
 		},
 	},
 
 	[ItemKey.ChaliceOfPower]: {
-		adjacentHexBuff: (item, unit, adjacentUnits) => {
+		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const bonusAP = item.effects['BonusAP']
 			if (bonusAP == null) {
 				return console.log('ERR', item.name, item.effects)
@@ -122,9 +125,9 @@ export default {
 	},
 
 	[ItemKey.DragonsClaw]: {
-		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, target, item, itemID, true)) {
-				target.queueProjectile(elapsedMS, undefined, {
+		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+				holder.queueProjectile(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
 					sourceType: DamageSourceType.item,
@@ -181,7 +184,7 @@ export default {
 	},
 
 	[ItemKey.GiantSlayer]: {
-		modifyDamageByHolder: (item, originalSource, target, source, sourceType, rawDamage, damageType) => {
+		modifyDamageByHolder: (item, originalSource, target, holder, sourceType, rawDamage, damageType) => {
 			if (!originalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
 				return rawDamage
 			}
@@ -198,24 +201,24 @@ export default {
 	},
 
 	[ItemKey.GuinsoosRageblade]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const perStackAS = item.effects['ASPerStack']
 			if (perStackAS == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			source.addBonuses(itemID as any, [BonusKey.AttackSpeed, perStackAS])
+			holder.addBonuses(itemID as any, [BonusKey.AttackSpeed, perStackAS])
 		},
 	},
 
 	[ItemKey.HandOfJustice]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 				const baseHeal = item.effects['BaseHeal']
 				const increaseEffect = item.effects['AdditionalHeal']
 				if (baseHeal == null || increaseEffect == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				source.gainHealth(elapsedMS, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
+				holder.gainHealth(elapsedMS, holder, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
@@ -232,7 +235,7 @@ export default {
 	},
 
 	[ItemKey.HextechGunblade]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
 				const hextechHeal = item.effects[BonusKey.VampSpell]
 				if (hextechHeal == null) {
@@ -240,14 +243,14 @@ export default {
 				}
 				let lowestHP = Number.MAX_SAFE_INTEGER
 				let lowestUnit: ChampionUnit | undefined
-				source.alliedUnits().forEach(unit => {
+				holder.alliedUnits().forEach(unit => {
 					if (unit.health < lowestHP) {
 						lowestHP = unit.health
 						lowestUnit = unit
 					}
 				})
 				if (lowestUnit) {
-					lowestUnit.gainHealth(elapsedMS, takingDamage * hextechHeal / 100, true)
+					lowestUnit.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}
 			}
 		},
@@ -276,7 +279,7 @@ export default {
 	},
 
 	[ItemKey.LastWhisper]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			//TODO official implementation applies on critical strikes, this applies after any attack (since crits are averaged)
 			const armorReductionPercent = item.effects['ArmorReductionPercent']
 			const durationSeconds = item.effects['ArmorBreakDuration']
@@ -288,14 +291,15 @@ export default {
 	},
 
 	[ItemKey.LocketOfTheIronSolari]: {
-		adjacentHexBuff: (item, unit, adjacentUnits) => {
-			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
+		adjacentHexBuff: (item, holder, adjacentUnits) => {
+			const shieldValue = item.effects[`${holder.starLevel}StarShieldValue`]
 			const shieldSeconds = item.effects['ShieldDuration']
 			if (shieldValue == null || shieldSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			adjacentUnits.push(unit)
+			adjacentUnits.push(holder)
 			adjacentUnits.forEach(unit => unit.shields.push({
+				source: holder,
 				amount: shieldValue,
 				expiresAtMS: shieldSeconds * 1000,
 			}))
@@ -303,23 +307,24 @@ export default {
 	},
 
 	[ItemKey.Morellonomicon]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (originalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
 				const ticksPerSecond = item.effects['TicksPerSecond']
 				if (ticksPerSecond == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				applyGrievousBurn(item, elapsedMS, target, source, ticksPerSecond)
+				applyGrievousBurn(item, elapsedMS, target, holder, ticksPerSecond)
 			}
 		},
 	},
 
 	[ItemKey.Quicksilver]: {
-		apply: (item, unit) => {
+		apply: (item, holder) => {
 			const shields: ShieldData[] = []
 			const shieldSeconds = item.effects['SpellShieldDuration']
 			if (shieldSeconds != null) {
 				shields.push({
+					source: holder,
 					isSpellShield: true,
 					amount: 0, //TODO does not break
 					expiresAtMS: shieldSeconds * 1000,
@@ -332,8 +337,8 @@ export default {
 	},
 
 	[ItemKey.Redemption]: {
-		update: (elapsedMS, item, itemID, unit) => {
-			if (checkCooldown(elapsedMS, unit, item, itemID, true, 'HealTickRate')) {
+		update: (elapsedMS, item, itemID, holder) => {
+			if (checkCooldown(elapsedMS, holder, item, itemID, true, 'HealTickRate')) {
 				const aoeDamageReduction = item.effects['AoEDamageReduction']
 				const missingHPHeal = item.effects['MissingHPHeal']
 				const maxHeal = item.effects['MaxHeal']
@@ -343,7 +348,7 @@ export default {
 					return console.log('ERR', item.name, item.effects)
 				}
 				const tickMS = healTickSeconds * 1000
-				unit.queueHexEffect(elapsedMS, undefined, {
+				holder.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: tickMS,
 					hexDistanceFromSource,
 					statusEffects: {
@@ -353,31 +358,31 @@ export default {
 						},
 					},
 					damageCalculation: createDamageCalculation(itemID, missingHPHeal / 100, DamageType.heal, BonusKey.MissingHealth, 1, false, maxHeal),
-					targetTeam: unit.team,
+					targetTeam: holder.team,
 				})
 			}
 		},
 	},
 
 	[ItemKey.RunaansHurricane]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const boltCount = item.effects['AdditionalTargets']
 			const damageMultiplier = item.effects['MultiplierForDamage']
 			if (boltCount == null || damageMultiplier == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			const additionalTargets = getNearestAttackableEnemies(source, [...state.units].filter(unit => unit !== target), 99, boltCount)
+			const additionalTargets = getNearestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
 			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, damageMultiplier / 100)
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
-				const target = additionalTargets[boltIndex]
-				if (target == null) { continue }
-				source.queueProjectile(elapsedMS, undefined, {
+				const boltTarget = additionalTargets[boltIndex]
+				if (boltTarget == null) { continue }
+				holder.queueProjectile(elapsedMS, undefined, {
 					startsAfterMS: 0,
 					missile: {
 						speedInitial: 1000, //TODO determine
 					},
 					sourceType: DamageSourceType.attack,
-					target,
+					target: boltTarget,
 					damageCalculation,
 				})
 			}
@@ -385,9 +390,9 @@ export default {
 	},
 
 	[ItemKey.StatikkShiv]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
-			if (!source.isNthBasicAttack(3)) { return }
-			const totalUnits = item.effects[`${target.starLevel}StarBounces`]
+		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
+			if (!holder.isNthBasicAttack(3)) { return }
+			const totalUnits = item.effects[`${holder.starLevel}StarBounces`]
 			const damage = item.effects['Damage']
 			const shredDurationSeconds = item.effects['MRShredDuration']
 			const mrShred = item.effects['MRShred']
@@ -396,7 +401,7 @@ export default {
 			}
 			const units: ChampionUnit[] = []
 			let currentBounceTarget = target
-			const team = source.opposingTeam()
+			const team = holder.opposingTeam()
 			while (units.length < totalUnits) {
 				units.push(currentBounceTarget)
 				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, [...state.units].filter(unit => !units.includes(unit)))
@@ -405,7 +410,7 @@ export default {
 			}
 			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)
 			units.forEach(unit => {
-				unit.damage(elapsedMS, false, source, DamageSourceType.item, damageCalculation, true)
+				unit.damage(elapsedMS, false, holder, DamageSourceType.item, damageCalculation, true)
 				unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, shredDurationSeconds * 1000, mrShred / 100)
 			})
 		},
@@ -448,18 +453,18 @@ export default {
 	},
 
 	[ItemKey.TitansResolve]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
-			applyTitansResolve(item, itemID, source)
+		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
+			applyTitansResolve(item, itemID, holder)
 		},
-		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (originalSource) {
-				applyTitansResolve(item, itemID, target)
+				applyTitansResolve(item, itemID, holder)
 			}
 		},
 	},
 
 	[ItemKey.ZekesHerald]: {
-		adjacentHexBuff: (item, unit, adjacentUnits) => {
+		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const bonusAS = item.effects['AS']
 			if (bonusAS == null) {
 				return console.log('ERR', item.name, item.effects)

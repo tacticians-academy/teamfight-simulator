@@ -50,6 +50,7 @@ export default {
 			const shieldAmount = activeEffect.variables['ShieldAmount']
 			if (shieldAmount != null) {
 				shields.push({
+					source: unit,
 					activatesAtMS: BODYGUARD_DELAY_MS,
 					amount: shieldAmount,
 				})
@@ -78,7 +79,7 @@ export default {
 			}
 			const bonusMoveSpeed = 500 //TODO determine
 			const expiresAtMS = elapsedMS + durationSeconds * 1000
-			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], ['MoveSpeed' as BonusKey, bonusMoveSpeed, expiresAtMS]))
+			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], [BonusKey.MoveSpeed, bonusMoveSpeed, expiresAtMS]))
 		},
 	},
 
@@ -96,7 +97,8 @@ export default {
 			const expiresAtMS = elapsedMS + durationMS
 			unit.addBonuses(TraitKey.Chemtech, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])
 			unit.scalings.add({
-				source: TraitKey.Chemtech,
+				source: unit,
+				sourceID: TraitKey.Chemtech,
 				activatedAtMS: elapsedMS,
 				expiresAfterMS: durationMS,
 				stats: [BonusKey.Health],
@@ -191,6 +193,7 @@ export default {
 			} else {
 				const repeatsEveryMS = frequency * 1000
 				shields.push({
+					source: unit,
 					amount: shieldAmount,
 					bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
 					expiresAtMS: durationSeconds * 1000,
@@ -244,14 +247,16 @@ export default {
 				if (intervalSeconds != null && amountADAP != null && amountARMR != null) {
 					scalings.push(
 						{
-							source: MutantType.Metamorphosis,
+							source: unit,
+							sourceID: state.mutantType,
 							activatedAtMS: 0,
 							stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
 							intervalAmount: amountADAP,
 							intervalSeconds,
 						},
 						{
-							source: MutantType.Metamorphosis,
+							source: unit,
+							sourceID: state.mutantType,
 							activatedAtMS: 0,
 							stats: [BonusKey.Armor, BonusKey.MagicResist],
 							intervalAmount: amountARMR,
@@ -294,7 +299,8 @@ export default {
 			const intervalSeconds = activeEffect.variables['TickRate']
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
-					source: TraitKey.Scholar,
+					source: undefined,
+					sourceID: TraitKey.Scholar,
 					activatedAtMS: 0,
 					stats: [BonusKey.Mana],
 					intervalAmount,
@@ -317,6 +323,7 @@ export default {
 						return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
 					}, 0)
 				shields.push({
+					source: unit,
 					amount,
 				})
 			}
