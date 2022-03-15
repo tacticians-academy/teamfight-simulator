@@ -29,14 +29,20 @@ export const enum DamageSourceType {
 
 export type SynergyCount = Map<TraitData, string[]>
 
-export type SynergyData = [trait: TraitData, activeStyle: number, activeEffect: TraitEffectData | undefined, uniqueUnitNames: string[]]
+export interface SynergyData {
+	key: TraitKey
+	trait: TraitData
+	activeStyle: number
+	activeEffect: TraitEffectData | undefined
+	uniqueUnitNames: string[]
+}
 
 export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DOMHighResTimeStamp]
 
 export interface BonusScaling {
 	source: string
-	activatedAt: DOMHighResTimeStamp
-	expiresAfter?: DOMHighResTimeStamp
+	activatedAtMS: DOMHighResTimeStamp
+	expiresAfterMS?: DOMHighResTimeStamp
 	stats: BonusKey[]
 	intervalAmount: number
 	intervalSeconds: number
@@ -62,9 +68,9 @@ export interface ShieldData {
 	bonusDamage?: SpellCalculation
 }
 
-export type ChampionFns = {
-	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void,
-	passive?: (elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit) => void,
+export interface ChampionFns {
+	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+	passive?: (elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit) => void
 }
 
 export const enum SpellKey {
@@ -92,9 +98,11 @@ export enum StatusEffectType {
 	aoeDamageReduction = 'aoeDamageReduction',
 	armorReduction = 'armorReduction',
 	attackSpeedSlow = 'attackSpeedSlow',
+	banished = 'banished',
 	grievousWounds = 'grievousWounds',
 	magicResistReduction = 'magicResistReduction',
 	stealth = 'stealth',
+	stunned = 'stunned',
 }
 
 export interface StatusEffectData {
@@ -105,7 +113,7 @@ export type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
 
 export interface StatusEffect {
 	active: boolean
-	expiresAt: number
+	expiresAtMS: number
 	amount: number
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>

@@ -8,6 +8,7 @@ import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import itemEffects from '#/data/items'
+import traitEffects from '#/data/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
@@ -20,6 +21,7 @@ import { synergiesByTeam } from '#/helpers/bonuses'
 import { getSavedUnits, getStorageInt, getStorageString, saveUnits, setStorage, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 // State
 
@@ -65,15 +67,20 @@ export const getters = {
 			.map(team => team.entries())
 			.map(teamCountSynergies => {
 				return Array.from(teamCountSynergies)
-					.map((countSynergy): SynergyData => {
-						const uniqueUnitCount = countSynergy[1].length
-						const trait = countSynergy[0]
-						const currentEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
-						return [trait, currentEffect?.style ?? 0, currentEffect, Array.from(countSynergy[1])]
+					.map(([trait, uniqueUnits]): SynergyData => {
+						const uniqueUnitCount = uniqueUnits.length
+						const activeEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
+						return {
+							key: trait.name as TraitKey,
+							trait,
+							activeStyle: activeEffect?.style ?? 0,
+							activeEffect,
+							uniqueUnitNames: Array.from(uniqueUnits),
+						}
 					})
 					.sort((a, b) => {
-						const styleDiff = b[1] - a[1]
-						return styleDiff !== 0 ? styleDiff : a[3].length - b[3].length
+						const styleDiff = b.activeStyle - a.activeStyle
+						return styleDiff !== 0 ? styleDiff : a.uniqueUnitNames.length - b.uniqueUnitNames.length
 					})
 			})
 	}),
@@ -97,6 +104,7 @@ watch([getters.augmentCount], () => {
 function resetUnitsAfterCreatingOrMoving() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
+	state.units = state.units.filter(unit => unit.name !== ChampionKey.VoidSpawn)
 
 	const _synergiesByTeam = getters.synergiesByTeam.value
 	synergiesByTeam[0] = _synergiesByTeam[0]
@@ -117,6 +125,12 @@ function resetUnitsAfterCreatingOrMoving() {
 					}
 				}
 			}
+		})
+	})
+	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
+		teamSynergies.forEach(({ key, activeEffect }) => {
+			if (!activeEffect) { return }
+			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber)
 		})
 	})
 }

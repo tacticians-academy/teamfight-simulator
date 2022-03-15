@@ -6,7 +6,7 @@ import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectsData, Status
 import { getSurroundingWithin } from '#/helpers/boardUtils'
 
 const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
-const DEFAULT_TRAVEL_TIME = 0 // TODO confirm default travel time
+const DEFAULT_TRAVEL_TIME = 0.25 // TODO confirm default travel time
 
 export interface HexEffectData {
 	/** The windup delay before the HexEffect appears. */
@@ -20,17 +20,15 @@ export interface HexEffectData {
 	/** The team whose units inside `hexes`/`hexDistanceFromSource` will be hit. */
 	targetTeam?: TeamNumber
 	/** `StatusEffects` to apply to any affected units. */
-	statusEffects?: StatusEffectsData,
+	statusEffects?: StatusEffectsData
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
 	/** Multiplies the result of `damageCalculation`. */
-	damageMultiplier?: number,
+	damageMultiplier?: number
 	/** Adds to the result of `damageCalculation`. */
-	damageIncrease?: number,
+	damageIncrease?: number
 	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
-	/** Stuns affected units. */
-	stunSeconds?: number
 	/** Taunts affected units to the source unit. */
 	taunts?: boolean
 	/** Callback for each unit the HexEffect applies to. */
@@ -55,7 +53,6 @@ export class HexEffect {
 	damageMultiplier?: number
 	damageIncrease?: number
 	damageSourceType?: DamageSourceType
-	stunMS: number | null
 	taunts: boolean
 	onCollision?: CollisionFn
 
@@ -76,9 +73,17 @@ export class HexEffect {
 		this.damageMultiplier = data.damageMultiplier
 		this.damageIncrease = data.damageIncrease
 		this.damageSourceType = data.damageSourceType
-		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
 		this.taunts = data.taunts ?? false
 		this.onCollision = data.onCollision
+	}
+
+	start() {
+		if (!this.hexes) {
+			const sourceHex = this.source.activeHex
+			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
+			hexes.push(sourceHex)
+			this.hexes = hexes
+		}
 	}
 
 	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
@@ -91,9 +96,6 @@ export class HexEffect {
 			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, this.damageMultiplier)
 		}
 		if (spellShield == null) {
-			if (this.stunMS != null) {
-				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
-			}
 			this.onCollision?.(elapsedMS, unit)
 			if (this.statusEffects) {
 				for (const key in this.statusEffects) {
@@ -116,12 +118,6 @@ export class HexEffect {
 		}
 		this.activated = true
 		const targetingUnits = this.targetTeam == null ? units : units.filter(unit => unit.team === this.targetTeam)
-		if (!this.hexes) {
-			const sourceHex = this.source.activeHex
-			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
-			hexes.push(sourceHex)
-			this.hexes = hexes
-		}
 		for (const unit of targetingUnits.filter(unit => unit.isInteractable() && unit.isIn(this.hexes!))) {
 			this.apply(elapsedMS, unit)
 		}

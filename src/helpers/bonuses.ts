@@ -9,14 +9,13 @@ import traitEffects from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { TEAM_EFFECT_TRAITS } from '#/helpers/constants'
 import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
 export const synergiesByTeam: SynergyData[][] = []
 
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
-	const synergy = teamSynergies.find(synergy => synergy[0].name === trait)
-	return synergy?.[2] ?? synergy?.[0].effects[0]
+	const synergy = teamSynergies.find(synergy => synergy.key === trait)
+	return synergy?.activeEffect ?? synergy?.trait.effects[0]
 }
 
 type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
@@ -37,7 +36,7 @@ export function createDamageCalculation(variable: string, value: number, damageT
 	}
 }
 
-export function solveSpellCalculationFor(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
+export function solveSpellCalculationFrom(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
 	let damageType = calculation.damageType
 	const total = calculation.parts.reduce((acc, part) => {
 		const multiplyParts = part.operator === 'product'
@@ -67,15 +66,15 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 	const bonuses: [TraitKey, BonusVariable[]][] = []
 	const bonusScalings: BonusScaling[] = []
 	const bonusShields: ShieldData[] = []
-	teamSynergies.forEach(([trait, style, activeEffect]) => {
+	teamSynergies.forEach(({ key: traitKey, activeEffect }) => {
 		if (activeEffect == null) {
 			return
 		}
 
-		const teamEffect = TEAM_EFFECT_TRAITS[trait.apiName]
-		const unitHasTrait = unitTraitKeys.includes(trait.name as TraitKey)
+		const unitHasTrait = unitTraitKeys.includes(traitKey)
 		const bonusVariables: BonusVariable[] = []
-		const traitEffectData = traitEffects[trait.name as TraitKey]
+		const traitEffectData = traitEffects[traitKey]
+		const teamEffect = traitEffectData?.teamEffect
 		const teamTraitFn = traitEffectData?.team
 		if (teamTraitFn) {
 			const { variables, scalings, shields } = teamTraitFn(unit, activeEffect)
@@ -84,21 +83,20 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 			if (shields) { bonusShields.push(...shields) }
 		}
 		if (teamEffect != null || unitHasTrait) {
-			// console.log(trait.name, teamEffect, activeEffect.variables)
 			const disableDefaultVariables = traitEffectData?.disableDefaultVariables
-			for (let key in activeEffect.variables) {
-				if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(key as BonusKey))) {
+			for (let variableKey in activeEffect.variables) {
+				if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(variableKey as BonusKey))) {
 					continue
 				}
-				let value = activeEffect.variables[key]
+				let value = activeEffect.variables[variableKey]
 				if (unitHasTrait) {
 					if (teamEffect === false) {
-						if (key.startsWith('Team')) {
-							key = key.replace('Team', '')
-						} else if (key.startsWith(trait.name)) {
-							key = key.replace(trait.name, '')
+						if (variableKey.startsWith('Team')) {
+							variableKey = variableKey.replace('Team', '')
+						} else if (variableKey.startsWith(traitKey)) {
+							variableKey = variableKey.replace(traitKey, '')
 						} else {
-							console.warn('Unknown key for Team /', trait.name)
+							console.warn('Unknown key for Team', variableKey)
 							continue
 						}
 					}
@@ -109,17 +107,17 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 					}
 				} else {
 					if (teamEffect === false) {
-						if (!key.startsWith('Team')) {
+						if (!variableKey.startsWith('Team')) {
 							continue
 						}
-						key = key.replace('Team', '')
+						variableKey = variableKey.replace('Team', '')
 					} else if (typeof teamEffect === 'object') {
-						if (!teamEffect.includes(key as BonusKey)) {
+						if (!teamEffect.includes(variableKey as BonusKey)) {
 							continue
 						}
 					}
 				}
-				bonusVariables.push([key, value])
+				bonusVariables.push([variableKey, value])
 			}
 		}
 		if (unitHasTrait) {
@@ -132,7 +130,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 			}
 		}
 		if (bonusVariables.length) {
-			bonuses.push([trait.name as TraitKey, bonusVariables])
+			bonuses.push([traitKey, bonusVariables])
 		}
 	})
 	for (const trait of unitTraitKeys) {
@@ -157,11 +155,11 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): Bon
 	items.forEach(item => {
 		const disableDefaultVariables = itemEffects[item.id as ItemKey]?.disableDefaultVariables
 		const bonusVariables: BonusVariable[] = []
-		for (const key in item.effects) {
-			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(key as BonusKey))) {
+		for (const effectKey in item.effects) {
+			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(effectKey as BonusKey))) {
 				continue
 			}
-			bonusVariables.push([key, item.effects[key]])
+			bonusVariables.push([effectKey, item.effects[effectKey]])
 		}
 
 		const itemFn = itemEffects[item.id as ItemKey]?.innate

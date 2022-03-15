@@ -16,17 +16,22 @@ import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
-import { coordinatePosition, gameOver, state, thresholdCheck } from '#/game/store'
+import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
-import { containsHex, getClosestHexAvailableTo, getNearestAttackableEnemies, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFor } from '#/helpers/bonuses'
+import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
-import { randomItem, uniqueIdentifier } from '#/helpers/utils'
+import { uniqueIdentifier } from '#/helpers/utils'
+import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 
 let instanceIndex = 0
+
+function stageIndex() {
+	return Math.min(Math.max(2, state.stageNumber), 5) - 2
+}
 
 export class ChampionUnit {
 	instanceID: string
@@ -50,18 +55,16 @@ export class ChampionUnit {
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
 	collides = true
-	interacts = true
 
-	banishUntilMS: DOMHighResTimeStamp | null = null
 	cachedTargetDistance = 0
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moveUntilMS: DOMHighResTimeStamp = 0
 	manaLockUntilMS: DOMHighResTimeStamp = 0
-	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
 	activeSynergies: SynergyData[] = []
 	transformIndex = 0
+	basicAttackCount = 0
 
 	nextAttack: SpellCalculation | undefined //TODO
 	championEffects: ChampionFns | undefined
@@ -94,21 +97,21 @@ export class ChampionUnit {
 		for (const effectType in StatusEffectType) {
 			this.statusEffects[effectType as StatusEffectType] = {
 				active: false,
-				expiresAt: 0,
+				expiresAtMS: 0,
 				amount: 0,
 			}
 		}
 	}
 
 	reset(synergiesByTeam: SynergyData[][]) {
-		Object.keys(this.pending).forEach(key => (this.pending as Record<string, Set<any>>)[key].clear())
+		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
 		this.bleeds.clear()
 
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
 			statusEffect.active = false
 			statusEffect.amount = 0
-			statusEffect.expiresAt = 0
+			statusEffect.expiresAtMS = 0
 		}
 
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
@@ -119,11 +122,9 @@ export class ChampionUnit {
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
 		this.manaLockUntilMS = 0
-		this.stunnedUntilMS = 0
 		const jumpToBackline = this.jumpsToBackline()
 		this.collides = !jumpToBackline
-		this.interacts = true
-		this.banishUntilMS = 0
+		this.basicAttackCount = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activeHex[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
@@ -134,7 +135,7 @@ export class ChampionUnit {
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
 		const teamSynergies = synergiesByTeam[this.team]
-		this.activeSynergies = teamSynergies.filter(([trait, style, activeEffect]) => !!activeEffect)
+		this.activeSynergies = teamSynergies.filter(({ activeEffect }) => !!activeEffect)
 		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
 		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this, this.items)
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
@@ -142,9 +143,17 @@ export class ChampionUnit {
 		this.shields = [...synergyShields, ...itemShields]
 
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
-		this.health = this.data.stats.hp * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
+		this.health = this.baseHP() * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed) //TODO Jhin set data
+	}
+
+	baseHP() {
+		if (this.data.stats.hp != null) {
+			return this.data.stats.hp
+		}
+		// TFT_VoidSpawn
+		return [1500, 1800, 2100, 2500][stageIndex()]
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
@@ -161,13 +170,17 @@ export class ChampionUnit {
 			}
 		}
 		if (this.target == null) {
-			const targets = getNearestAttackableEnemies(this, state.units)
-			if (targets.length) {
-				this.target = randomItem(targets)! //TODO random
-				this.cachedTargetDistance = this.hexDistanceTo(this.target)
+			const target = getClosestUnitOfTeamWithinRangeTo(this.activeHex, this.opposingTeam(), this.range(), state.units)
+			if (target != null) {
+				this.target = target
+				this.cachedTargetDistance = this.hexDistanceTo(target)
 				// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
 			}
 		}
+	}
+
+	isNthBasicAttack(n: number) {
+		return this.basicAttackCount % n === 1
 	}
 
 	updateAttack(elapsedMS: DOMHighResTimeStamp) {
@@ -186,6 +199,7 @@ export class ChampionUnit {
 		if (this.attackStartAtMS <= 0) {
 			this.attackStartAtMS = elapsedMS
 		} else {
+			this.basicAttackCount += 1
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			const passiveFn = this.championEffects?.passive
@@ -193,6 +207,7 @@ export class ChampionUnit {
 				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false)
 				this.attackStartAtMS = elapsedMS
 				passiveFn?.(elapsedMS, this.target, this)
+				this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 			} else {
 				const source = this
 				this.queueProjectile(elapsedMS, undefined, {
@@ -205,13 +220,13 @@ export class ChampionUnit {
 					damageCalculation,
 					onCollision(elapsedMS, unit) {
 						passiveFn?.(elapsedMS, unit, source)
+						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 					},
 				})
 			}
-			this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
-			this.activeSynergies.forEach(([trait, style, activeEffect]) => traitEffects[trait.name as TraitKey]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
+			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
 	}
 
@@ -221,7 +236,6 @@ export class ChampionUnit {
 				bleed.activatesAtMS += bleed.repeatsEveryMS
 				bleed.remainingIterations -= 1
 				this.damage(elapsedMS, false, bleed.source, DamageSourceType.item, bleed.damageCalculation, false)
-				console.log(bleed)
 				if (bleed.remainingIterations <= 0) {
 					this.bleeds.delete(bleed)
 				}
@@ -235,22 +249,22 @@ export class ChampionUnit {
 
 	updateRegen(elapsedMS: DOMHighResTimeStamp) {
 		this.scalings.forEach(scaling => {
-			if (scaling.activatedAt === 0) {
-				scaling.activatedAt = elapsedMS
+			if (scaling.activatedAtMS === 0) {
+				scaling.activatedAtMS = elapsedMS
 				return
 			}
-			if (scaling.expiresAfter != null && scaling.activatedAt + scaling.expiresAfter >= elapsedMS) {
+			if (scaling.expiresAfterMS != null && scaling.activatedAtMS + scaling.expiresAfterMS >= elapsedMS) {
 				this.scalings.delete(scaling)
 				return
 			}
-			if (elapsedMS < scaling.activatedAt + scaling.intervalSeconds * 1000) {
+			if (elapsedMS < scaling.activatedAtMS + scaling.intervalSeconds * 1000) {
 				return
 			}
-			scaling.activatedAt = elapsedMS
+			scaling.activatedAtMS = elapsedMS
 			const bonuses: BonusVariable[] = []
 			for (const stat of scaling.stats) {
 				if (stat === BonusKey.Health) {
-					//TODO
+					this.gainHealth(elapsedMS, scaling.intervalAmount, false)
 				} else if (stat === BonusKey.Mana) {
 					this.addMana(scaling.intervalAmount)
 				} else {
@@ -264,13 +278,13 @@ export class ChampionUnit {
 	updateShields(elapsedMS: DOMHighResTimeStamp) {
 		this.shields.forEach(shield => {
 			if (shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
-				shield.activated = false
+				shield.activated = shield.repeatsEveryMS == null ? undefined : false
 				if (shield.repeatsEveryMS == null) {
 					return
 				}
 			}
 
-			if (shield.activated !== true) {
+			if (shield.activated === false) {
 				if (shield.activatesAtMS != null) {
 					if (elapsedMS >= shield.activatesAtMS) {
 						shield.activated = true
@@ -317,17 +331,17 @@ export class ChampionUnit {
 
 	getStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType) {
 		const statusEffect = this.statusEffects[effectType]
-		if (statusEffect.active && elapsedMS < statusEffect.expiresAt) {
+		if (statusEffect.active && elapsedMS < statusEffect.expiresAtMS) {
 			return statusEffect.amount
 		}
 		return undefined
 	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number = 1) {
-		const expireAt = elapsedMS + durationMS
+		const expireAtMS = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
-		if (!statusEffect.active || expireAt > statusEffect.expiresAt) {
+		if (!statusEffect.active || expireAtMS > statusEffect.expiresAtMS) {
 			statusEffect.active = true
-			statusEffect.expiresAt = expireAt
+			statusEffect.expiresAtMS = expireAtMS
 			statusEffect.amount = amount
 			if (effectType === StatusEffectType.stealth) {
 				needsPathfindingUpdate()
@@ -338,8 +352,14 @@ export class ChampionUnit {
 	updateStatusEffects(elapsedMS: DOMHighResTimeStamp) {
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
-			if (statusEffect.active && elapsedMS >= statusEffect.expiresAt) {
-				statusEffect.active = false
+			if (statusEffect.active) {
+				if (elapsedMS >= statusEffect.expiresAtMS) {
+					statusEffect.active = false
+				} else if (effectType === StatusEffectType.stunned && statusEffect.amount) {
+					if (this.health <= statusEffect.amount) {
+						statusEffect.active = false
+					}
+				}
 			}
 		}
 	}
@@ -356,6 +376,22 @@ export class ChampionUnit {
 		if (spell) {
 			this.championEffects?.cast?.(elapsedMS, spell, this)
 		}
+		state.units.forEach(unit => {
+			if (unit === this) { return }
+			unit.items.forEach((item, index) => {
+				const effectFn = itemEffects[item.id as ItemKey]?.castWithinHexRange
+				if (effectFn) {
+					const hexRange = item.effects['HexRange']
+					if (hexRange == null) {
+						return console.log('ERR', 'HexRange', item.name, item.effects)
+					}
+					if (this.hexDistanceTo(unit) <= hexRange) {
+						effectFn(elapsedMS, item, uniqueIdentifier(index, item), this, unit)
+					}
+				}
+			})
+		})
+
 		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 	}
 
@@ -368,17 +404,14 @@ export class ChampionUnit {
 		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
-	banishUntil(ms: DOMHighResTimeStamp | null) {
-		const banishing = ms != null
-		this.interacts = !banishing
-		this.banishUntilMS = ms ?? null
+	canAttack() {
+		return this.range() > 0 && !this.statusEffects.stunned.active
 	}
-
 	isAttackable() {
 		return this.isInteractable() && !this.statusEffects.stealth.active
 	}
 	isInteractable() {
-		return !this.dead && this.interacts
+		return !this.dead && !this.statusEffects.banished.active
 	}
 	hasCollision() {
 		return !this.dead && this.collides
@@ -388,9 +421,9 @@ export class ChampionUnit {
 		return elapsedMS < this.moveUntilMS
 	}
 
-	gainHealth(elapsedMS: DOMHighResTimeStamp, amount: number) {
-		const grievousWounds = this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds) ?? 1
-		this.health = Math.min(this.healthMax, this.health + amount * grievousWounds)
+	gainHealth(elapsedMS: DOMHighResTimeStamp, amount: number, isAffectedByGrievousWounds: boolean) {
+		const grievousWounds = isAffectedByGrievousWounds ? this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds) : undefined
+		this.health = Math.min(this.healthMax, this.health + amount * (grievousWounds ?? 1))
 	}
 
 	setMana(amount: number) {
@@ -406,41 +439,58 @@ export class ChampionUnit {
 		this.addMana(amount)
 	}
 
-	die() {
+	die(elapsedMS: DOMHighResTimeStamp) {
+		if (this.dead) {
+			return console.warn('Already dead', this.name, this.instanceID)
+		}
 		this.health = 0
 		this.dead = true
+
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
-			needsPathfindingUpdate()
-			teamUnits.forEach(unit => {
+			teamUnits.forEach(unit => { //TODO refactor to set6/traits
 				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
 				if (increaseADAP > 0) {
 					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
 				}
 			})
+
+			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
+			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
+				teamSynergies.forEach(({ key, activeEffect }) => {
+					if (!activeEffect) { return }
+					const traitEffect = traitEffects[key]
+					if (!traitEffect) { return }
+					const deathFn = teamNumber === this.team ? traitEffect.allyDeath : traitEffect.enemyDeath
+					if (!deathFn) { return }
+					const traitUnits = getUnitsOfTeam(teamNumber as TeamNumber).filter(unit => !unit.dead && unit.hasTrait(key))
+					deathFn(activeEffect, elapsedMS, this, traitUnits)
+				})
+			})
+			needsPathfindingUpdate()
 		} else {
 			gameOver(this.team)
 		}
 	}
 
 	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
-		let [rawDamage, damageType] = solveSpellCalculationFor(this, damageCalculation)
+		let [rawDamage, damageType] = solveSpellCalculationFrom(source, damageCalculation)
 		source.items.forEach((item, index) => {
 			const modifyDamageFn = itemEffects[item.id as ItemKey]?.modifyDamageByHolder
 			if (modifyDamageFn) {
 				rawDamage = modifyDamageFn(item, originalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
-		source.activeSynergies.forEach(([trait, style, activeEffect]) => {
+		source.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			const modifyDamageFn = traitEffects[trait.name as TraitKey]?.modifyDamageByHolder
+			const modifyDamageFn = traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
 				rawDamage = modifyDamageFn(activeEffect, originalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
 
 		if (damageType === DamageType.heal) {
-			this.gainHealth(elapsedMS, rawDamage)
+			this.gainHealth(elapsedMS, rawDamage, true)
 			return
 		}
 		if (sourceType === DamageSourceType.attack) {
@@ -505,8 +555,9 @@ export class ChampionUnit {
 				if (protectingDamage >= shield.amount) {
 					if (shield.repeatsEveryMS != null) {
 						shield.amount = 0
-					} else {
 						shield.activated = false
+					} else {
+						shield.activated = undefined
 					}
 				} else {
 					shield.amount -= protectingDamage
@@ -514,7 +565,7 @@ export class ChampionUnit {
 				healthDamage -= protectingDamage
 			})
 		if (this.health <= healthDamage) {
-			this.die()
+			this.die(elapsedMS)
 		} else {
 			this.health -= healthDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
@@ -525,7 +576,7 @@ export class ChampionUnit {
 
 		const sourceVamp = source.getVamp(damageType!, sourceType)
 		if (sourceVamp > 0) {
-			source.gainHealth(elapsedMS, takingDamage * sourceVamp / 100)
+			source.gainHealth(elapsedMS, takingDamage * sourceVamp / 100, true)
 		}
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
@@ -537,21 +588,21 @@ export class ChampionUnit {
 				hpThresholdFn(elapsedMS, item, uniqueID, this)
 			}
 		})
-		this.activeSynergies.forEach(([trait, style, activeEffect]) => {
+		this.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			const hpThresholdFn = traitEffects[trait.name as TraitKey]?.hpThreshold
-			if (hpThresholdFn && this.checkHPThreshold(trait.name, activeEffect?.variables)) {
+			const hpThresholdFn = traitEffects[key]?.hpThreshold
+			if (hpThresholdFn && this.checkHPThreshold(key, activeEffect?.variables)) {
 				hpThresholdFn(activeEffect, elapsedMS, this)
 			}
 		})
-		source.activeSynergies.forEach(([trait, style, activeEffect]) => {
+		source.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			traitEffects[trait.name as TraitKey]?.damageDealtByHolder?.(activeEffect, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+			traitEffects[key]?.damageDealtByHolder?.(activeEffect, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 		})
 
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {
-				if (shield.activated !== false && shield.bonusDamage) {
+				if (shield.activated === true && shield.bonusDamage) {
 					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
 				}
 			})
@@ -559,6 +610,7 @@ export class ChampionUnit {
 	}
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables) {
+		uniqueID += this.instanceID
 		const hpThreshold = effects['HPThreshold']
 		if (hpThreshold != null) {
 			const activatedAt = thresholdCheck[uniqueID]
@@ -568,8 +620,6 @@ export class ChampionUnit {
 				if (damageReduction != null) {
 					if (damageReduction === 100) {
 						this.health = this.healthMax * hpThreshold / 100
-					} else {
-						console.log('ERR', uniqueID, effects, BonusKey.DamageReduction)
 					}
 				}
 				return true
@@ -582,7 +632,7 @@ export class ChampionUnit {
 
 	consumeSpellShield() {
 		const shield = this.shields
-			.filter(shield => shield.activated !== false && shield.isSpellShield === true)
+			.filter(shield => shield.activated === true && shield.isSpellShield === true)
 			.sort((a, b) => a.amount - b.amount)[0] as ShieldData | undefined
 		if (shield && shield.amount > 0) {
 			shield.activated = false
@@ -612,6 +662,9 @@ export class ChampionUnit {
 	}
 
 	reposition(hex: HexCoord) {
+		if (state.isRunning) {
+			return
+		}
 		this.startHex = hex
 		this.team = hex[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
 		window.setTimeout(saveUnits)
@@ -647,7 +700,7 @@ export class ChampionUnit {
 	}
 	getSpellCalculationResult(key: SpellKey) {
 		const calculation = this.getSpellCalculation(key)
-		return calculation ? solveSpellCalculationFor(this, calculation)[0] : 0
+		return calculation ? solveSpellCalculationFrom(this, calculation)[0] : 0
 	}
 	getSpellCalculation(key: SpellKey) {
 		const spell = this.getCurrentSpell()
@@ -713,10 +766,14 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		const ad = this.data.stats.damage * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
-		const multiplier = this.getSpellVariable(SpellKey.ADFromAttackSpeed)
-		if (multiplier != null) {
-			return ad + this.bonusAttackSpeed() * 100 * multiplier
+		let baseAD = this.data.stats.damage
+		if (baseAD === 0) {
+			baseAD = [100, 100, 125, 140][stageIndex()]
+		}
+		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
+		const multiplyAttackSpeed = this.getSpellVariable(SpellKey.ADFromAttackSpeed)
+		if (multiplyAttackSpeed != null) {
+			return ad + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
 		}
 		return ad
 	}
@@ -746,7 +803,7 @@ export class ChampionUnit {
 		return this.data.stats.range + this.getBonuses(BonusKey.HexRangeIncrease)
 	}
 	moveSpeed() {
-		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
+		return this.data.stats.moveSpeed + this.getBonuses('MoveSpeed' as BonusKey)
 	}
 
 	healthProportion() {
@@ -773,17 +830,17 @@ export class ChampionUnit {
 		return this.getBonuses(...vampBonuses)
 	}
 
-	getUnitsIn(hexes: HexCoord[], team: TeamNumber | null): ChampionUnit[] {
+	getInteractableUnitsIn(hexes: HexCoord[], team: TeamNumber | null): ChampionUnit[] {
 		return state.units.filter(unit => {
-			if (team != null && unit.team !== team) {
+			if ((team != null && unit.team !== team) || !unit.isInteractable()) {
 				return false
 			}
 			return unit.isIn(hexes)
 		})
 	}
-	getUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
+	getInteractableUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
 		const hexes = getSurroundingWithin(this.activeHex, distance)
-		return this.getUnitsIn(hexes, team)
+		return this.getInteractableUnitsIn(hexes, team)
 	}
 
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {

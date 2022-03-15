@@ -27,7 +27,7 @@ export default {
 			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
 				hexes: getSurroundingWithin(champion.activeHex, 1),
 				onCollision: (elapsedMS, affectedUnit) => {
-					champion.gainHealth(elapsedMS, champion.getSpellCalculationResult(SpellKey.Heal)!)
+					champion.gainHealth(elapsedMS, champion.getSpellCalculationResult(SpellKey.Heal)!, true)
 				},
 			})
 		},
@@ -72,7 +72,7 @@ export default {
 			const percentHealthDamage = source.getSpellCalculationResult(SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
 			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, false)
-			source.gainHealth(elapsedMS, heal)
+			source.gainHealth(elapsedMS, heal, true)
 		},
 	},
 
@@ -92,9 +92,18 @@ export default {
 
 	[ChampionKey.Zyra]: {
 		cast: (elapsedMS, spell, champion) => {
+			const stunSeconds = champion.getSpellVariable(SpellKey.StunDuration)
+			if (stunSeconds == null) {
+				return console.log('ERR', champion.name, spell.name, spell.variables)
+			}
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getRowOfMostAttackable(champion.opposingTeam()),
-				stunSeconds: champion.getSpellVariable(SpellKey.StunDuration),
+				statusEffects: {
+					stunned: {
+						durationMS: stunSeconds * 1000,
+						amount: 1,
+					},
+				},
 			})
 		},
 	},

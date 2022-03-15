@@ -56,15 +56,14 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
-		for (const [trait, style, activeEffect] of teamSynergies) {
+		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (activeEffect) {
-				const traitKey = trait.name as TraitKey
-				const updateFn = traitEffects[traitKey]?.update
+				const updateFn = traitEffects[key]?.update
 				if (updateFn) {
-					updateFn(activeEffect, elapsedMS, state.units.filter(unit => !unit.dead && unit.team === teamNumber && unit.hasTrait(traitKey)))
+					updateFn(activeEffect, elapsedMS, state.units.filter(unit => !unit.dead && unit.team === teamNumber && unit.hasTrait(key)))
 				}
 			}
-		}
+		})
 	})
 
 	for (const unit of state.units) {
@@ -76,28 +75,26 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		unit.updateRegen(elapsedMS)
 		unit.updateShields(elapsedMS)
 		unit.updateStatusEffects(elapsedMS)
-		if (unit.banishUntilMS != null && unit.banishUntilMS <= elapsedMS) {
-			unit.banishUntil(null)
-		}
 		unit.items.forEach((item, index) => {
 			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
 	}
 
 	for (const unit of state.units) {
-		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS || !unit.interacts) {
+		if (!unit.isInteractable() || unit.isMoving(elapsedMS) || !unit.canAttack()) {
 			continue
 		}
 
 		for (const pendingBonus of unit.pending.bonuses) {
-			const [startsAtMS, key, bonuses] = pendingBonus
+			const [startsAtMS, pendingKey, bonuses] = pendingBonus
 			if (elapsedMS >= startsAtMS) {
-				unit.addBonuses(key, ...bonuses)
+				unit.addBonuses(pendingKey, ...bonuses)
 				unit.pending.bonuses.delete(pendingBonus)
 			}
 		}
 		for (const pendingHexEffect of unit.pending.hexEffects) {
 			if (elapsedMS >= pendingHexEffect.startsAtMS) {
+				pendingHexEffect.start()
 				state.hexEffects.add(pendingHexEffect)
 				unit.pending.hexEffects.delete(pendingHexEffect)
 			}
@@ -127,6 +124,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 					continue
 				}
 			}
+			updatePathsIfNeeded(state.units)
 			unit.updateMove(elapsedMS)
 		}
 	}

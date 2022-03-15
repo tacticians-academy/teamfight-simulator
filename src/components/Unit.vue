@@ -28,9 +28,11 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.aoeDamageReduction]: '💦',
 	[StatusEffectType.armorReduction]: '🛡',
 	[StatusEffectType.attackSpeedSlow]: '❄️',
+	[StatusEffectType.banished]: '🕴',
 	[StatusEffectType.grievousWounds]: '❤️‍🔥', // 💔
-	[StatusEffectType.magicResistReduction]: '🪄',
+	[StatusEffectType.magicResistReduction]: '🧞',
 	[StatusEffectType.stealth]: '👻',
+	[StatusEffectType.stunned]: '⛓',
 }
 
 function onDragStart(event: DragEvent, type: DraggableType, name: string) {
@@ -70,7 +72,7 @@ function onInfo(event: Event) {
 
 <template>
 <div
-	class="unit  group" :class="!unit.interacts ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : null)"
+	class="unit  group" :class="!unit.isInteractable() ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
 	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"
@@ -82,7 +84,7 @@ function onInfo(event: Event) {
 				<div class="bar-container  flex justify-end">
 					<template v-for="(shield, index) in unit.shields" :key="index">
 						<div
-							v-if="shield.activated !== false"
+							v-if="shield.activated === true"
 							:style="{ width: shield.isSpellShield ? '7%' : `${100 * shield.amount / unit.healthMax}%` }"
 							:class="shield.isSpellShield ? 'bg-purple-600' : 'bg-gray-300'"
 						/>
@@ -97,7 +99,7 @@ function onInfo(event: Event) {
 		<div class="flex">
 			<div
 				v-for="item in unit.items" :key="item.name"
-				class="w-1/3"
+				class="w-1/3" :class="state.isRunning ? 'pointer-events-none' : null"
 				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
 			>
 				<img :src="getIconURL(item)" :alt="item.name">

@@ -28,18 +28,23 @@ function nearestAvailableRecursive(hex: HexCoord, unitHexes: HexCoord[]): HexCoo
 			return result
 		}
 	}
+	console.error('No available hex', hex, unitHexes)
 	return null
 }
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitHexes = units.filter(unit => unit.interacts && unit.hasCollision()).map(unit => unit.activeHex)
+	const unitHexes = units.filter(unit => unit.isInteractable() && unit.hasCollision()).map(unit => unit.activeHex)
 	return nearestAvailableRecursive(startHex, unitHexes)
 }
 
-export function getClosesUnitOfTeamTo(targetHex: HexCoord, teamNumber: TeamNumber | null, units: ChampionUnit[]) {
+export function getClosestUnitOfTeamWithinRangeTo(targetHex: HexCoord, teamNumber: TeamNumber | null, maxDistance: number | undefined, units: ChampionUnit[]) {
 	let minDistance = Number.MAX_SAFE_INTEGER
 	let closestUnits: ChampionUnit[] = []
-	getInteractableUnitsOfTeam(teamNumber).forEach(unit => {
+	units.forEach(unit => {
+		if ((teamNumber != null && unit.team !== teamNumber) || !unit.isInteractable()) {
+			return
+		}
 		const dist = unit.hexDistanceToHex(targetHex)
+		if (maxDistance != null && dist > maxDistance) { return }
 		if (dist < minDistance) {
 			minDistance = dist
 			closestUnits = [unit]
@@ -66,6 +71,7 @@ const surroundings = [
 	[[1, 0], [0, 1], [-1, 1]],
 	[[2, 0], [1, 1], [1, 2], [0, 2], [-1, 2], [-2, 1]],
 	[[3, 0], [2, 1], [2, 2], [1, 3], [0, 3], [-1, 3], [-2, 3], [-2, 2], [-3, 1]],
+	[[4, 0], [3, 1], [3, 2], [2, 3], [2, 4], [1, 4], [0, 4], [-1, 4], [-2, 4], [-3, 3], [-3, 2], [-4, 1]],
 ]
 
 export function getSurroundingWithin(hex: HexCoord, maxDistance: number = 1): HexCoord[] {
@@ -144,7 +150,7 @@ export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	return false
 }
 
-export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number) {
+export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
 	let currentRange = 0
 	if (range == null) {
 		range = unit.range()
@@ -152,7 +158,7 @@ export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: Champi
 	let checkHexes = [unit.activeHex]
 	const checkedHexes: HexCoord[] = [...checkHexes]
 	const enemies: ChampionUnit[] = []
-	while (checkHexes.length && !enemies.length) {
+	while (checkHexes.length && enemies.length < minimumUnits) {
 		const visitedSurroundingHexes: HexCoord[] = []
 		for (const checkHex of checkHexes) {
 			for (const surroundingHex of getHexRing(checkHex)) {
@@ -190,7 +196,7 @@ export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 				if (!isInsetRow) {
 					currentCol += -1
 				}
-			} else {
+			} else if (currentCol < destCol) {
 				if (isInsetRow) {
 					currentCol += 1
 				}

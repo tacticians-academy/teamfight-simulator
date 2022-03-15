@@ -5,18 +5,22 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
-import { DamageSourceType, MutantBonus, MutantType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, EffectResults, ShieldData } from '#/helpers/types'
+import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
+	teamEffect: boolean | number | BonusKey[]
 	disableDefaultVariables?: true | BonusKey[]
-	solo?: TraitEffectFn,
-	team?: TraitEffectFn,
-	innate?: TraitEffectFn,
-	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults,
+	solo?: TraitEffectFn
+	team?: TraitEffectFn
+	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber) => void
+	innate?: TraitEffectFn
+	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
+	allyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
+	enemyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
 	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 	modifyDamageByHolder?: (activeEffect: TraitEffectData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
@@ -26,6 +30,10 @@ interface TraitFns {
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
 
 export default {
+
+	[TraitKey.Arcanist]: {
+		teamEffect: false,
+	},
 
 	[TraitKey.Bodyguard]: {
 		innate: (unit, innateEffect) => {
@@ -52,10 +60,49 @@ export default {
 		},
 	},
 
+	[TraitKey.Bruiser]: {
+		teamEffect: 2,
+	},
+
+	[TraitKey.Challenger]: {
+		disableDefaultVariables: true,
+		enemyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
+			const challengersTargeting = traitUnits.filter(unit => unit.target === dead)
+			if (!challengersTargeting.length) {
+				return
+			}
+			const durationSeconds = activeEffect.variables['BurstDuration']
+			const bonusAS = activeEffect.variables['BonusAS']
+			if (durationSeconds == null || bonusAS == null) {
+				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
+			}
+			const bonusMoveSpeed = 500 //TODO determine
+			const expiresAtMS = elapsedMS + durationSeconds * 1000
+			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], ['MoveSpeed' as BonusKey, bonusMoveSpeed, expiresAtMS]))
+		},
+	},
+
 	[TraitKey.Chemtech]: {
 		disableDefaultVariables: true,
 		hpThreshold: (activeEffect, elapsedMS, unit) => {
-			console.log(activeEffect) //TODO
+			const damageReduction = activeEffect.variables[BonusKey.DamageReduction]
+			const durationSeconds = activeEffect.variables['Duration']
+			const attackSpeed = activeEffect.variables[BonusKey.AttackSpeed]
+			const healthRegen = activeEffect.variables['HPRegen']
+			if (durationSeconds == null || attackSpeed == null || damageReduction == null || healthRegen == null) {
+				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
+			}
+			const durationMS = durationSeconds * 1000
+			const expiresAtMS = elapsedMS + durationMS
+			unit.addBonuses(TraitKey.Chemtech, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])
+			unit.scalings.add({
+				source: TraitKey.Chemtech,
+				activatedAtMS: elapsedMS,
+				expiresAfterMS: durationMS,
+				stats: [BonusKey.Health],
+				intervalAmount: healthRegen / 100 * unit.healthMax,
+				intervalSeconds: 1,
+			})
 		},
 	},
 
@@ -91,6 +138,47 @@ export default {
 		},
 	},
 
+	[TraitKey.Enforcer]: {
+		onceForTeam: (activeEffect, teamNumber) => {
+			const detainCount = activeEffect.variables['DetainCount']
+			if (detainCount == null) {
+				return console.log('ERR', TraitKey.Enforcer, activeEffect)
+			}
+			const stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
+			if (detainCount >= 1) {
+				let highestHP = 0
+				let bestUnit: ChampionUnit | undefined
+				stunnableUnits.forEach(unit => {
+					if (unit.healthMax > highestHP) {
+						highestHP = unit.healthMax
+						bestUnit = unit
+					}
+				})
+				if (bestUnit) {
+					applyEnforcerDetain(activeEffect, bestUnit)
+				}
+			}
+			if (detainCount >= 2) { //NOTE option for user to target
+				let highestScore = 0
+				let bestUnit: ChampionUnit | undefined
+				stunnableUnits.forEach(unit => {
+					if (unit.statusEffects.stunned.active) { return }
+					const attackDPS = unit.attackDamage() * unit.attackSpeed()
+					const starCostItems = (unit.data.cost ?? 1) * unit.starMultiplier + Math.pow(unit.items.length, 2)
+					const magicDPSScore = (unit.abilityPower() - 90) / 10
+					const score = starCostItems + attackDPS / 20 + magicDPSScore
+					if (score > highestScore) {
+						highestScore = score
+						bestUnit = unit
+					}
+				})
+				if (bestUnit) {
+					applyEnforcerDetain(activeEffect, bestUnit)
+				}
+			}
+		},
+	},
+
 	[TraitKey.Hextech]: {
 		solo: (unit, activeEffect) => {
 			const shields: ShieldData[] = []
@@ -99,7 +187,7 @@ export default {
 			const damage = activeEffect.variables['MagicDamage']
 			const frequency = activeEffect.variables['Frequency']
 			if (shieldAmount == null || damage == null || durationSeconds == null || frequency == null) {
-				return console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
+				console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
 			} else {
 				const repeatsEveryMS = frequency * 1000
 				shields.push({
@@ -112,6 +200,10 @@ export default {
 			}
 			return { shields }
 		},
+	},
+
+	[TraitKey.Enchanter]: {
+		teamEffect: [BonusKey.MagicResist],
 	},
 
 	[TraitKey.Mutant]: {
@@ -132,7 +224,7 @@ export default {
 					return console.log('ERR', 'No executeThreshold', state.mutantType, activeEffect)
 				}
 				if (target.healthProportion() <= executeThreshold / 100) {
-					target.die()
+					target.die(elapsedMS)
 				} else if (originalSource) {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
@@ -153,14 +245,14 @@ export default {
 					scalings.push(
 						{
 							source: MutantType.Metamorphosis,
-							activatedAt: 0,
+							activatedAtMS: 0,
 							stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
 							intervalAmount: amountADAP,
 							intervalSeconds,
 						},
 						{
 							source: MutantType.Metamorphosis,
-							activatedAt: 0,
+							activatedAtMS: 0,
 							stats: [BonusKey.Armor, BonusKey.MagicResist],
 							intervalAmount: amountARMR,
 							intervalSeconds,
@@ -203,7 +295,7 @@ export default {
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
 					source: TraitKey.Scholar,
-					activatedAt: 0,
+					activatedAtMS: 0,
 					stats: [BonusKey.Mana],
 					intervalAmount,
 					intervalSeconds,
@@ -284,3 +376,13 @@ export default {
 	},
 
 } as { [key in TraitKey]?: TraitFns }
+
+function applyEnforcerDetain(activeEffect: TraitEffectData, unit: ChampionUnit) {
+	const detainSeconds = activeEffect.variables['DetainDuration']
+	const healthPercent = activeEffect.variables['HPPercent']
+	if (detainSeconds == null || healthPercent == null) {
+		return console.log('ERR', TraitKey.Enforcer, activeEffect)
+	}
+	const healthThreshold = unit.health - healthPercent * unit.healthMax
+	unit.applyStatusEffect(0, StatusEffectType.stunned, detainSeconds * 1000, healthThreshold)
+}

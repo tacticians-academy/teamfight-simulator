@@ -2,6 +2,11 @@ import { state } from '#/game/store'
 
 import type { StorageChampion } from '#/helpers/types'
 
+export function clearUnits() {
+	state.units = []
+	window.localStorage.setItem('TFTSIM_units', '')
+}
+
 export function saveUnits() {
 	const output: StorageChampion[] = state.units
 		.map(unit => ({
@@ -10,7 +15,9 @@ export function saveUnits() {
 			starLevel: unit.starLevel,
 			items: unit.items.map(item => item.id),
 		}))
-	window.localStorage.setItem('TFTSIM_units', JSON.stringify(output))
+	if (output.length) {
+		window.localStorage.setItem('TFTSIM_units', JSON.stringify(output))
+	}
 }
 
 export const enum StorageKey {

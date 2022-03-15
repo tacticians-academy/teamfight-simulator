@@ -4,9 +4,17 @@ import DisplayTrait from '#/components/Sidebar/DisplayTrait.vue'
 import { useStore } from '#/game/store'
 
 import { getTeamName } from '#/helpers/boardUtils'
+import { clearUnits } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 
 const { getters: { synergiesByTeam }, state } = useStore()
+
+function onReset() {
+	const confirmed = window.confirm('Clear all units from board?')
+	if (confirmed) {
+		clearUnits()
+	}
+}
 </script>
 
 <template>
@@ -25,18 +33,23 @@ const { getters: { synergiesByTeam }, state } = useStore()
 					<option v-for="type in MutantType" :key="type">{{ type }}</option>
 				</select>
 			</div>
+			<div v-if="!state.isRunning && state.units.length">
+				<button class="px-3 h-8 my-2 bg-quaternary rounded-full" @click.prevent="onReset">Reset board...</button>
+			</div>
 		</fieldset>
 	</form>
-	<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
-		<div class="font-semibold">Team {{ getTeamName(teamIndex) }}</div>
-		<div v-for="[trait, style, currentEffect, unitNames] in teamSynergies" :key="trait.name">
-			<DisplayTrait v-if="style > 0" :trait="trait" :activeStyle="style" :activeEffect="currentEffect" :units="unitNames" />
+	<template v-if="state.units.length">
+		<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
+			<div class="font-semibold">Team {{ getTeamName(teamIndex) }}</div>
+			<div v-for="{ key, trait, activeStyle, activeEffect, uniqueUnitNames } in teamSynergies" :key="key">
+				<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="uniqueUnitNames" />
+			</div>
+			<div class="text-secondary text-sm">
+				<template v-for="{ key, trait, activeStyle } in teamSynergies" :key="key">
+					<span v-if="activeStyle === 0">{{ trait.name }}, </span>
+				</template>
+			</div>
 		</div>
-		<div class="text-secondary text-sm">
-			<template v-for="[trait, style] in teamSynergies" :key="trait.name">
-				<span v-if="style === 0">{{ trait.name }}, </span>
-			</template>
-		</div>
-	</div>
+	</template>
 </div>
 </template>

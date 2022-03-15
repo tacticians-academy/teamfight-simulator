@@ -1,32 +1,39 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
-import type { ChampionUnit } from '#/game/ChampionUnit'
+import { ChampionUnit } from '#/game/ChampionUnit'
+import { needsPathfindingUpdate } from '#/game/pathfind'
 import { activatedCheck, state } from '#/game/store'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { getClosesUnitOfTeamTo, getInverseHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
 
+const BURN_ID = 'BURN'
+
 interface ItemFns {
-	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => EffectResults,
-	apply?: (item: ItemData, unit: ChampionUnit) => EffectResults,
+	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
+	apply?: (item: ItemData, unit: ChampionUnit) => void
 	disableDefaultVariables?: true | BonusKey[]
-	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults,
-	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => EffectResults,
+	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
+	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	modifyDamageByHolder?: (item: ItemData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
 	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
+	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 }
 
-function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
-	const activatedAtMS = activatedCheck[itemID]
+function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
+	const checkKey = unit.instanceID + itemID
+	const activatedAtMS = activatedCheck[checkKey]
 	const itemCooldownSeconds = item.effects[cooldownKey]
 	if (itemCooldownSeconds == null) {
 		console.log('ERR icd', item.name, item.effects)
@@ -35,7 +42,7 @@ function checkCooldown(elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: s
 	if (activatedAtMS != null && elapsedMS < activatedAtMS + itemCooldownSeconds * 1000) {
 		return false
 	}
-	activatedCheck[itemID] = elapsedMS
+	activatedCheck[checkKey] = elapsedMS
 	return instantlyApplies ? true : activatedAtMS != null
 }
 
@@ -48,14 +55,14 @@ export default {
 			const intervalSeconds = item.effects['IntervalSeconds']
 			if (intervalAmount != null && intervalSeconds != null) {
 				scalings.push({
-					activatedAt: 0,
+					activatedAtMS: 0,
 					source: item.name,
 					stats: [BonusKey.AbilityPower],
 					intervalAmount,
 					intervalSeconds,
 				})
 			} else {
-				return console.log('ERR', item.name, item.effects)
+				console.log('ERR', item.name, item.effects)
 			}
 			return { scalings }
 		},
@@ -91,12 +98,12 @@ export default {
 
 	[ItemKey.BrambleVest]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, item, itemID, true)) {
+			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, target, item, itemID, true)) {
 				const aoeDamage = item.effects[`${target.starLevel}StarAoEDamage`]
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				target.getUnitsWithin(1, target.opposingTeam()).forEach(unit => {
+				target.getInteractableUnitsWithin(1, target.opposingTeam()).forEach(unit => {
 					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
 					unit.damage(elapsedMS, false, target, DamageSourceType.item, damageCalculation, true)
 				})
@@ -116,7 +123,7 @@ export default {
 
 	[ItemKey.DragonsClaw]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, item, itemID, true)) {
+			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, target, item, itemID, true)) {
 				target.queueProjectile(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
@@ -134,11 +141,11 @@ export default {
 		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
 		hpThreshold: (elapsedMS, item, itemID, unit) => {
 			const attackSpeed = item.effects[BonusKey.AttackSpeed]
-			const stealthDuration = item.effects['StealthDuration']
-			if (attackSpeed == null || stealthDuration == null) {
+			const stealthSeconds = item.effects['StealthDuration']
+			if (attackSpeed == null || stealthSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			const stealthMS = stealthDuration * 1000
+			const stealthMS = stealthSeconds * 1000
 			const negativeEffects = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds]
 			negativeEffects.forEach(statusEffect => unit.statusEffects[statusEffect].active = false)
 			unit.applyStatusEffect(elapsedMS, StatusEffectType.stealth, stealthMS)
@@ -154,7 +161,7 @@ export default {
 			if (hexRadius == null || slowAS == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			const affectedUnits = unit.getUnitsWithin(hexRadius, unit.opposingTeam())
+			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, slowAS))
 		},
 	},
@@ -204,16 +211,16 @@ export default {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 				const baseHeal = item.effects['BaseHeal']
-				const increaseEffect = item.effects['AdditionalAP'] //TODO renamed
+				const increaseEffect = item.effects['AdditionalHeal']
 				if (baseHeal == null || increaseEffect == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				source.gainHealth(elapsedMS, takingDamage * (baseHeal + increaseEffect / 2) / 100) //TODO averaged increaseEffect
+				source.gainHealth(elapsedMS, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
 			const variables: BonusVariable[] = []
-			const increaseEffect = item.effects['AdditionalAD'] //TODO renamed
+			const increaseEffect = item.effects['AdditionalADAP']
 			if (increaseEffect != null) {
 				const increase = increaseEffect / 2 //TODO averaged increaseEffect
 				variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])
@@ -240,9 +247,31 @@ export default {
 					}
 				})
 				if (lowestUnit) {
-					lowestUnit.gainHealth(elapsedMS, takingDamage * hextechHeal / 100)
+					lowestUnit.gainHealth(elapsedMS, takingDamage * hextechHeal / 100, true)
 				}
 			}
+		},
+	},
+
+	[ItemKey.IonicSpark]: {
+		update: (elapsedMS, item, itemID, unit) => {
+			const mrShred = item.effects['MRShred']
+			const hexRadius = item.effects['HexRange']
+			const durationSeconds = 0.25 //NOTE hardcoded
+			if (hexRadius == null || mrShred == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
+			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, durationSeconds * 1000, mrShred / 100))
+		},
+		castWithinHexRange: (elapsedMS, item, itemID, caster, holder) => {
+			if (caster.team === holder.team) { return }
+			const manaRatio = item.effects['ManaRatio']
+			if (manaRatio == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const damageCalculation = createDamageCalculation(item.name, manaRatio / 100 * caster.manaMax(), DamageType.magic)
+			caster.damage(elapsedMS, false, holder, DamageSourceType.item, damageCalculation, false)
 		},
 	},
 
@@ -261,14 +290,14 @@ export default {
 	[ItemKey.LocketOfTheIronSolari]: {
 		adjacentHexBuff: (item, unit, adjacentUnits) => {
 			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
-			const shieldDuration = item.effects['ShieldDuration']
-			if (shieldValue == null || shieldDuration == null) {
+			const shieldSeconds = item.effects['ShieldDuration']
+			if (shieldValue == null || shieldSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			adjacentUnits.push(unit)
 			adjacentUnits.forEach(unit => unit.shields.push({
 				amount: shieldValue,
-				expiresAtMS: shieldDuration * 1000,
+				expiresAtMS: shieldSeconds * 1000,
 			}))
 		},
 	},
@@ -276,48 +305,11 @@ export default {
 	[ItemKey.Morellonomicon]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (originalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
-				const grievousWounds = item.effects['GrievousWoundsPercent']
-				const totalBurn = item.effects['BurnPercent']
-				const durationSeconds = item.effects['BurnDuration']
 				const ticksPerSecond = item.effects['TicksPerSecond']
-				if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
+				if (ticksPerSecond == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
-
-				const sourceID = 'BURN'
-				const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === sourceID)
-				const repeatsEverySeconds = 1 / ticksPerSecond
-				const repeatsEveryMS = repeatsEverySeconds * 1000
-				const tickCount = durationSeconds / repeatsEverySeconds
-				const damage = totalBurn / tickCount / 100
-				const damageCalculation = createDamageCalculation(sourceID, damage, DamageType.true, BonusKey.Health, 1)
-				if (existing) {
-					existing.remainingIterations = tickCount
-					existing.damageCalculation = damageCalculation
-					existing.source = source
-					existing.repeatsEveryMS = repeatsEveryMS
-				} else {
-					target.bleeds.add({
-						sourceID,
-						source,
-						damageCalculation,
-						activatesAtMS: elapsedMS + repeatsEveryMS,
-						repeatsEveryMS,
-						remainingIterations: tickCount,
-					})
-				}
-			}
-		},
-	},
-
-	[ItemKey.TitansResolve]: {
-		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
-			applyTitansResolve(item, itemID, source)
-		},
-		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource) {
-				applyTitansResolve(item, itemID, target)
+				applyGrievousBurn(item, elapsedMS, target, source, ticksPerSecond)
 			}
 		},
 	},
@@ -325,12 +317,12 @@ export default {
 	[ItemKey.Quicksilver]: {
 		apply: (item, unit) => {
 			const shields: ShieldData[] = []
-			const shieldDuration = item.effects['SpellShieldDuration']
-			if (shieldDuration != null) {
+			const shieldSeconds = item.effects['SpellShieldDuration']
+			if (shieldSeconds != null) {
 				shields.push({
 					isSpellShield: true,
 					amount: 0, //TODO does not break
-					expiresAtMS: shieldDuration * 1000,
+					expiresAtMS: shieldSeconds * 1000,
 				})
 			} else {
 				return console.log('ERR', item.name, item.effects)
@@ -341,7 +333,7 @@ export default {
 
 	[ItemKey.Redemption]: {
 		update: (elapsedMS, item, itemID, unit) => {
-			if (checkCooldown(elapsedMS, item, itemID, true, 'HealTickRate')) {
+			if (checkCooldown(elapsedMS, unit, item, itemID, true, 'HealTickRate')) {
 				const aoeDamageReduction = item.effects['AoEDamageReduction']
 				const missingHPHeal = item.effects['MissingHPHeal']
 				const maxHeal = item.effects['MaxHeal']
@@ -367,6 +359,105 @@ export default {
 		},
 	},
 
+	[ItemKey.RunaansHurricane]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			const boltCount = item.effects['AdditionalTargets']
+			const damageMultiplier = item.effects['MultiplierForDamage']
+			if (boltCount == null || damageMultiplier == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const additionalTargets = getNearestAttackableEnemies(source, [...state.units].filter(unit => unit !== target), 99, boltCount)
+			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, damageMultiplier / 100)
+			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
+				const target = additionalTargets[boltIndex]
+				if (target == null) { continue }
+				source.queueProjectile(elapsedMS, undefined, {
+					startsAfterMS: 0,
+					missile: {
+						speedInitial: 1000, //TODO determine
+					},
+					sourceType: DamageSourceType.attack,
+					target,
+					damageCalculation,
+				})
+			}
+		},
+	},
+
+	[ItemKey.StatikkShiv]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			if (!source.isNthBasicAttack(3)) { return }
+			const totalUnits = item.effects[`${target.starLevel}StarBounces`]
+			const damage = item.effects['Damage']
+			const shredDurationSeconds = item.effects['MRShredDuration']
+			const mrShred = item.effects['MRShred']
+			if (totalUnits == null || damage == null || shredDurationSeconds == null || mrShred == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const units: ChampionUnit[] = []
+			let currentBounceTarget = target
+			const team = source.opposingTeam()
+			while (units.length < totalUnits) {
+				units.push(currentBounceTarget)
+				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, [...state.units].filter(unit => !units.includes(unit)))
+				if (!newTarget) { break }
+				currentBounceTarget = newTarget
+			}
+			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)
+			units.forEach(unit => {
+				unit.damage(elapsedMS, false, source, DamageSourceType.item, damageCalculation, true)
+				unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, shredDurationSeconds * 1000, mrShred / 100)
+			})
+		},
+	},
+
+	[ItemKey.SunfireCape]: {
+		update: (elapsedMS, item, itemID, holder) => {
+			if (checkCooldown(elapsedMS, holder, item, itemID, true)) {
+				const hexRange = item.effects['HexRange']
+				if (hexRange == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				const units = holder.getInteractableUnitsWithin(hexRange, holder.opposingTeam())
+				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === BURN_ID))
+				let bestTarget: ChampionUnit | undefined
+				if (bestTargets.length) {
+					let closestDistance = Number.MAX_SAFE_INTEGER
+					bestTargets.forEach(unit => {
+						const hexDistance = unit.hexDistanceTo(holder)
+						if (hexDistance < closestDistance) {
+							closestDistance = hexDistance
+							bestTarget = unit
+						}
+					})
+				} else {
+					let fewestRemainingBleeds = Number.MAX_SAFE_INTEGER
+					units.forEach(unit => {
+						const remainingBleeds = Array.from(unit.bleeds).find(bleed => bleed.sourceID === BURN_ID)!.remainingIterations
+						if (remainingBleeds < fewestRemainingBleeds) {
+							fewestRemainingBleeds = remainingBleeds
+							bestTarget = unit
+						}
+					})
+				}
+				if (bestTarget) {
+					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified
+				}
+			}
+		},
+	},
+
+	[ItemKey.TitansResolve]: {
+		basicAttack: (elapsedMS, item, itemID, target, source, canReProc) => {
+			applyTitansResolve(item, itemID, source)
+		},
+		damageTaken: (elapsedMS, item, itemID, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (originalSource) {
+				applyTitansResolve(item, itemID, target)
+			}
+		},
+	},
+
 	[ItemKey.ZekesHerald]: {
 		adjacentHexBuff: (item, unit, adjacentUnits) => {
 			const bonusAS = item.effects['AS']
@@ -379,14 +470,41 @@ export default {
 
 	[ItemKey.Zephyr]: {
 		apply: (item, unit) => {
-			const banishDuration = item.effects['BanishDuration']
-			if (banishDuration == null) {
+			const banishSeconds = item.effects['BanishDuration']
+			if (banishSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const targetHex = getInverseHex(unit.startHex)
-			const target = getClosesUnitOfTeamTo(targetHex, unit.opposingTeam(), state.units) //TODO not random
+			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined, state.units) //TODO not random
 			if (target) {
-				target.banishUntil(banishDuration * 1000)
+				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
+			}
+		},
+	},
+
+	[ItemKey.ZzRotPortal]: {
+		apply: (item, unit) => {
+			unit.queueHexEffect(0, undefined, {
+				startsAfterMS: 4100, //TODO determine
+				hexDistanceFromSource: 1, //TODO pathing to target is not yet supported
+				damageMultiplier: 0.5,
+				taunts: true,
+			})
+		},
+		deathOfHolder: (elapsedMS, item, itemID, unit) => {
+			const hex = getClosestHexAvailableTo(unit.activeHex, state.units)
+			if (hex) {
+				const voidling = new ChampionUnit(ChampionKey.VoidSpawn, hex, 1)
+				voidling.reset([[], []])
+				voidling.team = unit.team
+				state.units.push(voidling)
+				needsPathfindingUpdate()
+				voidling.queueHexEffect(elapsedMS, undefined, {
+					startsAfterMS: 500,
+					hexDistanceFromSource: 1,
+					damageMultiplier: 0.5,
+					taunts: true,
+				})
 			}
 		},
 	},
@@ -409,5 +527,37 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 			variables.push([BonusKey.Armor, resistsAtCap], [BonusKey.MagicResist, resistsAtCap])
 		}
 		unit.addBonuses(itemID, ...variables)
+	}
+}
+
+function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, ticksPerSecond: number) {
+	const grievousWounds = item.effects['GrievousWoundsPercent']
+	const totalBurn = item.effects['BurnPercent']
+	const durationSeconds = item.effects['BurnDuration']
+	if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
+		return console.log('ERR', item.name, item.effects)
+	}
+	target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
+
+	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === BURN_ID)
+	const repeatsEverySeconds = 1 / ticksPerSecond
+	const repeatsEveryMS = repeatsEverySeconds * 1000
+	const tickCount = durationSeconds / repeatsEverySeconds
+	const damage = totalBurn / tickCount / 100
+	const damageCalculation = createDamageCalculation(BURN_ID, damage, DamageType.true, BonusKey.Health, 1)
+	if (existing) {
+		existing.remainingIterations = tickCount
+		existing.damageCalculation = damageCalculation
+		existing.source = source
+		existing.repeatsEveryMS = repeatsEveryMS
+	} else {
+		target.bleeds.add({
+			sourceID: BURN_ID,
+			source,
+			damageCalculation,
+			activatesAtMS: elapsedMS + repeatsEveryMS,
+			repeatsEveryMS,
+			remainingIterations: tickCount,
+		})
 	}
 }
