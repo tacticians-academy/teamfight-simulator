@@ -79,9 +79,18 @@ export default {
 
 	[ChampionKey.Zyra]: {
 		cast: (elapsedMS, spell, champion) => {
+			const stunSeconds = champion.getSpellVariable(SpellKey.StunDuration)
+			if (stunSeconds == null) {
+				return console.log('ERR', champion.name, spell.name, spell.variables)
+			}
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getRowOfMostAttackable(champion.opposingTeam()),
-				stunSeconds: champion.getSpellVariable(SpellKey.StunDuration),
+				statusEffects: {
+					stunned: {
+						durationMS: stunSeconds * 1000,
+						amount: 1,
+					},
+				},
 			})
 		},
 	},

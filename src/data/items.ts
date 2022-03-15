@@ -141,11 +141,11 @@ export default {
 		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
 		hpThreshold: (elapsedMS, item, itemID, unit) => {
 			const attackSpeed = item.effects[BonusKey.AttackSpeed]
-			const stealthDuration = item.effects['StealthDuration']
-			if (attackSpeed == null || stealthDuration == null) {
+			const stealthSeconds = item.effects['StealthDuration']
+			if (attackSpeed == null || stealthSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
-			const stealthMS = stealthDuration * 1000
+			const stealthMS = stealthSeconds * 1000
 			const negativeEffects = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds]
 			negativeEffects.forEach(statusEffect => unit.statusEffects[statusEffect].active = false)
 			unit.applyStatusEffect(elapsedMS, StatusEffectType.stealth, stealthMS)
@@ -290,14 +290,14 @@ export default {
 	[ItemKey.LocketOfTheIronSolari]: {
 		adjacentHexBuff: (item, unit, adjacentUnits) => {
 			const shieldValue = item.effects[`${unit.starLevel}StarShieldValue`]
-			const shieldDuration = item.effects['ShieldDuration']
-			if (shieldValue == null || shieldDuration == null) {
+			const shieldSeconds = item.effects['ShieldDuration']
+			if (shieldValue == null || shieldSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			adjacentUnits.push(unit)
 			adjacentUnits.forEach(unit => unit.shields.push({
 				amount: shieldValue,
-				expiresAtMS: shieldDuration * 1000,
+				expiresAtMS: shieldSeconds * 1000,
 			}))
 		},
 	},
@@ -317,12 +317,12 @@ export default {
 	[ItemKey.Quicksilver]: {
 		apply: (item, unit) => {
 			const shields: ShieldData[] = []
-			const shieldDuration = item.effects['SpellShieldDuration']
-			if (shieldDuration != null) {
+			const shieldSeconds = item.effects['SpellShieldDuration']
+			if (shieldSeconds != null) {
 				shields.push({
 					isSpellShield: true,
 					amount: 0, //TODO does not break
-					expiresAtMS: shieldDuration * 1000,
+					expiresAtMS: shieldSeconds * 1000,
 				})
 			} else {
 				return console.log('ERR', item.name, item.effects)
@@ -470,14 +470,14 @@ export default {
 
 	[ItemKey.Zephyr]: {
 		apply: (item, unit) => {
-			const banishDuration = item.effects['BanishDuration']
-			if (banishDuration == null) {
+			const banishSeconds = item.effects['BanishDuration']
+			if (banishSeconds == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const targetHex = getInverseHex(unit.startHex)
 			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined, state.units) //TODO not random
 			if (target) {
-				target.banishUntil(banishDuration * 1000)
+				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
 			}
 		},
 	},

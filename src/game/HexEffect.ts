@@ -29,8 +29,6 @@ export interface HexEffectData {
 	damageIncrease?: number
 	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
-	/** Stuns affected units. */
-	stunSeconds?: number
 	/** Taunts affected units to the source unit. */
 	taunts?: boolean
 	/** Callback for each unit the HexEffect applies to. */
@@ -55,7 +53,6 @@ export class HexEffect {
 	damageMultiplier?: number
 	damageIncrease?: number
 	damageSourceType?: DamageSourceType
-	stunMS: number | null
 	taunts: boolean
 	onCollision?: CollisionFn
 
@@ -76,7 +73,6 @@ export class HexEffect {
 		this.damageMultiplier = data.damageMultiplier
 		this.damageIncrease = data.damageIncrease
 		this.damageSourceType = data.damageSourceType
-		this.stunMS = data.stunSeconds != null ? data.stunSeconds * 1000 : null
 		this.taunts = data.taunts ?? false
 		this.onCollision = data.onCollision
 	}
@@ -100,9 +96,6 @@ export class HexEffect {
 			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, this.damageMultiplier)
 		}
 		if (spellShield == null) {
-			if (this.stunMS != null) {
-				unit.stunnedUntilMS = Math.max(unit.stunnedUntilMS, elapsedMS + this.stunMS)
-			}
 			this.onCollision?.(elapsedMS, unit)
 			if (this.statusEffects) {
 				for (const key in this.statusEffects) {

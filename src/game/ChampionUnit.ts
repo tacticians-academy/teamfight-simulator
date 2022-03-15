@@ -54,14 +54,11 @@ export class ChampionUnit {
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
 	collides = true
-	interacts = true
 
-	banishUntilMS: DOMHighResTimeStamp | null = null
 	cachedTargetDistance = 0
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moveUntilMS: DOMHighResTimeStamp = 0
 	manaLockUntilMS: DOMHighResTimeStamp = 0
-	stunnedUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
 	activeSynergies: SynergyData[] = []
@@ -124,11 +121,8 @@ export class ChampionUnit {
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
 		this.manaLockUntilMS = 0
-		this.stunnedUntilMS = 0
 		const jumpToBackline = this.jumpsToBackline()
 		this.collides = !jumpToBackline
-		this.interacts = true
-		this.banishUntilMS = 0
 		this.basicAttackCount = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activeHex[1]
@@ -403,17 +397,14 @@ export class ChampionUnit {
 		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
-	banishUntil(ms: DOMHighResTimeStamp | null) {
-		const banishing = ms != null
-		this.interacts = !banishing
-		this.banishUntilMS = ms ?? null
+	canAttack() {
+		return this.range() > 0 && !this.statusEffects.stunned.active
 	}
-
 	isAttackable() {
 		return this.isInteractable() && !this.statusEffects.stealth.active
 	}
 	isInteractable() {
-		return !this.dead && this.interacts
+		return !this.dead && !this.statusEffects.banished.active
 	}
 	hasCollision() {
 		return !this.dead && this.collides

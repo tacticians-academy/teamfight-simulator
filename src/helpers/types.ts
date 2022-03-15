@@ -91,9 +91,11 @@ export enum StatusEffectType {
 	aoeDamageReduction = 'aoeDamageReduction',
 	armorReduction = 'armorReduction',
 	attackSpeedSlow = 'attackSpeedSlow',
+	banished = 'banished',
 	grievousWounds = 'grievousWounds',
 	magicResistReduction = 'magicResistReduction',
 	stealth = 'stealth',
+	stunned = 'stunned',
 }
 
 export interface StatusEffectData {

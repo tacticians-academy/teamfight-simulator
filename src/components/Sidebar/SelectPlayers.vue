@@ -29,8 +29,8 @@ const { getters: { synergiesByTeam }, state } = useStore()
 	</form>
 	<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
 		<div class="font-semibold">Team {{ getTeamName(teamIndex) }}</div>
-		<div v-for="[trait, style, currentEffect, unitNames] in teamSynergies" :key="trait.name">
-			<DisplayTrait v-if="style > 0" :trait="trait" :activeStyle="style" :activeEffect="currentEffect" :units="unitNames" />
+		<div v-for="[trait, style, activeEffect, unitNames] in teamSynergies" :key="trait.name">
+			<DisplayTrait v-if="style > 0" :trait="trait" :activeStyle="style" :activeEffect="activeEffect" :units="unitNames" />
 		</div>
 		<div class="text-secondary text-sm">
 			<template v-for="[trait, style] in teamSynergies" :key="trait.name">

@@ -32,7 +32,7 @@ function nearestAvailableRecursive(hex: HexCoord, unitHexes: HexCoord[]): HexCoo
 	return null
 }
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitHexes = units.filter(unit => unit.interacts && unit.hasCollision()).map(unit => unit.activeHex)
+	const unitHexes = units.filter(unit => unit.isInteractable() && unit.hasCollision()).map(unit => unit.activeHex)
 	return nearestAvailableRecursive(startHex, unitHexes)
 }
 

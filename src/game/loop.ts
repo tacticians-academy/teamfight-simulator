@@ -76,16 +76,13 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		unit.updateRegen(elapsedMS)
 		unit.updateShields(elapsedMS)
 		unit.updateStatusEffects(elapsedMS)
-		if (unit.banishUntilMS != null && unit.banishUntilMS <= elapsedMS) {
-			unit.banishUntil(null)
-		}
 		unit.items.forEach((item, index) => {
 			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
 	}
 
 	for (const unit of state.units) {
-		if (unit.dead || unit.isMoving(elapsedMS) || unit.range() <= 0 || unit.stunnedUntilMS > elapsedMS || !unit.interacts) {
+		if (!unit.isInteractable() || unit.isMoving(elapsedMS) || !unit.canAttack()) {
 			continue
 		}
 
