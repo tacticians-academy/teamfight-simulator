@@ -610,8 +610,6 @@ export class ChampionUnit {
 				if (damageReduction != null) {
 					if (damageReduction === 100) {
 						this.health = this.healthMax * hpThreshold / 100
-					} else {
-						console.log('ERR', uniqueID, effects, BonusKey.DamageReduction)
 					}
 				}
 				return true

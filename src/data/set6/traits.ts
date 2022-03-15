@@ -99,7 +99,7 @@ export default {
 			const damage = activeEffect.variables['MagicDamage']
 			const frequency = activeEffect.variables['Frequency']
 			if (shieldAmount == null || damage == null || durationSeconds == null || frequency == null) {
-				return console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
+				console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
 			} else {
 				const repeatsEveryMS = frequency * 1000
 				shields.push({
