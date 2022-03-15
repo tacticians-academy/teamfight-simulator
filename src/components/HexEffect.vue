@@ -17,16 +17,9 @@ const maxOpacity = props.hexEffect.damageMultiplier ?? 1
 <div :style="{ opacity: hexEffect.activated ? maxOpacity : maxOpacity / 3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
 	<div v-for="[col, row] in hexPositions" :key="`${row},${col}`">
 		<div
-			class="hex" :class="hexEffect.source.team === 0 ? 'team-a' : 'team-b'"
+			class="hex hex-overlay  absolute z-10" :class="hexEffect.source.team === 0 ? 'team-a' : 'team-b'"
 			:style="{ left: `${col * 100}%`, top: `${row * 100}%` }"
 		/>
 	</div>
 </div>
 </template>
-
-<style scoped lang="postcss">
-.hex {
-	@apply absolute z-10;
-	transform: translate(-50%, -50%);
-}
-</style>

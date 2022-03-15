@@ -16,9 +16,9 @@ import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
-import { buildBoard, getAdjacentRowUnitsTo } from '#/helpers/boardUtils'
+import { buildBoard, getAdjacentRowUnitsTo, isSameHex } from '#/helpers/boardUtils'
 import { synergiesByTeam } from '#/helpers/bonuses'
-import { getSavedUnits, getStorageInt, getStorageString, saveUnits, setStorage, StorageKey } from '#/helpers/storage'
+import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
@@ -35,6 +35,8 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
+
+	socialiteHexes: (getStorageJSON(StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
 	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
 	mutantType: ref((getStorageString(StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
 })
@@ -318,4 +320,16 @@ export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
 	state.hexEffects.clear()
 	cancelLoop()
+}
+
+export function setSocialiteHex(index: number, hex: HexCoord | null) {
+	if (hex) {
+		state.socialiteHexes.forEach((existingSocialiteHex, index) => {
+			if (existingSocialiteHex && isSameHex(existingSocialiteHex, hex)) {
+				state.socialiteHexes[index] = null
+			}
+		})
+	}
+	state.socialiteHexes[index] = hex
+	setStorageJSON(StorageKey.SocialiteHexes, state.socialiteHexes)
 }
