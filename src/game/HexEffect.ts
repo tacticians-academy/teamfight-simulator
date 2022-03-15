@@ -81,6 +81,15 @@ export class HexEffect {
 		this.onCollision = data.onCollision
 	}
 
+	start() {
+		if (!this.hexes) {
+			const sourceHex = this.source.activeHex
+			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
+			hexes.push(sourceHex)
+			this.hexes = hexes
+		}
+	}
+
 	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
 		const spellShield = unit.consumeSpellShield()
 		if (this.damageCalculation != null) {
@@ -116,12 +125,6 @@ export class HexEffect {
 		}
 		this.activated = true
 		const targetingUnits = this.targetTeam == null ? units : units.filter(unit => unit.team === this.targetTeam)
-		if (!this.hexes) {
-			const sourceHex = this.source.activeHex
-			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
-			hexes.push(sourceHex)
-			this.hexes = hexes
-		}
 		for (const unit of targetingUnits.filter(unit => unit.isInteractable() && unit.isIn(this.hexes!))) {
 			this.apply(elapsedMS, unit)
 		}
