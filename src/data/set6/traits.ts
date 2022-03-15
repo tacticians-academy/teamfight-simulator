@@ -78,7 +78,7 @@ export default {
 			}
 			const bonusMoveSpeed = 500 //TODO determine
 			const expiresAtMS = elapsedMS + durationSeconds * 1000
-			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], ['MoveSpeed' as BonusKey, bonusMoveSpeed, expiresAtMS]))
+			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], [BonusKey.MoveSpeed, bonusMoveSpeed, expiresAtMS]))
 		},
 	},
 
