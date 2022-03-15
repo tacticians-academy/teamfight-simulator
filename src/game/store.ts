@@ -8,6 +8,7 @@ import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import itemEffects from '#/data/items'
+import traitEffects from '#/data/set6/traits'
 
 import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
@@ -118,6 +119,12 @@ function resetUnitsAfterCreatingOrMoving() {
 					}
 				}
 			}
+		})
+	})
+	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
+		teamSynergies.forEach(([trait, style, activeEffect, unitNames]) => {
+			if (!activeEffect) { return }
+			traitEffects[trait.name as TraitKey]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber)
 		})
 	})
 }

@@ -10,7 +10,9 @@ export function saveUnits() {
 			starLevel: unit.starLevel,
 			items: unit.items.map(item => item.id),
 		}))
-	window.localStorage.setItem('TFTSIM_units', JSON.stringify(output))
+	if (output.length) {
+		window.localStorage.setItem('TFTSIM_units', JSON.stringify(output))
+	}
 }
 
 export const enum StorageKey {
