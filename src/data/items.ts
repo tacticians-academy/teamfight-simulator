@@ -250,6 +250,28 @@ export default {
 		},
 	},
 
+	[ItemKey.IonicSpark]: {
+		update: (elapsedMS, item, itemID, unit) => {
+			const mrShred = item.effects['MRShred']
+			const hexRadius = item.effects['HexRange']
+			const durationSeconds = 0.25 //NOTE hardcoded
+			if (hexRadius == null || mrShred == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
+			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, durationSeconds * 1000, mrShred / 100))
+		},
+		castWithinHexRange: (elapsedMS, item, itemID, caster, holder) => {
+			if (caster.team === holder.team) { return }
+			const manaRatio = item.effects['ManaRatio']
+			if (manaRatio == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const damageCalculation = createDamageCalculation(item.name, manaRatio / 100 * caster.manaMax(), DamageType.magic)
+			caster.damage(elapsedMS, false, holder, DamageSourceType.item, damageCalculation, false)
+		},
+	},
+
 	[ItemKey.LastWhisper]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			//TODO official implementation applies on critical strikes, this applies after any attack (since crits are averaged)
