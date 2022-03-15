@@ -14,6 +14,8 @@ import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
 
+const BURN_ID = 'BURN'
+
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void,
 	apply?: (item: ItemData, unit: ChampionUnit) => void
@@ -302,37 +304,11 @@ export default {
 	[ItemKey.Morellonomicon]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (originalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
-				const grievousWounds = item.effects['GrievousWoundsPercent']
-				const totalBurn = item.effects['BurnPercent']
-				const durationSeconds = item.effects['BurnDuration']
 				const ticksPerSecond = item.effects['TicksPerSecond']
-				if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
+				if (ticksPerSecond == null) {
 					return console.log('ERR', item.name, item.effects)
 				}
-				target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
-
-				const sourceID = 'BURN'
-				const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === sourceID)
-				const repeatsEverySeconds = 1 / ticksPerSecond
-				const repeatsEveryMS = repeatsEverySeconds * 1000
-				const tickCount = durationSeconds / repeatsEverySeconds
-				const damage = totalBurn / tickCount / 100
-				const damageCalculation = createDamageCalculation(sourceID, damage, DamageType.true, BonusKey.Health, 1)
-				if (existing) {
-					existing.remainingIterations = tickCount
-					existing.damageCalculation = damageCalculation
-					existing.source = source
-					existing.repeatsEveryMS = repeatsEveryMS
-				} else {
-					target.bleeds.add({
-						sourceID,
-						source,
-						damageCalculation,
-						activatesAtMS: elapsedMS + repeatsEveryMS,
-						repeatsEveryMS,
-						remainingIterations: tickCount,
-					})
-				}
+				applyGrievousBurn(item, elapsedMS, target, source, ticksPerSecond)
 			}
 		},
 	},
@@ -444,6 +420,42 @@ export default {
 		},
 	},
 
+	[ItemKey.SunfireCape]: {
+		update: (elapsedMS, item, itemID, holder) => {
+			if (checkCooldown(elapsedMS, item, itemID, true)) {
+				const hexRange = item.effects['HexRange']
+				if (hexRange == null) {
+					return console.log('ERR', item.name, item.effects)
+				}
+				const units = holder.getInteractableUnitsWithin(hexRange, holder.opposingTeam())
+				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === BURN_ID))
+				let bestTarget: ChampionUnit | undefined
+				if (bestTargets.length) {
+					let closestDistance = Number.MAX_SAFE_INTEGER
+					bestTargets.forEach(unit => {
+						const hexDistance = unit.hexDistanceTo(holder)
+						if (hexDistance < closestDistance) {
+							closestDistance = hexDistance
+							bestTarget = unit
+						}
+					})
+				} else {
+					let fewestRemainingBleeds = Number.MAX_SAFE_INTEGER
+					units.forEach(unit => {
+						const remainingBleeds = Array.from(unit.bleeds).find(bleed => bleed.sourceID === BURN_ID)!.remainingIterations
+						if (remainingBleeds < fewestRemainingBleeds) {
+							fewestRemainingBleeds = remainingBleeds
+							bestTarget = unit
+						}
+					})
+				}
+				if (bestTarget) {
+					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified
+				}
+			}
+		},
+	},
+
 	[ItemKey.ZekesHerald]: {
 		adjacentHexBuff: (item, unit, adjacentUnits) => {
 			const bonusAS = item.effects['AS']
@@ -499,5 +511,37 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 			variables.push([BonusKey.Armor, resistsAtCap], [BonusKey.MagicResist, resistsAtCap])
 		}
 		unit.addBonuses(itemID, ...variables)
+	}
+}
+
+function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, ticksPerSecond: number) {
+	const grievousWounds = item.effects['GrievousWoundsPercent']
+	const totalBurn = item.effects['BurnPercent']
+	const durationSeconds = item.effects['BurnDuration']
+	if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
+		return console.log('ERR', item.name, item.effects)
+	}
+	target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
+
+	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === BURN_ID)
+	const repeatsEverySeconds = 1 / ticksPerSecond
+	const repeatsEveryMS = repeatsEverySeconds * 1000
+	const tickCount = durationSeconds / repeatsEverySeconds
+	const damage = totalBurn / tickCount / 100
+	const damageCalculation = createDamageCalculation(BURN_ID, damage, DamageType.true, BonusKey.Health, 1)
+	if (existing) {
+		existing.remainingIterations = tickCount
+		existing.damageCalculation = damageCalculation
+		existing.source = source
+		existing.repeatsEveryMS = repeatsEveryMS
+	} else {
+		target.bleeds.add({
+			sourceID: BURN_ID,
+			source,
+			damageCalculation,
+			activatesAtMS: elapsedMS + repeatsEveryMS,
+			repeatsEveryMS,
+			remainingIterations: tickCount,
+		})
 	}
 }
