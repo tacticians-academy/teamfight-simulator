@@ -55,7 +55,22 @@ export default {
 	[TraitKey.Chemtech]: {
 		disableDefaultVariables: true,
 		hpThreshold: (activeEffect, elapsedMS, unit) => {
-			console.log(activeEffect) //TODO
+			const damageReduction = activeEffect.variables[BonusKey.DamageReduction]
+			const durationSeconds = activeEffect.variables['Duration']
+			const attackSpeed = activeEffect.variables[BonusKey.AttackSpeed]
+			const healthRegen = activeEffect.variables['HPRegen']
+			if (durationSeconds == null || attackSpeed == null || damageReduction == null || healthRegen == null) {
+				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
+			}
+			const expiresAtMS = elapsedMS + durationSeconds * 1000
+			unit.addBonuses(TraitKey.Chemtech, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])
+			unit.scalings.add({
+				source: TraitKey.Chemtech,
+				activatedAt: elapsedMS,
+				stats: [BonusKey.Health],
+				intervalAmount: healthRegen,
+				intervalSeconds: 1,
+			})
 		},
 	},
 
