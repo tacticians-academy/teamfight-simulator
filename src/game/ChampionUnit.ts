@@ -269,7 +269,7 @@ export class ChampionUnit {
 			const bonuses: BonusVariable[] = []
 			for (const stat of scaling.stats) {
 				if (stat === BonusKey.Health) {
-					//TODO
+					this.gainHealth(elapsedMS, scaling.intervalAmount, false)
 				} else if (stat === BonusKey.Mana) {
 					this.addMana(scaling.intervalAmount)
 				} else {
