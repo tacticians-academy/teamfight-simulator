@@ -798,7 +798,7 @@ export class ChampionUnit {
 		return this.data.stats.range + this.getBonuses(BonusKey.HexRangeIncrease)
 	}
 	moveSpeed() {
-		return this.data.stats.moveSpeed //TODO Featherweights, Challengers
+		return this.data.stats.moveSpeed + this.getBonuses('MoveSpeed' as BonusKey)
 	}
 
 	healthProportion() {

@@ -64,6 +64,24 @@ export default {
 		teamEffect: 2,
 	},
 
+	[TraitKey.Challenger]: {
+		disableDefaultVariables: true,
+		enemyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
+			const challengersTargeting = traitUnits.filter(unit => unit.target === dead)
+			if (!challengersTargeting.length) {
+				return
+			}
+			const durationSeconds = activeEffect.variables['BurstDuration']
+			const bonusAS = activeEffect.variables['BonusAS']
+			if (durationSeconds == null || bonusAS == null) {
+				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
+			}
+			const bonusMoveSpeed = 500 //TODO determine
+			const expiresAtMS = elapsedMS + durationSeconds * 1000
+			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], ['MoveSpeed' as BonusKey, bonusMoveSpeed, expiresAtMS]))
+		},
+	},
+
 	[TraitKey.Chemtech]: {
 		disableDefaultVariables: true,
 		hpThreshold: (activeEffect, elapsedMS, unit) => {
