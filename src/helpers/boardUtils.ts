@@ -191,7 +191,7 @@ export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 				if (!isInsetRow) {
 					currentCol += -1
 				}
-			} else {
+			} else if (currentCol < destCol) {
 				if (isInsetRow) {
 					currentCol += 1
 				}
