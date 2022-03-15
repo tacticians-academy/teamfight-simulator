@@ -2,6 +2,11 @@ import { state } from '#/game/store'
 
 import type { StorageChampion } from '#/helpers/types'
 
+export function clearUnits() {
+	state.units = []
+	window.localStorage.setItem('TFTSIM_units', '')
+}
+
 export function saveUnits() {
 	const output: StorageChampion[] = state.units
 		.map(unit => ({
