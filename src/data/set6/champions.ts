@@ -56,11 +56,15 @@ export default {
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
+			const manaReave = champion.getSpellVariable(SpellKey.ManaReave) ?? 0
+			const castTime = champion.getCurrentSpell()?.castTime ?? 0
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectile(elapsedMS, spell, {
 				target,
 				onCollision: () => {
-					target.bonuses.push([SpellKey.ManaReave, [[BonusKey.ManaReductionPercent, -0.5]]]) // TO DO: only let this "bonus" hold for one cast
+					if (!target.getBonusesFrom(SpellKey.ManaReave).length) {
+						target.bonuses.push([SpellKey.ManaReave, [[BonusKey.ManaReductionPercent, -100 * manaReave, elapsedMS + castTime]]]) 
+					}
 				},
 			})
 		},
