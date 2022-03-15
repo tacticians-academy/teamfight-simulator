@@ -481,6 +481,14 @@ export default {
 	},
 
 	[ItemKey.ZzRotPortal]: {
+		apply: (item, unit) => {
+			unit.queueHexEffect(0, undefined, {
+				startsAfterMS: 4100, //TODO determine
+				hexDistanceFromSource: 1, //TODO pathing to target is not yet supported
+				damageMultiplier: 0.5,
+				taunts: true,
+			})
+		},
 		deathOfHolder: (elapsedMS, item, itemID, unit) => {
 			const hex = getClosestHexAvailableTo(unit.activeHex, state.units)
 			if (hex) {
@@ -489,6 +497,12 @@ export default {
 				voidling.team = unit.team
 				state.units.push(voidling)
 				needsPathfindingUpdate()
+				voidling.queueHexEffect(elapsedMS, undefined, {
+					startsAfterMS: 500,
+					hexDistanceFromSource: 1,
+					damageMultiplier: 0.5,
+					taunts: true,
+				})
 			}
 		},
 	},
