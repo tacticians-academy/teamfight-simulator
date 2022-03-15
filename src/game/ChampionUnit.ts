@@ -16,7 +16,7 @@ import { Projectile } from '#/game/Projectile'
 import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
-import { coordinatePosition, gameOver, state, thresholdCheck } from '#/game/store'
+import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
 import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/bonuses'
@@ -25,6 +25,7 @@ import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
+import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 
 let instanceIndex = 0
 
@@ -438,17 +439,30 @@ export class ChampionUnit {
 		}
 		this.health = 0
 		this.dead = true
-		this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
-			needsPathfindingUpdate()
 			teamUnits.forEach(unit => { //TODO refactor to set6/traits
 				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
 				if (increaseADAP > 0) {
 					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
 				}
 			})
+
+			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
+			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
+				teamSynergies.forEach(([trait, style, activeEffect]) => {
+					if (!activeEffect) { return }
+					const traitKey = trait.name as TraitKey
+					const traitEffect = traitEffects[traitKey]
+					if (!traitEffect) { return }
+					const deathFn = teamNumber === this.team ? traitEffect.allyDeath : traitEffect.enemyDeath
+					if (!deathFn) { return }
+					const traitUnits = getUnitsOfTeam(teamNumber as TeamNumber).filter(unit => !unit.dead && unit.hasTrait(traitKey))
+					deathFn(activeEffect, elapsedMS, this, traitUnits)
+				})
+			})
+			needsPathfindingUpdate()
 		} else {
 			gameOver(this.team)
 		}
