@@ -5,16 +5,17 @@ import Projectile from '#/components/Projectile.vue'
 
 import { computed, onMounted, ref } from 'vue'
 
-import { useStore, coordinatePosition, setSocialiteHex } from '#/game/store'
+import { useStore, coordinatePosition, getSocialiteHexStrength, setSocialiteHex } from '#/game/store'
 import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 
 import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/helpers/constants'
 import type { HexCoord } from '#/helpers/types'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 const hexContainer = ref<HTMLElement | null>(null)
 
-const { state, dropUnit, loadUnits } = useStore()
+const { getters, state, dropUnit, loadUnits } = useStore()
 
 function onDrop(event: DragEvent, row: number, col: number) {
 	const championName = getDragNameOf('unit', event)
@@ -67,6 +68,8 @@ onMounted(() => {
 
 	loadUnits()
 })
+
+const socialitesByTeam = getters.socialitesByTeam
 </script>
 
 <template>
@@ -77,6 +80,7 @@ onMounted(() => {
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
 					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
+					:style="{ boxShadow: !state.isRunning && socialitesByTeam[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
 					@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
 					@contextmenu="onHexMenu($event, [colIndex, rowIndex])"
 				/>

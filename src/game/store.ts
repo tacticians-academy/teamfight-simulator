@@ -5,7 +5,7 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
@@ -16,7 +16,7 @@ import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
-import { buildBoard, getAdjacentRowUnitsTo, isSameHex } from '#/helpers/boardUtils'
+import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { synergiesByTeam } from '#/helpers/bonuses'
 import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
@@ -85,6 +85,11 @@ export const getters = {
 						return styleDiff !== 0 ? styleDiff : a.uniqueUnitNames.length - b.uniqueUnitNames.length
 					})
 			})
+	}),
+
+	socialitesByTeam: computed(() => {
+		const result: boolean[] = getters.synergiesByTeam.value.map(teamSynergies => teamSynergies.some(synergyData => synergyData.key === TraitKey.Socialite))
+		return result
 	}),
 }
 
@@ -320,6 +325,12 @@ export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
 	state.hexEffects.clear()
 	cancelLoop()
+}
+
+export function getSocialiteHexStrength(hex: HexCoord) {
+	const mirrorHex = getMirrorHex(hex)
+	const socialiteIndex = Object.keys(state.socialiteHexes).map(key => parseInt(key, 10)).find(index => isSameHex(mirrorHex, state.socialiteHexes[index]))
+	return socialiteIndex != null ? socialiteIndex + 1 : 0
 }
 
 export function setSocialiteHex(index: number, hex: HexCoord | null) {
