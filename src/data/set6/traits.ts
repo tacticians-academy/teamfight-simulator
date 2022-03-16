@@ -216,7 +216,7 @@ export default {
 			if (state.mutantType === MutantType.AdrenalineRush) {
 				if (canReProc) {
 					const multiAttackProcChance = source.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
-					if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
+					if (checkProcChance(multiAttackProcChance)) {
 						source.attackStartAtMS = 1
 					}
 				}
@@ -413,7 +413,32 @@ export default {
 		},
 	},
 
+	[TraitKey.Twinshot]: {
+		basicAttack: (activeEffect, target, source, canReProc) => {
+			if (canReProc) {
+				const multiAttackProcChance = activeEffect.variables['ProcChance']
+				if (checkProcChance(multiAttackProcChance)) {
+					source.attackStartAtMS = 1
+				}
+			}
+		},
+		cast: (activeEffect, elapsedMS, unit) => {
+			const multiAttackProcChance = activeEffect.variables['ProcChance']
+			if (checkProcChance(multiAttackProcChance)) {
+				unit.castAbility(elapsedMS, false) //TODO delay castTime
+			}
+		},
+	},
+
 } as { [key in TraitKey]?: TraitFns }
+
+function checkProcChance(procChance: number | null) {
+	if (procChance == null) {
+		console.warn('ERR', 'procChance')
+		return false
+	}
+	return Math.random() * 100 < procChance //TODO rng
+}
 
 function applyEnforcerDetain(activeEffect: TraitEffectData, unit: ChampionUnit) {
 	const detainSeconds = activeEffect.variables['DetainDuration']
