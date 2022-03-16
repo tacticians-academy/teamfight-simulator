@@ -1,3 +1,5 @@
+import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { state } from '#/game/store'
 
@@ -7,6 +9,13 @@ import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
 export function getUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team))
+}
+
+export function getAliveUnitsOfTeam(team: TeamNumber | null) {
+	return state.units.filter(unit => !unit.dead && (team == null || unit.team === team))
+}
+export function getAliveUnitsOfTeamWithTrait(team: TeamNumber | null, trait: TraitKey) {
+	return getAliveUnitsOfTeam(team).filter(unit => unit.hasTrait(trait))
 }
 export function getAttackableUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team) && unit.isAttackable())

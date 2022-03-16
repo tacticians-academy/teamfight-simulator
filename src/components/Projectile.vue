@@ -13,7 +13,7 @@ const sizeUnits = `${size / 20}vw`
 
 <template>
 <div
-	class="projectile" :class="projectile.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
+	class="projectile hex-overlay" :class="projectile.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
 	:style="{ left: `${projectile.position[0] * 100}%`, top: `${projectile.position[1] * 100}%`, width: sizeUnits, height: sizeUnits }"
 />
 </template>
@@ -21,6 +21,5 @@ const sizeUnits = `${size / 20}vw`
 <style scoped lang="postcss">
 .projectile {
 	@apply absolute z-40 rounded-full;
-	transform: translate(-50%, -50%);
 }
 </style>

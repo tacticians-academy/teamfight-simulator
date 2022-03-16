@@ -23,6 +23,7 @@ export function saveUnits() {
 export const enum StorageKey {
 	Mutant = 'TFTSIM_mutant',
 	StageNumber = 'TFTSIM_stage',
+	SocialiteHexes = 'TFTSIM_socialites',
 }
 
 export function getStorageInt(key: StorageKey, defaultValue: number = 0) {
@@ -36,9 +37,18 @@ export function getStorageInt(key: StorageKey, defaultValue: number = 0) {
 export function getStorageString(key: StorageKey) {
 	return window.localStorage.getItem(key)
 }
+export function getStorageJSON(key: StorageKey) {
+	const raw = window.localStorage.getItem(key)
+	return raw != null ? JSON.parse(raw) : null
+}
+
 export function setStorage(key: StorageKey, value: Object) {
 	return window.localStorage.setItem(key, value.toString())
 }
+export function setStorageJSON(key: StorageKey, value: Object) {
+	return setStorage(key, JSON.stringify(value))
+}
+
 
 export function getSavedUnits() {
 	const raw = window.localStorage.getItem('TFTSIM_units')

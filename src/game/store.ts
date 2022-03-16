@@ -5,7 +5,7 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
@@ -16,9 +16,10 @@ import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
-import { buildBoard, getAdjacentRowUnitsTo } from '#/helpers/boardUtils'
+import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
+import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { synergiesByTeam } from '#/helpers/bonuses'
-import { getSavedUnits, getStorageInt, getStorageString, saveUnits, setStorage, StorageKey } from '#/helpers/storage'
+import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
@@ -35,6 +36,8 @@ export const state = reactive({
 	units: [] as ChampionUnit[],
 	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
+
+	socialiteHexes: (getStorageJSON(StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
 	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
 	mutantType: ref((getStorageString(StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
 })
@@ -84,6 +87,11 @@ export const getters = {
 					})
 			})
 	}),
+
+	socialitesByTeam: computed(() => {
+		const result: boolean[] = getters.synergiesByTeam.value.map(teamSynergies => teamSynergies.some(synergyData => synergyData.key === TraitKey.Socialite))
+		return result
+	}),
 }
 
 // Watch
@@ -104,11 +112,10 @@ watch([getters.augmentCount], () => {
 function resetUnitsAfterCreatingOrMoving() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
-	state.units = state.units.filter(unit => unit.name !== ChampionKey.VoidSpawn)
-
 	const _synergiesByTeam = getters.synergiesByTeam.value
 	synergiesByTeam[0] = _synergiesByTeam[0]
 	synergiesByTeam[1] = _synergiesByTeam[1]
+	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
 
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
 	state.units.forEach(unit => {
@@ -130,7 +137,8 @@ function resetUnitsAfterCreatingOrMoving() {
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber)
+			const traitUnits = getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key)
+			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber, traitUnits)
 		})
 	})
 }
@@ -318,4 +326,22 @@ export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
 	state.hexEffects.clear()
 	cancelLoop()
+}
+
+export function getSocialiteHexStrength(hex: HexCoord) {
+	const mirrorHex = getMirrorHex(hex)
+	const socialiteIndex = Object.keys(state.socialiteHexes).map(key => parseInt(key, 10)).find(index => isSameHex(mirrorHex, state.socialiteHexes[index]))
+	return socialiteIndex != null ? socialiteIndex + 1 : 0
+}
+
+export function setSocialiteHex(index: number, hex: HexCoord | null) {
+	if (hex) {
+		state.socialiteHexes.forEach((existingSocialiteHex, index) => {
+			if (existingSocialiteHex && isSameHex(existingSocialiteHex, hex)) {
+				state.socialiteHexes[index] = null
+			}
+		})
+	}
+	state.socialiteHexes[index] = hex
+	setStorageJSON(StorageKey.SocialiteHexes, state.socialiteHexes)
 }

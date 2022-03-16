@@ -2,13 +2,15 @@ import { BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/ac
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import type { ChampionUnit } from '#/game/ChampionUnit'
+import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
+import type { BonusVariable, BonusScaling, EffectResults, ShieldData, StarLevel, TeamNumber } from '#/helpers/types'
+import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -16,7 +18,7 @@ interface TraitFns {
 	disableDefaultVariables?: true | BonusKey[]
 	solo?: TraitEffectFn
 	team?: TraitEffectFn
-	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber) => void
+	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber, units: ChampionUnit[]) => void
 	innate?: TraitEffectFn
 	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
 	allyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
@@ -25,6 +27,7 @@ interface TraitFns {
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 	modifyDamageByHolder?: (activeEffect: TraitEffectData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
@@ -141,7 +144,7 @@ export default {
 	},
 
 	[TraitKey.Enforcer]: {
-		onceForTeam: (activeEffect, teamNumber) => {
+		onceForTeam: (activeEffect, teamNumber, units) => {
 			const detainCount = activeEffect.variables['DetainCount']
 			if (detainCount == null) {
 				return console.log('ERR', TraitKey.Enforcer, activeEffect)
@@ -209,12 +212,42 @@ export default {
 		teamEffect: [BonusKey.MagicResist],
 	},
 
+	[TraitKey.Innovator]: {
+		onceForTeam: (activeEffect, teamNumber, units) => {
+			const starLevelMultiplier = activeEffect.variables['InnovatorStarLevelMultiplier']
+			const starLevel = activeEffect.variables['InnovationStarLevel']
+			if (starLevelMultiplier == null || starLevel == null) {
+				return console.log('ERR', TraitKey.Innovator, activeEffect)
+			}
+			const innovationNames = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
+			const innovationName = innovationNames[starLevel - 1]
+			const innovations = state.units.filter(unit => unit.team === teamNumber && innovationNames.includes(unit.name as ChampionKey))
+			let innovation = innovations.find(unit => unit.name === innovationName)
+			state.units = state.units.filter(unit => unit.team !== teamNumber || !innovationNames.includes(unit.name as ChampionKey) || unit === innovation)
+			if (!innovation || innovation.name !== innovationName) {
+				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [6, 0] : [1, 1], state.units)
+				if (innovationHex != null) {
+					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
+					innovation.reset([[], []])
+					state.units.push(innovation)
+				} else {
+					return console.log('ERR', 'No available hex', TraitKey.Innovator)
+				}
+			}
+			const totalInnovatorsStarLevel = units.reduce((totalStarLevel, unit) => totalStarLevel + unit.starLevel, 0)
+			const innovationMultiplier = starLevelMultiplier * totalInnovatorsStarLevel
+			innovation.addBonuses(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.healthMax * innovationMultiplier])
+			innovation.healthMax += innovation.healthMax * innovationMultiplier
+			innovation.health = innovation.healthMax
+		},
+	},
+
 	[TraitKey.Mutant]: {
 		basicAttack: (activeEffect, target, source, canReProc) => {
 			if (state.mutantType === MutantType.AdrenalineRush) {
 				if (canReProc) {
 					const multiAttackProcChance = source.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
-					if (multiAttackProcChance > 0 && Math.random() * 100 < multiAttackProcChance) { //TODO rng
+					if (checkProcChance(multiAttackProcChance)) {
 						source.attackStartAtMS = 1
 					}
 				}
@@ -345,6 +378,35 @@ export default {
 		},
 	},
 
+	[TraitKey.Socialite]: {
+		team: (unit, activeEffect) => {
+			const scalings: BonusScaling[] = []
+			const variables: BonusVariable[] = []
+			const mirrorHex = getMirrorHex(unit.startHex)
+			if (state.socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
+				const damagePercent = activeEffect.variables['DamagePercent']
+				const manaPerSecond = activeEffect.variables['ManaPerSecond']
+				const omnivampPercent = activeEffect.variables['OmnivampPercent']
+				if (damagePercent != null) {
+					variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
+					if (manaPerSecond != null) {
+						scalings.push({
+							source: unit,
+							sourceID: TraitKey.Socialite,
+							activatedAtMS: 0,
+							stats: [BonusKey.Mana],
+							intervalAmount: manaPerSecond,
+							intervalSeconds: 1,
+						})
+					}
+				} else {
+					console.log('ERR', TraitKey.Socialite, activeEffect)
+				}
+			}
+			return { variables, scalings }
+		},
+	},
+
 	[TraitKey.Syndicate]: {
 		disableDefaultVariables: true,
 		update: (activeEffect, elapsedMS, units) => {
@@ -382,7 +444,32 @@ export default {
 		},
 	},
 
+	[TraitKey.Twinshot]: {
+		basicAttack: (activeEffect, target, source, canReProc) => {
+			if (canReProc) {
+				const multiAttackProcChance = activeEffect.variables['ProcChance']
+				if (checkProcChance(multiAttackProcChance)) {
+					source.attackStartAtMS = 1
+				}
+			}
+		},
+		cast: (activeEffect, elapsedMS, unit) => {
+			const multiAttackProcChance = activeEffect.variables['ProcChance']
+			if (checkProcChance(multiAttackProcChance)) {
+				unit.castAbility(elapsedMS, false) //TODO delay castTime
+			}
+		},
+	},
+
 } as { [key in TraitKey]?: TraitFns }
+
+function checkProcChance(procChance: number | null) {
+	if (procChance == null) {
+		console.warn('ERR', 'procChance')
+		return false
+	}
+	return Math.random() * 100 < procChance //TODO rng
+}
 
 function applyEnforcerDetain(activeEffect: TraitEffectData, unit: ChampionUnit) {
 	const detainSeconds = activeEffect.variables['DetainDuration']

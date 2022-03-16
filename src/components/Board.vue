@@ -3,16 +3,19 @@ import HexEffect from '#/components/HexEffect.vue'
 import Unit from '#/components/Unit.vue'
 import Projectile from '#/components/Projectile.vue'
 
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
-import { useStore } from '#/game/store'
+import { useStore, coordinatePosition, getSocialiteHexStrength, setSocialiteHex } from '#/game/store'
 import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 
+import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/helpers/constants'
+import type { HexCoord } from '#/helpers/types'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 const hexContainer = ref<HTMLElement | null>(null)
 
-const { state, dropUnit, loadUnits } = useStore()
+const { getters, state, dropUnit, loadUnits } = useStore()
 
 function onDrop(event: DragEvent, row: number, col: number) {
 	const championName = getDragNameOf('unit', event)
@@ -21,6 +24,26 @@ function onDrop(event: DragEvent, row: number, col: number) {
 	}
 	event.preventDefault()
 	dropUnit(event, championName, [col, row])
+}
+
+const hexForMenu = ref<HexCoord | null>(null)
+const sourceHexForMenu = computed(() => hexForMenu.value && getMirrorHex(hexForMenu.value))
+
+function onHexMenu(event: Event, hex: HexCoord) {
+	event.preventDefault()
+	if (!state.isRunning) {
+		hexForMenu.value = hex
+	}
+}
+
+function setSocialite(socialiteIndex: number) {
+	if (!sourceHexForMenu.value) { return }
+	setSocialiteHex(socialiteIndex, isSameHex(state.socialiteHexes[socialiteIndex], sourceHexForMenu.value) ? null : sourceHexForMenu.value)
+}
+
+function onClearHexMenu(event?: Event) {
+	event?.preventDefault()
+	hexForMenu.value = null
 }
 
 onMounted(() => {
@@ -45,6 +68,8 @@ onMounted(() => {
 
 	loadUnits()
 })
+
+const socialitesByTeam = getters.socialitesByTeam
 </script>
 
 <template>
@@ -55,7 +80,9 @@ onMounted(() => {
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
 					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
+					:style="{ boxShadow: !state.isRunning && socialitesByTeam[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
 					@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
+					@contextmenu="onHexMenu($event, [colIndex, rowIndex])"
 				/>
 			</div>
 		</div>
@@ -71,6 +98,15 @@ onMounted(() => {
 			<template v-for="projectile in state.projectiles" :key="projectile.instanceID">
 				<Projectile :projectile="projectile" />
 			</template>
+			<div
+				v-if="hexForMenu && !state.isRunning"
+				class="hex hex-overlay  pointer-events-auto absolute bg-tertiary text-primary  flex flex-col justify-center space-y-1"
+				:style="{ left: `${coordinatePosition(hexForMenu)[0] * 100}%`, top: `${coordinatePosition(hexForMenu)[1] * 100}%` }"
+				@click="onClearHexMenu" @contextmenu="onClearHexMenu"
+			>
+				<button class="hex-button  bg-quaternary" @click="setSocialite(0)">{{ isSameHex(state.socialiteHexes[0], sourceHexForMenu) ? '❎' : '' }} Socialite</button>
+				<button class="hex-button  bg-quaternary" @click="setSocialite(1)">{{ isSameHex(state.socialiteHexes[1], sourceHexForMenu) ? '❎' : '' }} Duet</button>
+			</div>
 		</div>
 	</div>
 </div>
@@ -85,11 +121,14 @@ onMounted(() => {
 	height: v-bind(HEX_UNITS);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
+.hex-overlay {
+	transform: translate(-50%, -50%);
+}
 .hex.team-a {
-	@apply bg-violet-300/90;
+	@apply bg-violet-300/25;
 }
 .hex.team-b {
-	@apply bg-rose-300/90;
+	@apply bg-rose-300/25;
 }
 </style>
 
@@ -119,13 +158,12 @@ onMounted(() => {
 	margin-left: v-bind(HALF_HEX_BORDER_UNITS);
 }
 
-.hex {
+.row > .hex {
 	margin: v-bind(HEX_BORDER_UNITS) 0 0 v-bind(HEX_BORDER_UNITS);
 }
-.hex.team-a {
-	@apply opacity-25;
-}
-.hex.team-b {
-	@apply opacity-25;
+
+.hex-button {
+	@apply mx-1 rounded-full;
+	font-size: 1.3vw;
 }
 </style>

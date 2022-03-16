@@ -1,7 +1,7 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
+import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/helpers/constants'
 import type { HexCoord, TeamNumber } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
@@ -65,6 +65,9 @@ export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, 
 
 export function getInverseHex(hex: HexCoord): HexCoord {
 	return [BOARD_COL_COUNT - hex[0] - 1, BOARD_ROW_COUNT - hex[1] - 1]
+}
+export function getMirrorHex(hex: HexCoord): HexCoord {
+	return hex[1] >= BOARD_ROW_PER_SIDE_COUNT ? getInverseHex(hex) : hex
 }
 
 const surroundings = [
@@ -137,7 +140,10 @@ export function getDensestTargetHexes(units: ChampionUnit[], team: TeamNumber | 
 	return results
 }
 
-export function isSameHex(a: HexCoord, b: HexCoord) {
+export function isSameHex(a: HexCoord | null, b: HexCoord | null) {
+	if (!a || !b) {
+		return false
+	}
 	return a[0] === b[0] && a[1] === b[1]
 }
 
