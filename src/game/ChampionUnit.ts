@@ -375,7 +375,7 @@ export class ChampionUnit {
 	readyToCast() {
 		return !!this.championEffects?.cast && this.mana >= this.manaMax()
 	}
-	castAbility(elapsedMS: DOMHighResTimeStamp) {
+	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
 		const spell = this.getCurrentSpell()
 		if (spell) {
 			this.championEffects?.cast?.(elapsedMS, spell, this)
@@ -396,7 +396,13 @@ export class ChampionUnit {
 			})
 		})
 
-		this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
+		if (initialCast) {
+			this.activeSynergies.forEach(({ key, activeEffect }) => {
+				if (!activeEffect) { return }
+				traitEffects[key]?.cast?.(activeEffect, elapsedMS, this)
+			})
+			this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
+		}
 	}
 
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp) {

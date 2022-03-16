@@ -1,4 +1,4 @@
-import { BonusKey, COMPONENT_ITEM_IDS, DamageType, substituteVariables } from '@tacticians-academy/academy-library'
+import { BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -7,7 +7,7 @@ import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
-import { BonusLabelKey, DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
+import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
 import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 
@@ -26,6 +26,7 @@ interface TraitFns {
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 	modifyDamageByHolder?: (activeEffect: TraitEffectData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
