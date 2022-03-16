@@ -266,7 +266,9 @@ export class ChampionUnit {
 				if (stat === BonusKey.Health) {
 					this.gainHealth(elapsedMS, scaling.source, scaling.intervalAmount, false)
 				} else if (stat === BonusKey.Mana) {
-					this.addMana(scaling.intervalAmount)
+					if (this.manaLockUntilMS < elapsedMS) {
+						this.addMana(scaling.intervalAmount)
+					}
 				} else {
 					bonuses.push([stat, scaling.intervalAmount])
 				}
