@@ -38,7 +38,7 @@ function onHexMenu(event: Event, hex: HexCoord) {
 
 function setSocialite(socialiteIndex: number) {
 	if (!sourceHexForMenu.value) { return }
-	setSocialiteHex(socialiteIndex, sourceHexForMenu.value)
+	setSocialiteHex(socialiteIndex, isSameHex(state.socialiteHexes[socialiteIndex], sourceHexForMenu.value) ? null : sourceHexForMenu.value)
 }
 
 function onClearHexMenu(event?: Event) {
