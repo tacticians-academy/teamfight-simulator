@@ -2,14 +2,15 @@ import { BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/ac
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import type { ChampionUnit } from '#/game/ChampionUnit'
+import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
-import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import type { BonusVariable, BonusScaling, EffectResults, ShieldData, StarLevel, TeamNumber } from '#/helpers/types'
+import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -143,7 +144,7 @@ export default {
 	},
 
 	[TraitKey.Enforcer]: {
-		onceForTeam: (activeEffect, teamNumber) => {
+		onceForTeam: (activeEffect, teamNumber, units) => {
 			const detainCount = activeEffect.variables['DetainCount']
 			if (detainCount == null) {
 				return console.log('ERR', TraitKey.Enforcer, activeEffect)
@@ -209,6 +210,36 @@ export default {
 
 	[TraitKey.Enchanter]: {
 		teamEffect: [BonusKey.MagicResist],
+	},
+
+	[TraitKey.Innovator]: {
+		onceForTeam: (activeEffect, teamNumber, units) => {
+			const starLevelMultiplier = activeEffect.variables['InnovatorStarLevelMultiplier']
+			const starLevel = activeEffect.variables['InnovationStarLevel']
+			if (starLevelMultiplier == null || starLevel == null) {
+				return console.log('ERR', TraitKey.Innovator, activeEffect)
+			}
+			const innovationNames = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
+			const innovationName = innovationNames[starLevel - 1]
+			const innovations = state.units.filter(unit => unit.team === teamNumber && innovationNames.includes(unit.name as ChampionKey))
+			let innovation = innovations.find(unit => unit.name === innovationName)
+			state.units = state.units.filter(unit => unit.team !== teamNumber || !innovationNames.includes(unit.name as ChampionKey) || unit === innovation)
+			if (!innovation || innovation.name !== innovationName) {
+				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [6, 0] : [1, 1], state.units)
+				if (innovationHex != null) {
+					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
+					innovation.reset([[], []])
+					state.units.push(innovation)
+				} else {
+					return console.log('ERR', 'No available hex', TraitKey.Innovator)
+				}
+			}
+			const totalInnovatorsStarLevel = units.reduce((totalStarLevel, unit) => totalStarLevel + unit.starLevel, 0)
+			const innovationMultiplier = starLevelMultiplier * totalInnovatorsStarLevel
+			innovation.addBonuses(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.healthMax * innovationMultiplier])
+			innovation.healthMax += innovation.healthMax * innovationMultiplier
+			innovation.health = innovation.healthMax
+		},
 	},
 
 	[TraitKey.Mutant]: {

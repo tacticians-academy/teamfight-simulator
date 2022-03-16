@@ -21,7 +21,7 @@ import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/bonuses'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
+import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
@@ -83,11 +83,10 @@ export class ChampionUnit {
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = champions.find(unit => unit.name === name) ?? champions[0]
-		const starLockedLevel = LOCKED_STAR_LEVEL_BY_UNIT_API_NAME[stats.apiName]
-		this.isStarLocked = !!starLockedLevel
+		this.isStarLocked = stats.isSpawn
 		this.data = markRaw(stats)
 		this.name = name
-		this.starLevel = starLockedLevel ?? starLevel
+		this.starLevel = starLevel
 		this.championEffects = championEffects[name]
 		this.instantAttack = this.data.stats.range <= 1
 		this.startHex = hex

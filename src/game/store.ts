@@ -112,11 +112,10 @@ watch([getters.augmentCount], () => {
 function resetUnitsAfterCreatingOrMoving() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
-	state.units = state.units.filter(unit => unit.name !== ChampionKey.VoidSpawn)
-
 	const _synergiesByTeam = getters.synergiesByTeam.value
 	synergiesByTeam[0] = _synergiesByTeam[0]
 	synergiesByTeam[1] = _synergiesByTeam[1]
+	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
 
 	state.units.forEach(unit => unit.reset(synergiesByTeam))
 	state.units.forEach(unit => {
