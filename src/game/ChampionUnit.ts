@@ -18,6 +18,7 @@ import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
 import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
+import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/bonuses'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT, LOCKED_STAR_LEVEL_BY_UNIT_API_NAME } from '#/helpers/constants'
@@ -25,7 +26,6 @@ import { saveUnits } from '#/helpers/storage'
 import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
-import { getUnitsOfTeam } from '#/helpers/abilityUtils'
 
 let instanceIndex = 0
 
@@ -482,7 +482,7 @@ export class ChampionUnit {
 					if (!traitEffect) { return }
 					const deathFn = teamNumber === this.team ? traitEffect.allyDeath : traitEffect.enemyDeath
 					if (!deathFn) { return }
-					const traitUnits = getUnitsOfTeam(teamNumber as TeamNumber).filter(unit => !unit.dead && unit.hasTrait(key))
+					const traitUnits = getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key)
 					deathFn(activeEffect, elapsedMS, this, traitUnits)
 				})
 			})

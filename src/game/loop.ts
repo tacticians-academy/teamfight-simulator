@@ -7,8 +7,10 @@ import traitEffects from '#/data/set6/traits'
 import { state } from '#/game/store'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
 
-import { uniqueIdentifier } from '#/helpers/utils'
+import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { synergiesByTeam } from '#/helpers/bonuses'
+import type { TeamNumber } from '#/helpers/types'
+import { uniqueIdentifier } from '#/helpers/utils'
 
 const GAME_TICK_MS = 1000 / 30
 
@@ -64,7 +66,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			if (activeEffect) {
 				const updateFn = traitEffects[key]?.update
 				if (updateFn) {
-					updateFn(activeEffect, elapsedMS, state.units.filter(unit => !unit.dead && unit.team === teamNumber && unit.hasTrait(key)))
+					updateFn(activeEffect, elapsedMS, getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key))
 				}
 			}
 		})

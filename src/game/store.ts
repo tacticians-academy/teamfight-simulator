@@ -16,6 +16,7 @@ import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
 import { cancelLoop } from '#/game/loop'
 
+import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { synergiesByTeam } from '#/helpers/bonuses'
 import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
@@ -137,7 +138,8 @@ function resetUnitsAfterCreatingOrMoving() {
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber)
+			const traitUnits = getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key)
+			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber, traitUnits)
 		})
 	})
 }

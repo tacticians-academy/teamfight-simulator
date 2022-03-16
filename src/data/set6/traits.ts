@@ -17,7 +17,7 @@ interface TraitFns {
 	disableDefaultVariables?: true | BonusKey[]
 	solo?: TraitEffectFn
 	team?: TraitEffectFn
-	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber) => void
+	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber, units: ChampionUnit[]) => void
 	innate?: TraitEffectFn
 	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
 	allyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
