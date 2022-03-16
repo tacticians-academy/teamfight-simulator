@@ -1,4 +1,4 @@
-import { BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/academy-library'
+import { BonusKey, COMPONENT_ITEM_IDS, DamageType, substituteVariables } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -7,8 +7,9 @@ import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { createDamageCalculation } from '#/helpers/bonuses'
-import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
+import { BonusLabelKey, DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData, TeamNumber } from '#/helpers/types'
+import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -342,6 +343,35 @@ export default {
 				const hexDistance = source.hexDistanceTo(target)
 				return rawDamage * (1 + percentBonusDamagePerHex / 100 * hexDistance)
 			}
+		},
+	},
+
+	[TraitKey.Socialite]: {
+		team: (unit, activeEffect) => {
+			const scalings: BonusScaling[] = []
+			const variables: BonusVariable[] = []
+			const mirrorHex = getMirrorHex(unit.startHex)
+			if (state.socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
+				const damagePercent = activeEffect.variables['DamagePercent']
+				const manaPerSecond = activeEffect.variables['ManaPerSecond']
+				const omnivampPercent = activeEffect.variables['OmnivampPercent']
+				if (damagePercent != null) {
+					variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
+					if (manaPerSecond != null) {
+						scalings.push({
+							source: unit,
+							sourceID: TraitKey.Socialite,
+							activatedAtMS: 0,
+							stats: [BonusKey.Mana],
+							intervalAmount: manaPerSecond,
+							intervalSeconds: 1,
+						})
+					}
+				} else {
+					console.log('ERR', TraitKey.Socialite, activeEffect)
+				}
+			}
+			return { variables, scalings }
 		},
 	},
 
