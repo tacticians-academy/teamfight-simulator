@@ -238,9 +238,7 @@ export default {
 			}
 			const totalInnovatorsStarLevel = units.reduce((totalStarLevel, unit) => totalStarLevel + unit.starLevel, 0)
 			const innovationMultiplier = starLevelMultiplier * totalInnovatorsStarLevel
-			innovation.addBonuses(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.healthMax * innovationMultiplier])
-			innovation.healthMax += innovation.healthMax * innovationMultiplier
-			innovation.health = innovation.healthMax
+			innovation.addBonuses(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.baseHP() * innovationMultiplier])
 		},
 	},
 

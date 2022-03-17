@@ -147,17 +147,14 @@ export class ChampionUnit {
 	}
 	resetPost() {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
-		this.health = this.baseHP() * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
+		this.health = this.baseHP() + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed)
 	}
 
 	baseHP() {
-		if (this.data.stats.hp != null) {
-			return this.data.stats.hp
-		}
-		// TFT_VoidSpawn
-		return [1500, 1800, 2100, 2500][stageIndex()]
+		const hpStat = this.data.stats.hp ?? [1500, 1800, 2100, 2500][stageIndex()] // ??TFT_VoidSpawn
+		return hpStat * this.starMultiplier
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
