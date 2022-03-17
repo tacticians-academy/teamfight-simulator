@@ -116,8 +116,9 @@ function resetUnitsAfterCreatingOrMoving() {
 	synergiesByTeam[0] = _synergiesByTeam[0]
 	synergiesByTeam[1] = _synergiesByTeam[1]
 	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
+	state.hexEffects.clear()
 
-	state.units.forEach(unit => unit.reset(synergiesByTeam))
+	state.units.forEach(unit => unit.resetPre(synergiesByTeam))
 	state.units.forEach(unit => {
 		unit.items.forEach((item, index) => {
 			const itemEffect = itemEffects[item.id as ItemKey]
@@ -137,10 +138,16 @@ function resetUnitsAfterCreatingOrMoving() {
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
+			const traitEffectFns = traitEffects[key]
+			if (!traitEffectFns) { return }
 			const traitUnits = getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key)
-			traitEffects[key]?.onceForTeam?.(activeEffect, teamNumber as TeamNumber, traitUnits)
+			if (traitEffectFns.applyForOthers) {
+				traitUnits.forEach(unit => traitEffectFns.applyForOthers?.(activeEffect, unit))
+			}
+			traitEffectFns.onceForTeam?.(activeEffect, teamNumber as TeamNumber, traitUnits)
 		})
 	})
+	state.units.forEach(unit => unit.resetPost())
 }
 
 function getItemFrom(name: string) {
@@ -172,7 +179,7 @@ const store = {
 						.filter((item): item is ItemData => !!item)
 					const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
 					champion.items = championItems
-					champion.reset(synergiesByTeam)
+					champion.resetPre(synergiesByTeam)
 					return champion
 				})
 			state.units.push(...units)
@@ -188,7 +195,7 @@ const store = {
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
 		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
-		fromUnit.reset(getters.synergiesByTeam.value)
+		fromUnit.resetPre(getters.synergiesByTeam.value)
 		saveUnits()
 		resetUnitsAfterCreatingOrMoving()
 	},

@@ -102,7 +102,11 @@ export class ChampionUnit {
 		}
 	}
 
-	reset(synergiesByTeam: SynergyData[][]) {
+	genericReset() {
+		this.resetPre([[], []])
+		this.resetPost()
+	}
+	resetPre(synergiesByTeam: SynergyData[][]) {
 		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
 		this.bleeds.clear()
 
@@ -140,11 +144,12 @@ export class ChampionUnit {
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
 		this.scalings = new Set([...synergyScalings, ...itemScalings])
 		this.shields = [...synergyShields, ...itemShields]
-
+	}
+	resetPost() {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.baseHP() * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
-		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed) //TODO Jhin set data
+		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed)
 	}
 
 	baseHP() {

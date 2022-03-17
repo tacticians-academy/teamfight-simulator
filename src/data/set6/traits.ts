@@ -9,8 +9,9 @@ import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils
 import { createDamageCalculation } from '#/helpers/bonuses'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData, StarLevel, TeamNumber } from '#/helpers/types'
-import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
+import { HexEffect } from '#/game/HexEffect'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -18,6 +19,7 @@ interface TraitFns {
 	disableDefaultVariables?: true | BonusKey[]
 	solo?: TraitEffectFn
 	team?: TraitEffectFn
+	applyForOthers?: (activeEffect: TraitEffectData, unit: ChampionUnit) => void
 	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber, units: ChampionUnit[]) => void
 	innate?: TraitEffectFn
 	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
@@ -228,7 +230,7 @@ export default {
 				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [6, 0] : [1, 1], state.units)
 				if (innovationHex != null) {
 					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
-					innovation.reset([[], []])
+					innovation.genericReset()
 					state.units.push(innovation)
 				} else {
 					return console.log('ERR', 'No available hex', TraitKey.Innovator)

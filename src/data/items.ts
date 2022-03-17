@@ -500,7 +500,7 @@ export default {
 			const hex = getClosestHexAvailableTo(unit.activeHex, state.units)
 			if (hex) {
 				const voidling = new ChampionUnit(ChampionKey.VoidSpawn, hex, 1)
-				voidling.reset([[], []])
+				voidling.genericReset()
 				voidling.team = unit.team
 				state.units.push(voidling)
 				needsPathfindingUpdate()
