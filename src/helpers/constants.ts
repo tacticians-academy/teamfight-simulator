@@ -2,6 +2,9 @@ import type { StarLevel } from '#/helpers/types'
 
 export const DEFAULT_MANA_LOCK_MS = 1000
 
+export const DEFAULT_CAST_SECONDS = 0.25 // TODO confirm default cast time
+export const DEFAULT_TRAVEL_SECONDS = 0.25 // TODO confirm default travel time
+
 export const HEX_PROPORTION = 0.126
 export const HEX_MOVE_LEAGUEUNITS = 180
 export const HEX_PROPORTION_PER_LEAGUEUNIT = HEX_PROPORTION / HEX_MOVE_LEAGUEUNITS

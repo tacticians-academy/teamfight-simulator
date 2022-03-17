@@ -1,29 +1,30 @@
 import type { ChampionSpellData, ChampionSpellMissileData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { coordinatePosition } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
+import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
+
 import { DamageSourceType } from '#/helpers/types'
 import type { CollisionFn, HexCoord, TeamNumber } from '#/helpers/types'
-import { coordinatePosition } from '#/game/store'
 
 let instanceIndex = 0
 
 const hexRadius = HEX_PROPORTION * 2 * 100
 
 export interface ProjectileData {
-	/** Inferred to be `spell` if passing with a `spell` object. */
+	/** Inferred to be `spell` if passing with a `SpellCalculation`. */
 	sourceType?: DamageSourceType
-	/** The windup delay before the Projectile should start moving towards its target. */
+	/** The windup delay before the Projectile should start moving towards its target. When passed with a `SpellCalculation`, it is inferred as `castTime`, or `DEFAULT_CAST_SECONDS` as a fallback. Defaults to `0` otherwise. */
 	startsAfterMS?: DOMHighResTimeStamp
-	/** Inferred as the `Damage` spell calculation if passing with a `spell` object. */
+	/** Inferred as the `Damage` spell calculation if passing with a `SpellCalculation`. */
 	damageCalculation?: SpellCalculation
 	/** If specified, the Projectile should collide with any unit of the given team(s), instead of traveling directly to the specified target. */
 	collidesWith?: TeamNumber | null
 	/** Whether the Projectile should complete after the first time it collides with a unit. Requires `collidesWith`. */
 	destroysOnCollision?: boolean
-	/** Only include if not providing a `spell` object. */
+	/** Only include if not passed with a `SpellCalculation`. */
 	missile?: ChampionSpellMissileData
 	/** If targeting a HexCoord, `collidesWith` must be set or the Projectile can never hit. Defaults to the source unit's attack target unit. */
 	target?: ChampionUnit | HexCoord
@@ -57,7 +58,7 @@ export class Projectile {
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData, spell?: ChampionSpellData) {
 		this.instanceID = `p${instanceIndex += 1}`
 
-		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : spell!.castTime! * 1000
+		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : (spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)
 		const startDelay = spell?.missile?.startDelay
 		this.startsAtMS = elapsedMS + startsAfterMS + (startDelay != null ? startDelay * 1000 : 0)
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source

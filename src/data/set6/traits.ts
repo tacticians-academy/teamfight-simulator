@@ -255,7 +255,6 @@ export default {
 				.filter(unit => unit.isIn(hexesInFront))
 				.forEach(unit => unit.setBonusesFor(TraitKey.Mastermind, [BonusKey.Mana, manaGrant]))
 			state.hexEffects.add(new HexEffect(unit, 0, undefined, { //TODO display underneath
-				startsAfterMS: 0,
 				targetTeam: unit.team,
 				hexes: hexesInFront,
 			}))

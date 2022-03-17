@@ -4,14 +4,12 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectsData, StatusEffectType, TeamNumber } from '#/helpers/types'
 import { getSurroundingWithin } from '#/helpers/boardUtils'
-
-const DEFAULT_CAST_TIME = 0.25 // TODO confirm default cast time
-const DEFAULT_TRAVEL_TIME = 0.25 // TODO confirm default travel time
+import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 
 export interface HexEffectData {
-	/** The windup delay before the HexEffect appears. */
+	/** The windup delay before the HexEffect appears. When passed with a `SpellCalculation`, it is inferred as `castTime`, or `DEFAULT_CAST_SECONDS` as a fallback. Defaults to `0` otherwise. */
 	startsAfterMS?: DOMHighResTimeStamp
-	/** The delay until the HexEffect should stop applying. Defaults to 0 (only applying once). */
+	/** The delay until the HexEffect should stop applying. Defaults to `0` (only applying once). */
 	expiresAfterMS?: DOMHighResTimeStamp
 	/** The hexes that any units of the `targetTeam` standing on will be hit. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexes?: HexCoord[]
@@ -60,8 +58,8 @@ export class HexEffect {
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
 		this.instanceID = `h${instanceIndex += 1}`
-		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell!.castTime ?? DEFAULT_CAST_TIME) * 1000))
-		this.activatesAfterMS = spell ? (spell.missile!.travelTime ?? DEFAULT_TRAVEL_TIME) * 1000 : 0
+		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
+		this.activatesAfterMS = spell ? (spell.missile!.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.source = source

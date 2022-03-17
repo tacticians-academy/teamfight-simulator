@@ -131,7 +131,6 @@ export default {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
 					sourceType: DamageSourceType.item,
-					startsAfterMS: 0,
 					missile: {
 						speedInitial: 500, //TODO experimentally determine
 					},
@@ -377,7 +376,6 @@ export default {
 				const boltTarget = additionalTargets[boltIndex]
 				if (boltTarget == null) { continue }
 				holder.queueProjectile(elapsedMS, undefined, {
-					startsAfterMS: 0,
 					missile: {
 						speedInitial: 1000, //TODO determine
 					},
