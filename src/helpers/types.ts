@@ -98,6 +98,8 @@ export const enum SpellKey {
 	ASBoost = 'ASBoost',
 	AttackSpeed = 'AttackSpeed',
 	Damage = 'Damage',
+	DamageReduction = 'DamageReduction',
+	Duration = 'Duration',
 	Heal = 'Heal',
 	HealAmount = 'HealAmount',
 	ManaReave = 'ManaReave',
