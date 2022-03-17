@@ -242,6 +242,26 @@ export default {
 		},
 	},
 
+	[TraitKey.Mastermind]: {
+		applyForOthers: (activeEffect, unit) => {
+			const manaGrant = activeEffect.variables['ManaGrant']
+			if (manaGrant == null) {
+				return console.log('ERR', TraitKey.Mastermind, activeEffect)
+			}
+			const [unitCol, unitRow] = unit.startHex
+			const projectingRowDirection = unit.team === 0 ? 1 : -1
+			const hexesInFront = getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
+			getUnitsOfTeam(unit.team)
+				.filter(unit => unit.isIn(hexesInFront))
+				.forEach(unit => unit.setBonusesFor(TraitKey.Mastermind, [BonusKey.Mana, manaGrant]))
+			state.hexEffects.add(new HexEffect(unit, 0, undefined, { //TODO display underneath
+				startsAfterMS: 0,
+				targetTeam: unit.team,
+				hexes: hexesInFront,
+			}))
+		},
+	},
+
 	[TraitKey.Mutant]: {
 		basicAttack: (activeEffect, target, source, canReProc) => {
 			if (state.mutantType === MutantType.AdrenalineRush) {
