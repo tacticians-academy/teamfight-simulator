@@ -5,7 +5,7 @@ import { getSurroundingWithin } from '#/helpers/boardUtils'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { createDamageCalculation } from '#/helpers/bonuses'
+import { createDamageCalculation } from '#/helpers/calculate'
 
 export default {
 

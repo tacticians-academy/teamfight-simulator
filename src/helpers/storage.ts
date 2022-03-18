@@ -49,7 +49,6 @@ export function setStorageJSON(key: StorageKey, value: Object) {
 	return setStorage(key, JSON.stringify(value))
 }
 
-
 export function getSavedUnits() {
 	const raw = window.localStorage.getItem('TFTSIM_units')
 	return raw != null && raw.length ? JSON.parse(raw) as StorageChampion[] : []

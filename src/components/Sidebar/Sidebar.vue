@@ -7,11 +7,11 @@ import SelectPlayers from '#/components/Sidebar/SelectPlayers.vue'
 import { computed } from 'vue'
 
 import { useStore } from '#/game/store'
-import { getDragName, getDragType, onDragOver } from '#/game/dragDrop'
 import { cancelLoop, runLoop } from '#/game/loop'
 
-import { SIDEBAR_UNITS } from '#/helpers/constants'
 import { getTeamName } from '#/helpers/boardUtils'
+import { SIDEBAR_UNITS } from '#/helpers/constants'
+import { getDragName, getDragType, onDragOver } from '#/helpers/dragDrop'
 
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 

@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
@@ -10,7 +11,6 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
-import type { DraggableType } from '#/game/dragDrop'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'
 import type { Projectile } from '#/game/Projectile'
@@ -18,11 +18,11 @@ import { cancelLoop } from '#/game/loop'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
-import { synergiesByTeam } from '#/helpers/bonuses'
+import { synergiesByTeam } from '#/helpers/calculate'
+import type { DraggableType } from '#/helpers/dragDrop'
 import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 // State
 

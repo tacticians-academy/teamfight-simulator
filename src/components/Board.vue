@@ -6,12 +6,11 @@ import Projectile from '#/components/Projectile.vue'
 import { computed, onMounted, ref } from 'vue'
 
 import { useStore, coordinatePosition, getSocialiteHexStrength, setSocialiteHex } from '#/game/store'
-import { getDragNameOf, onDragOver } from '#/game/dragDrop'
 
 import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/helpers/constants'
+import { getDragNameOf, onDragOver } from '#/helpers/dragDrop'
 import type { HexCoord } from '#/helpers/types'
-import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 const hexContainer = ref<HTMLElement | null>(null)
 

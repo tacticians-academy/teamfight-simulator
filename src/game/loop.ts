@@ -8,7 +8,7 @@ import { state } from '#/game/store'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
-import { synergiesByTeam } from '#/helpers/bonuses'
+import { synergiesByTeam } from '#/helpers/calculate'
 import type { TeamNumber } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
