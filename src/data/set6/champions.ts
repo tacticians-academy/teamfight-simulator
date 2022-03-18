@@ -55,14 +55,13 @@ export default {
 
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = champion.target
 			champion.queueProjectile(elapsedMS, spell, {
-				onCollision: () => {
+				onCollision: (elapsedMS, affectedUnit) => {
 					const manaReave = champion.getSpellVariable(SpellKey.ManaReave) ?? 0
 					const duration = champion.getSpellVariable(SpellKey.Duration) ?? 0
 					const damageReduction = champion.getSpellVariable(SpellKey.DamageReduction) ?? 0
-					target?.bonuses.push([SpellKey.ManaReave, [[BonusKey.ManaReductionPercent, manaReave * -100]]])
-					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, duration * 1000])
+					affectedUnit.setBonusesFor(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, manaReave * -100])
+					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + duration * 1000])
 				},
 			})
 		},
