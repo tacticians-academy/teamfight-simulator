@@ -49,7 +49,7 @@ export class ChampionUnit {
 	healthMax = 0
 	starMultiplier = 1
 	isStarLocked: boolean
-	fixedAS: number | undefined = undefined
+	fixedAS: number | undefined
 	instantAttack: boolean
 
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
@@ -149,7 +149,7 @@ export class ChampionUnit {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.baseHP() + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
-		this.fixedAS = this.getSpellVariable(SpellKey.AttackSpeed)
+		this.fixedAS = this.getSpellVariableIfExists(SpellKey.AttackSpeed)
 	}
 
 	baseHP() {
@@ -716,8 +716,16 @@ export class ChampionUnit {
 		return this.data.spells[this.transformIndex]
 	}
 
-	getSpellVariable(key: SpellKey) {
+	getSpellVariableIfExists(key: SpellKey) {
 		return this.getCurrentSpell()?.variables[key]?.[this.starLevel]
+	}
+	getSpellVariable(key: SpellKey) {
+		const value = this.getSpellVariableIfExists(key)
+		if (value == null) {
+			console.log('ERR', this.name, this.getCurrentSpell()?.name, key)
+			return 0
+		}
+		return value
 	}
 	getSpellCalculationResult(key: SpellKey) {
 		const calculation = this.getSpellCalculation(key)
@@ -792,7 +800,7 @@ export class ChampionUnit {
 			baseAD = [100, 100, 125, 140][stageIndex()]
 		}
 		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
-		const multiplyAttackSpeed = this.getSpellVariable(SpellKey.ADFromAttackSpeed)
+		const multiplyAttackSpeed = this.getSpellVariableIfExists(SpellKey.ADFromAttackSpeed)
 		if (multiplyAttackSpeed != null) {
 			return ad + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
 		}

@@ -42,8 +42,8 @@ export default {
 				collidesWith: champion.opposingTeam(),
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
-					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)!
-					const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)!
+					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)
+					const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)
 					if (allASBoosts.length < maxStacks) {
 						const boostAS = champion.getSpellCalculationResult(SpellKey.ASBoost)! / maxStacks
 						champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, boostAS]]])
@@ -57,11 +57,11 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueProjectile(elapsedMS, spell, {
 				onCollision: (elapsedMS, affectedUnit) => {
-					const manaReave = champion.getSpellVariable(SpellKey.ManaReave) ?? 0
-					const duration = champion.getSpellVariable(SpellKey.Duration) ?? 0
-					const damageReduction = champion.getSpellVariable(SpellKey.DamageReduction) ?? 0
+					const manaReave = champion.getSpellVariable(SpellKey.ManaReave)
+					const durationSeconds = champion.getSpellVariable(SpellKey.Duration)
+					const damageReduction = champion.getSpellVariable(SpellKey.DamageReduction)
 					affectedUnit.setBonusesFor(ChampionKey.Kassadin, [BonusKey.ManaReductionPercent, manaReave * -100])
-					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + duration * 1000])
+					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + durationSeconds * 1000])
 				},
 			})
 		},
