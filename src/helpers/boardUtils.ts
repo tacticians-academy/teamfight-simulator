@@ -77,7 +77,7 @@ const surroundings = [
 	[[4, 0], [3, 1], [3, 2], [2, 3], [2, 4], [1, 4], [0, 4], [-1, 4], [-2, 4], [-3, 3], [-3, 2], [-4, 1]],
 ]
 
-export function getSurroundingWithin(hex: HexCoord, maxDistance: number = 1): HexCoord[] {
+export function getSurroundingWithin(hex: HexCoord, maxDistance: number): HexCoord[] {
 	const results: HexCoord[] = []
 	for (let distance = 1; distance <= maxDistance; distance += 1) {
 		results.push(...getHexRing(hex, distance))

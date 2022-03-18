@@ -25,7 +25,7 @@ export default {
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
-				hexes: getSurroundingWithin(champion.activeHex, 1),
+				hexDistanceFromSource: 1,
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(SpellKey.Heal)!, true)
 				},
@@ -81,11 +81,13 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			const targetHex = champion.target?.activeHex
 			if (!targetHex) { return console.log('No target', champion.name, champion.team) }
+			const centerHexes = [targetHex]
+			const outerHexes = getSurroundingWithin(targetHex, 1)
 			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: [targetHex],
+				hexes: centerHexes,
 			})
 			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: getSurroundingWithin(targetHex, 1),
+				hexes: outerHexes,
 				damageMultiplier: 0.5,
 			})
 		},
@@ -94,9 +96,6 @@ export default {
 	[ChampionKey.Zyra]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(SpellKey.StunDuration)
-			if (stunSeconds == null) {
-				return console.log('ERR', champion.name, spell.name, spell.variables)
-			}
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getRowOfMostAttackable(champion.opposingTeam()),
 				statusEffects: {
