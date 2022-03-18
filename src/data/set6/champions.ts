@@ -53,6 +53,20 @@ export default {
 		},
 	},
 
+	[ChampionKey.Kassadin]: {
+		cast: (elapsedMS, spell, champion) => {
+			champion.queueProjectile(elapsedMS, spell, {
+				onCollision: (elapsedMS, affectedUnit) => {
+					const manaReave = champion.getSpellVariable(SpellKey.ManaReave) ?? 0
+					const duration = champion.getSpellVariable(SpellKey.Duration) ?? 0
+					const damageReduction = champion.getSpellVariable(SpellKey.DamageReduction) ?? 0
+					affectedUnit.setBonusesFor(ChampionKey.Kassadin, [BonusKey.ManaReductionPercent, manaReave * -100])
+					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + duration * 1000])
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Warwick]: {
 		passive: (elapsedMS, target, source) => {
 			const heal = source.getSpellCalculationResult(SpellKey.HealAmount)

@@ -402,6 +402,7 @@ export class ChampionUnit {
 				if (!activeEffect) { return }
 				traitEffects[key]?.cast?.(activeEffect, elapsedMS, this)
 			})
+			this.setBonusesFor(SpellKey.ManaReave)
 			this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 		}
 	}
