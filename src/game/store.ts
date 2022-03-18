@@ -228,6 +228,7 @@ const store = {
 			champion.items.shift()
 		}
 		champion.items.push(item)
+		champion.resetPre(getters.synergiesByTeam.value)
 		saveUnits()
 		return true
 	},
