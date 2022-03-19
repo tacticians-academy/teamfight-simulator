@@ -17,6 +17,7 @@ export default {
 	[ChampionKey.Blitzcrank]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			champion.moveUntilMS = elapsedMS + stunSeconds * 1000
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target: getDistanceUnit(false, champion),
 				statusEffects: {
