@@ -53,8 +53,7 @@ export class ProjectileEffect extends GameEffect {
 		const expiresAfterMS = 50 * 1000
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : expiresAfterMS)
 
-		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
-		this.position = ref([x, y] as HexCoord)
+		this.position = ref([...source.coordinatePosition()] as HexCoord) // Destructure to avoid mutating source
 		this.missile = spell?.missile ?? data.missile!
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
 		this.sourceType = data.sourceType!
