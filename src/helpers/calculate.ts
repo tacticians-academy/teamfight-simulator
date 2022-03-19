@@ -117,7 +117,9 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 						}
 					}
 				}
-				bonusVariables.push([variableKey, value])
+				if (value != null) {
+					bonusVariables.push([variableKey, value])
+				}
 			}
 		}
 		if (unitHasTrait) {
@@ -159,7 +161,10 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): Bon
 			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(effectKey as BonusKey))) {
 				continue
 			}
-			bonusVariables.push([effectKey, item.effects[effectKey]])
+			const value = item.effects[effectKey]
+			if (value != null) {
+				bonusVariables.push([effectKey, value])
+			}
 		}
 
 		const itemFn = itemEffects[item.id as ItemKey]?.innate

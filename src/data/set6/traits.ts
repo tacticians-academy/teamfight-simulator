@@ -406,7 +406,7 @@ export default {
 				const damagePercent = activeEffect.variables['DamagePercent']
 				const manaPerSecond = activeEffect.variables['ManaPerSecond']
 				const omnivampPercent = activeEffect.variables['OmnivampPercent']
-				if (damagePercent != null) {
+				if (damagePercent != null && omnivampPercent != null) {
 					variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
 					if (manaPerSecond != null) {
 						scalings.push({
@@ -482,9 +482,11 @@ export default {
 
 } as { [key in TraitKey]?: TraitFns }
 
-function checkProcChance(procChance: number | null) {
+function checkProcChance(procChance: number | null | undefined) {
 	if (procChance == null) {
-		console.warn('ERR', 'procChance')
+		if (procChance === undefined) {
+			console.warn('ERR', 'procChance')
+		}
 		return false
 	}
 	return Math.random() * 100 < procChance //TODO rng
