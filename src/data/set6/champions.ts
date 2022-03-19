@@ -2,16 +2,45 @@ import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/ShapeEffect'
+import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getSurroundingWithin } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 
 export default {
+
+	[ChampionKey.Blitzcrank]: {
+		cast: (elapsedMS, spell, champion) => {
+			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			champion.queueProjectileEffect(elapsedMS, spell, {
+				target: getDistanceUnit(false, champion),
+				statusEffects: {
+					stunned: {
+						durationMS: stunSeconds * 1000,
+					},
+				},
+				onCollision: (elapsedMS, affectedUnit) => {
+					const adjacentHex = getClosestHexAvailableTo(champion.activeHex, state.units)
+					if (adjacentHex) {
+						affectedUnit.activeHex = adjacentHex //TODO travel time
+						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
+						champion.empoweredAuto = {
+							statusEffects: {
+								stunned: {
+									durationMS: 1 * 1000, //NOTE investigate in data
+								},
+							},
+						}
+					}
+				},
+			})
+		},
+	},
 
 	[ChampionKey.Braum]: {
 		cast: (elapsedMS, spell, champion) => {
