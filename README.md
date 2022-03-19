@@ -13,7 +13,7 @@ _Unplanned features are listed in the [Nice-To-Have's project](https://github.co
 ## Capabilities
 
 ### Data gathering
-- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library)).
+- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library?ts=2)).
 
 ### Units setup
 - Place/move any units onto 2 teams
@@ -22,7 +22,7 @@ _Unplanned features are listed in the [Nice-To-Have's project](https://github.co
 
 ### Play a fight
 - Assassins jump to backline
-- Units pathfind (naively) into attack range (see [game/pathfind](src/game/pathfind.ts?ts=2))
+- Units pathfind (naively) into attack range (see [`game/pathfind`](src/game/pathfind.ts?ts=2))
 - Units auto-attack and generate mana
 - Supported units cast their abilities
 - Runs until one team is left standing
@@ -59,12 +59,12 @@ npm install
 npm run dev
 ```
 
-_Note `academy-library` uses [`pnpm`](https://pnpm.io) rather than `npm` for its lockfile._
+_Note `tacticians-academy` uses [`pnpm`](https://pnpm.io) rather than `npm` for its lockfile._
 
 ### What you can do
 
 The largest outstanding project is to script champion abilities. (Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.)
 
-To get started, find an unimplemented champion from the [current Set milestone](#current-set-support). Refer to its spell data in [academy-library/champions](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [set6/champions](src/data/set6/champions.ts?ts=2) as a template, give it a try!
+To get started, find an unimplemented champion from the [current Set milestone](#current-set-support). Refer to its spell data in [`academy-library/champions`](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [`set6/champions`](src/data/set6/champions.ts?ts=2) as a template, give it a try!
 
 If you're feeling adventurous, you could try tackling something from the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2)!
