@@ -1,11 +1,15 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
+
+import { ShapeEffectCone } from '#/game/ShapeEffect'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
+import { toRadians } from '#/helpers/angles'
 import { getSurroundingWithin } from '#/helpers/boardUtils'
+import { createDamageCalculation } from '#/helpers/calculate'
+import { HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { createDamageCalculation } from '#/helpers/calculate'
 
 export default {
 
@@ -18,6 +22,16 @@ export default {
 				targetTeam: champion.opposingTeam(),
 				destroysOnCollision: true,
 				retargetOnTargetDeath: true,
+			})
+		},
+	},
+
+	[ChampionKey.Camille]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return console.log('No target', champion.name, champion.team) }
+			champion.queueShapeEffect(elapsedMS, spell, {
+				shape: new ShapeEffectCone(champion.coordinatePosition(), champion.angleTo(target), HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
 			})
 		},
 	},
