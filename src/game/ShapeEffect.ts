@@ -47,7 +47,7 @@ export class ShapeEffectCone implements ShapeEffectShape {
 			height: `${this.radius * HEX_PROPORTION}%`,
 			transformOrigin: '50% 50%',
 			transform: `translate(-50%, -50%) rotate(${this.direction - this.arcRadians / 2 + Math.PI / 2}rad)`,
-			backgroundImage: `conic-gradient(blue ${this.arcRadians}rad, transparent 0)`,
+			backgroundImage: `conic-gradient(currentColor ${this.arcRadians}rad, transparent 0)`,
 		}
 	}
 }

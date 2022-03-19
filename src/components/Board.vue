@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import HexEffect from '#/components/HexEffect.vue'
 import ProjectileEffect from '#/components/ProjectileEffect.vue'
+import ShapeEffect from '#/components/ShapeEffect.vue'
 import Unit from '#/components/Unit.vue'
 
 import { computed, onMounted, ref } from 'vue'
@@ -89,7 +90,7 @@ const socialitesByTeam = getters.socialitesByTeam
 			<template v-for="unit in state.units" :key="unit.instanceID">
 				<Unit v-if="!unit.dead" :unit="unit" />
 			</template>
-			<transition-group name="hexEffect">
+			<transition-group name="fade">
 				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">
 					<HexEffect v-if="hexEffect.started" :hexEffect="hexEffect" />
 				</template>
@@ -97,6 +98,11 @@ const socialitesByTeam = getters.socialitesByTeam
 			<template v-for="projectileEffect in state.projectileEffects" :key="projectileEffect.instanceID">
 				<ProjectileEffect v-if="projectileEffect.started" :projectile="projectileEffect" />
 			</template>
+			<transition-group name="fade">
+				<template v-for="shapeEffect in state.shapeEffects" :key="shapeEffect.instanceID">
+					<ShapeEffect v-if="shapeEffect.started" :shapeEffect="shapeEffect" />
+				</template>
+			</transition-group>
 			<div
 				v-if="hexForMenu && !state.isRunning"
 				class="hex hex-overlay  pointer-events-auto absolute bg-tertiary text-primary  flex flex-col justify-center space-y-1"
@@ -129,13 +135,19 @@ const socialitesByTeam = getters.socialitesByTeam
 .hex.team-b {
 	@apply bg-rose-300/25;
 }
+.text-team-a {
+	@apply text-violet-300;
+}
+.text-team-b {
+	@apply text-rose-300;
+}
 </style>
 
 <style scoped lang="postcss">
-.hexEffect-leave-active {
+.fade-leave-active {
 	transition: opacity 1500ms !important;
 }
-.hexEffect-enter-from, .hexEffect-leave-to {
+.fade-enter-from, .fade-leave-to {
 	opacity: 0 !important;
 }
 </style>
