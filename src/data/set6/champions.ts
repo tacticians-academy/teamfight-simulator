@@ -74,7 +74,7 @@ export default {
 					const manaReave = champion.getSpellVariable(SpellKey.ManaReave)
 					const durationSeconds = champion.getSpellVariable(SpellKey.Duration)
 					const damageReduction = champion.getSpellVariable(SpellKey.DamageReduction)
-					affectedUnit.setBonusesFor(ChampionKey.Kassadin, [BonusKey.ManaReductionPercent, manaReave * -100])
+					affectedUnit.setBonusesFor(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, manaReave * -100])
 					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + durationSeconds * 1000])
 				},
 			})
