@@ -19,7 +19,6 @@ export default {
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
-				targetTeam: champion.opposingTeam(),
 				destroysOnCollision: true,
 				retargetOnTargetDeath: true,
 			})
@@ -53,7 +52,6 @@ export default {
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target: target.activeHex,
-				targetTeam: champion.opposingTeam(),
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)
@@ -115,7 +113,6 @@ export default {
 				statusEffects: {
 					stunned: {
 						durationMS: stunSeconds * 1000,
-						amount: 1,
 					},
 				},
 			})

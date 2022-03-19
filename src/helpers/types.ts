@@ -56,7 +56,7 @@ export enum StatusEffectType {
 
 export interface StatusEffectData {
 	durationMS: number
-	amount: number
+	amount?: number
 }
 export type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
 

@@ -7,8 +7,7 @@ const props = defineProps<{
 	projectile: ProjectileEffect
 }>()
 
-const size = props.projectile.missile.width ?? 20
-const sizeUnits = `${size / 20}vw`
+const sizeUnits = `${props.projectile.width * 100}%`
 
 const position = props.projectile.position // eslint-disable-line vue/no-setup-props-destructure
 </script>

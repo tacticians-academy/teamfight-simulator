@@ -9,22 +9,23 @@ import type { GameEffectData } from '#/game/GameEffect'
 import { coordinatePosition } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
+import { DEFAULT_CAST_SECONDS, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { DamageSourceType } from '#/helpers/types'
-import type { HexCoord, TeamNumber } from '#/helpers/types'
-
-const hexRadius = HEX_PROPORTION * 2 * 100
+import type { HexCoord} from '#/helpers/types'
+import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 
 export interface ProjectileData extends GameEffectData {
 	/** Inferred to be `spell` if passing with a `SpellCalculation`. */
 	sourceType?: DamageSourceType
-	/** Whether the Projectile should complete after the first time it collides with a unit. Requires `targetTeam`. */
+	/** Whether the `Projectile` should complete after the first time it collides with a unit. Set to false to apply to all intermediary units collided with. */
 	destroysOnCollision?: boolean
+	/** Whether the `Projectile` should continue past its target. Requires `target` to be a hex. */
+	continuesPastTarget?: boolean
 	/** Only include if not passed with a `SpellCalculation`. */
 	missile?: ChampionSpellMissileData
-	/** If targeting a HexCoord, `targetTeam` must be set or the Projectile can never hit. Defaults to the source unit's attack target unit. */
+	/** Defaults to the source unit's attack target unit, or the unit's hex at cast time if `continuesPastTarget` is `true`. */
 	target?: ChampionUnit | HexCoord
-	/** If the Projectile should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
+	/** If the `Projectile` should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
 	retargetOnTargetDeath?: boolean
 }
 
@@ -39,8 +40,16 @@ export class ProjectileEffect extends GameEffect {
 	sourceType: DamageSourceType
 	target: ChampionUnit | HexCoord
 	targetCoordinates: HexCoord
-	destroysOnCollision?: boolean
-	retargetOnTargetDeath?: boolean
+	destroysOnCollision: boolean | undefined
+	continuesPastTarget: boolean
+	retargetOnTargetDeath: boolean | undefined
+	width: number
+
+	collidedWith: string[] = []
+	collisionRadiusSquared: number
+
+	fixedDeltaX: number | undefined
+	fixedDeltaY: number | undefined
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData, spell?: ChampionSpellData) {
 		super(source, data)
@@ -59,10 +68,37 @@ export class ProjectileEffect extends GameEffect {
 		this.sourceType = data.sourceType!
 		this.target = data.target!
 		this.destroysOnCollision = data.destroysOnCollision
+		this.continuesPastTarget = data.continuesPastTarget ?? false
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
 		this.targetCoordinates = isUnit(this.target) ? this.target.coordinatePosition() : coordinatePosition(this.target)
+		this.width = (this.missile.width ?? 10) * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
+		const collisionRadius = (this.width + UNIT_SIZE_PROPORTION) / 2
+		this.collisionRadiusSquared = collisionRadius * collisionRadius
+
+		if (this.continuesPastTarget) {
+			const [deltaX, deltaY] = this.getDelta()
+			this.fixedDeltaX = deltaX
+			this.fixedDeltaY = deltaY
+		}
 
 		this.postInit()
+	}
+
+	getDistanceFor(diffMS: DOMHighResTimeStamp) {
+		return diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
+	}
+	getDelta() {
+		const [currentX, currentY] = this.position.value
+		const [targetX, targetY] = this.targetCoordinates
+		const distanceX = targetX - currentX
+		const distanceY = targetY - currentY
+		const angle = Math.atan2(distanceY, distanceX)
+		return [Math.cos(angle), Math.sin(angle), distanceX, distanceY]
+	}
+
+	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
+		const wasSpellShielded = this.applySuper(elapsedMS, unit)
+		return wasSpellShielded
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
@@ -81,14 +117,19 @@ export class ProjectileEffect extends GameEffect {
 			}
 			this.targetCoordinates = this.target.coordinatePosition()
 		}
-		const [currentX, currentY] = this.position.value
-		const [targetX, targetY] = this.targetCoordinates
-		const differenceX = targetX - currentX
-		const differenceY = targetY - currentY
-		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
-		if (isUnit(this.target) && Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
-			this.applySuper(elapsedMS, this.target)
-			return false
+		const diffDistance = this.getDistanceFor(diffMS)
+		let angleX: number, angleY: number
+		if (this.continuesPastTarget) {
+			angleX = this.fixedDeltaX!
+			angleY = this.fixedDeltaY!
+		} else {
+			const [deltaX, deltaY, distanceX, distanceY] = this.getDelta()
+			angleX = deltaX
+			angleY = deltaY
+			if (isUnit(this.target) && Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
+				this.applySuper(elapsedMS, this.target)
+				return false
+			}
 		}
 
 		if (this.missile.acceleration != null) {
@@ -103,19 +144,19 @@ export class ProjectileEffect extends GameEffect {
 				}
 			}
 		}
-		const angle = Math.atan2(differenceY, differenceX)
-		this.position.value[0] += Math.cos(angle) * speed
-		this.position.value[1] += Math.sin(angle) * speed
-		if (this.targetTeam !== undefined) {
-			const [projectileX, projectileY] = this.position.value
-			const collisionUnits = getInteractableUnitsOfTeam(this.targetTeam)
-			for (const unit of collisionUnits) {
-				const [unitX, unitY] = unit.coordinatePosition()
-				const xDist = (unitX - projectileX) * 100
-				const yDist = (unitY - projectileY) * 100
-				if (xDist * xDist + yDist * yDist < hexRadius) {
+		const position = this.position.value
+		position[0] += angleX * diffDistance
+		position[1] += angleY * diffDistance
+
+		if (this.destroysOnCollision != null) {
+			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
+				if (!this.destroysOnCollision && this.collidedWith.includes(unit.instanceID)) {
+					continue
+				}
+				if (coordinateDistanceSquared(position, unit.coordinatePosition()) < this.collisionRadiusSquared) {
+					this.collidedWith.push(unit.instanceID)
 					this.apply(elapsedMS, unit)
-					if (this.destroysOnCollision === true) {
+					if (this.destroysOnCollision) {
 						return false
 					}
 				}

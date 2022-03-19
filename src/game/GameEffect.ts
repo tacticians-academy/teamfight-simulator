@@ -48,7 +48,7 @@ export class GameEffect extends GameEffectChild {
 	activatesAtMS: DOMHighResTimeStamp = 0
 	expiresAtMS: DOMHighResTimeStamp = 0
 	source: ChampionUnit
-	targetTeam: TeamNumber | null | undefined
+	targetTeam: TeamNumber | null
 	damageCalculation?: SpellCalculation
 	damageIncrease?: number
 	damageMultiplier?: number

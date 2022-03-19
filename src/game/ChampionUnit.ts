@@ -338,7 +338,7 @@ export class ChampionUnit {
 	getStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType) {
 		const statusEffect = this.statusEffects[effectType]
 		if (statusEffect.active && elapsedMS < statusEffect.expiresAtMS) {
-			return statusEffect.amount
+			return statusEffect.amount ?? 0
 		}
 		return undefined
 	}
@@ -361,7 +361,7 @@ export class ChampionUnit {
 			if (statusEffect.active) {
 				if (elapsedMS >= statusEffect.expiresAtMS) {
 					statusEffect.active = false
-				} else if (effectType === StatusEffectType.stunned && statusEffect.amount) {
+				} else if (effectType === StatusEffectType.stunned && statusEffect.amount > 0) {
 					if (this.health <= statusEffect.amount) {
 						statusEffect.active = false
 					}
@@ -441,7 +441,7 @@ export class ChampionUnit {
 		}
 		if (isAffectedByGrievousWounds) {
 			const grievousWounds = this.getStatusEffect(elapsedMS, StatusEffectType.grievousWounds)
-			if (grievousWounds != null) {
+			if (grievousWounds != null && grievousWounds > 0) {
 				amount *= grievousWounds
 			}
 		}
@@ -534,7 +534,7 @@ export class ChampionUnit {
 		} else if (damageType === DamageType.magic) {
 			reduction = this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction)
 		}
-		if (reduction != null) {
+		if (reduction != null && reduction > 0) {
 			defenseStat! *= reduction
 		}
 		if (damageType === DamageType.physical || (damageType === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
@@ -863,18 +863,19 @@ export class ChampionUnit {
 		this.pending.bonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
 	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
-		if (!data.damageCalculation) {
+		if (spell && !data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
 		if (!data.sourceType && spell) {
 			data.sourceType = DamageSourceType.spell
 		}
 		if (data.target == null) {
-			if (!this.target) {
+			const target = this.target
+			if (!target) {
 				console.error('ERR', 'No target for projectile', this.name, spell?.name)
 				return
 			}
-			data.target = this.target
+			data.target = data.continuesPastTarget === true ? target.activeHex : target
 		}
 		const projectile = new ProjectileEffect(this, elapsedMS, data, spell)
 		state.projectileEffects.add(projectile)
@@ -884,7 +885,7 @@ export class ChampionUnit {
 		}
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
-		if (spell && data.damageCalculation === undefined) {
+		if (spell && !data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
@@ -897,7 +898,7 @@ export class ChampionUnit {
 	}
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
-		if (spell && data.damageCalculation === undefined) {
+		if (spell && !data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
