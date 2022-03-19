@@ -1,7 +1,7 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
-import { ShapeEffectCone } from '#/game/ShapeEffect'
+import { ShapeEffectCircle, ShapeEffectCone } from '#/game/ShapeEffect'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
@@ -38,8 +38,8 @@ export default {
 
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
-			champion.queueHexEffect(elapsedMS, spell, { //TODO use coordinate-based collision
-				hexDistanceFromSource: 1,
+			champion.queueShapeEffect(elapsedMS, spell, {
+				shape: new ShapeEffectCircle(champion.coordinatePosition(), HEX_MOVE_LEAGUEUNITS * 1.125),
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(SpellKey.Heal)!, true)
 				},

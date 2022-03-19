@@ -188,6 +188,12 @@ export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: Champi
 	return enemies
 }
 
+export function coordinateDistanceSquared([startX, startY]: HexCoord, [destX, destY]: HexCoord) {
+	const diffX = destX - startX
+	const diffY = destY - startY
+	return diffX * diffX + diffY * diffY
+}
+
 export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 	let [ currentCol, currentRow ] = destHex
 	const [ destCol, destRow ] = startHex

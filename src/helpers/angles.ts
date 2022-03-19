@@ -15,11 +15,11 @@ export function getAngleBetween([sourceX, sourceY]: HexCoord, [targetX, targetY]
 }
 
 export function doesLineInterceptCircle([circleX, circleY]: HexCoord, circleRadius: number, [lineStartX, lineStartY]: HexCoord, [lineDeltaX, lineDeltaY]: HexCoord) {
-	const vertex2X = lineStartX - circleX
-	const vertex2Y = lineStartY - circleY
-	const b = -2 * (lineDeltaX * vertex2X + lineDeltaY * vertex2Y)
+	const lineStartToCircleX = lineStartX - circleX
+	const lineStartToCircleY = lineStartY - circleY
+	const b = -2 * (lineDeltaX * lineStartToCircleX + lineDeltaY * lineStartToCircleY)
 	const c = 2 * (lineDeltaX * lineDeltaX + lineDeltaY * lineDeltaY)
-	const d = Math.sqrt(b * b - 2 * c * (vertex2X * vertex2X + vertex2Y * vertex2Y - circleRadius * circleRadius))
+	const d = Math.sqrt(b * b - 2 * c * (lineStartToCircleX * lineStartToCircleX + lineStartToCircleY * lineStartToCircleY - circleRadius * circleRadius))
 	if (isNaN(d)) {
 		return false
 	}
