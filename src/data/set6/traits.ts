@@ -356,6 +356,35 @@ export default {
 		},
 	},
 
+	[TraitKey.Rivals]: {
+		solo: (unit, activeEffect) => {
+			if (unit.name === ChampionKey.Vi) {
+				const manaReduction = activeEffect.variables['ViManaReduction']
+				if (manaReduction == null) {
+					return console.log('ERR', TraitKey.Rivals, unit.name, activeEffect)
+				}
+				unit.addBonuses(TraitKey.Rivals, [BonusKey.ManaReduction, manaReduction])
+			} else if (unit.name !== ChampionKey.Jinx) {
+				console.log('ERR', TraitKey.Rivals, unit.name)
+			}
+		},
+		enemyDeath: (activeEffect, elapsedMS, dead, [unit]) => {
+			if (unit.name === ChampionKey.Jinx) {
+				if (unit.target !== dead) { //TODO use damage credit instead
+					return
+				}
+				const asDurationSeconds = activeEffect.variables['JinxASDuration']
+				const empoweredAS = activeEffect.variables['JinxEmpoweredAS']
+				if (asDurationSeconds == null || empoweredAS == null) {
+					return console.log('ERR', TraitKey.Rivals, unit.name, activeEffect)
+				}
+				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.AttackSpeed, empoweredAS * 100, elapsedMS + asDurationSeconds * 1000])
+			} else if (unit.name !== ChampionKey.Vi) {
+				console.log('ERR', TraitKey.Rivals, unit.name)
+			}
+		},
+	},
+
 	[TraitKey.Scholar]: {
 		team: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
