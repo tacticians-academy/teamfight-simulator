@@ -11,7 +11,6 @@ import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/h
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData, StarLevel, TeamNumber } from '#/helpers/types'
 import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { HexEffect } from '#/game/HexEffect'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -262,10 +261,11 @@ export default {
 	},
 
 	[TraitKey.Mutant]: {
+		disableDefaultVariables: true,
 		basicAttack: (activeEffect, target, source, canReProc) => {
 			if (state.mutantType === MutantType.AdrenalineRush) {
 				if (canReProc) {
-					const multiAttackProcChance = source.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
+					const multiAttackProcChance = getMutantBonusFor(activeEffect, MutantType.AdrenalineRush, MutantBonus.AdrenalineProcChance)
 					if (checkProcChance(multiAttackProcChance)) {
 						source.attackStartAtMS = 1
 					}
@@ -292,7 +292,11 @@ export default {
 		solo: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
 			const variables: BonusVariable[] = []
-			if (state.mutantType === MutantType.Metamorphosis) {
+			if (state.mutantType === MutantType.AdrenalineRush) {
+				variables.push([BonusKey.AttackDamage, getMutantBonusFor(activeEffect, MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)])
+			} else if (state.mutantType === MutantType.SynapticWeb) {
+				variables.push([BonusKey.AbilityPower, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticAP)], [BonusKey.ManaReduction, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticManaCost)])
+			} else if (state.mutantType === MutantType.Metamorphosis) {
 				const intervalSeconds = activeEffect.variables['MutantMetamorphosisGrowthRate']
 				const amountARMR = activeEffect.variables['MutantMetamorphosisArmorMR']
 				const amountADAP = activeEffect.variables['MutantMetamorphosisADAP']
@@ -341,6 +345,14 @@ export default {
 				}
 			}
 			return { variables }
+		},
+		allyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
+			if (state.mutantType === MutantType.VoraciousAppetite) {
+				const increaseADAP = getMutantBonusFor(activeEffect, MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
+				traitUnits.forEach(unit => {
+					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
+				})
+			}
 		},
 	},
 
@@ -481,6 +493,19 @@ export default {
 	},
 
 } as { [key in TraitKey]?: TraitFns }
+
+function getMutantBonusFor({ variables }: TraitEffectData, mutantType: MutantType, bonus: MutantBonus) {
+	if (state.mutantType !== mutantType) {
+		console.log('ERR', mutantType, state.mutantType, bonus)
+		return null
+	}
+	const value = variables[`Mutant${state.mutantType}${bonus}`]
+	if (value === undefined) {
+		console.log('ERR', mutantType, bonus, variables)
+		return null
+	}
+	return value
+}
 
 function checkProcChance(procChance: number | null | undefined) {
 	if (procChance == null) {

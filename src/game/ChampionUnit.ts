@@ -26,7 +26,7 @@ import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeT
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { MutantType, MutantBonus, SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
+import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
@@ -470,13 +470,6 @@ export class ChampionUnit {
 
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
-			teamUnits.forEach(unit => { //TODO refactor to set6/traits
-				const increaseADAP = unit.getMutantBonus(MutantType.VoraciousAppetite, MutantBonus.VoraciousADAP)
-				if (increaseADAP > 0) {
-					unit.addBonuses(TraitKey.Mutant, [BonusKey.AttackDamage, increaseADAP], [BonusKey.AbilityPower, increaseADAP])
-				}
-			})
-
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 				teamSynergies.forEach(({ key, activeEffect }) => {
@@ -768,12 +761,6 @@ export class ChampionUnit {
 	getBonusVariants(bonus: BonusKey) {
 		return this.getBonuses(bonus, `Bonus${bonus}` as BonusKey, `${this.starLevel}Star${bonus}` as BonusKey)
 	}
-	getMutantBonus(mutantType: MutantType, bonus: MutantBonus) {
-		if (state.mutantType !== mutantType) {
-			return 0
-		}
-		return this.getBonuses(`Mutant${state.mutantType}${bonus}` as BonusKey)
-	}
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
 			.reduce((accumulator, bonus: [BonusLabelKey, BonusVariable[]]) => {
@@ -800,7 +787,7 @@ export class ChampionUnit {
 		if (baseAD === 0) {
 			baseAD = [100, 100, 125, 140][stageIndex()]
 		}
-		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage) + this.getMutantBonus(MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)
+		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
 		const multiplyAttackSpeed = this.getSpellVariableIfExists(SpellKey.ADFromAttackSpeed)
 		if (multiplyAttackSpeed != null) {
 			return ad + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
@@ -808,13 +795,12 @@ export class ChampionUnit {
 		return ad
 	}
 	abilityPower() {
-		const apBonus = this.getBonusVariants(BonusKey.AbilityPower) + this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticAP)
-		return 100 + apBonus
+		return 100 + this.getBonusVariants(BonusKey.AbilityPower)
 	}
 	manaMax() {
 		const maxManaMultiplier = this.getBonuses(BonusKey.ManaReductionPercent)
 		const multiplier = maxManaMultiplier === 0 ? 1 : (1 - maxManaMultiplier / 100)
-		const maxManaReduction = this.getMutantBonus(MutantType.SynapticWeb, MutantBonus.SynapticManaCost)
+		const maxManaReduction = this.getBonuses(BonusKey.ManaReduction)
 		return (this.data.stats.mana - maxManaReduction) * multiplier
 	}
 	armor() {
