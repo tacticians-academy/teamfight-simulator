@@ -62,6 +62,8 @@ export class ProjectileEffect extends GameEffect {
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
 		this.targetCoordinates = isUnit(this.target) ? this.target.coordinatePosition() : coordinatePosition(this.target)
+
+		this.postInit()
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {

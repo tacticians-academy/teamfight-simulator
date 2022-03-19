@@ -30,6 +30,8 @@ export class ShapeEffect extends GameEffect {
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		this.shape = data.shape
+
+		this.postInit()
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {

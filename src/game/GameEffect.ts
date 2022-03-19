@@ -70,6 +70,9 @@ export class GameEffect extends GameEffectChild {
 		this.statusEffects = data.statusEffects
 		this.onCollision = data.onCollision
 	}
+	postInit() {
+		this.started.value = this.startsAtMS === 0
+	}
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
 		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined

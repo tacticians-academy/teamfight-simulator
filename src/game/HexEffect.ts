@@ -35,6 +35,8 @@ export class HexEffect extends GameEffect {
 		this.hexes = ref(data.hexes)
 		this.hexDistanceFromSource = data.hexDistanceFromSource
 		this.taunts = data.taunts ?? false
+
+		this.postInit()
 	}
 
 	start = () => {

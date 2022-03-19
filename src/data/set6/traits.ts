@@ -254,10 +254,10 @@ export default {
 			getUnitsOfTeam(unit.team)
 				.filter(unit => unit.isIn(hexesInFront))
 				.forEach(unit => unit.setBonusesFor(TraitKey.Mastermind, [BonusKey.Mana, manaGrant]))
-			state.hexEffects.add(new HexEffect(unit, 0, undefined, { //TODO display underneath
+			unit.queueHexEffect(0, undefined, { //TODO display underneath
 				targetTeam: unit.team,
 				hexes: hexesInFront,
-			}))
+			})
 		},
 	},
 
