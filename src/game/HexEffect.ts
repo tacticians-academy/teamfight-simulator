@@ -28,7 +28,7 @@ export class HexEffect extends GameEffect {
 		super(source, data)
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
-		this.activatesAfterMS = spell ? (spell.missile!.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
+		this.activatesAfterMS = spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 

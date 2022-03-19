@@ -7,7 +7,7 @@ export function toRadians(degrees: number) {
 }
 
 export function radianDistance(a: number, b: number) {
-	return (a - b) % pi2
+	return (b - a) % pi2
 }
 
 export function getAngleBetween([sourceX, sourceY]: HexCoord, [targetX, targetY]: HexCoord) {
