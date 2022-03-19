@@ -32,7 +32,7 @@ function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
 	return 'name' in target
 }
 
-export class Projectile extends GameEffect {
+export class ProjectileEffect extends GameEffect {
 	position: Ref<HexCoord>
 	missile: ChampionSpellMissileData
 	currentSpeed: number

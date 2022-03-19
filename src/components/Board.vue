@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import HexEffect from '#/components/HexEffect.vue'
+import ProjectileEffect from '#/components/ProjectileEffect.vue'
 import Unit from '#/components/Unit.vue'
-import Projectile from '#/components/Projectile.vue'
 
 import { computed, onMounted, ref } from 'vue'
 
@@ -94,8 +94,8 @@ const socialitesByTeam = getters.socialitesByTeam
 					<HexEffect v-if="hexEffect.started" :hexEffect="hexEffect" />
 				</template>
 			</transition-group>
-			<template v-for="projectile in state.projectiles" :key="projectile.instanceID">
-				<Projectile v-if="projectile.started" :projectile="projectile" />
+			<template v-for="projectileEffect in state.projectileEffects" :key="projectileEffect.instanceID">
+				<ProjectileEffect v-if="projectileEffect.started" :projectile="projectileEffect" />
 			</template>
 			<div
 				v-if="hexForMenu && !state.isRunning"

@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { DraggableType } from '#/helpers/dragDrop'
 import { useStore } from '#/game/store'
 
-import { HEX_PROPORTION, UNIT_SIZE_HEX_PROPORTION } from '#/helpers/constants'
+import { UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import { getDragName, getDragType, onDragOver } from '#/helpers/dragDrop'
 import { StatusEffectType } from '#/helpers/types'
 import type { StarLevel } from '#/helpers/types'
@@ -22,7 +22,7 @@ const showInfo = ref(false)
 
 const currentPosition = computed(() => props.unit.coordinatePosition())
 
-const unitSize = `${100 * HEX_PROPORTION * UNIT_SIZE_HEX_PROPORTION}%`
+const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 
 const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.aoeDamageReduction]: '💦',

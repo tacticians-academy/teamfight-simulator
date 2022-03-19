@@ -13,12 +13,15 @@ import traitEffects from '#/data/set6/traits'
 
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
-import { Projectile } from '#/game/ProjectileEffect'
+import { ProjectileEffect } from '#/game/ProjectileEffect'
 import type { ProjectileData } from '#/game/ProjectileEffect'
+import { ShapeEffect } from '#/game/ShapeEffect'
+import type { ShapeEffectData } from '#/game/ShapeEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
 import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
+import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
@@ -209,7 +212,7 @@ export class ChampionUnit {
 				this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 			} else {
 				const source = this
-				this.queueProjectile(elapsedMS, undefined, {
+				this.queueProjectileEffect(elapsedMS, undefined, {
 					startsAfterMS: msBetweenAttacks / 4, //TODO from data
 					missile: {
 						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
@@ -873,7 +876,7 @@ export class ChampionUnit {
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {
 		this.pending.bonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
-	queueProjectile(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
+	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
 		if (!data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
 		}
@@ -887,8 +890,8 @@ export class ChampionUnit {
 			}
 			data.target = this.target
 		}
-		const projectile = new Projectile(this, elapsedMS, data, spell)
-		state.projectiles.add(projectile)
+		const projectile = new ProjectileEffect(this, elapsedMS, data, spell)
+		state.projectileEffects.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
 		if (spell) {
 			this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
@@ -905,5 +908,22 @@ export class ChampionUnit {
 		state.hexEffects.add(hexEffect)
 		this.attackStartAtMS = hexEffect.activatesAtMS
 		this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+	}
+
+	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
+		if (spell && data.damageCalculation === undefined) {
+			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
+		}
+		if (data.damageCalculation && !data.damageSourceType) {
+			data.damageSourceType = DamageSourceType.spell
+		}
+		const shapeEffect = new ShapeEffect(this, elapsedMS, spell, data)
+		state.shapeEffects.add(shapeEffect)
+		this.attackStartAtMS = shapeEffect.activatesAtMS
+		this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+	}
+
+	angleTo(unit: ChampionUnit) {
+		return getAngleBetween(this.coordinatePosition(), unit.coordinatePosition())
 	}
 }

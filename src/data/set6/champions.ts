@@ -13,7 +13,7 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			const target = getDistanceUnit(false, champion)
 			if (!target) { return console.log('No target', champion.name, champion.team) }
-			champion.queueProjectile(elapsedMS, spell, {
+			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				targetTeam: champion.opposingTeam(),
 				destroysOnCollision: true,
@@ -37,7 +37,7 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
 			if (!target) { return console.log('No target', champion.name, champion.team) }
-			champion.queueProjectile(elapsedMS, spell, {
+			champion.queueProjectileEffect(elapsedMS, spell, {
 				target: target.activeHex,
 				targetTeam: champion.opposingTeam(),
 				destroysOnCollision: true,
@@ -55,7 +55,7 @@ export default {
 
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
-			champion.queueProjectile(elapsedMS, spell, {
+			champion.queueProjectileEffect(elapsedMS, spell, {
 				onCollision: (elapsedMS, affectedUnit) => {
 					const manaReave = champion.getSpellVariable(SpellKey.ManaReave)
 					const durationSeconds = champion.getSpellVariable(SpellKey.Duration)

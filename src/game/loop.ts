@@ -123,7 +123,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		}
 	}
 
-	([state.hexEffects, state.projectiles] as Set<GameEffect>[]).forEach(effects => {
+	([state.hexEffects, state.projectileEffects, state.shapeEffects] as Set<GameEffect>[]).forEach(effects => {
 		effects.forEach(effect => {
 			if (effect.update(elapsedMS, diffMS, state.units) === false) {
 				effects.delete(effect)

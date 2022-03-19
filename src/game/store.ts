@@ -13,7 +13,8 @@ import traitEffects from '#/data/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'
-import type { Projectile } from '#/game/ProjectileEffect'
+import type { ProjectileEffect } from '#/game/ProjectileEffect'
+import type { ShapeEffect } from '#/game/ShapeEffect'
 import { cancelLoop } from '#/game/loop'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
@@ -35,7 +36,8 @@ export const state = reactive({
 	dragUnit: null as ChampionUnit | null,
 	units: [] as ChampionUnit[],
 	hexEffects: new Set<HexEffect>(),
-	projectiles: new Set<Projectile>(),
+	projectileEffects: new Set<ProjectileEffect>(),
+	shapeEffects: new Set<ShapeEffect>(),
 
 	socialiteHexes: (getStorageJSON(StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
 	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
@@ -117,7 +119,8 @@ function resetUnitsAfterCreatingOrMoving() {
 	synergiesByTeam[1] = _synergiesByTeam[1]
 	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
 	state.hexEffects.clear()
-	state.projectiles.clear()
+	state.projectileEffects.clear()
+	state.shapeEffects.clear()
 
 	state.units.forEach(unit => unit.resetPre(synergiesByTeam))
 	state.units.forEach(unit => {
