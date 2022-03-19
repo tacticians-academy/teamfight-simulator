@@ -8,6 +8,8 @@ https://tftsim.netlify.app
 
 See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simulator/milestone/1)**!
 
+_Unplanned features are listed in the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2)._
+
 ## Capabilities
 
 ### Data gathering
@@ -20,7 +22,7 @@ See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simula
 
 ### Play a fight
 - Assassins jump to backline
-- Units pathfind (naively) into attack range (see [game/pathfind](src/game/pathfind.ts))
+- Units pathfind (naively) into attack range (see [game/pathfind](src/game/pathfind.ts?ts=2))
 - Units auto-attack and generate mana
 - Supported units cast their abilities
 - Runs until one team is left standing
@@ -31,6 +33,7 @@ See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simula
 - Augments: Not implemented
 - Various minor gameplay features (30 second overtime limit/etc)
 - Engine refinements (pathfinding improvements/experimentally determining undocumented values) so that gameplay resembles TFT enough to reproduce fights
+- Some features are too niche or can be accomplished by other means, and thus are not prioritized for implementation (PR's are welcome though!). See the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2) for a current list.
 
 ## Out of scope
 
@@ -56,8 +59,12 @@ npm install
 npm run dev
 ```
 
+_Note `academy-library` uses [`pnpm`](https://pnpm.io) rather than `npm` for its lockfile._
+
 ### What you can do
 
-The largest outstanding project is to script the abilities of each unit. Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.
+The largest outstanding project is to script champion abilities. (Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.)
 
-Check out [`set6/champions`](src/data/set6/champions.ts). Pick an unimplemented champion from the [current Set milestone](#current-set-support), refer to its spell data in [academy-library/champions](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2), and using existing implementations as a template, give it a try!
+To get started, find an unimplemented champion from the [current Set milestone](#current-set-support). Refer to its spell data in [academy-library/champions](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [set6/champions](src/data/set6/champions.ts?ts=2) as a template, give it a try!
+
+If you're feeling adventurous, you could try tackling something from the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2)!
