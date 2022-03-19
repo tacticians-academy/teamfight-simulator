@@ -13,6 +13,21 @@ import type { ChampionFns } from '#/helpers/types'
 
 export default {
 
+	[ChampionKey.Braum]: {
+		cast: (elapsedMS, spell, champion) => {
+			const stunSeconds = champion.getSpellVariable(SpellKey.StunDuration)
+			champion.queueProjectileEffect(elapsedMS, spell, {
+				destroysOnCollision: false,
+				continuesPastTarget: true,
+				statusEffects: {
+					stunned: {
+						durationMS: stunSeconds * 1000,
+					},
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Caitlyn]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = getDistanceUnit(false, champion)
