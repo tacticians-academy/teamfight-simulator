@@ -9,12 +9,14 @@ const props = defineProps<{
 
 const size = props.projectile.missile.width ?? 20
 const sizeUnits = `${size / 20}vw`
+
+const position = props.projectile.position // eslint-disable-line vue/no-setup-props-destructure
 </script>
 
 <template>
 <div
 	class="projectile hex-overlay" :class="projectile.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
-	:style="{ left: `${projectile.position.value[0] * 100}%`, top: `${projectile.position.value[1] * 100}%`, width: sizeUnits, height: sizeUnits }"
+	:style="{ left: `${position[0] * 100}%`, top: `${position[1] * 100}%`, width: sizeUnits, height: sizeUnits }"
 />
 </template>
 
