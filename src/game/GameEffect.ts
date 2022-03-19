@@ -1,10 +1,10 @@
-import { reactive, ref } from 'vue'
+import { ref } from 'vue'
 
 import type { SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { CollisionFn, DamageSourceType, HexCoord, StatusEffectsData, StatusEffectType, TeamNumber } from '#/helpers/types'
+import type { BonusLabelKey, BonusVariable, CollisionFn, DamageSourceType, StatusEffectsData, StatusEffectType, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: number, unit: ChampionUnit) => boolean = () => false
@@ -14,14 +14,12 @@ export class GameEffectChild {
 }
 
 export interface GameEffectData {
-	/** The windup delay before the HexEffect appears. When passed with a `SpellCalculation`, it is inferred as `castTime`, or `DEFAULT_CAST_SECONDS` as a fallback. Defaults to `0` otherwise. */
+	/** The windup delay before it appears. When passed with a `SpellCalculation`, it is inferred as `castTime`, or `DEFAULT_CAST_SECONDS` as a fallback. Defaults to `0` otherwise. */
 	startsAfterMS?: DOMHighResTimeStamp
-	/** The delay until the HexEffect should stop applying. Defaults to `0` (only applying once). */
+	/** The delay until it should stop applying. Defaults to `0` (only applying once). */
 	expiresAfterMS?: DOMHighResTimeStamp
-	/** The team whose units inside `hexes`/`hexDistanceFromSource` will be hit. */
+	/** The team whose units to hit-test. */
 	targetTeam?: TeamNumber
-	/** `StatusEffects` to apply to any affected units. */
-	statusEffects?: StatusEffectsData
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
 	/** Multiplies the result of `damageCalculation`. */
@@ -30,7 +28,11 @@ export interface GameEffectData {
 	damageIncrease?: number
 	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
-	/** Callback for each unit the HexEffect applies to. */
+	/** `BonusVariable`s to apply to any affected units. */
+	bonuses?: [BonusLabelKey, ...BonusVariable[]]
+	/** `StatusEffects` to apply to any affected units. */
+	statusEffects?: StatusEffectsData
+	/** Callback for each unit the `GaneEffect` applies to. */
 	onCollision?: CollisionFn
 }
 
@@ -51,8 +53,9 @@ export class GameEffect extends GameEffectChild {
 	damageIncrease?: number
 	damageMultiplier?: number
 	damageSourceType?: DamageSourceType
-	statusEffects?: StatusEffectsData
-	onCollision?: CollisionFn
+	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
+	statusEffects: StatusEffectsData | undefined
+	onCollision: CollisionFn | undefined
 
 	constructor(source: ChampionUnit, data: GameEffectData) {
 		super()
@@ -63,12 +66,13 @@ export class GameEffect extends GameEffectChild {
 		this.damageIncrease = data.damageIncrease
 		this.damageMultiplier = data.damageMultiplier
 		this.damageSourceType = data.damageSourceType
+		this.bonuses = data.bonuses
 		this.statusEffects = data.statusEffects
 		this.onCollision = data.onCollision
 	}
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
-		const spellShield = unit.consumeSpellShield()
+		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
 		if (this.damageCalculation != null) {
 			let damageIncrease = this.damageIncrease ?? 0
@@ -78,13 +82,16 @@ export class GameEffect extends GameEffectChild {
 			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, this.damageMultiplier)
 		}
 		if (!wasSpellShielded) {
-			this.onCollision?.(elapsedMS, unit)
+			if (this.bonuses) {
+				unit.setBonusesFor(this.bonuses[0], this.bonuses[1])
+			}
 			if (this.statusEffects) {
 				for (const key in this.statusEffects) {
 					const statusEffect = this.statusEffects[key as StatusEffectType]!
 					unit.applyStatusEffect(elapsedMS, key as StatusEffectType, statusEffect.durationMS, statusEffect.amount)
 				}
 			}
+			this.onCollision?.(elapsedMS, unit)
 		}
 		return wasSpellShielded
 	}
@@ -96,6 +103,7 @@ export class GameEffect extends GameEffectChild {
 			}
 			return unit.isInteractable() && this.intersects(unit)
 		})
+		// console.log(targetingUnits.map(u => u.name)) //SAMPLE
 		targetingUnits.forEach(unit => this.apply(elapsedMS, unit))
 	}
 
