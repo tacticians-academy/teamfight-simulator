@@ -4,7 +4,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/GameEffect'
 import type { GameEffectData } from '#/game/GameEffect'
 
-import { getAngleBetween, doesLineInterceptCircle, radianDistance } from '#/helpers/angles'
+import { getAngleBetween, doesLineInterceptCircle, radianDistance, doesRectangleInterceptCircle } from '#/helpers/angles'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { HexCoord } from '#/helpers/types'
 import { coordinateDistanceSquared, hexDistanceFrom } from '#/helpers/boardUtils'
@@ -113,6 +113,32 @@ export class ShapeEffectCircle implements ShapeEffectShape {
 			top: `${top * 100}%`,
 			width: `${this.radius * HEX_PROPORTION}%`,
 			height: `${this.radius * HEX_PROPORTION}%`,
+			transform: `translate(-50%, -50%)`,
+			background: `currentColor`,
+		}
+	}
+}
+
+export class ShapeEffectRectangle implements ShapeEffectShape {
+	centerCoordinate: HexCoord
+	size: HexCoord
+
+	constructor(centerCoordinate: HexCoord, size: HexCoord) {
+		this.centerCoordinate = centerCoordinate
+		this.size = size
+	}
+
+	intersects(unit: ChampionUnit) {
+		return doesRectangleInterceptCircle(unit.coordinatePosition(), UNIT_SIZE_PROPORTION / 2, this.centerCoordinate, this.size)
+	}
+
+	styles() {
+		const [left, top] = this.centerCoordinate
+		return {
+			left: `${left * 100}%`,
+			top: `${top * 100}%`,
+			width: `${this.size[0] * 100}%`,
+			height: `${this.size[1] * 100}%`,
 			transform: `translate(-50%, -50%)`,
 			background: `currentColor`,
 		}
