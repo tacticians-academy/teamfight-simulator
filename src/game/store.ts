@@ -111,6 +111,11 @@ watch([getters.augmentCount], () => {
 
 // Store
 
+export function clearUnits() {
+	state.units = []
+	resetUnitsAfterCreatingOrMoving()
+}
+
 function resetUnitsAfterCreatingOrMoving() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])

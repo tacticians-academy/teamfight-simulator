@@ -3,7 +3,7 @@ import { state } from '#/game/store'
 import type { StorageChampion } from '#/helpers/types'
 
 export function clearUnits() {
-	state.units = []
+	clearUnits()
 	window.localStorage.setItem('TFTSIM_units', '')
 }
 
