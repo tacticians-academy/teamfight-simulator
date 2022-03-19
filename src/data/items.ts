@@ -318,18 +318,18 @@ export default {
 	},
 
 	[ItemKey.Quicksilver]: {
-		apply: (item, holder) => {
+		innate: (item, holder) => {
 			const shields: ShieldData[] = []
 			const shieldSeconds = item.effects['SpellShieldDuration']
-			if (shieldSeconds != null) {
+			if (shieldSeconds == null) {
+				console.log('ERR', item.name, item.effects)
+			} else {
 				shields.push({
 					source: holder,
 					isSpellShield: true,
 					amount: 0, //TODO does not break
 					expiresAtMS: shieldSeconds * 1000,
 				})
-			} else {
-				return console.log('ERR', item.name, item.effects)
 			}
 			return { shields }
 		},
