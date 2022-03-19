@@ -4,6 +4,8 @@ import type { ChampionData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 
+import championEffects from '#/data/set6/champions'
+
 import { useStore } from '#/game/store'
 
 const { state, startDragging } = useStore()
@@ -12,13 +14,14 @@ function onDrag(event: DragEvent, name: string) {
 	startDragging(event, 'unit', name, null)
 }
 
-const unitGroups: [[string, ChampionData[]], [string, ChampionData[]]] = [['Champions', []], ['Spawns', []]]
+const unitGroups: [string, ChampionData[]][] = [['Supported', []], ['Unimplemented', []], ['Spawns', []]]
 champions.forEach(champion => {
 	if (champion.teamSize === 0 || champion.stats.hp == null) { return }
-	unitGroups[champion.traits.length ? 0 : 1][1].push(champion)
+	const groupIndex = champion.traits.length ? (championEffects[champion.name] != null ? 0 : 1) : 2
+	unitGroups[groupIndex][1].push(champion)
 })
 unitGroups[0][1].sort((a, b) => a.name.localeCompare(b.name))
-unitGroups[1][1].sort((a, b) => (b.cost ?? 0) - (a.cost ?? 0))
+unitGroups[1][1].sort((a, b) => a.name.localeCompare(b.name))
 </script>
 
 <template>
