@@ -111,7 +111,7 @@ watch([getters.augmentCount], () => {
 
 // Store
 
-export function clearUnits() {
+export function clearUnitsAndReset() {
 	state.units = []
 	resetUnitsAfterCreatingOrMoving()
 }

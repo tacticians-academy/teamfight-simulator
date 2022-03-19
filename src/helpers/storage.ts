@@ -1,9 +1,9 @@
-import { state } from '#/game/store'
+import { state, clearUnitsAndReset } from '#/game/store'
 
 import type { StorageChampion } from '#/helpers/types'
 
 export function clearUnits() {
-	clearUnits()
+	clearUnitsAndReset()
 	window.localStorage.setItem('TFTSIM_units', '')
 }
 
