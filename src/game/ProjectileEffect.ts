@@ -97,6 +97,10 @@ export class ProjectileEffect extends GameEffect {
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
+		if (this.collidedWith.includes(unit.instanceID)) {
+			return false
+		}
+		this.collidedWith.push(unit.instanceID)
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
 		return wasSpellShielded
 	}
@@ -127,7 +131,7 @@ export class ProjectileEffect extends GameEffect {
 			angleX = deltaX
 			angleY = deltaY
 			if (isUnit(this.target) && Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
-				this.applySuper(elapsedMS, this.target)
+				this.apply(elapsedMS, this.target)
 				return false
 			}
 		}
@@ -154,7 +158,6 @@ export class ProjectileEffect extends GameEffect {
 					continue
 				}
 				if (coordinateDistanceSquared(position, unit.coordinatePosition()) < this.collisionRadiusSquared) {
-					this.collidedWith.push(unit.instanceID)
 					this.apply(elapsedMS, unit)
 					if (this.destroysOnCollision) {
 						return false
