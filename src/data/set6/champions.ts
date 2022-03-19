@@ -15,7 +15,7 @@ export default {
 
 	[ChampionKey.Braum]: {
 		cast: (elapsedMS, spell, champion) => {
-			const stunSeconds = champion.getSpellVariable(SpellKey.StunDuration)
+			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: false,
 				continuesPastTarget: true,
@@ -55,7 +55,7 @@ export default {
 			champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion.coordinatePosition(), HEX_MOVE_LEAGUEUNITS * 1.125),
 				onCollision: (elapsedMS, affectedUnit) => {
-					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(SpellKey.Heal)!, true)
+					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(spell, SpellKey.Heal)!, true)
 				},
 			})
 		},
@@ -70,9 +70,9 @@ export default {
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)
-					const maxStacks = champion.getSpellVariable(SpellKey.MaxStacks)
+					const maxStacks = champion.getSpellVariable(spell, SpellKey.MaxStacks)
 					if (allASBoosts.length < maxStacks) {
-						const boostAS = champion.getSpellCalculationResult(SpellKey.ASBoost)! / maxStacks
+						const boostAS = champion.getSpellCalculationResult(spell, SpellKey.ASBoost)! / maxStacks
 						champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, boostAS]]])
 					}
 				},
@@ -84,9 +84,9 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				onCollision: (elapsedMS, affectedUnit) => {
-					const manaReave = champion.getSpellVariable(SpellKey.ManaReave)
-					const durationSeconds = champion.getSpellVariable(SpellKey.Duration)
-					const damageReduction = champion.getSpellVariable(SpellKey.DamageReduction)
+					const manaReave = champion.getSpellVariable(spell, SpellKey.ManaReave)
+					const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+					const damageReduction = champion.getSpellVariable(spell, SpellKey.DamageReduction)
 					affectedUnit.setBonusesFor(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, manaReave * -100])
 					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + durationSeconds * 1000])
 				},
@@ -95,9 +95,10 @@ export default {
 	},
 
 	[ChampionKey.Warwick]: {
-		passive: (elapsedMS, target, source) => {
-			const heal = source.getSpellCalculationResult(SpellKey.HealAmount)
-			const percentHealthDamage = source.getSpellCalculationResult(SpellKey.PercentHealth) / 100
+		passive: (elapsedMS, spell, target, source) => {
+			if (!target) { return }
+			const heal = source.getSpellCalculationResult(spell, SpellKey.HealAmount)
+			const percentHealthDamage = source.getSpellCalculationResult(spell, SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
 			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, false)
 			source.gainHealth(elapsedMS, source, heal, true)
@@ -122,7 +123,7 @@ export default {
 
 	[ChampionKey.Zyra]: {
 		cast: (elapsedMS, spell, champion) => {
-			const stunSeconds = champion.getSpellVariable(SpellKey.StunDuration)
+			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getRowOfMostAttackable(champion.opposingTeam()),
 				statusEffects: {

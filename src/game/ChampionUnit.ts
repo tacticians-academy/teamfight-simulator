@@ -27,7 +27,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, StatusEffectsData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -69,7 +69,9 @@ export class ChampionUnit {
 	transformIndex = 0
 	basicAttackCount = 0
 
-	nextAttack: SpellCalculation | undefined //TODO
+	empoweredAuto: {
+		statusEffects?: StatusEffectsData
+	} | undefined
 	championEffects: ChampionFns | undefined
 
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
@@ -110,6 +112,7 @@ export class ChampionUnit {
 	resetPre(synergiesByTeam: SynergyData[][]) {
 		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
 		this.bleeds.clear()
+		this.empoweredAuto = undefined
 
 		for (const effectType in this.statusEffects) {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
@@ -150,7 +153,7 @@ export class ChampionUnit {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
 		this.health = this.baseHP() + this.getBonusVariants(BonusKey.Health)
 		this.healthMax = this.health
-		this.fixedAS = this.getSpellVariableIfExists(SpellKey.AttackSpeed)
+		this.fixedAS = this.getSpellVariableIfExists(this.getCurrentSpell(), SpellKey.AttackSpeed)
 	}
 
 	baseHP() {
@@ -208,8 +211,16 @@ export class ChampionUnit {
 			if (this.instantAttack) {
 				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false)
 				this.attackStartAtMS = elapsedMS
-				passiveFn?.(elapsedMS, this.target, this)
+				if (this.data.passive) {
+					passiveFn?.(elapsedMS, this.data.passive, this.target, this)
+				}
 				this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
+				if (this.empoweredAuto?.statusEffects) {
+					for (const key in this.empoweredAuto.statusEffects) {
+						const statusEffect = this.empoweredAuto.statusEffects[key as StatusEffectType]!
+						this.target.applyStatusEffect(elapsedMS, key as StatusEffectType, statusEffect.durationMS, statusEffect.amount)
+					}
+				}
 			} else {
 				const source = this
 				this.queueProjectileEffect(elapsedMS, undefined, {
@@ -220,12 +231,16 @@ export class ChampionUnit {
 					sourceType: DamageSourceType.attack,
 					target: this.target,
 					damageCalculation,
+					statusEffects: source.empoweredAuto?.statusEffects,
 					onCollision(elapsedMS, unit) {
-						passiveFn?.(elapsedMS, unit, source)
+						if (source.data.passive) {
+							passiveFn?.(elapsedMS, source.data.passive, unit, source)
+						}
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 					},
 				})
 			}
+			this.empoweredAuto = undefined
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
@@ -375,12 +390,14 @@ export class ChampionUnit {
 	}
 
 	readyToCast() {
-		return !!this.championEffects?.cast && this.mana >= this.manaMax()
+		return (this.championEffects?.cast || this.championEffects?.passive) && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
 		const spell = this.getCurrentSpell()
 		if (spell) {
 			this.championEffects?.cast?.(elapsedMS, spell, this)
+		} else if (this.data.passive) {
+			this.championEffects?.passive?.(elapsedMS, this.data.passive, undefined, this)
 		}
 		state.units.forEach(unit => {
 			if (unit === this) { return }
@@ -710,23 +727,22 @@ export class ChampionUnit {
 		return this.data.spells[this.transformIndex]
 	}
 
-	getSpellVariableIfExists(key: SpellKey) {
-		return this.getCurrentSpell()?.variables[key]?.[this.starLevel]
+	getSpellVariableIfExists(spell: ChampionSpellData | undefined, key: SpellKey) {
+		return spell?.variables[key]?.[this.starLevel]
 	}
-	getSpellVariable(key: SpellKey) {
-		const value = this.getSpellVariableIfExists(key)
+	getSpellVariable(spell: ChampionSpellData | undefined, key: SpellKey) {
+		const value = this.getSpellVariableIfExists(spell, key)
 		if (value == null) {
-			console.log('ERR', this.name, this.getCurrentSpell()?.name, key)
+			console.log('ERR', this.name, spell?.name, key)
 			return 0
 		}
 		return value
 	}
-	getSpellCalculationResult(key: SpellKey) {
-		const calculation = this.getSpellCalculation(key)
+	getSpellCalculationResult(spell: ChampionSpellData | undefined, key: SpellKey) {
+		const calculation = this.getSpellCalculation(spell, key)
 		return calculation ? solveSpellCalculationFrom(this, calculation)[0] : 0
 	}
-	getSpellCalculation(key: SpellKey) {
-		const spell = this.getCurrentSpell()
+	getSpellCalculation(spell: ChampionSpellData | undefined, key: SpellKey) {
 		if (!spell) {
 			console.log('ERR', 'No spell', this.name, key)
 			return undefined
@@ -788,7 +804,7 @@ export class ChampionUnit {
 			baseAD = [100, 100, 125, 140][stageIndex()]
 		}
 		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
-		const multiplyAttackSpeed = this.getSpellVariableIfExists(SpellKey.ADFromAttackSpeed)
+		const multiplyAttackSpeed = this.getSpellVariableIfExists(this.getCurrentSpell(), SpellKey.ADFromAttackSpeed)
 		if (multiplyAttackSpeed != null) {
 			return ad + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
 		}
@@ -864,7 +880,7 @@ export class ChampionUnit {
 	}
 	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
 		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 		}
 		if (!data.sourceType && spell) {
 			data.sourceType = DamageSourceType.spell
@@ -886,7 +902,7 @@ export class ChampionUnit {
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
 		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
 			data.damageSourceType = DamageSourceType.spell
@@ -899,7 +915,7 @@ export class ChampionUnit {
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
 		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(SpellKey.Damage)
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
 			data.damageSourceType = DamageSourceType.spell
