@@ -81,7 +81,7 @@ export class ChampionUnit {
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = champions.find(unit => unit.name === name) ?? champions[0]
-		this.isStarLocked = stats.isSpawn
+		this.isStarLocked = stats.isSpawn && name !== ChampionKey.TrainingDummy
 		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLevel
