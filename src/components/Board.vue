@@ -91,11 +91,11 @@ const socialitesByTeam = getters.socialitesByTeam
 			</template>
 			<transition-group name="hexEffect">
 				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">
-					<HexEffect :hexEffect="hexEffect" />
+					<HexEffect v-if="hexEffect.started" :hexEffect="hexEffect" />
 				</template>
 			</transition-group>
 			<template v-for="projectile in state.projectiles" :key="projectile.instanceID">
-				<Projectile :projectile="projectile" />
+				<Projectile v-if="projectile.started" :projectile="projectile" />
 			</template>
 			<div
 				v-if="hexForMenu && !state.isRunning"

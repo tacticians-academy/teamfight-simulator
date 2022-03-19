@@ -4,8 +4,9 @@ import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/item
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
-import { state } from '#/game/store'
+import type { GameEffect, GameEffectChild } from '#/game/GameEffect'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
+import { state } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { synergiesByTeam } from '#/helpers/calculate'
@@ -98,19 +99,6 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 				unit.pending.bonuses.delete(pendingBonus)
 			}
 		}
-		for (const pendingHexEffect of unit.pending.hexEffects) {
-			if (elapsedMS >= pendingHexEffect.startsAtMS) {
-				pendingHexEffect.start()
-				state.hexEffects.add(pendingHexEffect)
-				unit.pending.hexEffects.delete(pendingHexEffect)
-			}
-		}
-		for (const pendingProjectile of unit.pending.projectiles) {
-			if (elapsedMS >= pendingProjectile.startsAtMS) {
-				state.projectiles.add(pendingProjectile)
-				unit.pending.projectiles.delete(pendingProjectile)
-			}
-		}
 		if (didBacklineJump) {
 			unit.updateTarget()
 		}
@@ -135,15 +123,12 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		}
 	}
 
-	state.hexEffects.forEach(hexEffect => {
-		if (!hexEffect.update(elapsedMS, state.units)) {
-			state.hexEffects.delete(hexEffect)
-		}
-	})
-	state.projectiles.forEach(projectile => {
-		if (!projectile.update(elapsedMS, diffMS)) {
-			state.projectiles.delete(projectile)
-		}
+	([state.hexEffects, state.projectiles] as Set<GameEffect>[]).forEach(effects => {
+		effects.forEach(effect => {
+			if (effect.update(elapsedMS, diffMS, state.units) === false) {
+				effects.delete(effect)
+			}
+		})
 	})
 
 	updatePathsIfNeeded(state.units)

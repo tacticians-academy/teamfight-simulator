@@ -3,7 +3,7 @@ import { markRaw } from 'vue'
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 
-import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
+import { ChampionKey, champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -11,11 +11,11 @@ import itemEffects from '#/data/items'
 import championEffects from '#/data/set6/champions'
 import traitEffects from '#/data/set6/traits'
 
-import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
-import { Projectile } from '#/game/Projectile'
-import type { ProjectileData } from '#/game/Projectile'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
+import { Projectile } from '#/game/ProjectileEffect'
+import type { ProjectileData } from '#/game/ProjectileEffect'
+import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
 import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
@@ -76,8 +76,6 @@ export class ChampionUnit {
 
 	pending = {
 		bonuses: new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>(),
-		hexEffects: new Set<HexEffect>(),
-		projectiles: new Set<Projectile>(),
 	}
 
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
@@ -890,7 +888,7 @@ export class ChampionUnit {
 			data.target = this.target
 		}
 		const projectile = new Projectile(this, elapsedMS, data, spell)
-		this.pending.projectiles.add(projectile)
+		state.projectiles.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
 		if (spell) {
 			this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
@@ -904,7 +902,7 @@ export class ChampionUnit {
 			data.damageSourceType = DamageSourceType.spell
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
-		this.pending.hexEffects.add(hexEffect)
+		state.hexEffects.add(hexEffect)
 		this.attackStartAtMS = hexEffect.activatesAtMS
 		this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 	}

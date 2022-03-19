@@ -13,7 +13,7 @@ import traitEffects from '#/data/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'
-import type { Projectile } from '#/game/Projectile'
+import type { Projectile } from '#/game/ProjectileEffect'
 import { cancelLoop } from '#/game/loop'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
@@ -34,8 +34,8 @@ export const state = reactive({
 	hexRowsCols,
 	dragUnit: null as ChampionUnit | null,
 	units: [] as ChampionUnit[],
-	projectiles: new Set<Projectile>(),
 	hexEffects: new Set<HexEffect>(),
+	projectiles: new Set<Projectile>(),
 
 	socialiteHexes: (getStorageJSON(StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
 	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
@@ -117,6 +117,7 @@ function resetUnitsAfterCreatingOrMoving() {
 	synergiesByTeam[1] = _synergiesByTeam[1]
 	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
 	state.hexEffects.clear()
+	state.projectiles.clear()
 
 	state.units.forEach(unit => unit.resetPre(synergiesByTeam))
 	state.units.forEach(unit => {
@@ -315,7 +316,6 @@ const store = {
 	},
 
 	resetGame() {
-		state.projectiles = new Set()
 		resetUnitsAfterCreatingOrMoving()
 	},
 }
@@ -332,7 +332,6 @@ export function coordinatePosition([col, row]: HexCoord) {
 
 export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
-	state.hexEffects.clear()
 	cancelLoop()
 }
 

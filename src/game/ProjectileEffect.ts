@@ -1,117 +1,92 @@
-import type { ChampionSpellData, ChampionSpellMissileData, SpellCalculation } from '@tacticians-academy/academy-library'
+import { ref } from 'vue'
+import type { Ref } from 'vue'
+
+import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { GameEffect } from '#/game/GameEffect'
+import type { GameEffectData } from '#/game/GameEffect'
 import { coordinatePosition } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
-
-import { DamageSourceType } from '#/helpers/types'
-import type { CollisionFn, HexCoord, TeamNumber } from '#/helpers/types'
-
-let instanceIndex = 0
+import type { DamageSourceType } from '#/helpers/types'
+import type { HexCoord, TeamNumber } from '#/helpers/types'
 
 const hexRadius = HEX_PROPORTION * 2 * 100
 
-export interface ProjectileData {
+export interface ProjectileData extends GameEffectData {
 	/** Inferred to be `spell` if passing with a `SpellCalculation`. */
 	sourceType?: DamageSourceType
-	/** The windup delay before the Projectile should start moving towards its target. When passed with a `SpellCalculation`, it is inferred as `castTime`, or `DEFAULT_CAST_SECONDS` as a fallback. Defaults to `0` otherwise. */
-	startsAfterMS?: DOMHighResTimeStamp
-	/** Inferred as the `Damage` spell calculation if passing with a `SpellCalculation`. */
-	damageCalculation?: SpellCalculation
-	/** If specified, the Projectile should collide with any unit of the given team(s), instead of traveling directly to the specified target. */
-	collidesWith?: TeamNumber | null
-	/** Whether the Projectile should complete after the first time it collides with a unit. Requires `collidesWith`. */
+	/** Whether the Projectile should complete after the first time it collides with a unit. Requires `targetTeam`. */
 	destroysOnCollision?: boolean
 	/** Only include if not passed with a `SpellCalculation`. */
 	missile?: ChampionSpellMissileData
-	/** If targeting a HexCoord, `collidesWith` must be set or the Projectile can never hit. Defaults to the source unit's attack target unit. */
+	/** If targeting a HexCoord, `targetTeam` must be set or the Projectile can never hit. Defaults to the source unit's attack target unit. */
 	target?: ChampionUnit | HexCoord
 	/** If the Projectile should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
 	retargetOnTargetDeath?: boolean
-	/** Callback upon each unit the Projectile collides with if `collidesWith` is set, or upon hitting its `target` unit otherwise. */
-	onCollision?: CollisionFn
 }
 
 function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
 	return 'name' in target
 }
 
-export class Projectile {
-	instanceID: string
-
-	startsAtMS: DOMHighResTimeStamp
-	position: HexCoord
+export class Projectile extends GameEffect {
+	position: Ref<HexCoord>
 	missile: ChampionSpellMissileData
 	currentSpeed: number
-	damageCalculation: SpellCalculation
-	source: ChampionUnit
 	sourceType: DamageSourceType
 	target: ChampionUnit | HexCoord
 	targetCoordinates: HexCoord
-	collidesWith?: TeamNumber | null
 	destroysOnCollision?: boolean
 	retargetOnTargetDeath?: boolean
-	onCollision?: CollisionFn
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData, spell?: ChampionSpellData) {
-		this.instanceID = `p${instanceIndex += 1}`
+		super(source, data)
 
 		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : (spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)
 		const startDelay = spell?.missile?.startDelay
 		this.startsAtMS = elapsedMS + startsAfterMS + (startDelay != null ? startDelay * 1000 : 0)
+		this.activatesAfterMS = 0
+		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
+		const expiresAfterMS = 50 * 1000
+		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : expiresAfterMS)
+
 		const [x, y] = source.coordinatePosition() // Destructure to avoid mutating source
-		this.position = [x, y]
+		this.position = ref([x, y] as HexCoord)
 		this.missile = spell?.missile ?? data.missile!
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
-		this.damageCalculation = data.damageCalculation!
-		this.source = source
 		this.sourceType = data.sourceType!
 		this.target = data.target!
-		this.collidesWith = data.collidesWith
 		this.destroysOnCollision = data.destroysOnCollision
 		this.retargetOnTargetDeath = data.retargetOnTargetDeath
-		this.onCollision = data.onCollision
-
 		this.targetCoordinates = isUnit(this.target) ? this.target.coordinatePosition() : coordinatePosition(this.target)
 	}
 
-	apply(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
-		const spellShield = this.sourceType === DamageSourceType.spell ? unit.consumeSpellShield() : undefined
-		const damageIncrease = spellShield ? -spellShield.amount : undefined
-		unit.damage(elapsedMS, true, this.source, this.sourceType, this.damageCalculation, false, damageIncrease)
-		if (!spellShield) {
-			this.onCollision?.(elapsedMS, unit)
-		}
-	}
+	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
+		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
+		if (updateResult != null) { return updateResult }
 
-	update(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp): boolean {
-		if (elapsedMS < this.startsAtMS) {
-			return true
-		}
-		if (elapsedMS - this.startsAtMS > 5 * 1000) {
-			return false
-		}
 		if (isUnit(this.target)) {
 			if (this.target.dead) {
-				if (this.retargetOnTargetDeath != null) {
-					const newTarget = getDistanceUnit(this.retargetOnTargetDeath, this.source)
-					if (newTarget) {
-						this.target = newTarget
-					}
+				if (this.retargetOnTargetDeath == null) {
+					return false
 				}
-				return false
+				const newTarget = getDistanceUnit(this.retargetOnTargetDeath, this.source)
+				if (newTarget) {
+					this.target = newTarget
+				}
 			}
 			this.targetCoordinates = this.target.coordinatePosition()
 		}
-		const [currentX, currentY] = this.position
+		const [currentX, currentY] = this.position.value
 		const [targetX, targetY] = this.targetCoordinates
 		const differenceX = targetX - currentX
 		const differenceY = targetY - currentY
 		const speed = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 		if (isUnit(this.target) && Math.abs(differenceX) <= speed && Math.abs(differenceY) <= speed) {
-			this.apply(elapsedMS, this.target)
+			this.applySuper(elapsedMS, this.target)
 			return false
 		}
 
@@ -128,11 +103,11 @@ export class Projectile {
 			}
 		}
 		const angle = Math.atan2(differenceY, differenceX)
-		this.position[0] += Math.cos(angle) * speed
-		this.position[1] += Math.sin(angle) * speed
-		const [projectileX, projectileY] = this.position
-		if (this.collidesWith !== undefined) {
-			const collisionUnits = getInteractableUnitsOfTeam(this.collidesWith)
+		this.position.value[0] += Math.cos(angle) * speed
+		this.position.value[1] += Math.sin(angle) * speed
+		if (this.targetTeam !== undefined) {
+			const [projectileX, projectileY] = this.position.value
+			const collisionUnits = getInteractableUnitsOfTeam(this.targetTeam)
 			for (const unit of collisionUnits) {
 				const [unitX, unitY] = unit.coordinatePosition()
 				const xDist = (unitX - projectileX) * 100
@@ -145,6 +120,5 @@ export class Projectile {
 				}
 			}
 		}
-		return true
 	}
 }
