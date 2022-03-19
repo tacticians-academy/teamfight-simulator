@@ -16,7 +16,7 @@ See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simula
 ### Units setup
 - Place/move any units onto 2 teams
 - Equip/move any valid items, and adjust star levels
-- Applies basic trait/item effects (AD/MR/attack range/etc) to relevant units
+- Applies trait/item effects to affected units
 
 ### Play a fight
 - Assassins jump to backline
@@ -28,11 +28,9 @@ See the **[6.5 milestone](https://github.com/tacticians-academy/teamfight-simula
 ## Unimplemented
 
 - Abilities: Each Set adds new champions whose abilities must be implemented before the unit can be fully supported. See [Current Set support](#current-set-support) for progress.
-- Traits: Non-basic effects are not implemented
-- Items: Non-basic effects are not implemented
 - Augments: Not implemented
-- A bunch of smaller features (specifying socialite hex(es)/30 second overtime limit/etc)
-- Engine refinements (pathfinding improvements/exact cast times/etc) so that gameplay resembles TFT enough to reproduce fights accurately
+- Various minor gameplay features (30 second overtime limit/etc)
+- Engine refinements (pathfinding improvements/experimentally determining undocumented values) so that gameplay resembles TFT enough to reproduce fights
 
 ## Out of scope
 
