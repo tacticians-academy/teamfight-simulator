@@ -127,7 +127,7 @@ export default {
 	[ItemKey.DragonsClaw]: {
 		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
-				holder.queueProjectile(elapsedMS, undefined, {
+				holder.queueProjectileEffect(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
 					sourceType: DamageSourceType.item,
@@ -375,7 +375,7 @@ export default {
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
 				const boltTarget = additionalTargets[boltIndex]
 				if (boltTarget == null) { continue }
-				holder.queueProjectile(elapsedMS, undefined, {
+				holder.queueProjectileEffect(elapsedMS, undefined, {
 					missile: {
 						speedInitial: 1000, //TODO determine
 					},
