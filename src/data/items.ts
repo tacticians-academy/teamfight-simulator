@@ -7,12 +7,14 @@ import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { needsPathfindingUpdate } from '#/game/pathfind'
 import { activatedCheck, state } from '#/game/store'
+import { ShapeEffect, ShapeEffectRectangle } from '#/game/ShapeEffect'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BonusScaling, BonusVariable, EffectResults, ShieldData } from '#/helpers/types'
+import { HEX_PROPORTION } from '#/helpers/constants'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
+import type { BonusScaling, BonusVariable, EffectResults, HexCoord, ShieldData } from '#/helpers/types'
 
 const BURN_ID = 'BURN'
 
@@ -384,6 +386,22 @@ export default {
 					damageCalculation,
 				})
 			}
+		},
+	},
+
+	[ItemKey.ShroudOfStillness]: {
+		apply: (item, unit) => {
+			const costIncreasePercent = item.effects['CostIncrease']
+			if (costIncreasePercent == null) {
+				return console.log('ERR', item.name, item.effects)
+			}
+			const height = HEX_PROPORTION * 6
+			const center: HexCoord = [...unit.coordinatePosition()]
+			center[1] += height / 2 * (unit.team === 0 ? 1 : -1)
+			unit.queueShapeEffect(0, undefined, {
+				shape: new ShapeEffectRectangle(center, [HEX_PROPORTION * 2, height]),
+				bonuses: [SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -costIncreasePercent]],
+			})
 		},
 	},
 
