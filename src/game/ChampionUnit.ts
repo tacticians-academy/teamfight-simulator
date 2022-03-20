@@ -891,11 +891,16 @@ export class ChampionUnit {
 		this.pending.bonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
 	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
-		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
-		}
-		if (!data.sourceType && spell) {
-			data.sourceType = DamageSourceType.spell
+		if (spell) {
+			if (!data.damageCalculation) {
+				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
+			}
+			if (!data.sourceType) {
+				data.sourceType = DamageSourceType.spell
+			}
+			if (!data.missile) {
+				data.missile = spell.missile
+			}
 		}
 		if (data.target == null) {
 			const target = this.target
@@ -903,7 +908,7 @@ export class ChampionUnit {
 				console.error('ERR', 'No target for projectile', this.name, spell?.name)
 				return
 			}
-			data.target = data.fixedHexRange != null ? target.activeHex : target
+			data.target = data.fixedHexRange != null || data.missile?.tracksTarget === false ? target.activeHex : target
 		}
 		const projectile = new ProjectileEffect(this, elapsedMS, spell, data)
 		state.projectileEffects.add(projectile)

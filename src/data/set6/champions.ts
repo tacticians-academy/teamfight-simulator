@@ -118,10 +118,7 @@ export default {
 
 	[ChampionKey.Ezreal]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = champion.target
-			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueProjectileEffect(elapsedMS, spell, {
-				target: target.activeHex,
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)
