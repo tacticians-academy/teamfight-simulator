@@ -6,13 +6,38 @@ import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_ROW_COUNT, HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 
 export default {
+
+	[ChampionKey.Ahri]: {
+		cast: (elapsedMS, spell, champion) => {
+			const missileSpell = champion.getSpellFor('OrbMissile')
+			const degreesBetweenOrbs = champion.getSpellVariable(spell, 'AngleBetweenOrbs' as SpellKey)
+			const radiansBetweenOrbs = toRadians(degreesBetweenOrbs)
+			const damageMultiplier = champion.getSpellVariable(spell, 'MultiOrbDamage' as SpellKey)
+			const orbsPerCast = champion.getSpellVariable(spell, 'SpiritFireStacks' as SpellKey)
+			const maxRange = champion.getSpellVariable(spell, 'HexRange' as SpellKey)
+			const orbCount = champion.castCount * orbsPerCast + 1
+			const orbOffsetRadians = orbCount % 2 === 0 ? radiansBetweenOrbs / 2 : 0
+			for (let castIndex = 0; castIndex < orbCount; castIndex += 1) {
+				champion.queueProjectileEffect(elapsedMS, spell, {
+					fixedHexRange: maxRange,
+					destroysOnCollision: false,
+					modifiesOnMultiHit: true,
+					damageMultiplier,
+					changeRadians: orbOffsetRadians + radiansBetweenOrbs * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1),
+					missile: missileSpell?.missile,
+					returnMissile: champion.getSpellFor('OrbReturn')?.missile ?? missileSpell?.missile,
+					onTargetDeath: 'continue',
+				})
+			}
+		},
+	},
 
 	[ChampionKey.Blitzcrank]: {
 		cast: (elapsedMS, spell, champion) => {
