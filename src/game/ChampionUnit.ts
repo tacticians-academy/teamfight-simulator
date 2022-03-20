@@ -960,6 +960,6 @@ export class ChampionUnit {
 				bestHex = hex
 			}
 		})
-		return getClosestHexAvailableTo(bestHex, state.units)
+		return bestHex === target.activeHex ? bestHex : getClosestHexAvailableTo(bestHex, state.units)
 	}
 }
