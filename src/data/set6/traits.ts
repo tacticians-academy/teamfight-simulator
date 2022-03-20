@@ -78,7 +78,7 @@ export default {
 			}
 			const durationSeconds = activeEffect.variables['BurstDuration']
 			const bonusAS = activeEffect.variables['BonusAS']
-			if (durationSeconds == null || bonusAS == null) {
+			if (durationSeconds == null || bonusAS === undefined) {
 				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
 			}
 			const bonusMoveSpeed = 500 //TODO determine
@@ -94,7 +94,7 @@ export default {
 			const durationSeconds = activeEffect.variables['Duration']
 			const attackSpeed = activeEffect.variables[BonusKey.AttackSpeed]
 			const healthRegen = activeEffect.variables['HPRegen']
-			if (durationSeconds == null || attackSpeed == null || damageReduction == null || healthRegen == null) {
+			if (durationSeconds == null || attackSpeed === undefined || damageReduction == null || healthRegen == null) {
 				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
 			}
 			const durationMS = durationSeconds * 1000
@@ -244,7 +244,7 @@ export default {
 	[TraitKey.Mastermind]: {
 		applyForOthers: (activeEffect, unit) => {
 			const manaGrant = activeEffect.variables['ManaGrant']
-			if (manaGrant == null) {
+			if (manaGrant === undefined) {
 				return console.log('ERR', TraitKey.Mastermind, activeEffect)
 			}
 			const [unitCol, unitRow] = unit.startHex
@@ -360,7 +360,7 @@ export default {
 		solo: (unit, activeEffect) => {
 			if (unit.name === ChampionKey.Vi) {
 				const manaReduction = activeEffect.variables['ViManaReduction']
-				if (manaReduction == null) {
+				if (manaReduction === undefined) {
 					return console.log('ERR', TraitKey.Rivals, unit.name, activeEffect)
 				}
 				unit.addBonuses(TraitKey.Rivals, [BonusKey.ManaReduction, manaReduction])
@@ -447,7 +447,7 @@ export default {
 				const damagePercent = activeEffect.variables['DamagePercent']
 				const manaPerSecond = activeEffect.variables['ManaPerSecond']
 				const omnivampPercent = activeEffect.variables['OmnivampPercent']
-				if (damagePercent != null && omnivampPercent != null) {
+				if (damagePercent !== undefined && omnivampPercent !== undefined) {
 					variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
 					if (manaPerSecond != null) {
 						scalings.push({
@@ -460,7 +460,7 @@ export default {
 						})
 					}
 				} else {
-					console.log('ERR', TraitKey.Socialite, activeEffect)
+					console.log('ERR', TraitKey.Socialite, activeEffect.variables)
 				}
 			}
 			return { variables, scalings }
@@ -475,7 +475,7 @@ export default {
 			const syndicateOmnivamp = activeEffect.variables['PercentOmnivamp']
 			const syndicateIncrease = activeEffect.variables['SyndicateIncrease'] ?? 0
 			const traitLevel = activeEffect.variables['TraitLevel']
-			if (traitLevel == null || syndicateArmor == null || syndicateMR == null) {
+			if (traitLevel === undefined || syndicateArmor == null || syndicateMR == null) {
 				return
 			}
 			const syndicateMultiplier = syndicateIncrease + 1

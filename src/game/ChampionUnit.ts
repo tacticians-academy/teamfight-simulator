@@ -390,7 +390,7 @@ export class ChampionUnit {
 	}
 
 	readyToCast() {
-		return (this.championEffects?.cast || this.championEffects?.passive) && this.mana >= this.manaMax()
+		return !!(this.championEffects?.cast || this.championEffects?.passive) && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
 		const spell = this.getCurrentSpell()

@@ -204,7 +204,7 @@ export default {
 	[ItemKey.GuinsoosRageblade]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const perStackAS = item.effects['ASPerStack']
-			if (perStackAS == null) {
+			if (perStackAS === undefined) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			holder.addBonuses(itemID as any, [BonusKey.AttackSpeed, perStackAS])
@@ -482,7 +482,7 @@ export default {
 	[ItemKey.ZekesHerald]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const bonusAS = item.effects['AS']
-			if (bonusAS == null) {
+			if (bonusAS === undefined) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
@@ -537,7 +537,7 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 	const stackAP = item.effects['StackingAP']
 	const maxStacks = item.effects['StackCap']
 	const resistsAtCap = item.effects['BonusResistsAtStackCap']
-	if (stackAD == null || stackAP == null || maxStacks == null || resistsAtCap == null) {
+	if (stackAD === undefined || stackAP === undefined || maxStacks == null || resistsAtCap === undefined) {
 		return console.log('ERR', item.name, item.effects)
 	}
 	const bonuses = unit.getBonusesFrom(itemID)
