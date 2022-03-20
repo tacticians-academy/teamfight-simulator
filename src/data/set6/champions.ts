@@ -8,7 +8,7 @@ import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
+import { BOARD_ROW_COUNT, HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 
@@ -48,7 +48,7 @@ export default {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: false,
-				continuesPastTarget: true,
+				fixedHexRange: BOARD_ROW_COUNT,
 				statusEffects: {
 					stunned: {
 						durationMS: stunSeconds * 1000,
@@ -65,7 +65,7 @@ export default {
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				destroysOnCollision: true,
-				retargetOnTargetDeath: true,
+				onTargetDeath: 'farthest',
 			})
 		},
 	},

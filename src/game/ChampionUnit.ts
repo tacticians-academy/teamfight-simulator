@@ -14,7 +14,7 @@ import traitEffects from '#/data/set6/traits'
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
 import { ProjectileEffect } from '#/game/ProjectileEffect'
-import type { ProjectileData } from '#/game/ProjectileEffect'
+import type { ProjectileEffectData } from '#/game/ProjectileEffect'
 import { ShapeEffect } from '#/game/ShapeEffect'
 import type { ShapeEffectData } from '#/game/ShapeEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
@@ -55,6 +55,7 @@ export class ChampionUnit {
 	fixedAS: number | undefined
 	instantAttack: boolean
 
+	hitBy: string[] = []
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
 	collides = true
@@ -113,6 +114,7 @@ export class ChampionUnit {
 	resetPre(synergiesByTeam: SynergyData[][]) {
 		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
 		this.bleeds.clear()
+		this.hitBy = []
 		this.empoweredAuto = undefined
 
 		for (const effectType in this.statusEffects) {
@@ -391,7 +393,7 @@ export class ChampionUnit {
 		return 1 - this.team as TeamNumber
 	}
 
-	readyToCast() {
+	readyToCast(): boolean {
 		return !!(this.championEffects?.cast || this.championEffects?.passive) && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
@@ -732,6 +734,10 @@ export class ChampionUnit {
 	getCurrentSpell(): ChampionSpellData | undefined {
 		return this.data.spells[this.transformIndex]
 	}
+	getSpellFor(spellSuffix: string): ChampionSpellData | undefined {
+		const spellName = this.data.apiName + spellSuffix
+		return this.data.spells.find(spell => spell.name === spellName)
+	}
 
 	getSpellVariableIfExists(spell: ChampionSpellData | undefined, key: SpellKey) {
 		return spell?.variables[key]?.[this.starLevel]
@@ -884,7 +890,7 @@ export class ChampionUnit {
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {
 		this.pending.bonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
-	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileData) {
+	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
 		if (spell && !data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 		}
@@ -897,9 +903,9 @@ export class ChampionUnit {
 				console.error('ERR', 'No target for projectile', this.name, spell?.name)
 				return
 			}
-			data.target = data.continuesPastTarget === true ? target.activeHex : target
+			data.target = data.fixedHexRange != null ? target.activeHex : target
 		}
-		const projectile = new ProjectileEffect(this, elapsedMS, data, spell)
+		const projectile = new ProjectileEffect(this, elapsedMS, spell, data)
 		state.projectileEffects.add(projectile)
 		this.attackStartAtMS = projectile.startsAtMS
 		if (spell) {
@@ -934,6 +940,9 @@ export class ChampionUnit {
 
 	angleTo(unit: ChampionUnit) {
 		return getAngleBetween(this.coordinatePosition(), unit.coordinatePosition())
+	}
+	angleToHex(hex: HexCoord) {
+		return getAngleBetween(this.coordinatePosition(), coordinatePosition(hex))
 	}
 
 	getNearestHexTowards(target: ChampionUnit) {

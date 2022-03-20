@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
@@ -9,24 +10,30 @@ import type { GameEffectData } from '#/game/GameEffect'
 import { coordinatePosition } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
-import { DEFAULT_CAST_SECONDS, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
+import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { DamageSourceType } from '#/helpers/types'
 import type { HexCoord} from '#/helpers/types'
 import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 
-export interface ProjectileData extends GameEffectData {
+type TargetDeathAction = 'continue' | 'closest' | 'farthest'
+
+export interface ProjectileEffectData extends GameEffectData {
 	/** Inferred to be `spell` if passing with a `SpellCalculation`. */
 	sourceType?: DamageSourceType
 	/** Whether the `Projectile` should complete after the first time it collides with a unit. Set to false to apply to all intermediary units collided with. */
 	destroysOnCollision?: boolean
-	/** Whether the `Projectile` should continue past its target. Requires `target` to be a hex. */
-	continuesPastTarget?: boolean
+	/** The fixed number of hexes this `Projectile` should travel, regardless of its target distance. */
+	fixedHexRange?: number
+	/** Rotates the angle of the `Projectile`. Only works with `fixedHexRange`. */
+	changeRadians?: number
 	/** Only include if not passed with a `SpellCalculation`. */
 	missile?: ChampionSpellMissileData
-	/** Defaults to the source unit's attack target unit, or the unit's hex at cast time if `continuesPastTarget` is `true`. */
+	/** Defaults to the source unit's attack target unit, or the unit's hex at cast time if `fixedHexRange` is set. */
 	target?: ChampionUnit | HexCoord
 	/** If the `Projectile` should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
-	retargetOnTargetDeath?: boolean
+	onTargetDeath?: TargetDeathAction
+	/** Optional missile data for the `Projectile` to use if it should return to its source. */
+	returnMissile?: ChampionSpellMissileData
 }
 
 function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
@@ -41,25 +48,27 @@ export class ProjectileEffect extends GameEffect {
 	target: ChampionUnit | HexCoord
 	targetCoordinates: HexCoord
 	destroysOnCollision: boolean | undefined
-	continuesPastTarget: boolean
-	retargetOnTargetDeath: boolean | undefined
+	onTargetDeath: TargetDeathAction | undefined
+	returnMissile: ChampionSpellMissileData | undefined
 	width: number
 
 	collidedWith: string[] = []
 	collisionRadiusSquared: number
 
+	traveledDistance = 0
+	maxDistance: number | undefined
 	fixedDeltaX: number | undefined
 	fixedDeltaY: number | undefined
 
-	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, data: ProjectileData, spell?: ChampionSpellData) {
-		super(source, data)
+	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
+		super(source, spell, data)
 
 		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : (spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)
 		const startDelay = spell?.missile?.startDelay
 		this.startsAtMS = elapsedMS + startsAfterMS + (startDelay != null ? startDelay * 1000 : 0)
 		this.activatesAfterMS = 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
-		const expiresAfterMS = 50 * 1000
+		const expiresAfterMS = 10 * 1000
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : expiresAfterMS)
 
 		this.position = ref([...source.coordinatePosition()] as HexCoord) // Destructure to avoid mutating source
@@ -67,19 +76,23 @@ export class ProjectileEffect extends GameEffect {
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
 		this.sourceType = data.sourceType!
 		this.target = data.target!
+		this.targetCoordinates = [0, 0]
+		this.setTarget(data.target!)
 		this.destroysOnCollision = data.destroysOnCollision
-		this.continuesPastTarget = data.continuesPastTarget ?? false
-		this.retargetOnTargetDeath = data.retargetOnTargetDeath
-		this.targetCoordinates = isUnit(this.target) ? this.target.coordinatePosition() : coordinatePosition(this.target)
+		this.onTargetDeath = data.onTargetDeath
+		this.returnMissile = data.returnMissile
+
+		if (data.fixedHexRange != null) {
+			const [deltaX, deltaY] = this.getDelta(this.targetCoordinates, data.changeRadians)
+			this.fixedDeltaX = deltaX
+			this.fixedDeltaY = deltaY
+			this.maxDistance = data.fixedHexRange * HEX_PROPORTION
+			this.targetCoordinates = [this.position.value[0] + deltaX * this.maxDistance, this.position.value[1] + deltaY * this.maxDistance]
+		}
+
 		this.width = (this.missile.width ?? 10) * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
 		const collisionRadius = (this.width + UNIT_SIZE_PROPORTION) / 2
 		this.collisionRadiusSquared = collisionRadius * collisionRadius
-
-		if (this.continuesPastTarget) {
-			const [deltaX, deltaY] = this.getDelta()
-			this.fixedDeltaX = deltaX
-			this.fixedDeltaY = deltaY
-		}
 
 		this.postInit()
 	}
@@ -87,12 +100,12 @@ export class ProjectileEffect extends GameEffect {
 	getDistanceFor(diffMS: DOMHighResTimeStamp) {
 		return diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 	}
-	getDelta() {
+	getDelta(targetCoordinates?: HexCoord, changeRadians?: number) {
 		const [currentX, currentY] = this.position.value
-		const [targetX, targetY] = this.targetCoordinates
+		const [targetX, targetY] = targetCoordinates ?? this.targetCoordinates
 		const distanceX = targetX - currentX
 		const distanceY = targetY - currentY
-		const angle = Math.atan2(distanceY, distanceX)
+		const angle = Math.atan2(distanceY, distanceX) + (changeRadians ?? 0)
 		return [Math.cos(angle), Math.sin(angle), distanceX, distanceY]
 	}
 
@@ -101,8 +114,28 @@ export class ProjectileEffect extends GameEffect {
 			return false
 		}
 		this.collidedWith.push(unit.instanceID)
+		unit.hitBy.push(this.hitID)
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
 		return wasSpellShielded
+	}
+
+	checkIfDies() {
+		const returnIDSuffix = 'Returns'
+		if (this.returnMissile && !this.instanceID.endsWith(returnIDSuffix)) {
+			this.maxDistance = undefined
+			this.setTarget(this.source)
+			this.missile = this.returnMissile
+			this.currentSpeed = this.missile.speedInitial!
+			this.instanceID += returnIDSuffix
+			this.hitID += returnIDSuffix //TODO if damage is unique to outward direction
+			return true
+		}
+		return false
+	}
+
+	setTarget(target: ChampionUnit | HexCoord) {
+		this.target = target
+		this.targetCoordinates = isUnit(target) ? target.coordinatePosition() : coordinatePosition(target)
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
@@ -111,33 +144,47 @@ export class ProjectileEffect extends GameEffect {
 
 		if (isUnit(this.target)) {
 			if (this.target.dead) {
-				if (this.retargetOnTargetDeath == null) {
+				if (this.onTargetDeath == null) {
 					return false
 				}
-				const newTarget = getDistanceUnit(this.retargetOnTargetDeath, this.source)
-				if (newTarget) {
-					this.target = newTarget
+				if (this.onTargetDeath === 'continue') {
+					this.setTarget(this.target.activeHex)
+				} else {
+					const newTarget = getDistanceUnit(this.onTargetDeath === 'closest', this.source)
+					if (newTarget) {
+						this.setTarget(newTarget)
+					}
 				}
+			} else {
+				this.targetCoordinates = this.target.coordinatePosition()
 			}
-			this.targetCoordinates = this.target.coordinatePosition()
 		}
 		const diffDistance = this.getDistanceFor(diffMS)
 		let angleX: number, angleY: number
-		if (this.continuesPastTarget) {
+		if (this.maxDistance != null) {
 			angleX = this.fixedDeltaX!
 			angleY = this.fixedDeltaY!
+			if (this.traveledDistance >= this.maxDistance) {
+				if (isUnit(this.target)) {
+					this.apply(elapsedMS, this.target)
+				}
+				return this.checkIfDies()
+			}
 		} else {
 			const [deltaX, deltaY, distanceX, distanceY] = this.getDelta()
 			angleX = deltaX
 			angleY = deltaY
-			if (isUnit(this.target) && Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
-				this.apply(elapsedMS, this.target)
-				return false
+			if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
+				if (isUnit(this.target)) {
+					this.apply(elapsedMS, this.target)
+				}
+				return this.checkIfDies()
 			}
 		}
+		this.traveledDistance += diffDistance
 
 		if (this.missile.acceleration != null) {
-			this.currentSpeed *= this.missile.acceleration * diffMS / 1000
+			this.currentSpeed = this.currentSpeed + this.missile.acceleration * diffMS / 1000 //TODO determine calculation
 			if (this.missile.acceleration > 0) {
 				if (this.missile.speedMax != null && this.currentSpeed > this.missile.speedMax) {
 					this.currentSpeed = this.missile.speedMax
@@ -160,7 +207,7 @@ export class ProjectileEffect extends GameEffect {
 				if (coordinateDistanceSquared(position, unit.coordinatePosition()) < this.collisionRadiusSquared) {
 					this.apply(elapsedMS, unit)
 					if (this.destroysOnCollision) {
-						return false
+						return this.checkIfDies()
 					}
 				}
 			}

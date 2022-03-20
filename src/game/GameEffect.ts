@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import type { SpellCalculation } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
@@ -22,6 +22,8 @@ export interface GameEffectData {
 	targetTeam?: TeamNumber
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
+	/** If the `damageMultiplier` and `damageIncrease` should only apply if the spell has hit the target multiple times. */
+	modifiesOnMultiHit?: boolean
 	/** Multiplies the result of `damageCalculation`. */
 	damageMultiplier?: number
 	/** Adds to the result of `damageCalculation`. */
@@ -32,7 +34,7 @@ export interface GameEffectData {
 	bonuses?: [BonusLabelKey, ...BonusVariable[]]
 	/** `StatusEffects` to apply to any affected units. */
 	statusEffects?: StatusEffectsData
-	/** Callback for each unit the `GaneEffect` applies to. */
+	/** Callback for each unit the `GameEffect` applies to. */
 	onCollision?: CollisionFn
 }
 
@@ -40,6 +42,7 @@ let instanceIndex = 0
 
 export class GameEffect extends GameEffectChild {
 	instanceID: string
+	hitID: string
 	started = ref(false)
 	activated = false
 	updatedAtMS: DOMHighResTimeStamp = 0
@@ -49,20 +52,23 @@ export class GameEffect extends GameEffectChild {
 	expiresAtMS: DOMHighResTimeStamp = 0
 	source: ChampionUnit
 	targetTeam: TeamNumber | null
-	damageCalculation?: SpellCalculation
-	damageIncrease?: number
-	damageMultiplier?: number
-	damageSourceType?: DamageSourceType
+	damageCalculation: SpellCalculation | undefined
+	modifiesOnMultiHit: boolean
+	damageIncrease: number | undefined
+	damageMultiplier: number | undefined
+	damageSourceType: DamageSourceType | undefined
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
 	statusEffects: StatusEffectsData | undefined
 	onCollision: CollisionFn | undefined
 
-	constructor(source: ChampionUnit, data: GameEffectData) {
+	constructor(source: ChampionUnit, spell: ChampionSpellData | undefined, data: GameEffectData) {
 		super()
-		this.instanceID = `ge${instanceIndex += 1}`
+		this.instanceID = `e${instanceIndex += 1}`
+		this.hitID = spell ? `${source.instanceID}${spell.name}${source.castCount}` : this.instanceID
 		this.source = source
 		this.targetTeam = data.targetTeam === undefined ? source.opposingTeam() : data.targetTeam
 		this.damageCalculation = data.damageCalculation
+		this.modifiesOnMultiHit = data.modifiesOnMultiHit ?? false
 		this.damageIncrease = data.damageIncrease
 		this.damageMultiplier = data.damageMultiplier
 		this.damageSourceType = data.damageSourceType
@@ -78,11 +84,17 @@ export class GameEffect extends GameEffectChild {
 		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
 		if (this.damageCalculation != null) {
-			let damageIncrease = this.damageIncrease ?? 0
+			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.includes(this.hitID)
+			let damageIncrease = 0
+			let damageMultiplier: number | undefined
+			if (modifiesDamage) {
+				damageIncrease = this.damageIncrease ?? 0
+				damageMultiplier = this.damageMultiplier
+			}
 			if (wasSpellShielded) {
 				damageIncrease -= spellShield.amount
 			}
-			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, this.damageMultiplier)
+			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, damageMultiplier)
 		}
 		if (!wasSpellShielded) {
 			if (this.bonuses) {
