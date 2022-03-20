@@ -68,6 +68,7 @@ export class ChampionUnit {
 	activeSynergies: SynergyData[] = []
 	transformIndex = 0
 	basicAttackCount = 0
+	castCount = 0
 
 	empoweredAuto: {
 		statusEffects?: StatusEffectsData
@@ -132,6 +133,7 @@ export class ChampionUnit {
 		const jumpToBackline = this.jumpsToBackline()
 		this.collides = !jumpToBackline
 		this.basicAttackCount = 0
+		this.castCount = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activeHex[1]
 			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
@@ -416,6 +418,7 @@ export class ChampionUnit {
 		})
 
 		if (initialCast) {
+			this.castCount += 1
 			this.activeSynergies.forEach(({ key, activeEffect }) => {
 				if (!activeEffect) { return }
 				traitEffects[key]?.cast?.(activeEffect, elapsedMS, this)
