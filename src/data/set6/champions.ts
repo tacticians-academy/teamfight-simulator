@@ -6,7 +6,7 @@ import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getSurroundingWithin } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
@@ -106,6 +106,34 @@ export default {
 						champion.bonuses.push([SpellKey.ASBoost, [[BonusKey.AttackSpeed, boostAS]]])
 					}
 				},
+			})
+		},
+	},
+
+	[ChampionKey.Gnar]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = getFarthestUnitOfTeamWithinRangeFrom(champion, champion.opposingTeam(), state.units)
+			const boulderSpell = champion.data.spells[1]
+			if (!champion.castCount) {
+				const transformSeconds = champion.getSpellVariable(spell, 'TransformDuration' as SpellKey)
+				const bonusHealth = champion.getSpellVariable(spell, 'TransformHealth' as SpellKey)
+				const manaReduction = champion.getSpellVariable(spell, 'TransformManaReduc' as SpellKey)
+				const expiresAt = elapsedMS + transformSeconds * 1000
+				champion.health += bonusHealth
+				champion.healthMax += bonusHealth
+				champion.addBonuses(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt])
+				if (target) {
+					const jumpToHex = target.getNearestHexTowards(champion)
+					if (jumpToHex) {
+						champion.activeHex = jumpToHex //TODO travel time
+					}
+				}
+			}
+			if (!target) { return console.log('ERR', 'No target', champion.name, spell.name) }
+			champion.queueProjectileEffect(elapsedMS, spell, {
+				target,
+				missile: boulderSpell.missile,
+				destroysOnCollision: false,
 			})
 		},
 	},
