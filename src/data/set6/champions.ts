@@ -115,13 +115,14 @@ export default {
 			const target = getFarthestUnitOfTeamWithinRangeFrom(champion, champion.opposingTeam(), state.units)
 			const boulderSpell = champion.data.spells[1]
 			if (!champion.castCount) {
+				const rangeReduction = 2 //NOTE hardcoded
 				const transformSeconds = champion.getSpellVariable(spell, 'TransformDuration' as SpellKey)
 				const bonusHealth = champion.getSpellVariable(spell, 'TransformHealth' as SpellKey)
 				const manaReduction = champion.getSpellVariable(spell, 'TransformManaReduc' as SpellKey)
 				const expiresAt = elapsedMS + transformSeconds * 1000
 				champion.health += bonusHealth
 				champion.healthMax += bonusHealth
-				champion.addBonuses(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt])
+				champion.addBonuses(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
 				if (target) {
 					const jumpToHex = target.getNearestHexTowards(champion)
 					if (jumpToHex) {
