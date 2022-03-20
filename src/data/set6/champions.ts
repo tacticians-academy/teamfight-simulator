@@ -6,7 +6,7 @@ import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getClosestHexAvailableTo, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
@@ -26,7 +26,7 @@ export default {
 					},
 				},
 				onCollision: (elapsedMS, affectedUnit) => {
-					const adjacentHex = getClosestHexAvailableTo(champion.activeHex, state.units)
+					const adjacentHex = champion.getNearestHexTowards(affectedUnit)
 					if (adjacentHex) {
 						affectedUnit.activeHex = adjacentHex //TODO travel time
 						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range

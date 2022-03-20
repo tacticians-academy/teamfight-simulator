@@ -22,7 +22,7 @@ import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
-import { containsHex, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -679,6 +679,9 @@ export class ChampionUnit {
 		return state.units.filter(unit => unit !== this && !unit.dead && unit.team === this.team)
 	}
 
+	coordDistanceToHex(hex: HexCoord) {
+		return coordinateDistanceSquared(this.coordinatePosition(), coordinatePosition(hex))
+	}
 	hexDistanceTo(unit: ChampionUnit) {
 		return this.hexDistanceToHex(unit.activeHex)
 	}
@@ -931,5 +934,18 @@ export class ChampionUnit {
 
 	angleTo(unit: ChampionUnit) {
 		return getAngleBetween(this.coordinatePosition(), unit.coordinatePosition())
+	}
+
+	getNearestHexTowards(target: ChampionUnit) {
+		let minDistance = Number.MAX_SAFE_INTEGER
+		let bestHex = this.activeHex
+		getHexRing(bestHex, 1).forEach(hex => {
+			const distance = target.coordDistanceToHex(hex)
+			if (distance < minDistance) {
+				minDistance = distance
+				bestHex = hex
+			}
+		})
+		return getClosestHexAvailableTo(bestHex, state.units)
 	}
 }
