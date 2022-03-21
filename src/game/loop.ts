@@ -23,6 +23,7 @@ const MOVE_LOCKOUT_JUMPERS_MS = 500
 const MOVE_LOCKOUT_MELEE_MS = 1000
 
 let didBacklineJump = false
+let didMeleeMove = false
 
 function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (unanimated === true) {
@@ -32,19 +33,17 @@ function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 }
 export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
-	let diffMS = frameMS - previousFrameMS
-	if (diffMS < GAME_TICK_MS - 1) {
-		requestNextFrame(frameMS, unanimated)
-		return
-	}
-	const isFirstLoop = !startedAtMS
-	if (isFirstLoop) {
-		diffMS = 0
+	if (previousFrameMS === 0) {
 		previousFrameMS = frameMS
 		startedAtMS = frameMS
 		needsPathfindingUpdate()
+		updatePathsIfNeeded(state.units)
 		didBacklineJump = false
+		didMeleeMove = false
 		state.units.forEach(unit => {
+			if (unit.jumpsToBackline()) {
+				unit.jumpToBackline(0)
+			}
 			unit.shields.forEach(shield => {
 				shield.activated = shield.activatesAtMS == null
 				const healShieldBoost = shield.source?.getBonuses(BonusKey.HealShieldBoost)
@@ -56,11 +55,15 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 				}
 			})
 		})
+		requestNextFrame(frameMS, unanimated)
+		return
+	}
+	const diffMS = frameMS - previousFrameMS
+	if (diffMS < GAME_TICK_MS - 1) {
+		requestNextFrame(frameMS, unanimated)
+		return
 	}
 	const elapsedMS = frameMS - startedAtMS
-	if (elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {
-		didBacklineJump = true
-	}
 
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
@@ -73,6 +76,11 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		})
 	})
 
+	if (!didMeleeMove && elapsedMS >= MOVE_LOCKOUT_MELEE_MS) {
+		didMeleeMove = true
+	} else if (!didBacklineJump && elapsedMS >= MOVE_LOCKOUT_JUMPERS_MS) {
+		didBacklineJump = true
+	}
 	for (const unit of state.units) {
 		if (unit.dead) {
 			continue
@@ -85,13 +93,6 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		unit.items.forEach((item, index) => {
 			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
-	}
-
-	for (const unit of state.units) {
-		if (!unit.isInteractable() || unit.isMoving(elapsedMS) || !unit.canAttack()) {
-			continue
-		}
-
 		for (const pendingBonus of unit.pending.bonuses) {
 			const [startsAtMS, pendingKey, bonuses] = pendingBonus
 			if (elapsedMS >= startsAtMS) {
@@ -99,27 +100,32 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 				unit.pending.bonuses.delete(pendingBonus)
 			}
 		}
+	}
+
+	for (const unit of state.units) {
+		if (!unit.isInteractable()) {
+			continue
+		}
 		if (didBacklineJump) {
 			unit.updateTarget()
 		}
-		if (didBacklineJump && unit.readyToCast()) {
-			unit.castAbility(elapsedMS, true)
-		} else if (unit.target) {
-			unit.updateAttack(elapsedMS)
-		} else {
-			if (elapsedMS < MOVE_LOCKOUT_MELEE_MS) {
-				if (!didBacklineJump) {
-					if (!unit.jumpsToBackline()) {
-						continue
-					}
-					unit.jumpToBackline(elapsedMS)
-					continue
-				} else if (unit.range() > 1) {
-					continue
-				}
+		const beganInteracting = didMeleeMove || (didBacklineJump && unit.data.stats.range === 1) || unit.jumpsToBackline()
+		if (!beganInteracting) {
+			continue
+		}
+
+		if (didBacklineJump && unit.canAttack(elapsedMS)) {
+			if (unit.readyToCast()) {
+				unit.castAbility(elapsedMS, true)
+			} else if (unit.target) {
+				unit.updateAttack(elapsedMS)
 			}
+		}
+		if (didBacklineJump || unit.jumpsToBackline()) {
 			updatePathsIfNeeded(state.units)
-			unit.updateMove(elapsedMS)
+			if (unit.updateMove(elapsedMS, diffMS)) {
+				continue
+			}
 		}
 	}
 
@@ -139,6 +145,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 
 export function cancelLoop() {
 	startedAtMS = 0
+	previousFrameMS = 0
 	if (frameID !== null) {
 		window.cancelAnimationFrame(frameID)
 		frameID = null

@@ -62,7 +62,7 @@ onMounted(() => {
 			const hexWidthHalf = col.offsetWidth / 2
 			const x = row.offsetLeft + col.offsetLeft + hexWidthHalf
 			const y = row.offsetTop + col.offsetTop + hexWidthHalf
-			state.hexRowsCols[rowIndex][colIndex].position = [x / containerSize, y / containerSize]
+			state.hexRowsCols[rowIndex][colIndex].coord = [x / containerSize, y / containerSize]
 		}
 	}
 

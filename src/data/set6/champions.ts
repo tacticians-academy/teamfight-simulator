@@ -42,17 +42,20 @@ export default {
 	[ChampionKey.Blitzcrank]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			champion.moveUntilMS = elapsedMS + stunSeconds * 1000
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target: getDistanceUnit(false, champion),
+				returnMissile: spell.missile,
 				statusEffects: {
 					stunned: {
 						durationMS: stunSeconds * 1000,
 					},
 				},
 				onCollision: (elapsedMS, affectedUnit) => {
+					champion.performActionUntilMS = 0
 					const adjacentHex = affectedUnit.projectHexFrom(champion, false)
 					if (adjacentHex) {
+						affectedUnit.moving = true
+						affectedUnit.customMoveSpeed = spell.missile?.speedInitial
 						affectedUnit.setActiveHex(adjacentHex) //TODO travel time
 						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
 						champion.empoweredAuto = {
@@ -65,6 +68,7 @@ export default {
 					}
 				},
 			})
+			champion.performActionUntilMS = 60 * 1000
 		},
 	},
 
@@ -148,7 +152,9 @@ export default {
 				if (target) {
 					const jumpToHex = champion.projectHexFrom(target, false)
 					if (jumpToHex) {
-						champion.setActiveHex(jumpToHex) //TODO travel time
+						champion.moving = true
+						champion.customMoveSpeed = 1000 //TODO travel time
+						champion.setActiveHex(jumpToHex)
 					}
 				}
 			}

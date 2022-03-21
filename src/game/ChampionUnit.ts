@@ -61,9 +61,10 @@ export class ChampionUnit {
 
 	collides = true
 
-	cachedTargetDistance = 0
 	attackStartAtMS: DOMHighResTimeStamp = 0
-	moveUntilMS: DOMHighResTimeStamp = 0
+	moving = false
+	customMoveSpeed: number | undefined
+	performActionUntilMS: DOMHighResTimeStamp = 0
 	manaLockUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
 	traits: TraitData[] = []
@@ -95,8 +96,8 @@ export class ChampionUnit {
 		this.starLevel = starLevel
 		this.championEffects = championEffects[name]
 		this.instantAttack = this.data.stats.range <= 1
-		this.startHex = hex
-		this.activeHex = hex
+		this.startHex = [...hex]
+		this.activeHex = [...hex]
 		this.coord = this.coordinatePosition()
 		this.reposition(hex)
 
@@ -119,20 +120,24 @@ export class ChampionUnit {
 		this.hitBy = []
 		this.empoweredAuto = undefined
 
-		for (const effectType in this.statusEffects) {
+		Object.keys(this.statusEffects).forEach(effectType => {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
 			statusEffect.active = false
 			statusEffect.amount = 0
 			statusEffect.expiresAtMS = 0
-		}
+		})
 
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
 		this.target = null
 		this.setActiveHex(this.startHex)
-		this.cachedTargetDistance = 0
+		const coord = this.coordinatePosition()
+		this.coord[0] = coord[0]
+		this.coord[1] = coord[1]
+		this.moving = false
 		this.attackStartAtMS = 0
-		this.moveUntilMS = 0
+		this.customMoveSpeed = undefined
+		this.performActionUntilMS = 0
 		this.manaLockUntilMS = 0
 		const jumpToBackline = this.jumpsToBackline()
 		this.collides = !jumpToBackline
@@ -173,18 +178,14 @@ export class ChampionUnit {
 
 	updateTarget() {
 		if (this.target != null) {
-			const targetDistance = this.hexDistanceTo(this.target)
-			if (!this.target.isAttackable() || targetDistance > this.range()) {
+			if (!this.target.isAttackable() || this.hexDistanceTo(this.target) > this.range()) {
 				this.target = null
-			} else {
-				this.cachedTargetDistance = targetDistance
 			}
 		}
 		if (this.target == null) {
 			const target = getClosestUnitOfTeamWithinRangeTo(this.activeHex, this.opposingTeam(), this.range(), state.units)
 			if (target != null) {
 				this.target = target
-				this.cachedTargetDistance = this.hexDistanceTo(target)
 				// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
 			}
 		}
@@ -344,15 +345,35 @@ export class ChampionUnit {
 		return this.getBonuses(BonusKey.CritReduction) / 100
 	}
 
-	updateMove(elapsedMS: DOMHighResTimeStamp) {
-		const nextHex = getNextHex(this)
-		if (nextHex) {
-			const msPerHex = 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
-			this.moveUntilMS = elapsedMS + msPerHex
+	updateMove(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp) {
+		if (!this.moving) {
+			if (this.target || !this.canAttack(elapsedMS)) {
+				return false
+			}
+			const nextHex = getNextHex(this)
+			if (!nextHex) {
+				return false
+			}
+			this.moving = true
 			this.setActiveHex(nextHex) //TODO travel time
-			return true
 		}
-		return false
+
+		const [currentX, currentY] = this.coord
+		const [targetX, targetY] = coordinatePosition(this.activeHex)
+		const distanceX = targetX - currentX
+		const distanceY = targetY - currentY
+		const diffDistance = diffMS / 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
+		if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
+			this.moving = false
+			this.customMoveSpeed = undefined
+			this.coord[0] = targetX
+			this.coord[1] = targetY
+		} else {
+			const angle = Math.atan2(distanceY, distanceX)
+			this.coord[0] += Math.cos(angle) * diffDistance
+			this.coord[1] += Math.sin(angle) * diffDistance
+		}
+		return true
 	}
 
 	getStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType) {
@@ -435,16 +456,17 @@ export class ChampionUnit {
 		const [col, row] = this.activeHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		const jumpHex = getClosestHexAvailableTo(targetHex, state.units)
+		this.customMoveSpeed = 1500 // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
+		this.moving = true
 		if (jumpHex) {
-			this.setActiveHex(jumpHex)
+			this.setActiveHex(jumpHex, true)
 		}
-		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.collides = true
 		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
-	canAttack() {
-		return this.range() > 0 && !this.statusEffects.stunned.active
+	canAttack(elapsedMS: DOMHighResTimeStamp) {
+		return !this.moving && this.data.stats.range > 0 && !this.statusEffects.stunned.active && this.performActionUntilMS < elapsedMS
 	}
 	isAttackable() {
 		return this.isInteractable() && !this.statusEffects.stealth.active
@@ -454,10 +476,6 @@ export class ChampionUnit {
 	}
 	hasCollision() {
 		return !this.dead && this.collides
-	}
-
-	isMoving(elapsedMS: DOMHighResTimeStamp) {
-		return elapsedMS < this.moveUntilMS
 	}
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
@@ -702,10 +720,12 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	setActiveHex(hex: HexCoord) {
-		this.activeHex = hex
-		this.coord = this.coordinatePosition()
-		needsPathfindingUpdate()
+	setActiveHex(hex: HexCoord, disablePathUpdate: boolean = false) {
+		this.activeHex[0] = hex[0]
+		this.activeHex[1] = hex[1]
+		if (!disablePathUpdate) {
+			needsPathfindingUpdate()
+		}
 	}
 	reposition(hex: HexCoord) {
 		if (state.isRunning) {
@@ -853,7 +873,7 @@ export class ChampionUnit {
 		return this.data.stats.range + this.getBonuses(BonusKey.HexRangeIncrease)
 	}
 	moveSpeed() {
-		return this.data.stats.moveSpeed + this.getBonuses(BonusKey.MoveSpeed)
+		return this.customMoveSpeed ?? (this.data.stats.moveSpeed + this.getBonuses(BonusKey.MoveSpeed))
 	}
 
 	healthProportion() {
@@ -918,9 +938,14 @@ export class ChampionUnit {
 		}
 		const projectile = new ProjectileEffect(this, elapsedMS, spell, data)
 		state.projectileEffects.add(projectile)
-		this.attackStartAtMS = projectile.startsAtMS
-		if (spell) {
-			this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
+		if (elapsedMS > 0) {
+			this.attackStartAtMS = projectile.startsAtMS
+			if (spell) {
+				this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
+				this.performActionUntilMS = projectile.activatesAtMS
+			} else {
+				this.performActionUntilMS = projectile.startsAtMS
+			}
 		}
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
@@ -932,8 +957,11 @@ export class ChampionUnit {
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
 		state.hexEffects.add(hexEffect)
-		this.attackStartAtMS = hexEffect.activatesAtMS
-		this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+		if (elapsedMS > 0) {
+			this.attackStartAtMS = hexEffect.activatesAtMS
+			this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+			this.performActionUntilMS = hexEffect.activatesAtMS
+		}
 	}
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
@@ -945,8 +973,11 @@ export class ChampionUnit {
 		}
 		const shapeEffect = new ShapeEffect(this, elapsedMS, spell, data)
 		state.shapeEffects.add(shapeEffect)
-		this.attackStartAtMS = shapeEffect.activatesAtMS
-		this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+		if (elapsedMS > 0) {
+			this.attackStartAtMS = shapeEffect.activatesAtMS
+			this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+			this.performActionUntilMS = shapeEffect.activatesAtMS
+		}
 	}
 
 	angleTo(unit: ChampionUnit) {

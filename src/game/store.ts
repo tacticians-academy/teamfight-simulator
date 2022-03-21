@@ -178,7 +178,7 @@ const store = {
 			const units = getSavedUnits()
 				.filter(storageChampion => { //TODO remove
 					if (storageChampion.hex == null) {
-						storageChampion.hex = (storageChampion as any).position
+						storageChampion.hex = (storageChampion as any).coord
 					}
 					return storageChampion.hex != null
 				})
@@ -334,8 +334,8 @@ export function useStore() {
 
 // Helpers
 
-export function coordinatePosition([col, row]: HexCoord) {
-	return state.hexRowsCols[row][col].position
+export function coordinatePosition([col, row]: HexCoord): HexCoord {
+	return [...state.hexRowsCols[row][col].coord]
 }
 
 export function gameOver(forTeam: TeamNumber) {

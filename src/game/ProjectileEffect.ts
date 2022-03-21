@@ -41,7 +41,7 @@ function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
 }
 
 export class ProjectileEffect extends GameEffect {
-	position: Ref<HexCoord>
+	coord: Ref<HexCoord>
 	missile: ChampionSpellMissileData
 	currentSpeed: number
 	sourceType: DamageSourceType
@@ -72,7 +72,7 @@ export class ProjectileEffect extends GameEffect {
 		const expiresAfterMS = 10 * 1000
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : expiresAfterMS)
 
-		this.position = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
+		this.coord = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile!
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
 		this.sourceType = data.sourceType!
@@ -88,7 +88,7 @@ export class ProjectileEffect extends GameEffect {
 			this.fixedDeltaX = deltaX
 			this.fixedDeltaY = deltaY
 			this.maxDistance = data.fixedHexRange * HEX_PROPORTION
-			this.targetCoordinates = [this.position.value[0] + deltaX * this.maxDistance, this.position.value[1] + deltaY * this.maxDistance]
+			this.targetCoordinates = [this.coord.value[0] + deltaX * this.maxDistance, this.coord.value[1] + deltaY * this.maxDistance]
 		}
 
 		this.width = (this.missile.width ?? 10) * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
@@ -98,11 +98,8 @@ export class ProjectileEffect extends GameEffect {
 		this.postInit()
 	}
 
-	getDistanceFor(diffMS: DOMHighResTimeStamp) {
-		return diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
-	}
 	getDelta(targetCoordinates?: HexCoord, changeRadians?: number) {
-		const [currentX, currentY] = this.position.value
+		const [currentX, currentY] = this.coord.value
 		const [targetX, targetY] = targetCoordinates ?? this.targetCoordinates
 		const distanceX = targetX - currentX
 		const distanceY = targetY - currentY
@@ -161,27 +158,27 @@ export class ProjectileEffect extends GameEffect {
 				this.targetCoordinates = this.target.coord
 			}
 		}
-		const diffDistance = this.getDistanceFor(diffMS)
+		const diffDistance = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
 		let angleX: number, angleY: number
 		if (this.maxDistance != null) {
-			angleX = this.fixedDeltaX!
-			angleY = this.fixedDeltaY!
 			if (this.traveledDistance >= this.maxDistance) {
 				if (!this.isReturning && isUnit(this.target)) {
 					this.apply(elapsedMS, this.target)
 				}
 				return this.checkIfDies()
 			}
+			angleX = this.fixedDeltaX!
+			angleY = this.fixedDeltaY!
 		} else {
 			const [deltaX, deltaY, distanceX, distanceY] = this.getDelta()
-			angleX = deltaX
-			angleY = deltaY
 			if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
 				if (!this.isReturning && isUnit(this.target)) {
 					this.apply(elapsedMS, this.target)
 				}
 				return this.checkIfDies()
 			}
+			angleX = deltaX
+			angleY = deltaY
 		}
 		this.traveledDistance += diffDistance
 
@@ -197,7 +194,7 @@ export class ProjectileEffect extends GameEffect {
 				}
 			}
 		}
-		const position = this.position.value
+		const position = this.coord.value
 		position[0] += angleX * diffDistance
 		position[1] += angleY * diffDistance
 
