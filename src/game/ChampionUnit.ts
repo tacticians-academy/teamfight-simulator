@@ -18,7 +18,7 @@ import type { ProjectileEffectData } from '#/game/ProjectileEffect'
 import { ShapeEffect } from '#/game/ShapeEffect'
 import type { ShapeEffectData } from '#/game/ShapeEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
-import { coordinatePosition, gameOver, getters, state, thresholdCheck } from '#/game/store'
+import { getCoordFrom, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
@@ -101,7 +101,7 @@ export class ChampionUnit {
 		this.instantAttack = this.data.stats.range <= 1
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
-		this.coord = this.coordinatePosition()
+		this.coord = this.getCoord()
 		this.reposition(hex)
 
 		for (const effectType in StatusEffectType) {
@@ -134,7 +134,7 @@ export class ChampionUnit {
 		this.dead = false
 		this.target = null
 		this.setActiveHex(this.startHex)
-		const coord = this.coordinatePosition()
+		const coord = this.getCoord()
 		this.coord[0] = coord[0]
 		this.coord[1] = coord[1]
 		this.moving = false
@@ -370,7 +370,7 @@ export class ChampionUnit {
 		}
 
 		const [currentX, currentY] = this.coord
-		const [targetX, targetY] = coordinatePosition(this.activeHex)
+		const [targetX, targetY] = getCoordFrom(this.activeHex)
 		const distanceX = targetX - currentX
 		const distanceY = targetY - currentY
 		const diffDistance = diffMS / 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
@@ -712,7 +712,7 @@ export class ChampionUnit {
 	}
 
 	coordDistanceSquaredToHex(hex: HexCoord) {
-		return coordinateDistanceSquared(this.coord, coordinatePosition(hex))
+		return coordinateDistanceSquared(this.coord, getCoordFrom(hex))
 	}
 	hexDistanceTo(unit: ChampionUnit) {
 		return this.hexDistanceToHex(unit.activeHex)
@@ -746,8 +746,8 @@ export class ChampionUnit {
 		this.team = hex[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
 		window.setTimeout(saveUnits)
 	}
-	coordinatePosition() {
-		return coordinatePosition(this.activeHex)
+	getCoord() {
+		return getCoordFrom(this.activeHex)
 	}
 
 	getStat(key: BonusKey) {
@@ -995,7 +995,7 @@ export class ChampionUnit {
 		return getAngleBetween(this.coord, unit.coord)
 	}
 	angleToHex(hex: HexCoord) {
-		return getAngleBetween(this.coord, coordinatePosition(hex))
+		return getAngleBetween(this.coord, getCoordFrom(hex))
 	}
 
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {

@@ -2,13 +2,13 @@
 import { computed, defineProps } from 'vue'
 
 import type { HexEffect } from '#/game/HexEffect'
-import { coordinatePosition } from '#/game/store'
+import { getCoordFrom } from '#/game/store'
 
 const props = defineProps<{
 	hexEffect: HexEffect
 }>()
 
-const hexPositions = computed(() => props.hexEffect.hexes.value?.map(coordinatePosition) ?? [])
+const hexPositions = computed(() => props.hexEffect.hexes.value?.map(getCoordFrom) ?? [])
 
 const maxOpacity = props.hexEffect.damageMultiplier ?? 1
 </script>

@@ -334,7 +334,7 @@ export function useStore() {
 
 // Helpers
 
-export function coordinatePosition([col, row]: HexCoord): HexCoord {
+export function getCoordFrom([col, row]: HexCoord): HexCoord {
 	return [...state.hexRowsCols[row][col].coord]
 }
 

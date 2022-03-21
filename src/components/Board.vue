@@ -6,7 +6,7 @@ import Unit from '#/components/Unit.vue'
 
 import { computed, onMounted, ref } from 'vue'
 
-import { useStore, coordinatePosition, getSocialiteHexStrength, setSocialiteHex } from '#/game/store'
+import { useStore, getCoordFrom, getSocialiteHexStrength, setSocialiteHex } from '#/game/store'
 
 import { getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { BOARD_ROW_PER_SIDE_COUNT, HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/helpers/constants'
@@ -106,7 +106,7 @@ const socialitesByTeam = getters.socialitesByTeam
 			<div
 				v-if="hexForMenu && !state.isRunning"
 				class="hex hex-overlay  pointer-events-auto absolute bg-tertiary text-primary  flex flex-col justify-center space-y-1"
-				:style="{ left: `${coordinatePosition(hexForMenu)[0] * 100}%`, top: `${coordinatePosition(hexForMenu)[1] * 100}%` }"
+				:style="{ left: `${getCoordFrom(hexForMenu)[0] * 100}%`, top: `${getCoordFrom(hexForMenu)[1] * 100}%` }"
 				@click="onClearHexMenu" @contextmenu="onClearHexMenu"
 			>
 				<button class="hex-button  bg-quaternary" @click="setSocialite(0)">{{ isSameHex(state.socialiteHexes[0], sourceHexForMenu) ? '❎' : '' }} Socialite</button>

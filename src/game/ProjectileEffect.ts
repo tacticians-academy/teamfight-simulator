@@ -7,7 +7,7 @@ import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-ac
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/GameEffect'
 import type { GameEffectData } from '#/game/GameEffect'
-import { coordinatePosition } from '#/game/store'
+import { getCoordFrom } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
@@ -46,7 +46,7 @@ export class ProjectileEffect extends GameEffect {
 	currentSpeed: number
 	sourceType: DamageSourceType
 	target: ChampionUnit | HexCoord
-	targetCoordinates: HexCoord
+	targetCoord: HexCoord
 	destroysOnCollision: boolean | undefined
 	onTargetDeath: TargetDeathAction | undefined
 	returnMissile: ChampionSpellMissileData | undefined
@@ -76,18 +76,18 @@ export class ProjectileEffect extends GameEffect {
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
 		this.sourceType = data.sourceType!
 		this.target = data.target!
-		this.targetCoordinates = [0, 0]
+		this.targetCoord = [0, 0]
 		this.setTarget(data.target!)
 		this.destroysOnCollision = data.destroysOnCollision
 		this.onTargetDeath = data.onTargetDeath
 		this.returnMissile = data.returnMissile
 
 		if (data.fixedHexRange != null) {
-			const [deltaX, deltaY] = this.getDelta(this.targetCoordinates, data.changeRadians)
+			const [deltaX, deltaY] = this.getDelta(this.targetCoord, data.changeRadians)
 			this.fixedDeltaX = deltaX
 			this.fixedDeltaY = deltaY
 			this.maxDistance = data.fixedHexRange * HEX_PROPORTION
-			this.targetCoordinates = [this.coord.value[0] + deltaX * this.maxDistance, this.coord.value[1] + deltaY * this.maxDistance]
+			this.targetCoord = [this.coord.value[0] + deltaX * this.maxDistance, this.coord.value[1] + deltaY * this.maxDistance]
 		}
 
 		this.width = (this.missile.width ?? 10) * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
@@ -97,9 +97,9 @@ export class ProjectileEffect extends GameEffect {
 		this.postInit()
 	}
 
-	getDelta(targetCoordinates?: HexCoord, changeRadians?: number) {
+	getDelta(targetCoord?: HexCoord, changeRadians?: number) {
 		const [currentX, currentY] = this.coord.value
-		const [targetX, targetY] = targetCoordinates ?? this.targetCoordinates
+		const [targetX, targetY] = targetCoord ?? this.targetCoord
 		const distanceX = targetX - currentX
 		const distanceY = targetY - currentY
 		const angle = Math.atan2(distanceY, distanceX) + (changeRadians ?? 0)
@@ -127,7 +127,7 @@ export class ProjectileEffect extends GameEffect {
 
 	setTarget(target: ChampionUnit | HexCoord) {
 		this.target = target
-		this.targetCoordinates = isUnit(target) ? target.coord : coordinatePosition(target)
+		this.targetCoord = isUnit(target) ? target.coord : getCoordFrom(target)
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
@@ -148,7 +148,7 @@ export class ProjectileEffect extends GameEffect {
 					}
 				}
 			} else {
-				this.targetCoordinates = this.target.coord
+				this.targetCoord = this.target.coord
 			}
 		}
 		const diffDistance = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
