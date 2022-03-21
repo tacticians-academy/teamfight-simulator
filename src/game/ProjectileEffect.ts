@@ -51,6 +51,7 @@ export class ProjectileEffect extends GameEffect {
 	onTargetDeath: TargetDeathAction | undefined
 	returnMissile: ChampionSpellMissileData | undefined
 	width: number
+	isReturning = false
 
 	collidedWith: string[] = []
 	collisionRadiusSquared: number
@@ -121,13 +122,14 @@ export class ProjectileEffect extends GameEffect {
 
 	checkIfDies() {
 		const returnIDSuffix = 'Returns'
-		if (this.returnMissile && !this.instanceID.endsWith(returnIDSuffix)) {
+		if (this.returnMissile && !this.isReturning) {
 			this.maxDistance = undefined
 			this.setTarget(this.source)
 			this.missile = this.returnMissile
 			this.currentSpeed = this.missile.speedInitial!
 			this.instanceID += returnIDSuffix
 			this.hitID += returnIDSuffix //TODO if damage is unique to outward direction
+			this.isReturning = true
 			return true
 		}
 		return false
@@ -165,7 +167,7 @@ export class ProjectileEffect extends GameEffect {
 			angleX = this.fixedDeltaX!
 			angleY = this.fixedDeltaY!
 			if (this.traveledDistance >= this.maxDistance) {
-				if (isUnit(this.target)) {
+				if (!this.isReturning && isUnit(this.target)) {
 					this.apply(elapsedMS, this.target)
 				}
 				return this.checkIfDies()
@@ -175,7 +177,7 @@ export class ProjectileEffect extends GameEffect {
 			angleX = deltaX
 			angleY = deltaY
 			if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
-				if (isUnit(this.target)) {
+				if (!this.isReturning && isUnit(this.target)) {
 					this.apply(elapsedMS, this.target)
 				}
 				return this.checkIfDies()
