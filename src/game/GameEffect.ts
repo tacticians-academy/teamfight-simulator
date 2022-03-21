@@ -34,6 +34,8 @@ export interface GameEffectData {
 	bonuses?: [BonusLabelKey, ...BonusVariable[]]
 	/** `StatusEffects` to apply to any affected units. */
 	statusEffects?: StatusEffectsData
+	/** Callback once the effect begins. */
+	onActivate?: CollisionFn
 	/** Callback for each unit the `GameEffect` applies to. */
 	onCollision?: CollisionFn
 }
@@ -62,6 +64,7 @@ export class GameEffect extends GameEffectChild {
 
 	collidedWith: string[] = []
 
+	onActivate: CollisionFn | undefined
 	onCollision: CollisionFn | undefined
 
 	constructor(source: ChampionUnit, spell: ChampionSpellData | undefined, data: GameEffectData) {
@@ -77,6 +80,7 @@ export class GameEffect extends GameEffectChild {
 		this.damageSourceType = data.damageSourceType
 		this.bonuses = data.bonuses
 		this.statusEffects = data.statusEffects
+		this.onActivate = data.onActivate
 		this.onCollision = data.onCollision
 	}
 	postInit() {
@@ -145,6 +149,7 @@ export class GameEffect extends GameEffectChild {
 		}
 		if (!this.activated) {
 			this.activated = true
+			this.onActivate?.(elapsedMS, this.source)
 		}
 	}
 }
