@@ -347,8 +347,7 @@ export class ChampionUnit {
 		if (nextHex) {
 			const msPerHex = 1000 * this.moveSpeed() * HEX_PROPORTION_PER_LEAGUEUNIT
 			this.moveUntilMS = elapsedMS + msPerHex
-			this.activeHex = nextHex
-			needsPathfindingUpdate()
+			this.setActiveHex(nextHex) //TODO travel time
 			return true
 		}
 		return false
@@ -433,7 +432,10 @@ export class ChampionUnit {
 	jumpToBackline(elapsedMS: DOMHighResTimeStamp) {
 		const [col, row] = this.activeHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		this.activeHex = getClosestHexAvailableTo(targetHex, state.units) ?? this.activeHex
+		const jumpHex = getClosestHexAvailableTo(targetHex, state.units)
+		if (jumpHex) {
+			this.setActiveHex(jumpHex)
+		}
 		this.moveUntilMS = elapsedMS + BACKLINE_JUMP_MS
 		this.collides = true
 		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
@@ -698,6 +700,10 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
+	setActiveHex(hex: HexCoord) {
+		this.activeHex = hex
+		needsPathfindingUpdate()
+	}
 	reposition(hex: HexCoord) {
 		if (state.isRunning) {
 			return
@@ -947,16 +953,19 @@ export class ChampionUnit {
 		return getAngleBetween(this.coordinatePosition(), coordinatePosition(hex))
 	}
 
-	getNearestHexTowards(target: ChampionUnit) {
-		let minDistance = Number.MAX_SAFE_INTEGER
-		let bestHex = this.activeHex
+	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {
+		let bestDistance = pastTarget ? 0 : Number.MAX_SAFE_INTEGER
+		let bestHex = targetHex
 		getHexRing(bestHex, 1).forEach(hex => {
-			const distance = target.coordDistanceToHex(hex)
-			if (distance < minDistance) {
-				minDistance = distance
+			const distance = this.coordDistanceToHex(hex)
+			if (pastTarget ? distance > bestDistance : distance < bestDistance) {
+				bestDistance = distance
 				bestHex = hex
 			}
 		})
-		return bestHex === target.activeHex ? bestHex : getClosestHexAvailableTo(bestHex, state.units)
+		return bestHex === targetHex ? bestHex : getClosestHexAvailableTo(bestHex, state.units)
+	}
+	projectHexFrom(target: ChampionUnit, pastTarget: boolean) {
+		return this.projectHexFromHex(target.activeHex, pastTarget)
 	}
 }

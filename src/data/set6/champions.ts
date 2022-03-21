@@ -51,9 +51,9 @@ export default {
 					},
 				},
 				onCollision: (elapsedMS, affectedUnit) => {
-					const adjacentHex = champion.getNearestHexTowards(affectedUnit)
+					const adjacentHex = affectedUnit.projectHexFrom(champion, false)
 					if (adjacentHex) {
-						affectedUnit.activeHex = adjacentHex //TODO travel time
+						affectedUnit.setActiveHex(adjacentHex) //TODO travel time
 						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
 						champion.empoweredAuto = {
 							statusEffects: {
@@ -146,9 +146,9 @@ export default {
 				champion.healthMax += bonusHealth
 				champion.addBonuses(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
 				if (target) {
-					const jumpToHex = target.getNearestHexTowards(champion)
+					const jumpToHex = champion.projectHexFrom(target, false)
 					if (jumpToHex) {
-						champion.activeHex = jumpToHex //TODO travel time
+						champion.setActiveHex(jumpToHex) //TODO travel time
 					}
 				}
 			}
