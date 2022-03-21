@@ -59,6 +59,7 @@ export default {
 						affectedUnit.setActiveHex(adjacentHex) //TODO travel time
 						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
 						champion.empoweredAuto = {
+							amount: 1,
 							statusEffects: {
 								stunned: {
 									durationMS: 1 * 1000, //NOTE investigate in data

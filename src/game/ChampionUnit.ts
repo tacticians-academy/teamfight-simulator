@@ -74,6 +74,9 @@ export class ChampionUnit {
 	castCount = 0
 
 	empoweredAuto: {
+		amount: number
+		damageIncrease?: number
+		damageMultiplier?: number
 		statusEffects?: StatusEffectsData
 	} | undefined
 	championEffects: ChampionFns | undefined
@@ -216,7 +219,7 @@ export class ChampionUnit {
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			const passiveFn = this.championEffects?.passive
 			if (this.instantAttack) {
-				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false)
+				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, this.empoweredAuto?.damageIncrease, this.empoweredAuto?.damageMultiplier)
 				this.attackStartAtMS = elapsedMS
 				if (this.data.passive) {
 					passiveFn?.(elapsedMS, this.data.passive, this.target, this)
@@ -238,6 +241,8 @@ export class ChampionUnit {
 					sourceType: DamageSourceType.attack,
 					target: this.target,
 					damageCalculation,
+					damageIncrease: source.empoweredAuto?.damageIncrease,
+					damageMultiplier: source.empoweredAuto?.damageMultiplier,
 					statusEffects: source.empoweredAuto?.statusEffects,
 					onCollision(elapsedMS, unit) {
 						if (source.data.passive) {
@@ -247,7 +252,13 @@ export class ChampionUnit {
 					},
 				})
 			}
-			this.empoweredAuto = undefined
+			if (this.empoweredAuto) {
+				if (this.empoweredAuto.amount > 1) {
+					this.empoweredAuto.amount -= 1
+				} else {
+					this.empoweredAuto = undefined
+				}
+			}
 
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
@@ -700,7 +711,7 @@ export class ChampionUnit {
 		return state.units.filter(unit => unit !== this && !unit.dead && unit.team === this.team)
 	}
 
-	coordDistanceToHex(hex: HexCoord) {
+	coordDistanceSquaredToHex(hex: HexCoord) {
 		return coordinateDistanceSquared(this.coord, coordinatePosition(hex))
 	}
 	hexDistanceTo(unit: ChampionUnit) {
@@ -990,14 +1001,14 @@ export class ChampionUnit {
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {
 		let bestDistance = pastTarget ? 0 : Number.MAX_SAFE_INTEGER
 		let bestHex = targetHex
-		getHexRing(bestHex, 1).forEach(hex => {
-			const distance = this.coordDistanceToHex(hex)
+		getHexRing(targetHex, 1).forEach(hex => {
+			const distance = this.coordDistanceSquaredToHex(hex)
 			if (pastTarget ? distance > bestDistance : distance < bestDistance) {
 				bestDistance = distance
 				bestHex = hex
 			}
 		})
-		return bestHex === targetHex ? bestHex : getClosestHexAvailableTo(bestHex, state.units)
+		return getClosestHexAvailableTo(bestHex, state.units)
 	}
 	projectHexFrom(target: ChampionUnit, pastTarget: boolean) {
 		return this.projectHexFromHex(target.activeHex, pastTarget)
