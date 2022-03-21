@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps, ref } from 'vue'
 
-import { getIconURL } from '@tacticians-academy/academy-library'
+import { BonusKey, getIconURL } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { DraggableType } from '#/helpers/dragDrop'
@@ -94,7 +94,7 @@ function onInfo(event: Event) {
 			</div>
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
-			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%` }" />
+			<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%`, opacity: unit.getBonuses(BonusKey.ManaReductionPercent) < 0 ? 0.6 : 1 }" />
 		</div>
 		<div class="flex">
 			<div
