@@ -141,6 +141,7 @@ export interface ShieldData {
 	expiresAtMS?: DOMHighResTimeStamp
 	repeatsEveryMS?: DOMHighResTimeStamp
 	bonusDamage?: SpellCalculation
+	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldData) => void
 }
 
 export interface EffectResults {

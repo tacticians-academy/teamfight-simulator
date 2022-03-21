@@ -302,14 +302,12 @@ export class ChampionUnit {
 
 	updateShields(elapsedMS: DOMHighResTimeStamp) {
 		this.shields.forEach(shield => {
-			if (shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
-				shield.activated = shield.repeatsEveryMS == null ? undefined : false
-				if (shield.repeatsEveryMS == null) {
-					return
-				}
+			if (shield.activated !== false && shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
+				shield.activated = false
+				shield.onRemoved?.(elapsedMS, shield)
 			}
 
-			if (shield.activated === false) {
+			if (shield.activated !== true) {
 				if (shield.activatesAtMS != null) {
 					if (elapsedMS >= shield.activatesAtMS) {
 						shield.activated = true
@@ -323,6 +321,8 @@ export class ChampionUnit {
 							shield.amount = shield.repeatAmount
 						}
 					}
+				} else if (shield.activated === undefined) {
+					shield.activated = true
 				}
 			}
 		})
@@ -586,16 +586,13 @@ export class ChampionUnit {
 		}
 		let healthDamage = takingDamage
 		this.shields
-			.filter(shield => shield.isSpellShield !== true)
+			.filter(shield => shield.activated === true && shield.isSpellShield !== true)
 			.forEach(shield => {
 				const protectingDamage = Math.min(shield.amount, healthDamage)
 				if (protectingDamage >= shield.amount) {
-					if (shield.repeatsEveryMS != null) {
-						shield.amount = 0
-						shield.activated = false
-					} else {
-						shield.activated = undefined
-					}
+					shield.amount = 0
+					shield.activated = false
+					shield.onRemoved?.(elapsedMS, shield)
 				} else {
 					shield.amount -= protectingDamage
 				}
