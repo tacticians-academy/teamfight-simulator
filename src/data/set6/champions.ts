@@ -4,9 +4,9 @@ import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champ
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
+import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_ROW_COUNT, HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
 import { DamageSourceType, SpellKey } from '#/helpers/types'
@@ -177,6 +177,29 @@ export default {
 					const damageReduction = champion.getSpellVariable(spell, SpellKey.DamageReduction)
 					affectedUnit.setBonusesFor(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, manaReave * -100])
 					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + durationSeconds * 1000])
+				},
+			})
+		},
+	},
+
+	[ChampionKey.Tryndamere]: {
+		cast: (elapsedMS, spell, champion) => {
+			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
+			const farthestDenseHex = getMostDistanceHex(false, champion, densestEnemyHexes)
+			if (!farthestDenseHex) { return console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
+			const projectedHex = champion.projectHexFromHex(farthestDenseHex, true)
+			if (!projectedHex) { return console.log('ERR', champion.name, spell.name, farthestDenseHex) }
+			champion.queueShapeEffect(elapsedMS, spell, {
+				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
+				expiresAfterMS: 0.5 * 1000, //TODO
+				onActivate: (elapsedMS, champion) => {
+					champion.moving = true
+					champion.setActiveHex(projectedHex)
+					champion.customMoveSpeed = 2000
+					champion.empoweredAuto = {
+						amount: 3, //NOTE hardcoded
+						damageMultiplier: 1 + champion.getSpellVariable(spell, 'BonusAAPercent' as SpellKey),
+					}
 				},
 			})
 		},

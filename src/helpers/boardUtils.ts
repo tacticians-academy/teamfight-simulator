@@ -127,35 +127,29 @@ export function getHexRing([col, row]: HexCoord, atDistance: number = 1): HexCoo
 	return validHexes
 }
 
-export function getDensestTargetHexes(units: ChampionUnit[], team: TeamNumber | null, maxDistance: 1 | 2 | 3) {
+export function getHotspotHexes(includingUnit: boolean, units: ChampionUnit[], team: TeamNumber | null, maxDistance: 1 | 2 | 3 | 4) {
 	const densityBoard = buildBoard(0)
+	let results: HexCoord[] = []
 	let densestHexValue = 0
 	for (const unit of units) {
-		if (team !== null && unit.team !== team) {
+		if (team != null && unit.team !== team) {
 			continue
 		}
 		if (!unit.isAttackable()) {
 			continue
 		}
-		const position = unit.activeHex
-		for (let distance = 1; distance <= maxDistance; distance += 1) {
-			getHexRing(position, distance).forEach(([col, row]) => {
+		for (let distance = (includingUnit ? 0 : 1); distance <= maxDistance; distance += 1) {
+			getHexRing(unit.activeHex, distance).forEach(surroundingHex => {
+				const [col, row] = surroundingHex
 				const newValue = densityBoard[row][col] + maxDistance + 1 - distance
 				densityBoard[row][col] = newValue
 				if (newValue > densestHexValue) {
+					results = [surroundingHex]
 					densestHexValue = newValue
+				} else if (newValue === densestHexValue) {
+					results.push(surroundingHex)
 				}
 			})
-		}
-	}
-	const results: HexCoord[] = []
-	for (let rowIndex = 0; rowIndex < densityBoard.length; rowIndex += 1) {
-		const row = densityBoard[rowIndex]
-		for (let colIndex = 0; colIndex < row.length; colIndex += 1) {
-			const value = row[colIndex]
-			if (value === densestHexValue) {
-				results.push([colIndex, rowIndex])
-			}
 		}
 	}
 	return results

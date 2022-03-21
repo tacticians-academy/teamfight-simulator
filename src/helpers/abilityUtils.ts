@@ -34,6 +34,19 @@ export function getRowOfMostAttackable(team: TeamNumber | null) {
 	return [...Array(BOARD_COL_COUNT).keys()].map((col): HexCoord => [col, row])
 }
 
+export function getMostDistanceHex(closest: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
+	let bestHex: HexCoord | undefined
+	let bestDistance = closest ? 99 : 0
+	for (const hex of hexes) {
+		const distance = fromUnit.hexDistanceToHex(hex)
+		if (closest ? distance < bestDistance : distance > bestDistance) {
+			bestDistance = distance
+			bestHex = hex
+		}
+	}
+	return bestHex
+}
+
 export function getDistanceUnit(closest: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
 	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 	let bestUnit: ChampionUnit | undefined
