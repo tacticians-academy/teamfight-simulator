@@ -53,7 +53,6 @@ export class ProjectileEffect extends GameEffect {
 	width: number
 	isReturning = false
 
-	collidedWith: string[] = []
 	collisionRadiusSquared: number
 
 	traveledDistance = 0
@@ -108,13 +107,7 @@ export class ProjectileEffect extends GameEffect {
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
-		if (this.collidedWith.includes(unit.instanceID)) {
-			return false
-		}
-		this.collidedWith.push(unit.instanceID)
-		unit.hitBy.push(this.hitID)
-		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		return wasSpellShielded
+		return this.applySuper(elapsedMS, unit)
 	}
 
 	checkIfDies() {
@@ -200,13 +193,11 @@ export class ProjectileEffect extends GameEffect {
 
 		if (this.destroysOnCollision != null) {
 			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
-				if (!this.destroysOnCollision && this.collidedWith.includes(unit.instanceID)) {
-					continue
-				}
 				if (coordinateDistanceSquared(position, unit.coord) < this.collisionRadiusSquared) {
-					this.apply(elapsedMS, unit)
-					if (this.destroysOnCollision) {
-						return this.checkIfDies()
+					if (this.apply(elapsedMS, unit)) {
+						if (this.destroysOnCollision) {
+							return this.checkIfDies()
+						}
 					}
 				}
 			}

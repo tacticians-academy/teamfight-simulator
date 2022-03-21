@@ -35,8 +35,7 @@ export class ShapeEffect extends GameEffect {
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
-		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		return wasSpellShielded
+		return this.applySuper(elapsedMS, unit)
 	}
 
 	intersects = (unit: ChampionUnit) => {

@@ -49,11 +49,13 @@ export class HexEffect extends GameEffect {
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
-		const wasSpellShielded = this.applySuper(elapsedMS, unit)
+		if (!this.applySuper(elapsedMS, unit)) {
+			return false
+		}
 		if (this.taunts && this.source.isInteractable()) {
 			unit.target = this.source
 		}
-		return wasSpellShielded
+		return true
 	}
 
 	intersects = (unit: ChampionUnit) => {

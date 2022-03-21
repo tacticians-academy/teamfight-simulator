@@ -59,6 +59,9 @@ export class GameEffect extends GameEffectChild {
 	damageSourceType: DamageSourceType | undefined
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
 	statusEffects: StatusEffectsData | undefined
+
+	collidedWith: string[] = []
+
 	onCollision: CollisionFn | undefined
 
 	constructor(source: ChampionUnit, spell: ChampionSpellData | undefined, data: GameEffectData) {
@@ -81,6 +84,10 @@ export class GameEffect extends GameEffectChild {
 	}
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+		if (this.collidedWith.includes(unit.instanceID)) {
+			return false
+		}
+
 		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
 		if (this.damageCalculation != null) {
@@ -108,7 +115,10 @@ export class GameEffect extends GameEffectChild {
 			}
 			this.onCollision?.(elapsedMS, unit)
 		}
-		return wasSpellShielded
+
+		this.collidedWith.push(unit.instanceID)
+		unit.hitBy.push(this.hitID)
+		return true
 	}
 
 	checkCollision(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
