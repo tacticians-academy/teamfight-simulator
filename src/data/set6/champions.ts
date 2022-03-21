@@ -100,7 +100,7 @@ export default {
 			const target = champion.target
 			if (!target) { return console.log('No target', champion.name, champion.team) }
 			champion.queueShapeEffect(elapsedMS, spell, {
-				shape: new ShapeEffectCone(champion.coordinatePosition(), champion.angleTo(target), HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
+				shape: new ShapeEffectCone(champion, champion.angleTo(target), HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
 			})
 		},
 	},
@@ -108,7 +108,7 @@ export default {
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
 			champion.queueShapeEffect(elapsedMS, spell, {
-				shape: new ShapeEffectCircle(champion.coordinatePosition(), HEX_MOVE_LEAGUEUNITS * 1.125),
+				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS * 1.125),
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(spell, SpellKey.Heal)!, true)
 				},

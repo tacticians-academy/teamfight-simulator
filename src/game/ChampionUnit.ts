@@ -45,6 +45,7 @@ export class ChampionUnit {
 	data: ChampionData
 
 	activeHex: HexCoord
+	coord: HexCoord
 	dead = false
 	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
 	mana = 0
@@ -96,6 +97,7 @@ export class ChampionUnit {
 		this.instantAttack = this.data.stats.range <= 1
 		this.startHex = hex
 		this.activeHex = hex
+		this.coord = this.coordinatePosition()
 		this.reposition(hex)
 
 		for (const effectType in StatusEffectType) {
@@ -127,7 +129,7 @@ export class ChampionUnit {
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
 		this.dead = false
 		this.target = null
-		this.activeHex = this.startHex
+		this.setActiveHex(this.startHex)
 		this.cachedTargetDistance = 0
 		this.attackStartAtMS = 0
 		this.moveUntilMS = 0
@@ -681,7 +683,7 @@ export class ChampionUnit {
 	}
 
 	coordDistanceToHex(hex: HexCoord) {
-		return coordinateDistanceSquared(this.coordinatePosition(), coordinatePosition(hex))
+		return coordinateDistanceSquared(this.coord, coordinatePosition(hex))
 	}
 	hexDistanceTo(unit: ChampionUnit) {
 		return this.hexDistanceToHex(unit.activeHex)
@@ -702,6 +704,7 @@ export class ChampionUnit {
 
 	setActiveHex(hex: HexCoord) {
 		this.activeHex = hex
+		this.coord = this.coordinatePosition()
 		needsPathfindingUpdate()
 	}
 	reposition(hex: HexCoord) {
@@ -947,10 +950,10 @@ export class ChampionUnit {
 	}
 
 	angleTo(unit: ChampionUnit) {
-		return getAngleBetween(this.coordinatePosition(), unit.coordinatePosition())
+		return getAngleBetween(this.coord, unit.coord)
 	}
 	angleToHex(hex: HexCoord) {
-		return getAngleBetween(this.coordinatePosition(), coordinatePosition(hex))
+		return getAngleBetween(this.coord, coordinatePosition(hex))
 	}
 
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {

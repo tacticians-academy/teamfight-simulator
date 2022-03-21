@@ -56,22 +56,22 @@ export class ShapeEffectCone implements ShapeEffectShape {
 	radius: number
 	arcRadians: number
 
-	constructor(centerCoordinate: HexCoord, direction: number, radius: number, arcRadians: number) {
-		this.centerCoordinate = centerCoordinate
+	constructor(source: ChampionUnit, direction: number, radius: number, arcRadians: number) {
+		this.centerCoordinate = source.coord
 		this.direction = direction
 		this.radius = radius
 		this.arcRadians = arcRadians
 	}
 
 	intersects(unit: ChampionUnit) {
-		let testAngle = getAngleBetween(this.centerCoordinate, unit.coordinatePosition())
+		let testAngle = getAngleBetween(this.centerCoordinate, unit.coord)
 		const minDistance = radianDistance(this.direction, testAngle)
 		if (Math.abs(minDistance) > this.arcRadians / 2) {
 			testAngle = this.direction + this.arcRadians / 2 * (minDistance > 0 ? 1 : -1)
 		}
 		const startPoint = this.centerCoordinate
 		const lineDelta: HexCoord = [Math.cos(testAngle) * this.radius * HEX_PROPORTION_PER_LEAGUEUNIT, Math.sin(testAngle) * this.radius * HEX_PROPORTION_PER_LEAGUEUNIT]
-		return doesLineInterceptCircle(unit.coordinatePosition(), UNIT_SIZE_PROPORTION / 2, startPoint, lineDelta)
+		return doesLineInterceptCircle(unit.coord, UNIT_SIZE_PROPORTION / 2, startPoint, lineDelta)
 	}
 
 	styles() {
@@ -94,15 +94,15 @@ export class ShapeEffectCircle implements ShapeEffectShape {
 	radius: number
 	maxDistanceSquared: number
 
-	constructor(centerCoordinate: HexCoord, radius: number) {
-		this.centerCoordinate = centerCoordinate
+	constructor(source: ChampionUnit, radius: number) {
+		this.centerCoordinate = source.coord
 		this.radius = radius
 		const maxDistance = this.radius * HEX_PROPORTION_PER_LEAGUEUNIT + UNIT_SIZE_PROPORTION / 2
 		this.maxDistanceSquared = maxDistance * maxDistance
 	}
 
 	intersects(unit: ChampionUnit) {
-		return coordinateDistanceSquared(this.centerCoordinate, unit.coordinatePosition()) < this.maxDistanceSquared
+		return coordinateDistanceSquared(this.centerCoordinate, unit.coord) < this.maxDistanceSquared
 	}
 
 	styles() {
@@ -129,7 +129,7 @@ export class ShapeEffectRectangle implements ShapeEffectShape {
 	}
 
 	intersects(unit: ChampionUnit) {
-		return doesRectangleInterceptCircle(unit.coordinatePosition(), UNIT_SIZE_PROPORTION / 2, this.centerCoordinate, this.size)
+		return doesRectangleInterceptCircle(unit.coord, UNIT_SIZE_PROPORTION / 2, this.centerCoordinate, this.size)
 	}
 
 	styles() {

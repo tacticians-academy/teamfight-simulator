@@ -20,7 +20,7 @@ const props = defineProps<{
 
 const showInfo = ref(false)
 
-const currentPosition = computed(() => props.unit.coordinatePosition())
+const currentPosition = computed(() => props.unit.coord)
 
 const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 

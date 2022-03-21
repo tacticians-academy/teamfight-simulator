@@ -396,7 +396,7 @@ export default {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const height = HEX_PROPORTION * 6
-			const center: HexCoord = [...unit.coordinatePosition()]
+			const center: HexCoord = [...unit.coord]
 			center[1] += height / 2 * (unit.team === 0 ? 1 : -1)
 			unit.queueShapeEffect(0, undefined, {
 				shape: new ShapeEffectRectangle(center, [HEX_PROPORTION * 2, height]),

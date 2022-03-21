@@ -72,7 +72,7 @@ export class ProjectileEffect extends GameEffect {
 		const expiresAfterMS = 10 * 1000
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : expiresAfterMS)
 
-		this.position = ref([...source.coordinatePosition()] as HexCoord) // Destructure to avoid mutating source
+		this.position = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile!
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
 		this.sourceType = data.sourceType!
@@ -137,7 +137,7 @@ export class ProjectileEffect extends GameEffect {
 
 	setTarget(target: ChampionUnit | HexCoord) {
 		this.target = target
-		this.targetCoordinates = isUnit(target) ? target.coordinatePosition() : coordinatePosition(target)
+		this.targetCoordinates = isUnit(target) ? target.coord : coordinatePosition(target)
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
@@ -158,7 +158,7 @@ export class ProjectileEffect extends GameEffect {
 					}
 				}
 			} else {
-				this.targetCoordinates = this.target.coordinatePosition()
+				this.targetCoordinates = this.target.coord
 			}
 		}
 		const diffDistance = this.getDistanceFor(diffMS)
@@ -206,7 +206,7 @@ export class ProjectileEffect extends GameEffect {
 				if (!this.destroysOnCollision && this.collidedWith.includes(unit.instanceID)) {
 					continue
 				}
-				if (coordinateDistanceSquared(position, unit.coordinatePosition()) < this.collisionRadiusSquared) {
+				if (coordinateDistanceSquared(position, unit.coord) < this.collisionRadiusSquared) {
 					this.apply(elapsedMS, unit)
 					if (this.destroysOnCollision) {
 						return this.checkIfDies()
