@@ -175,6 +175,37 @@ export default {
 		},
 	},
 
+	[ChampionKey.Vex]: {
+		cast: (elapsedMS, spell, champion) => {
+			const shieldKey = 'VexShieldMultiplier' as BonusKey
+			const shieldAmount = champion.getSpellVariable(spell, 'ShieldAmount' as SpellKey)
+			const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
+			const shieldAmp = champion.getSpellVariable(spell, 'ShieldAmp' as SpellKey)
+			const shieldTotalAmp = champion.getBonuses(shieldKey)
+			champion.shields.push({
+				source: champion,
+				amount: shieldAmount * (1 + shieldTotalAmp),
+				expiresAtMS: elapsedMS + shieldSeconds * 1000,
+				onRemoved: (elapsedMS, shield) => {
+					champion.manaLockUntilMS = 0
+					const hexDistanceFromSource = champion.data.stats.range
+					champion.queueHexEffect(elapsedMS, spell, {
+						hexDistanceFromSource,
+					})
+					if (shield.amount <= 0) {
+						champion.addBonuses(ChampionKey.Vex, [shieldKey, shieldAmp])
+					} else {
+						champion.queueHexEffect(elapsedMS, undefined, {
+							hexDistanceFromSource,
+							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
+						})
+					}
+				},
+			})
+			champion.manaLockUntilMS = 60 * 1000
+		},
+	},
+
 	[ChampionKey.Warwick]: {
 		passive: (elapsedMS, spell, target, source) => {
 			if (!target) { return }
