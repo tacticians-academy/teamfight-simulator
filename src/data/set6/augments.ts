@@ -14,6 +14,25 @@ export interface AugmentFns {
 
 export default {
 
+	[AugmentGroupKey.Meditation]: {
+		apply: (augment, team, units) => {
+			const manaRegen = augment.effects['ManaRegen']
+			if (manaRegen == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => !unit.items.length)
+				.forEach(unit => unit.scalings.add({
+					source: unit,
+					sourceID: AugmentGroupKey.Meditation,
+					activatedAtMS: 0,
+					stats: [BonusKey.Mana],
+					intervalAmount: manaRegen,
+					intervalSeconds: 1,
+				}))
+		},
+	},
+
 	[AugmentGroupKey.SoSmall]: {
 		apply: (augment, team, units) => {
 			const dodgeIncrease = augment.effects['DodgeIncrease']
