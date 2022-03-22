@@ -47,4 +47,19 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.VerdantVeil]: {
+		apply: (augment, team, units) => {
+			const durationSeconds = augment.effects['Duration']
+			if (durationSeconds == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units.forEach(unit => unit.shields.push({
+				source: unit,
+				amount: 0,
+				isSpellShield: true,
+				expiresAtMS: durationSeconds * 1000,
+			}))
+		},
+	},
+
 } as {[key in AugmentGroupKey]?: AugmentFns}
