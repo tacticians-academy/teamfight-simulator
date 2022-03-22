@@ -28,8 +28,6 @@ export const enum DamageSourceType {
 	attack, spell, item, trait
 }
 
-export type SynergyCount = Map<TraitData, string[]>
-
 export interface SynergyData {
 	key: TraitKey
 	trait: TraitData

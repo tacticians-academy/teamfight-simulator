@@ -1,7 +1,7 @@
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
-import type { AugmentData, ItemData } from '@tacticians-academy/academy-library'
+import type { AugmentData, ItemData, TraitData } from '@tacticians-academy/academy-library'
 
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -23,7 +23,9 @@ import { synergiesByTeam } from '#/helpers/calculate'
 import type { DraggableType } from '#/helpers/dragDrop'
 import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
-import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
+import type { HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/helpers/types'
+
+type TraitAndUnits = [TraitData, string[]]
 
 // State
 
@@ -56,22 +58,45 @@ export const getters = {
 	mutantType: computed(() => state.mutantType),
 
 	synergiesByTeam: computed(() => {
-		const teamSynergies: [SynergyCount, SynergyCount] = [new Map(), new Map()]
+		const traitsAndUnitsByTeam: [TraitAndUnits[], TraitAndUnits[]] = [[], []]
 		state.units.forEach(unit => {
-			const team = teamSynergies[unit.team]
+			const traitsAndUnits = traitsAndUnitsByTeam[unit.team]
 			for (const trait of unit.traits) {
-				if (!team.has(trait)) {
-					team.set(trait, [unit.name])
-				} else {
-					const teamTrait = team.get(trait)
-					if (teamTrait && !teamTrait.includes(unit.name)) {
-						teamTrait.push(unit.name)
-					}
+				let entry = traitsAndUnits.find(([teamTrait]) => teamTrait.name === trait.name)
+				if (!entry) {
+					entry = [trait, []]
+					traitsAndUnits.push(entry)
+				}
+				if (!entry[1].includes(unit.name)) {
+					entry[1].push(unit.name)
 				}
 			}
 		})
-		return teamSynergies
-			.map(team => team.entries())
+		state.augmentsByTeam.forEach((augments, teamNumber) => {
+			const traitsAndUnits = traitsAndUnitsByTeam[teamNumber]
+			augments.forEach(augment => {
+				if (!augment) { return }
+				const suffix = augment.name.endsWith('Heart') ? 'Heart' : (augment.name.endsWith('Soul') ? 'Soul' : undefined)
+				if (!suffix) { return }
+				const traitName = augment.name.replace(suffix, '').trim()
+				const trait = traits.find(trait => trait.name === traitName)
+				if (!trait) { return console.log('ERR', traitName, 'missing augment trait', augment.name) }
+
+				let entry = traitsAndUnits.find(([teamTrait]) => teamTrait.name === traitName)
+				if (!entry) {
+					entry = [trait, []]
+					traitsAndUnits.push(entry)
+				}
+				if (!entry[1].includes(traitName)) {
+					entry[1].push(augment.name)
+					if (suffix === 'Soul') {
+						entry[1].push(augment.name)
+					}
+				}
+				console.log(traitName)
+			})
+		})
+		return traitsAndUnitsByTeam
 			.map(teamCountSynergies => {
 				return Array.from(teamCountSynergies)
 					.map(([trait, uniqueUnits]): SynergyData => {
