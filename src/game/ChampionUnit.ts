@@ -22,7 +22,7 @@ import { getCoordFrom, gameOver, getters, state, thresholdCheck } from '#/game/s
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
-import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isSameHex } from '#/helpers/boardUtils'
+import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -149,7 +149,7 @@ export class ChampionUnit {
 		this.castCount = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
 			const col = this.activeHex[1]
-			this.transformIndex = col >= 2 && col < BOARD_ROW_COUNT - 2 ? 0 : 1
+			this.transformIndex = isInBackLines(this) ? 1 : 0
 		} else {
 			this.transformIndex = 0
 		}

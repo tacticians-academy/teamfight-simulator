@@ -84,6 +84,11 @@ export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, 
 		})
 }
 
+export function isInBackLines(unit: ChampionUnit) {
+	const row = unit.activeHex[1]
+	return row <= 1 || row >= lastRow - 1
+}
+
 export function getInverseHex(hex: HexCoord): HexCoord {
 	return [BOARD_COL_COUNT - hex[0] - 1, BOARD_ROW_COUNT - hex[1] - 1]
 }
