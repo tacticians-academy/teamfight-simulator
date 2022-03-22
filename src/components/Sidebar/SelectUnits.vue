@@ -3,6 +3,7 @@ import { getIconURL } from '@tacticians-academy/academy-library'
 import type { ChampionData } from '@tacticians-academy/academy-library'
 
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
+import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import championEffects from '#/data/set6/champions'
 
@@ -17,7 +18,7 @@ function onDrag(event: DragEvent, name: string) {
 const unitGroups: [string, ChampionData[]][] = [['Supported', []], ['Unimplemented', []], ['Spawns', []]]
 champions.forEach(champion => {
 	if (champion.teamSize === 0 || champion.stats.hp == null) { return }
-	const groupIndex = champion.traits.length ? (championEffects[champion.name] != null ? 0 : 1) : 2
+	const groupIndex = champion.traits.length ? (championEffects[champion.name as ChampionKey] != null ? 0 : 1) : 2
 	unitGroups[groupIndex][1].push(champion)
 })
 unitGroups[0][1].sort((a, b) => a.name.localeCompare(b.name))

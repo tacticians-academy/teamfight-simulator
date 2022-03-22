@@ -1,7 +1,7 @@
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
-import type { ItemData } from '@tacticians-academy/academy-library'
+import type { AugmentData, ItemData } from '@tacticians-academy/academy-library'
 
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -21,7 +21,7 @@ import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { synergiesByTeam } from '#/helpers/calculate'
 import type { DraggableType } from '#/helpers/dragDrop'
-import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
+import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { HexCoord, HexRowCol, StarLevel, SynergyCount, SynergyData, TeamNumber } from '#/helpers/types'
 
@@ -38,6 +38,8 @@ export const state = reactive({
 	hexEffects: new Set<HexEffect>(),
 	projectileEffects: new Set<ProjectileEffect>(),
 	shapeEffects: new Set<ShapeEffect>(),
+
+	augmentsByTeam: loadTeamAugments(),
 
 	socialiteHexes: (getStorageJSON(StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
 	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
@@ -335,6 +337,8 @@ export function useStore() {
 // Helpers
 
 export function getCoordFrom([col, row]: HexCoord): HexCoord {
+	// const borderSize = HEX_BORDER_PROPORTION / 100
+	// return [(col + 0.5 + (row % 2 === 1 ? 0.5 : 0)) * HEX_PROPORTION + borderSize * (col - 0.5), (row + 1) * HEX_PROPORTION * 0.75 + borderSize * (row - 0.5)]
 	return [...state.hexRowsCols[row][col].coord]
 }
 
@@ -359,4 +363,9 @@ export function setSocialiteHex(index: number, hex: HexCoord | null) {
 	}
 	state.socialiteHexes[index] = hex
 	setStorageJSON(StorageKey.SocialiteHexes, state.socialiteHexes)
+}
+
+export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {
+	state.augmentsByTeam[teamNumber][augmentIndex] = augment
+	saveTeamAugments()
 }
