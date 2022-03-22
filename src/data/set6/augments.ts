@@ -219,6 +219,15 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.IrresistibleCharm]: {
+		apply: (augment, team, units) => {
+			const [damageReduction] = getVariables(augment, BonusKey.DamageReduction)
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Debonair))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.IrresistibleCharm, [BonusKey.DamageReduction, damageReduction / 100]))
+		},
+	},
+
 	[AugmentGroupKey.KnifesEdge]: {
 		apply: (augment, team, units) => {
 			const [adPerStar] = getVariables(augment, 'ADPerStarLevel')
