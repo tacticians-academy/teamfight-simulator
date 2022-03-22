@@ -150,6 +150,18 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.Phalanx]: {
+		apply: (augment, team, units) => {
+			const resists = augment.effects['Resists']
+			if (resists == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => isInBackLines(unit))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.Phalanx, [BonusKey.Armor, resists], [BonusKey.MagicResist, resists]))
+		},
+	},
+
 	[AugmentGroupKey.RunicShield]: {
 		apply: (augment, team, units) => {
 			const durationSeconds = augment.effects['ShieldDuration']
