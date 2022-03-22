@@ -119,6 +119,18 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.KnifesEdge]: {
+		apply: (augment, team, units) => {
+			const adPerStar = augment.effects['ADPerStarLevel']
+			if (adPerStar == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => !isInBackLines(unit))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.KnifesEdge, [BonusKey.AttackDamage, adPerStar * unit.starLevel]))
+		},
+	},
+
 	[AugmentGroupKey.Meditation]: {
 		apply: (augment, team, units) => {
 			const manaRegen = augment.effects['ManaRegen']
