@@ -44,7 +44,7 @@ export default {
 
 	[AugmentGroupKey.BlueBattery]: {
 		apply: (augment, team, units) => {
-			const manaRestore = augment.effects['ManaRestore']
+			const manaRestore = augment.effects[BonusKey.ManaRestore]
 			if (manaRestore == null) {
 				return console.log('ERR', augment.name, augment.effects)
 			}

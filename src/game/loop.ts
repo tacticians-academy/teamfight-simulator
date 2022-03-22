@@ -92,11 +92,11 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		unit.items.forEach((item, index) => {
 			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
-		for (const pendingBonus of unit.pending.bonuses) {
+		for (const pendingBonus of unit.pendingBonuses) {
 			const [startsAtMS, pendingKey, bonuses] = pendingBonus
 			if (elapsedMS >= startsAtMS) {
 				unit.addBonuses(pendingKey, ...bonuses)
-				unit.pending.bonuses.delete(pendingBonus)
+				unit.pendingBonuses.delete(pendingBonus)
 			}
 		}
 	}

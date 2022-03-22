@@ -87,9 +87,7 @@ export class ChampionUnit {
 	shields: ShieldData[] = []
 	bleeds = new Set<BleedData>()
 
-	pending = {
-		bonuses: new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>(),
-	}
+	pendingBonuses = new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>()
 
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
@@ -119,7 +117,7 @@ export class ChampionUnit {
 		this.resetPost()
 	}
 	resetPre(synergiesByTeam: SynergyData[][]) {
-		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
+		this.pendingBonuses.clear()
 		this.bleeds.clear()
 		this.hitBy = []
 		this.empoweredAutos.clear()
@@ -667,17 +665,23 @@ export class ChampionUnit {
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
-			itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
-			const hpThresholdFn = itemEffects[item.id as ItemKey]?.hpThreshold
-			if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects)) {
-				hpThresholdFn(elapsedMS, item, uniqueID, this)
+			const effects = itemEffects[item.id as ItemKey]
+			if (effects) {
+				effects.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+				const hpThresholdFn = effects.hpThreshold
+				if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects)) {
+					hpThresholdFn(elapsedMS, item, uniqueID, this)
+				}
 			}
 		})
 		this.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			const hpThresholdFn = traitEffects[key]?.hpThreshold
-			if (hpThresholdFn && this.checkHPThreshold(key, activeEffect?.variables)) {
-				hpThresholdFn(activeEffect, elapsedMS, this)
+			const effects = traitEffects[key]
+			if (effects) {
+				const hpThresholdFn = effects.hpThreshold
+				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect.variables)) {
+					hpThresholdFn(activeEffect, elapsedMS, this)
+				}
 			}
 		})
 		source.activeSynergies.forEach(({ key, activeEffect }) => {
@@ -698,8 +702,8 @@ export class ChampionUnit {
 		uniqueID += this.instanceID
 		const hpThreshold = effects['HPThreshold']
 		if (hpThreshold != null) {
-			const activatedAt = thresholdCheck[uniqueID]
-			if (activatedAt !== hpThreshold && this.healthProportion() <= hpThreshold / 100) {
+			const previousActivationThreshold = thresholdCheck[uniqueID]
+			if (hpThreshold !== previousActivationThreshold && this.healthProportion() <= hpThreshold / 100) {
 				thresholdCheck[uniqueID] = hpThreshold
 				const damageReduction = effects[BonusKey.DamageReduction]
 				if (damageReduction != null) {
@@ -943,7 +947,7 @@ export class ChampionUnit {
 	}
 
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {
-		this.pending.bonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
+		this.pendingBonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
 	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
 		if (spell) {
