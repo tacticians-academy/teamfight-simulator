@@ -27,7 +27,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, StatusEffectsData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -73,12 +73,13 @@ export class ChampionUnit {
 	basicAttackCount = 0
 	castCount = 0
 
-	empoweredAuto: {
+	empoweredAutos: Set<{
 		amount: number
+		damageCalculation?: SpellCalculation
 		damageIncrease?: number
 		damageMultiplier?: number
-		statusEffects?: StatusEffectsData
-	} | undefined
+		statusEffects?: StatusEffectData[]
+	}> = new Set()
 	championEffects: ChampionFns | undefined
 
 	bonuses: [BonusLabelKey, BonusVariable[]][] = []
@@ -121,7 +122,7 @@ export class ChampionUnit {
 		Object.keys(this.pending).forEach(key => this.pending[key as keyof typeof this.pending].clear())
 		this.bleeds.clear()
 		this.hitBy = []
-		this.empoweredAuto = undefined
+		this.empoweredAutos.clear()
 
 		Object.keys(this.statusEffects).forEach(effectType => {
 			const statusEffect = this.statusEffects[effectType as StatusEffectType]
@@ -218,19 +219,34 @@ export class ChampionUnit {
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			const passiveFn = this.championEffects?.passive
+			let damageIncrease = 0
+			let damageMultiplier = 1
+			const statusEffects: StatusEffectData[] = []
+			const bonusCalculations: SpellCalculation[] = []
+			this.empoweredAutos.forEach(empower => {
+				damageIncrease += empower.damageIncrease ?? 0
+				damageMultiplier += empower.damageMultiplier ?? 0
+				if (empower.damageCalculation) {
+					console.log(empower.damageCalculation)
+					bonusCalculations.push(empower.damageCalculation)
+				}
+				if (empower.statusEffects) {
+					statusEffects.push(...empower.statusEffects)
+				}
+			})
 			if (this.instantAttack) {
-				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, this.empoweredAuto?.damageIncrease, this.empoweredAuto?.damageMultiplier)
+				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, damageIncrease, damageMultiplier)
 				this.attackStartAtMS = elapsedMS
 				if (this.data.passive) {
 					passiveFn?.(elapsedMS, this.data.passive, this.target, this)
 				}
 				this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
-				if (this.empoweredAuto?.statusEffects) {
-					for (const key in this.empoweredAuto.statusEffects) {
-						const statusEffect = this.empoweredAuto.statusEffects[key as StatusEffectType]!
-						this.target.applyStatusEffect(elapsedMS, key as StatusEffectType, statusEffect.durationMS, statusEffect.amount)
-					}
-				}
+				bonusCalculations.forEach(bonusCalculation => {
+					this.target?.damage(elapsedMS, false, this, DamageSourceType.bonus, bonusCalculation, false)
+				})
+				statusEffects.forEach(([key, statusEffect]) => {
+					this.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
+				})
 			} else {
 				const source = this
 				this.queueProjectileEffect(elapsedMS, undefined, {
@@ -240,10 +256,11 @@ export class ChampionUnit {
 					},
 					sourceType: DamageSourceType.attack,
 					target: this.target,
-					damageCalculation,
-					damageIncrease: source.empoweredAuto?.damageIncrease,
-					damageMultiplier: source.empoweredAuto?.damageMultiplier,
-					statusEffects: source.empoweredAuto?.statusEffects,
+					damageCalculation: damageCalculation,
+					bonusCalculations,
+					damageIncrease,
+					damageMultiplier,
+					statusEffects,
 					onCollision(elapsedMS, unit) {
 						if (source.data.passive) {
 							passiveFn?.(elapsedMS, source.data.passive, unit, source)
@@ -252,14 +269,13 @@ export class ChampionUnit {
 					},
 				})
 			}
-			if (this.empoweredAuto) {
-				if (this.empoweredAuto.amount > 1) {
-					this.empoweredAuto.amount -= 1
+			this.empoweredAutos.forEach(empoweredAuto => {
+				if (empoweredAuto.amount > 1) {
+					empoweredAuto.amount -= 1
 				} else {
-					this.empoweredAuto = undefined
+					this.empoweredAutos.delete(empoweredAuto)
 				}
-			}
-
+			})
 			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}

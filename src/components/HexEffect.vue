@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const hexPositions = computed(() => props.hexEffect.hexes.value?.map(getCoordFrom) ?? [])
 
-const maxOpacity = props.hexEffect.damageMultiplier ?? 1
+const maxOpacity = 1 + (props.hexEffect.damageMultiplier ?? 0)
 </script>
 
 <template>

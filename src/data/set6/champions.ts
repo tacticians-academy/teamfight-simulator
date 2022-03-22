@@ -8,8 +8,8 @@ import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable } from '#/h
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { BOARD_ROW_COUNT, HEX_MOVE_LEAGUEUNITS } from '#/helpers/constants'
-import { DamageSourceType, SpellKey } from '#/helpers/types'
+import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { ChampionFns } from '#/helpers/types'
 
 export default {
@@ -45,11 +45,9 @@ export default {
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target: getDistanceUnit(false, champion),
 				returnMissile: spell.missile,
-				statusEffects: {
-					stunned: {
-						durationMS: stunSeconds * 1000,
-					},
-				},
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+				],
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.performActionUntilMS = 0
 					const adjacentHex = affectedUnit.projectHexFrom(champion, false)
@@ -58,14 +56,12 @@ export default {
 						affectedUnit.customMoveSpeed = spell.missile?.speedInitial
 						affectedUnit.setActiveHex(adjacentHex) //TODO travel time
 						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
-						champion.empoweredAuto = {
+						champion.empoweredAutos.add({
 							amount: 1,
-							statusEffects: {
-								stunned: {
-									durationMS: 1 * 1000, //NOTE investigate in data
-								},
-							},
-						}
+							statusEffects: [
+								[StatusEffectType.stunned, { durationMS: 1 * 1000 }], //NOTE investigate in data
+							],
+						})
 					}
 				},
 			})
@@ -78,12 +74,10 @@ export default {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: false,
-				fixedHexRange: BOARD_ROW_COUNT,
-				statusEffects: {
-					stunned: {
-						durationMS: stunSeconds * 1000,
-					},
-				},
+				fixedHexRange: MAX_HEX_COUNT,
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+				],
 			})
 		},
 	},
@@ -196,10 +190,10 @@ export default {
 					champion.moving = true
 					champion.setActiveHex(projectedHex ?? champion.activeHex)
 					champion.customMoveSpeed = 2000
-					champion.empoweredAuto = {
+					champion.empoweredAutos.add({
 						amount: 3, //NOTE hardcoded
-						damageMultiplier: 1 + champion.getSpellVariable(spell, 'BonusAAPercent' as SpellKey),
-					}
+						damageMultiplier: champion.getSpellVariable(spell, 'BonusAAPercent' as SpellKey),
+					})
 				},
 			})
 		},
@@ -258,7 +252,7 @@ export default {
 			})
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: outerHexes,
-				damageMultiplier: 0.5,
+				damageMultiplier: -0.5,
 			})
 		},
 	},
@@ -268,11 +262,9 @@ export default {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getRowOfMostAttackable(champion.opposingTeam()),
-				statusEffects: {
-					stunned: {
-						durationMS: stunSeconds * 1000,
-					},
-				},
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+				],
 			})
 		},
 	},

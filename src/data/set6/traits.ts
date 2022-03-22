@@ -44,7 +44,7 @@ export default {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: BODYGUARD_DELAY_MS,
 				hexDistanceFromSource: 1,
-				damageMultiplier: 0.5,
+				damageMultiplier: -0.5,
 				taunts: true,
 			})
 			return {}

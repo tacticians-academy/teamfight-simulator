@@ -26,7 +26,7 @@ export interface StorageChampion {
 export type UnitLevelStats = [number, number?, number?]
 
 export const enum DamageSourceType {
-	attack, spell, item, trait
+	attack, spell, item, trait, bonus
 }
 
 export interface SynergyData {
@@ -53,11 +53,10 @@ export enum StatusEffectType {
 	stunned = 'stunned',
 }
 
-export interface StatusEffectData {
+export type StatusEffectData = [StatusEffectType, {
 	durationMS: number
 	amount?: number
-}
-export type StatusEffectsData = {[key in StatusEffectType]?: StatusEffectData}
+}]
 
 export interface StatusEffect {
 	active: boolean

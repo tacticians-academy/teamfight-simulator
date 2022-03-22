@@ -352,12 +352,9 @@ export default {
 				holder.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: tickMS,
 					hexDistanceFromSource,
-					statusEffects: {
-						[StatusEffectType.aoeDamageReduction]: {
-							durationMS: tickMS,
-							amount: aoeDamageReduction,
-						},
-					},
+					statusEffects: [
+						[StatusEffectType.aoeDamageReduction, { durationMS: tickMS, amount: aoeDamageReduction }],
+					],
 					damageCalculation: createDamageCalculation(itemID, missingHPHeal / 100, DamageType.heal, BonusKey.MissingHealth, 1, false, maxHeal),
 					targetTeam: holder.team,
 				})
@@ -508,7 +505,7 @@ export default {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: 4100, //TODO determine
 				hexDistanceFromSource: 1, //TODO pathing to target is not yet supported
-				damageMultiplier: 0.5,
+				damageMultiplier: -0.5,
 				taunts: true,
 			})
 		},
@@ -523,7 +520,7 @@ export default {
 				voidling.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: 500,
 					hexDistanceFromSource: 1,
-					damageMultiplier: 0.5,
+					damageMultiplier: -0.5,
 					taunts: true,
 				})
 			}

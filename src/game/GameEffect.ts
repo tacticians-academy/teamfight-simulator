@@ -4,7 +4,8 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { BonusLabelKey, BonusVariable, CollisionFn, DamageSourceType, StatusEffectsData, StatusEffectType, TeamNumber } from '#/helpers/types'
+import { DamageSourceType } from '#/helpers/types'
+import type { BonusLabelKey, BonusVariable, CollisionFn, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: number, unit: ChampionUnit) => boolean = () => false
@@ -22,18 +23,20 @@ export interface GameEffectData {
 	targetTeam?: TeamNumber
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
+	/** Bonus `SpellCalculation` to apply to any affected units (ignores `damageIncrease`/`damageMultiplier`). */
+	bonusCalculations?: SpellCalculation[]
 	/** If the `damageMultiplier` and `damageIncrease` should only apply if the spell has hit the target multiple times. */
 	modifiesOnMultiHit?: boolean
 	/** Multiplies the result of `damageCalculation`. */
-	damageMultiplier?: number
-	/** Adds to the result of `damageCalculation`. */
 	damageIncrease?: number
 	/** Defaults to `spell` when passed with a `SpellCalculation`. */
+	damageMultiplier?: number
+	/** Adds to the result of `damageCalculation`. */
 	damageSourceType?: DamageSourceType
 	/** `BonusVariable`s to apply to any affected units. */
 	bonuses?: [BonusLabelKey, ...BonusVariable[]]
 	/** `StatusEffects` to apply to any affected units. */
-	statusEffects?: StatusEffectsData
+	statusEffects?: StatusEffectData[]
 	/** Callback once the effect begins. */
 	onActivate?: CollisionFn
 	/** Callback for each unit the `GameEffect` applies to. */
@@ -55,12 +58,13 @@ export class GameEffect extends GameEffectChild {
 	source: ChampionUnit
 	targetTeam: TeamNumber | null
 	damageCalculation: SpellCalculation | undefined
+	bonusCalculations: SpellCalculation[]
 	modifiesOnMultiHit: boolean
 	damageIncrease: number | undefined
 	damageMultiplier: number | undefined
 	damageSourceType: DamageSourceType | undefined
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
-	statusEffects: StatusEffectsData | undefined
+	statusEffects: StatusEffectData[] | undefined
 
 	collidedWith: string[] = []
 
@@ -74,6 +78,7 @@ export class GameEffect extends GameEffectChild {
 		this.source = source
 		this.targetTeam = data.targetTeam === undefined ? source.opposingTeam() : data.targetTeam
 		this.damageCalculation = data.damageCalculation
+		this.bonusCalculations = data.bonusCalculations ?? []
 		this.modifiesOnMultiHit = data.modifiesOnMultiHit ?? false
 		this.damageIncrease = data.damageIncrease
 		this.damageMultiplier = data.damageMultiplier
@@ -107,15 +112,17 @@ export class GameEffect extends GameEffectChild {
 			}
 			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, damageMultiplier)
 		}
+		this.bonusCalculations.forEach(bonusCalculation => {
+			unit.damage(elapsedMS, false, this.source, DamageSourceType.bonus, bonusCalculation, true)
+		})
 		if (!wasSpellShielded) {
 			if (this.bonuses) {
 				unit.setBonusesFor(this.bonuses[0], this.bonuses[1])
 			}
 			if (this.statusEffects) {
-				for (const key in this.statusEffects) {
-					const statusEffect = this.statusEffects[key as StatusEffectType]!
-					unit.applyStatusEffect(elapsedMS, key as StatusEffectType, statusEffect.durationMS, statusEffect.amount)
-				}
+				this.statusEffects.forEach(([key, statusEffect]) => {
+					unit.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
+				})
 			}
 			this.onCollision?.(elapsedMS, unit)
 		}
