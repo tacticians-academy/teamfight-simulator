@@ -196,6 +196,18 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.Hexnova]: {
+		hpThreshold: (augment, elapsedMS, unit) => {
+			if (!unit.hasTrait(TraitKey.Hextech)) { return }
+			const [manaReave] = getVariables(augment, 'PercentManaReave')
+			const hexRange = 2 //NOTE hardcoded
+			unit.queueHexEffect(elapsedMS, undefined, {
+				hexDistanceFromSource: hexRange,
+				bonuses: [AugmentGroupKey.Hexnova, [BonusKey.ManaReductionPercent, -manaReave]],
+			})
+		},
+	},
+
 	[AugmentGroupKey.InstantInjection]: {
 		apply: (augment, team, units) => {
 			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Chemtech)
