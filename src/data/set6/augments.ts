@@ -11,6 +11,7 @@ import { getters } from '#/game/store'
 import { getBestAsMax, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
+import { StatusEffectType } from '#/helpers/types'
 import type { TeamNumber } from '#/helpers/types'
 
 export interface AugmentFns {
@@ -29,6 +30,14 @@ export default {
 		cast: (augment, elapsedMS, unit) => {
 			const [manaPercent] = getVariables(augment, 'ManaPercent')
 			unit.addBonuses(AugmentGroupKey.ArchangelsEmbrace, [BonusKey.AbilityPower, unit.manaMax() * manaPercent / 100])
+		},
+	},
+
+	[AugmentGroupKey.ArmorPlating]: {
+		hpThreshold: (augment, elapsedMS, unit) => {
+			if (!unit.hasTrait(TraitKey.Colossus)) { return }
+			const [invulnerabilitySeconds] = getVariables(augment, 'InvulnDuration')
+			unit.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, invulnerabilitySeconds * 1000)
 		},
 	},
 
