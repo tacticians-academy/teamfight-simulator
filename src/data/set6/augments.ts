@@ -8,7 +8,7 @@ import { applyChemtech } from '#/data/set6/traits'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters } from '#/game/store'
 
-import { getVariables } from '#/helpers/abilityUtils'
+import { getBestAsMax, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import type { TeamNumber } from '#/helpers/types'
@@ -304,4 +304,27 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.WoodlandCharm]: {
+		startOfFight: (augment, team, units) => {
+			spawnWoodlands(1, augment, units, (unit) => unit.healthMax)
+		},
+	},
+	[AugmentGroupKey.WoodlandTrinket]: {
+		startOfFight: (augment, team, units) => {
+			spawnWoodlands(2, augment, units, (unit) => unit.attackSpeed())
+		},
+	},
+
 } as {[key in AugmentGroupKey]?: AugmentFns}
+
+function spawnWoodlands(cloneCount: number, augment: AugmentData, units: ChampionUnit[], valueFn: (unit: ChampionUnit) => number) {
+	const bestUnit = getBestAsMax(true, units, valueFn)
+	if (bestUnit) {
+		const [cloneHealth] = getVariables(augment, 'CloneHealth')
+		for (let index = 0; index < cloneCount; index += 1) {
+			const clone = spawnUnit(bestUnit, bestUnit.name, bestUnit.starLevel)
+			clone.health = cloneHealth
+			clone.healthMax = cloneHealth
+		}
+	}
+}
