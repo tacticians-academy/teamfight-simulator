@@ -63,6 +63,19 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.BuiltDifferent]: {
+		apply: (augment, team, units) => {
+			const hp = augment.effects[BonusKey.Health]
+			const attackSpeed = augment.effects[BonusKey.AttackSpeed]
+			if (hp == null || attackSpeed == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.activeSynergies.filter(({ trait }) => unit.hasTrait(trait.name as TraitKey)).length === 0)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.BuiltDifferent, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed]))
+		},
+	},
+
 	[AugmentGroupKey.CyberneticImplants]: {
 		apply: (augment, team, units) => {
 			const hp = augment.effects[BonusKey.Health]
