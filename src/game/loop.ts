@@ -4,7 +4,8 @@ import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/item
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
-import type { GameEffect, GameEffectChild } from '#/game/GameEffect'
+import type { ChampionUnit } from '#/game/ChampionUnit'
+import type { GameEffect } from '#/game/GameEffect'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
 import { getters, state } from '#/game/store'
 
@@ -53,6 +54,11 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 					shield.repeatAmount = shield.amount
 				}
 			})
+		})
+		const unitsByTeam: [ChampionUnit[], ChampionUnit[]] = [[], []]
+		state.units.forEach(unit => unitsByTeam[unit.team].push(unit))
+		unitsByTeam.forEach((units, team) => {
+			getters.activeAugmentEffectsByTeam.value[team].forEach(([augment, effects]) => effects.startOfFight?.(augment, team as TeamNumber, units))
 		})
 		requestNextFrame(frameMS, unanimated)
 		return

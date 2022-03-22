@@ -15,6 +15,7 @@ import type { TeamNumber } from '#/helpers/types'
 
 export interface AugmentFns {
 	teamWideTrait?: TraitKey
+	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
