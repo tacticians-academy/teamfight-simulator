@@ -7,7 +7,8 @@ import type { TeamNumber } from '#/helpers/types'
 import { getters } from '#/game/store'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { getHexRing } from '#/helpers/boardUtils'
+import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
+import { BOARD_ROW_COUNT } from '#/helpers/constants'
 
 export interface AugmentFns {
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
@@ -16,6 +17,18 @@ export interface AugmentFns {
 }
 
 export default {
+
+	[AugmentGroupKey.Backfoot]: {
+		apply: (augment, team, units) => {
+			const attackSpeed = augment.effects[BonusKey.AttackSpeed]
+			if (attackSpeed == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => isInBackLines(unit))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.Backfoot, [BonusKey.AttackSpeed, attackSpeed * 100]))
+		},
+	},
 
 	[AugmentGroupKey.BlueBattery]: {
 		apply: (augment, team, units) => {
