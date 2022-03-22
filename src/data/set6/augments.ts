@@ -8,13 +8,13 @@ import { getters } from '#/game/store'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
-import { BOARD_ROW_COUNT } from '#/helpers/constants'
 import { applyChemtech } from '#/data/set6/traits'
 
 export interface AugmentFns {
 	teamWideTrait?: TraitKey
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
 	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
 }
 
@@ -74,6 +74,21 @@ export default {
 			units
 				.filter(unit => unit.activeSynergies.length === 0)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.BuiltDifferent, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed]))
+		},
+	},
+
+	[AugmentGroupKey.ChemicalOverload]: {
+		onDeath: (augment, elapsedMS, dead, source) => {
+			if (!dead.hasTrait(TraitKey.Chemtech)) { return }
+
+			const hpPercent = augment.effects[BonusKey.Health]
+			if (hpPercent == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			dead.queueHexEffect(elapsedMS, undefined, {
+				hexDistanceFromSource: 2,
+				damageCalculation: createDamageCalculation(AugmentGroupKey.ChemicalOverload, hpPercent, DamageType.magic, BonusKey.Health, 0.01),
+			})
 		},
 	},
 
