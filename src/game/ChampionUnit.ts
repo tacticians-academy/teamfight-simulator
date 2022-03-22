@@ -88,7 +88,7 @@ export class ChampionUnit {
 	shields: ShieldData[] = []
 	bleeds = new Set<BleedData>()
 
-	pendingBonuses = new Set<[DOMHighResTimeStamp, BonusLabelKey, BonusVariable[]]>()
+	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
 
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
@@ -594,9 +594,7 @@ export class ChampionUnit {
 		if (rawDamage <= 0) {
 			return
 		}
-		if (damageMultiplier != null) {
-			rawDamage *= 1 + damageMultiplier
-		}
+		rawDamage *= 1 + (damageMultiplier ?? 0) + source.getBonuses(BonusKey.DamageIncrease)
 		let defenseStat = damageType === DamageType.physical
 			? this.armor()
 			: damageType === DamageType.magic
