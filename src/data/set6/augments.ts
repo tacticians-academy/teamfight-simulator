@@ -191,6 +191,20 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.TriForce]: {
+		apply: (augment, team, units) => {
+			const hp = augment.effects['Health']
+			const attackSpeed = augment.effects['AttackSpeed']
+			const startingMana = augment.effects['Mana']
+			if (hp == null || attackSpeed == null || startingMana == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.data.cost === 3)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.TriForce, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed], [BonusKey.Mana, startingMana]))
+		},
+	},
+
 	[AugmentGroupKey.VerdantVeil]: {
 		apply: (augment, team, units) => {
 			const durationSeconds = augment.effects['Duration']
