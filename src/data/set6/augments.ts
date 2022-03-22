@@ -30,6 +30,18 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.Battlemage]: {
+		apply: (augment, team, units) => {
+			const ap = augment.effects[BonusKey.AbilityPower]
+			if (ap == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => !isInBackLines(unit))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.Battlemage, [BonusKey.AbilityPower, ap]))
+		},
+	},
+
 	[AugmentGroupKey.BlueBattery]: {
 		apply: (augment, team, units) => {
 			const manaRestore = augment.effects['ManaRestore']
