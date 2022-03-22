@@ -50,7 +50,6 @@ type AugmentList = [AugmentData | null, AugmentData | null, AugmentData | null]
 
 export function loadTeamAugments(): [AugmentList, AugmentList] {
 	const json = getStorageJSON(StorageKey.Augments)
-	console.log(json)
 	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
 }
 

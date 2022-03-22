@@ -97,7 +97,7 @@ export class ChampionUnit {
 		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLevel
-		this.championEffects = championEffects[name]
+		this.championEffects = championEffects[name as ChampionKey]
 		this.instantAttack = this.data.stats.range <= 1
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
@@ -154,7 +154,7 @@ export class ChampionUnit {
 		}
 
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
-		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => trait != null)
+		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => !!trait)
 		const teamSynergies = synergiesByTeam[this.team]
 		this.activeSynergies = teamSynergies.filter(({ activeEffect }) => !!activeEffect)
 		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
