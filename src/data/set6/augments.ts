@@ -44,13 +44,11 @@ export default {
 			}
 			units
 				.filter(unit => unit.hasTrait(TraitKey.Arcanist))
-				.forEach(unit => {
-					unit.shields.push({
-						source: unit,
-						amount: unit.abilityPower() * apMultiplier / 100,
-						expiresAtMS: durationSeconds * 1000,
-					})
-				})
+				.forEach(unit => unit.shields.push({
+					source: unit,
+					amount: unit.abilityPower() * apMultiplier / 100,
+					expiresAtMS: durationSeconds * 1000,
+				}))
 		},
 	},
 
@@ -99,6 +97,19 @@ export default {
 				return console.log('ERR', augment.name, augment.effects)
 			}
 			source.gainHealth(elapsedMS, source, heal, true)
+		},
+	},
+
+	[AugmentGroupKey.TitanicForce]: {
+		apply: (augment, team, units) => {
+			const hpThreshold = augment.effects['HealthThreshold']
+			const hpMultiplier = augment.effects['HealthPercent']
+			if (hpThreshold == null || hpMultiplier == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.healthMax >= hpThreshold)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.TitanicForce, [BonusKey.AttackDamage, unit.healthMax * hpMultiplier]))
 		},
 	},
 
