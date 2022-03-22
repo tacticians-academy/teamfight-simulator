@@ -218,7 +218,7 @@ export class ChampionUnit {
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, 1)
 			const passiveFn = this.championEffects?.passive
 			let damageIncrease = 0
-			let damageMultiplier = 1
+			let damageMultiplier = 0
 			const statusEffects: StatusEffectData[] = []
 			const bonusCalculations: SpellCalculation[] = []
 			this.empoweredAutos.forEach(empower => {
@@ -549,7 +549,12 @@ export class ChampionUnit {
 					deathFn(activeEffect, elapsedMS, this, traitUnits)
 				})
 			})
-			getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => effects.enemyDeath?.(augment, elapsedMS, this, source))
+			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
+				effects.onDeath?.(augment, elapsedMS, this, source)
+			})
+			getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
+				effects.enemyDeath?.(augment, elapsedMS, this, source)
+			})
 			needsPathfindingUpdate()
 		} else {
 			gameOver(this.team)
@@ -588,7 +593,7 @@ export class ChampionUnit {
 			return
 		}
 		if (damageMultiplier != null) {
-			rawDamage *= damageMultiplier
+			rawDamage *= 1 + damageMultiplier
 		}
 		let defenseStat = damageType === DamageType.physical
 			? this.armor()

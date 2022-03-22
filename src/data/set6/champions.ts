@@ -19,7 +19,7 @@ export default {
 			const missileSpell = champion.getSpellFor('OrbMissile')
 			const degreesBetweenOrbs = champion.getSpellVariable(spell, 'AngleBetweenOrbs' as SpellKey)
 			const radiansBetweenOrbs = toRadians(degreesBetweenOrbs)
-			const damageMultiplier = champion.getSpellVariable(spell, 'MultiOrbDamage' as SpellKey)
+			const damageMultiplier = champion.getSpellVariable(spell, 'MultiOrbDamage' as SpellKey) - 1
 			const orbsPerCast = champion.getSpellVariable(spell, 'SpiritFireStacks' as SpellKey)
 			const maxRange = champion.getSpellVariable(spell, 'HexRange' as SpellKey)
 			const orbCount = champion.castCount * orbsPerCast + 1

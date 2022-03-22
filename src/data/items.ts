@@ -365,12 +365,12 @@ export default {
 	[ItemKey.RunaansHurricane]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const boltCount = item.effects['AdditionalTargets']
-			const damageMultiplier = item.effects['MultiplierForDamage']
-			if (boltCount == null || damageMultiplier == null) {
+			const boltMultiplier = item.effects['MultiplierForDamage']
+			if (boltCount == null || boltMultiplier == null) {
 				return console.log('ERR', item.name, item.effects)
 			}
 			const additionalTargets = getNearestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
-			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, damageMultiplier / 100)
+			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, boltMultiplier / 100)
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
 				const boltTarget = additionalTargets[boltIndex]
 				if (boltTarget == null) { continue }
