@@ -653,13 +653,12 @@ export class ChampionUnit {
 				}
 				healthDamage -= protectingDamage
 			})
-		if (this.health <= healthDamage) {
-			this.die(elapsedMS, source)
-		} else {
-			this.health -= healthDamage
-			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
-			this.gainMana(elapsedMS, manaGain)
-		}
+
+		// Update health
+
+		this.health -= healthDamage
+		const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
+		this.gainMana(elapsedMS, manaGain)
 
 		// `source` effects
 
@@ -669,6 +668,18 @@ export class ChampionUnit {
 		}
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+
+		if (sourceType === DamageSourceType.attack) {
+			source.shields.forEach(shield => {
+				if (shield.activated === true && shield.bonusDamage) {
+					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
+				}
+			})
+		}
+
+		// `this` effects
+
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
 			const effects = itemEffects[item.id as ItemKey]
@@ -689,25 +700,28 @@ export class ChampionUnit {
 				}
 			}
 		})
-		source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
+			const hpThresholdFn = effects.hpThreshold
+			if (hpThresholdFn && this.checkHPThreshold(augment.name, augment.effects)) {
+				hpThresholdFn(augment, elapsedMS, this)
+			}
+		})
 
-		if (sourceType === DamageSourceType.attack) {
-			source.shields.forEach(shield => {
-				if (shield.activated === true && shield.bonusDamage) {
-					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
-				}
-			})
+		// Die
+
+		if (this.health <= 0) {
+			this.die(elapsedMS, source)
 		}
 	}
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables) {
 		uniqueID += this.instanceID
-		const hpThreshold = effects['HPThreshold']
+		const hpThreshold = effects['HPThreshold'] ?? effects['HealthThreshold1']
 		if (hpThreshold != null) {
 			const previousActivationThreshold = thresholdCheck[uniqueID]
 			if (hpThreshold !== previousActivationThreshold && this.healthProportion() <= hpThreshold / 100) {
 				thresholdCheck[uniqueID] = hpThreshold
-				const damageReduction = effects[BonusKey.DamageReduction]
+				const damageReduction = effects[BonusKey.DamageReduction] ?? (effects['InvulnDuration'] != null ? 100 : undefined)
 				if (damageReduction != null) {
 					if (damageReduction === 100) {
 						this.health = this.healthMax * hpThreshold / 100
