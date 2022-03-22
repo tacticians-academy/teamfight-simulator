@@ -670,6 +670,9 @@ export class ChampionUnit {
 
 		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 		source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
+			effects.damageDealtByHolder?.(augment, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+		})
 
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {
