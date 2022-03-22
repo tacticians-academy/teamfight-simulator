@@ -262,6 +262,13 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.SecondWind]: {
+		apply: (augment, team, units) => {
+			const [delaySeconds, healPercent] = getVariables(augment, 'Delay', 'HealPercent')
+			units.forEach(unit => unit.queueBonus(0, delaySeconds * 1000, AugmentGroupKey.SecondWind, [BonusKey.MissingHealth, healPercent / 100]))
+		},
+	},
+
 	[AugmentGroupKey.ShrugItOff]: {
 		apply: (augment, team, units) => {
 			const [maxHPPercentMultiplier] = getVariables(augment, 'RegenPerTick')
