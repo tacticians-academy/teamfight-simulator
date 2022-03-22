@@ -237,7 +237,7 @@ export default {
 			}
 			const totalInnovatorsStarLevel = units.reduce((totalStarLevel, unit) => totalStarLevel + unit.starLevel, 0)
 			const innovationMultiplier = starLevelMultiplier * totalInnovatorsStarLevel
-			innovation.addBonuses(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.baseHP() * innovationMultiplier])
+			innovation.setBonusesFor(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.baseHP() * innovationMultiplier])
 		},
 	},
 
@@ -363,7 +363,7 @@ export default {
 				if (manaReduction === undefined) {
 					return console.log('ERR', TraitKey.Rivals, unit.name, activeEffect)
 				}
-				unit.addBonuses(TraitKey.Rivals, [BonusKey.ManaReduction, manaReduction])
+				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.ManaReduction, manaReduction])
 			} else if (unit.name !== ChampionKey.Jinx) {
 				console.log('ERR', TraitKey.Rivals, unit.name)
 			}

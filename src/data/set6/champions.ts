@@ -143,7 +143,7 @@ export default {
 				const expiresAt = elapsedMS + transformSeconds * 1000
 				champion.health += bonusHealth
 				champion.healthMax += bonusHealth
-				champion.addBonuses(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
+				champion.setBonusesFor(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
 				if (target) {
 					const jumpToHex = champion.projectHexFrom(target, false)
 					if (jumpToHex) {
@@ -232,7 +232,7 @@ export default {
 
 	[ChampionKey.Warwick]: {
 		passive: (elapsedMS, spell, target, source) => {
-			if (!target) { return console.log('No target', source.name, source.team) }
+			if (!target) { return }
 			const heal = source.getSpellCalculationResult(spell, SpellKey.HealAmount)
 			const percentHealthDamage = source.getSpellCalculationResult(spell, SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
