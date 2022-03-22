@@ -273,7 +273,7 @@ export default {
 	},
 
 	[AugmentGroupKey.TitanicForce]: {
-		apply: (augment, team, units) => {
+		startOfFight: (augment, team, units) => {
 			const [hpThreshold, hpMultiplier] = getVariables(augment, 'HealthThreshold', 'HealthPercent')
 			units
 				.filter(unit => unit.healthMax >= hpThreshold)
@@ -333,6 +333,12 @@ function spawnWoodlands(cloneCount: number, augment: AugmentData, units: Champio
 			const clone = spawnUnit(bestUnit, bestUnit.name, bestUnit.starLevel)
 			clone.health = cloneHealth
 			clone.healthMax = cloneHealth
+			clone.traits = [] //TODO verify what bonuses apply to clones
+			clone.activeSynergies = []
+			clone.bonuses = []
+			clone.scalings.clear()
+			clone.shields = []
+			clone.pendingBonuses.clear()
 		}
 	}
 }
