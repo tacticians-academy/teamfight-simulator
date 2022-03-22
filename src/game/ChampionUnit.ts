@@ -516,7 +516,7 @@ export class ChampionUnit {
 		this.addMana(amount)
 	}
 
-	die(elapsedMS: DOMHighResTimeStamp) {
+	die(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit) {
 		if (this.dead) {
 			return console.warn('Already dead', this.name, this.instanceID)
 		}
@@ -537,6 +537,8 @@ export class ChampionUnit {
 					deathFn(activeEffect, elapsedMS, this, traitUnits)
 				})
 			})
+			console.log(getters.activeAugmentEffects.value[source.team])
+			getters.activeAugmentEffects.value[source.team].forEach(([augment, effects]) => effects.enemyDeath?.(augment, elapsedMS, this, source))
 			needsPathfindingUpdate()
 		} else {
 			gameOver(this.team)
@@ -632,7 +634,7 @@ export class ChampionUnit {
 				healthDamage -= protectingDamage
 			})
 		if (this.health <= healthDamage) {
-			this.die(elapsedMS)
+			this.die(elapsedMS, source)
 		} else {
 			this.health -= healthDamage
 			const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic

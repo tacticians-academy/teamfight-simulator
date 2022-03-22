@@ -3,11 +3,14 @@ import { computed, reactive, ref, watch, watchEffect } from 'vue'
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { AugmentData, ItemData, TraitData } from '@tacticians-academy/academy-library'
 
+import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import augmentEffects from '#/data/set6/augments'
+import type { AugmentFns } from '#/data/set6/augments'
 import itemEffects from '#/data/items'
 import traitEffects from '#/data/set6/traits'
 
@@ -93,7 +96,6 @@ export const getters = {
 						entry[1].push(augment.name)
 					}
 				}
-				console.log(traitName)
 			})
 		})
 		return traitsAndUnitsByTeam
@@ -120,6 +122,11 @@ export const getters = {
 	socialitesByTeam: computed(() => {
 		const result: boolean[] = getters.synergiesByTeam.value.map(teamSynergies => teamSynergies.some(synergyData => synergyData.key === TraitKey.Socialite))
 		return result
+	}),
+
+	activeAugmentEffects: computed(() => {
+		return state.augmentsByTeam
+			.map(augments => augments.filter((e): e is AugmentData => !!e).map(augment => [augment, augmentEffects[augment.groupID as AugmentGroupKey]] as [AugmentData, AugmentFns]).filter(([augment, effects]) => effects != null))
 	}),
 }
 
