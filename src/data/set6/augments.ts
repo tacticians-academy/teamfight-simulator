@@ -11,7 +11,7 @@ import { getters } from '#/game/store'
 import { getBestAsMax, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { StatusEffectType } from '#/helpers/types'
+import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { TeamNumber } from '#/helpers/types'
 
 export interface AugmentFns {
@@ -80,6 +80,31 @@ export default {
 			units
 				.filter(unit => unit.activeSynergies.length === 0)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.BuiltDifferent, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed]))
+		},
+	},
+
+	[AugmentGroupKey.CelestialBlessing]: {
+		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
+				return
+			}
+			const [omnivamp, maxShield] = getVariables(augment, 'Omnivamp', 'MaxShield')
+			const heal = takingDamage * omnivamp / 100
+			const overheal = holder.gainHealth(elapsedMS, holder, heal, true)
+			if (overheal > 0) {
+				const id = augment.name
+				const shield = holder.shields.find(shield => shield.id === id)
+				if (shield) {
+					shield.amount = Math.min(maxShield, shield.amount + overheal)
+					shield.activated = true
+				} else {
+					holder.shields.push({
+						id,
+						source: holder,
+						amount: overheal,
+					})
+				}
+			}
 		},
 	},
 
