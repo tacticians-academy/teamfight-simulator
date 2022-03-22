@@ -536,9 +536,10 @@ export class ChampionUnit {
 		this.health = 0
 		this.dead = true
 
+		this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
+
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
-			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 				teamSynergies.forEach(({ key, activeEffect }) => {
 					if (!activeEffect) { return }
