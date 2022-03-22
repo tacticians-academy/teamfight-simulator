@@ -1,4 +1,4 @@
-import { BonusKey } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { AugmentData } from '@tacticians-academy/academy-library'
 import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 
@@ -6,9 +6,11 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { BonusVariable, EffectResults, TeamNumber } from '#/helpers/types'
 import { getters } from '#/game/store'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import { createDamageCalculation } from '#/helpers/calculate'
 
 export interface AugmentFns {
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
+	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
 }
 
@@ -42,6 +44,21 @@ export default {
 			units
 				.filter(unit => unit.hasTrait(TraitKey.Yordle))
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.SoSmall, [BonusKey.DodgeChance, dodgeIncrease]))
+		},
+	},
+
+	[AugmentGroupKey.SpellBlade]: {
+		cast: (augment, elapsedMS, unit) => {
+			if (!unit.hasTrait(TraitKey.Arcanist)) { return }
+
+			const apMultiplier = augment.effects['PercentAbilityPower']
+			if (apMultiplier == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			unit.empoweredAutos.add({
+				amount: 1,
+				damageCalculation: createDamageCalculation(AugmentGroupKey.SpellBlade, apMultiplier, DamageType.magic, BonusKey.AbilityPower, 0.01),
+			})
 		},
 	},
 

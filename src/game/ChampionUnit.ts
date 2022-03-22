@@ -474,6 +474,7 @@ export class ChampionUnit {
 				if (!activeEffect) { return }
 				traitEffects[key]?.cast?.(activeEffect, elapsedMS, this)
 			})
+			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.cast?.(augment, elapsedMS, this))
 			this.setBonusesFor(SpellKey.ManaReave)
 			this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 		}
