@@ -64,6 +64,7 @@ function onAugment(augment: AugmentData | null) {
 				<button
 					v-for="(augment, augmentIndex) in augments" :key="augmentIndex"
 					class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURL(augment)})` : undefined }"
+					:disabled="state.isRunning"
 					@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
 				>
 					<span v-if="augment" class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
@@ -114,7 +115,6 @@ function onAugment(augment: AugmentData | null) {
 <style scoped lang="postcss">
 .augment-box {
 	@apply w-24 h-24 m-1 rounded-lg bg-cover text-white font-bold text-center  flex justify-center items-center;
-  text-shadow: 0 1px 2px black;
 }
 
 .sidebar-icon {
