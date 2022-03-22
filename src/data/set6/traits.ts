@@ -6,7 +6,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
@@ -106,33 +106,20 @@ export default {
 	[TraitKey.Enforcer]: {
 		onceForTeam: (activeEffect, teamNumber, units) => {
 			const [detainCount] = getVariables(activeEffect, 'DetainCount')
-			const stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
+			let stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
 			if (detainCount >= 1) {
-				let highestHP = 0
-				let bestUnit: ChampionUnit | undefined
-				stunnableUnits.forEach(unit => {
-					if (unit.healthMax > highestHP) {
-						highestHP = unit.healthMax
-						bestUnit = unit
-					}
-				})
+				const bestUnit = getBestAsMax(true, stunnableUnits, (unit) => unit.healthMax)
 				if (bestUnit) {
 					applyEnforcerDetain(activeEffect, bestUnit)
 				}
 			}
 			if (detainCount >= 2) { //NOTE option for user to target
-				let highestScore = 0
-				let bestUnit: ChampionUnit | undefined
-				stunnableUnits.forEach(unit => {
-					if (unit.statusEffects.stunned.active) { return }
+				stunnableUnits = stunnableUnits.filter(unit => !unit.statusEffects.stunned.active)
+				const bestUnit = getBestAsMax(true, stunnableUnits, (unit) => {
 					const attackDPS = unit.attackDamage() * unit.attackSpeed()
 					const starCostItems = (unit.data.cost ?? 1) * unit.starMultiplier + Math.pow(unit.items.length, 2)
 					const magicDPSScore = (unit.abilityPower() - 90) / 10
-					const score = starCostItems + attackDPS / 20 + magicDPSScore
-					if (score > highestScore) {
-						highestScore = score
-						bestUnit = unit
-					}
+					return starCostItems + attackDPS / 20 + magicDPSScore
 				})
 				if (bestUnit) {
 					applyEnforcerDetain(activeEffect, bestUnit)

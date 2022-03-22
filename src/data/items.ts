@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/ShapeEffect'
 import { activatedCheck, state } from '#/game/store'
 
-import { getInteractableUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { getBestAsMax, getInteractableUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -342,23 +342,9 @@ export default {
 				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === BURN_ID))
 				let bestTarget: ChampionUnit | undefined
 				if (bestTargets.length) {
-					let closestDistance = Number.MAX_SAFE_INTEGER
-					bestTargets.forEach(unit => {
-						const hexDistance = unit.hexDistanceTo(holder)
-						if (hexDistance < closestDistance) {
-							closestDistance = hexDistance
-							bestTarget = unit
-						}
-					})
+					bestTarget = getBestAsMax(false, bestTargets, (unit) => unit.hexDistanceTo(holder))
 				} else {
-					let fewestRemainingBleeds = Number.MAX_SAFE_INTEGER
-					units.forEach(unit => {
-						const remainingBleeds = Array.from(unit.bleeds).find(bleed => bleed.sourceID === BURN_ID)!.remainingIterations
-						if (remainingBleeds < fewestRemainingBleeds) {
-							fewestRemainingBleeds = remainingBleeds
-							bestTarget = unit
-						}
-					})
+					bestTarget = getBestAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === BURN_ID)!.remainingIterations)
 				}
 				if (bestTarget) {
 					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified

@@ -20,7 +20,7 @@ import type { ShapeEffectData } from '#/game/ShapeEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
 import { getCoordFrom, gameOver, getters, state, thresholdCheck } from '#/game/store'
 
-import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
+import { getAliveUnitsOfTeamWithTrait, getBestAsMax } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
@@ -1023,16 +1023,8 @@ export class ChampionUnit {
 	}
 
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {
-		let bestDistance = pastTarget ? 0 : Number.MAX_SAFE_INTEGER
-		let bestHex = targetHex
-		getHexRing(targetHex, 1).forEach(hex => {
-			const distance = this.coordDistanceSquaredToHex(hex)
-			if (pastTarget ? distance > bestDistance : distance < bestDistance) {
-				bestDistance = distance
-				bestHex = hex
-			}
-		})
-		return getClosestHexAvailableTo(bestHex, state.units)
+		const bestHex = getBestAsMax(pastTarget, getHexRing(targetHex, 1), (hex) => this.coordDistanceSquaredToHex(hex))
+		return getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
 	}
 	projectHexFrom(target: ChampionUnit, pastTarget: boolean) {
 		return this.projectHexFromHex(target.activeHex, pastTarget)

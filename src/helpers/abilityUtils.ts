@@ -10,6 +10,19 @@ import { BOARD_COL_COUNT } from '#/helpers/constants'
 import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
+export function getBestAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number) {
+	let bestValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
+	let bestResult: T | undefined
+	entries.forEach(entry => {
+		const value = valueFn(entry)
+		if (isMaximum ? value > bestValue : value < bestValue) {
+			bestValue = value
+			bestResult = entry
+		}
+	})
+	return bestResult
+}
+
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
 	const hex = fromUnit.activeHex
 	const spawn = new ChampionUnit(name, getClosestHexAvailableTo(hex, state.units) ?? hex, starLevel)
@@ -60,30 +73,11 @@ export function getRowOfMostAttackable(team: TeamNumber | null) {
 }
 
 export function getMostDistanceHex(closest: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
-	let bestHex: HexCoord | undefined
-	let bestDistance = closest ? 99 : 0
-	for (const hex of hexes) {
-		const distance = fromUnit.hexDistanceToHex(hex)
-		if (closest ? distance < bestDistance : distance > bestDistance) {
-			bestDistance = distance
-			bestHex = hex
-		}
-	}
-	return bestHex
+	return getBestAsMax(!closest, hexes, (hex) => fromUnit.hexDistanceToHex(hex))
 }
 
 export function getDistanceUnit(closest: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
 	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
-	let bestUnit: ChampionUnit | undefined
-	let bestDistance = closest ? 99 : 0
-	for (const targetUnit of units) {
-		if (targetUnit !== fromUnit) {
-			const distance = fromUnit.hexDistanceTo(targetUnit)
-			if (closest ? distance < bestDistance : distance > bestDistance) {
-				bestDistance = distance
-				bestUnit = targetUnit
-			}
-		}
-	}
-	return bestUnit
+		.filter(unit => unit !== fromUnit)
+	return getBestAsMax(!closest, units, (unit) => fromUnit.hexDistanceTo(unit))
 }
