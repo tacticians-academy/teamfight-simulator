@@ -90,25 +90,7 @@ export default {
 	[TraitKey.Chemtech]: {
 		disableDefaultVariables: true,
 		hpThreshold: (activeEffect, elapsedMS, unit) => {
-			const damageReduction = activeEffect.variables[BonusKey.DamageReduction]
-			const durationSeconds = activeEffect.variables['Duration']
-			const attackSpeed = activeEffect.variables[BonusKey.AttackSpeed]
-			const healthRegen = activeEffect.variables['HPRegen']
-			if (durationSeconds == null || attackSpeed === undefined || damageReduction == null || healthRegen == null) {
-				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
-			}
-			const durationMS = durationSeconds * 1000
-			const expiresAtMS = elapsedMS + durationMS
-			unit.addBonuses(TraitKey.Chemtech, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])
-			unit.scalings.add({
-				source: unit,
-				sourceID: TraitKey.Chemtech,
-				activatedAtMS: elapsedMS,
-				expiresAfterMS: durationMS,
-				stats: [BonusKey.Health],
-				intervalAmount: healthRegen / 100 * unit.healthMax,
-				intervalSeconds: 1,
-			})
+			applyChemtech(elapsedMS, activeEffect, unit)
 		},
 	},
 
@@ -554,4 +536,30 @@ function applyEnforcerDetain(activeEffect: TraitEffectData, unit: ChampionUnit) 
 	}
 	const healthThreshold = unit.health - healthPercent * unit.healthMax
 	unit.applyStatusEffect(0, StatusEffectType.stunned, detainSeconds * 1000, healthThreshold)
+}
+
+export function applyChemtech(elapsedMS: DOMHighResTimeStamp, activeEffect: TraitEffectData, unit: ChampionUnit) {
+	const sourceID = TraitKey.Chemtech
+	const damageReduction = activeEffect.variables[BonusKey.DamageReduction]
+	const durationSeconds = activeEffect.variables['Duration']
+	const attackSpeed = activeEffect.variables[BonusKey.AttackSpeed]
+	const healthRegen = activeEffect.variables['HPRegen']
+	if (durationSeconds == null || attackSpeed === undefined || damageReduction == null || healthRegen == null) {
+		return console.log('ERR', sourceID, activeEffect.variables)
+	}
+	const durationMS = durationSeconds * 1000
+	const expiresAtMS = elapsedMS + durationMS
+	unit.setBonusesFor(sourceID, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])
+	Array.from(unit.scalings) //TODO generalize sourceID check
+		.filter(scaling => scaling.sourceID === sourceID)
+		.forEach(scaling => unit.scalings.delete(scaling))
+	unit.scalings.add({
+		source: unit,
+		sourceID,
+		activatedAtMS: elapsedMS,
+		expiresAfterMS: durationMS,
+		stats: [BonusKey.Health],
+		intervalAmount: healthRegen / 100 * unit.healthMax,
+		intervalSeconds: 1,
+	})
 }

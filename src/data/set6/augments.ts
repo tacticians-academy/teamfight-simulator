@@ -9,6 +9,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { BOARD_ROW_COUNT } from '#/helpers/constants'
+import { applyChemtech } from '#/data/set6/traits'
 
 export interface AugmentFns {
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
@@ -141,6 +142,17 @@ export default {
 			units
 				.filter(unit => units.filter(u => u.name === unit.name).length === 2)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.DoubleTrouble, [BonusKey.AttackDamage, bonusStats], [BonusKey.AbilityPower, bonusStats], [BonusKey.Armor, bonusStats], [BonusKey.MagicResist, bonusStats]))
+		},
+	},
+
+	[AugmentGroupKey.InstantInjection]: {
+		apply: (augment, team, units) => {
+			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Chemtech)
+			if (synergy?.activeEffect) {
+				units
+					.filter(unit => unit.hasTrait(TraitKey.Chemtech))
+					.forEach(unit => applyChemtech(0, synergy.activeEffect!, unit))
+			}
 		},
 	},
 
