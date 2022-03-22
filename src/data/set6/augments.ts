@@ -33,6 +33,13 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.Ascension]: {
+		apply: (augment, team, units) => {
+			const [delaySeconds, damageAmp] = getVariables(augment, 'Delay', 'DamageAmp')
+			units.forEach(unit => unit.pendingBonuses.add([delaySeconds * 1000, AugmentGroupKey.Ascension, [[BonusKey.DamageIncrease, damageAmp / 100]]]))
+		},
+	},
+
 	[AugmentGroupKey.ArmorPlating]: {
 		hpThreshold: (augment, elapsedMS, unit) => {
 			if (!unit.hasTrait(TraitKey.Colossus)) { return }
