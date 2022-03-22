@@ -165,6 +165,14 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.MakeshiftArmor]: {
+		apply: (augment, team, units) => {
+			const [resists] = getVariables(augment, 'Resists')
+			units
+				.filter(unit => !unit.items.length)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.MakeshiftArmor, [BonusKey.Armor, resists], [BonusKey.MagicResist, resists]))
+		},
+	},
 	[AugmentGroupKey.Meditation]: {
 		apply: (augment, team, units) => {
 			const [manaRegen] = getVariables(augment, 'ManaRegen')
