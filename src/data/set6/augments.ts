@@ -35,6 +35,25 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.RunicShield]: {
+		apply: (augment, team, units) => {
+			const durationSeconds = augment.effects['ShieldDuration']
+			const apMultiplier = augment.effects['APShield']
+			if (durationSeconds == null || apMultiplier == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Arcanist))
+				.forEach(unit => {
+					unit.shields.push({
+						source: unit,
+						amount: unit.abilityPower() * apMultiplier / 100,
+						expiresAtMS: durationSeconds * 1000,
+					})
+				})
+		},
+	},
+
 	[AugmentGroupKey.SoSmall]: {
 		apply: (augment, team, units) => {
 			const dodgeIncrease = augment.effects['DodgeIncrease']
