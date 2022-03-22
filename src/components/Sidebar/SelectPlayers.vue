@@ -23,10 +23,10 @@ function onReset() {
 	}
 }
 
-const selectAugment = ref<[tier: number | null, teamNumber: TeamNumber, augmentIndex: number] | null>(null)
+const selectAugment = ref<[tierIndex: number, teamNumber: TeamNumber, augmentIndex: number] | null>(null)
 
 function onAugmentTeamIndex(teamNumber: TeamNumber, augmentIndex: number) {
-	selectAugment.value = [null, teamNumber, augmentIndex]
+	selectAugment.value = [0, teamNumber, augmentIndex]
 }
 function onAugment(augment: AugmentData | null) {
 	const [tier, teamIndex, augmentIndex] = selectAugment.value!
