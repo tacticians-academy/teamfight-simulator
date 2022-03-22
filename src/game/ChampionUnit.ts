@@ -985,6 +985,9 @@ export class ChampionUnit {
 		if (data.damageCalculation && !data.damageSourceType) {
 			data.damageSourceType = DamageSourceType.spell
 		}
+		if (data.damageCalculation && !data.targetTeam) {
+			data.targetTeam = this.opposingTeam()
+		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
 		state.hexEffects.add(hexEffect)
 		if (elapsedMS > 0) {
