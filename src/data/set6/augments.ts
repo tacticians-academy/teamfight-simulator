@@ -112,6 +112,15 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.DoubleTrouble]: {
+		apply: (augment, team, units) => {
+			const [bonusStats] = getVariables(augment, 'BonusStats')
+			units
+				.filter(unit => units.filter(u => u.name === unit.name).length === 2)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.DoubleTrouble, [BonusKey.AttackDamage, bonusStats], [BonusKey.AbilityPower, bonusStats], [BonusKey.Armor, bonusStats], [BonusKey.MagicResist, bonusStats]))
+		},
+	},
+
 	[AugmentGroupKey.Exiles]: {
 		apply: (augment, team, units) => {
 			const [durationSeconds, maxHPPercentMultiplier] = getVariables(augment, 'ShieldDuration', 'MaxHealthShield')
@@ -134,15 +143,6 @@ export default {
 			units
 				.filter(unit => unit.data.cost != null && unit.data.cost <= 2)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.Featherweights, [BonusKey.AttackSpeed, attackSpeed], [BonusKey.MoveSpeed, moveSpeed]))
-		},
-	},
-
-	[AugmentGroupKey.DoubleTrouble]: {
-		apply: (augment, team, units) => {
-			const [bonusStats] = getVariables(augment, 'BonusStats')
-			units
-				.filter(unit => units.filter(u => u.name === unit.name).length === 2)
-				.forEach(unit => unit.addBonuses(AugmentGroupKey.DoubleTrouble, [BonusKey.AttackDamage, bonusStats], [BonusKey.AbilityPower, bonusStats], [BonusKey.Armor, bonusStats], [BonusKey.MagicResist, bonusStats]))
 		},
 	},
 
