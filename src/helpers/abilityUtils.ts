@@ -1,12 +1,25 @@
 import type { EffectVariables } from '@tacticians-academy/academy-library'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import type { ChampionUnit } from '#/game/ChampionUnit'
+import { ChampionUnit } from '#/game/ChampionUnit'
+import { needsPathfindingUpdate } from '#/game/pathfind'
 import { state } from '#/game/store'
 
+import { getClosestHexAvailableTo } from '#/helpers/boardUtils'
 import { BOARD_COL_COUNT } from '#/helpers/constants'
-import type { HexCoord, TeamNumber } from '#/helpers/types'
+import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
+
+export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
+	const hex = fromUnit.activeHex
+	const spawn = new ChampionUnit(name, getClosestHexAvailableTo(hex, state.units) ?? hex, starLevel)
+	spawn.wasSpawned = true
+	spawn.genericReset()
+	spawn.team = fromUnit.team
+	state.units.push(spawn)
+	needsPathfindingUpdate()
+	return spawn
+}
 
 export function getVariables({name, effects, variables}: {name?: string, effects?: EffectVariables, variables?: EffectVariables}, ...keys: string[]) {
 	if (effects === undefined) {

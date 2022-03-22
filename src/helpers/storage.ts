@@ -62,6 +62,7 @@ export function clearUnits() {
 
 export function saveUnits() {
 	const output: StorageChampion[] = state.units
+		.filter(unit => !unit.wasSpawned)
 		.map(unit => ({
 			name: unit.name,
 			hex: unit.startHex,

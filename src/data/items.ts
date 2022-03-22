@@ -3,13 +3,12 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
-import { ChampionUnit } from '#/game/ChampionUnit'
-import { needsPathfindingUpdate } from '#/game/pathfind'
+import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/ShapeEffect'
 import { activatedCheck, state } from '#/game/store'
 
-import { getInteractableUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
+import { getInteractableUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -407,20 +406,13 @@ export default {
 			})
 		},
 		deathOfHolder: (elapsedMS, item, itemID, unit) => {
-			const hex = getClosestHexAvailableTo(unit.activeHex, state.units)
-			if (hex) {
-				const voidling = new ChampionUnit(ChampionKey.VoidSpawn, hex, 1)
-				voidling.genericReset()
-				voidling.team = unit.team
-				state.units.push(voidling)
-				needsPathfindingUpdate()
-				voidling.queueHexEffect(elapsedMS, undefined, {
-					startsAfterMS: 500,
-					hexDistanceFromSource: 1,
-					damageMultiplier: -0.5,
-					taunts: true,
-				})
-			}
+			const voidling = spawnUnit(unit, ChampionKey.VoidSpawn, 1)
+			voidling.queueHexEffect(elapsedMS, undefined, {
+				startsAfterMS: 500,
+				hexDistanceFromSource: 1,
+				damageMultiplier: -0.5,
+				taunts: true,
+			})
 		},
 	},
 

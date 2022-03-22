@@ -55,6 +55,7 @@ export class ChampionUnit {
 	isStarLocked: boolean
 	fixedAS: number | undefined
 	instantAttack: boolean
+	wasSpawned = false
 
 	hitBy: string[] = []
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>

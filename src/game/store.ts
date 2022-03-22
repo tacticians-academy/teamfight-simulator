@@ -153,7 +153,10 @@ function resetUnitsAfterUpdating() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
 	const synergiesByTeam = getters.synergiesByTeam.value
-	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
+	state.units = state.units.filter(unit => {
+		if (unit.wasSpawned) { return false }
+		return !unit.data.isSpawn || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator)
+	})
 	state.hexEffects.clear()
 	state.projectileEffects.clear()
 	state.shapeEffects.clear()
