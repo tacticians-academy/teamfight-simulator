@@ -855,7 +855,7 @@ export class ChampionUnit {
 		return !!this.items.find(item => item.id === key)
 	}
 	hasTrait(key: TraitKey) {
-		return !!this.traits.find(trait => trait.name === key)
+		return !!this.traits.find(trait => trait.name === key) || getters.activeAugmentEffectsByTeam.value[this.team].some(([_, effects]) => effects.teamWideTrait === key)
 	}
 	jumpsToBackline() {
 		return this.hasTrait(TraitKey.Assassin)

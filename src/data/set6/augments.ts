@@ -12,6 +12,7 @@ import { BOARD_ROW_COUNT } from '#/helpers/constants'
 import { applyChemtech } from '#/data/set6/traits'
 
 export interface AugmentFns {
+	teamWideTrait?: TraitKey
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
@@ -331,6 +332,16 @@ export default {
 				.filter(unit => unit.data.cost === 3)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.TriForce, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed], [BonusKey.Mana, startingMana]))
 		},
+	},
+
+	[AugmentGroupKey.ChallengerUnity]: {
+		teamWideTrait: TraitKey.Challenger,
+	},
+	[AugmentGroupKey.ChemtechUnity]: {
+		teamWideTrait: TraitKey.Chemtech,
+	},
+	[AugmentGroupKey.HextechUnity]: {
+		teamWideTrait: TraitKey.Hextech,
 	},
 
 	[AugmentGroupKey.VerdantVeil]: {
