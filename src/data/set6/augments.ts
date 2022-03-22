@@ -19,6 +19,16 @@ export interface AugmentFns {
 
 export default {
 
+	[AugmentGroupKey.ArchangelsEmbrace]: {
+		cast: (augment, elapsedMS, unit) => {
+			const manaPercent = augment.effects['ManaPercent']
+			if (manaPercent == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			unit.addBonuses(AugmentGroupKey.ArchangelsEmbrace, [BonusKey.AbilityPower, unit.manaMax() * manaPercent / 100])
+		},
+	},
+
 	[AugmentGroupKey.Backfoot]: {
 		apply: (augment, team, units) => {
 			const attackSpeed = augment.effects[BonusKey.AttackSpeed]
