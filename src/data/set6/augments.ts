@@ -119,6 +119,19 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.Featherweights]: {
+		apply: (augment, team, units) => {
+			const attackSpeed = augment.effects['AttackSpeed'] //TODO normalize
+			const moveSpeed = augment.effects[BonusKey.MoveSpeed] //TODO verify
+			if (attackSpeed == null || moveSpeed == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.data.cost != null && unit.data.cost <= 2)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.Featherweights, [BonusKey.AttackSpeed, attackSpeed], [BonusKey.MoveSpeed, moveSpeed]))
+		},
+	},
+
 	[AugmentGroupKey.DoubleTrouble]: {
 		apply: (augment, team, units) => {
 			const bonusStats = augment.effects['BonusStats']
