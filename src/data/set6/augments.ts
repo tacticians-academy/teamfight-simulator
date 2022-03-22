@@ -17,6 +17,16 @@ export interface AugmentFns {
 
 export default {
 
+	[AugmentGroupKey.BlueBattery]: {
+		apply: (augment, team, units) => {
+			const manaRestore = augment.effects['ManaRestore']
+			if (manaRestore == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units.forEach(unit => unit.addBonuses(AugmentGroupKey.BlueBattery, [BonusKey.ManaRestore, manaRestore]))
+		},
+	},
+
 	[AugmentGroupKey.CyberneticImplants]: {
 		apply: (augment, team, units) => {
 			const hp = augment.effects[BonusKey.Health]
