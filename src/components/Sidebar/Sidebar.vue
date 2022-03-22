@@ -84,6 +84,6 @@ function onDrop(event: DragEvent) {
 }
 .sidebar-icon-name {
 	@apply break-words w-full max-h-full leading-tight;
-  text-shadow: 0 1px 2px black;
+	text-shadow: 0 1px 2px black;
 }
 </style>

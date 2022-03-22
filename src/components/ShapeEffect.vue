@@ -7,7 +7,7 @@ const props = defineProps<{
 	shapeEffect: ShapeEffect
 }>()
 
-const maxOpacity = props.shapeEffect.damageMultiplier ?? 1
+const maxOpacity = Math.max(0, Math.min(1, 1 + (props.shapeEffect.damageMultiplier ?? 0)))
 </script>
 
 <template>

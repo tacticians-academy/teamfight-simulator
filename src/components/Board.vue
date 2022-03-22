@@ -131,10 +131,10 @@ const socialitesByTeam = getters.socialitesByTeam
 	transform: translate(-50%, -50%);
 }
 .hex.team-a {
-	@apply bg-violet-300/25;
+	@apply bg-violet-300/90;
 }
 .hex.team-b {
-	@apply bg-rose-300/25;
+	@apply bg-rose-300/90;
 }
 .text-team-a {
 	@apply text-violet-300;
@@ -145,6 +145,13 @@ const socialitesByTeam = getters.socialitesByTeam
 </style>
 
 <style scoped lang="postcss">
+.hex.team-a {
+	@apply bg-violet-300/25;
+}
+.hex.team-b {
+	@apply bg-rose-300/25;
+}
+
 .fade-leave-active {
 	transition: opacity 1500ms !important;
 }
