@@ -102,23 +102,23 @@ export const getters = {
 
 watch([getters.mutantType], () => {
 	setStorage(StorageKey.Mutant, state.mutantType)
-	resetUnitsAfterCreatingOrMoving()
+	resetUnitsAfterUpdating()
 })
 watchEffect(() => {
 	setStorage(StorageKey.StageNumber, state.stageNumber)
 })
 watch([getters.augmentCount], () => {
-	resetUnitsAfterCreatingOrMoving()
+	resetUnitsAfterUpdating()
 })
 
 // Store
 
 export function clearUnitsAndReset() {
 	state.units = []
-	resetUnitsAfterCreatingOrMoving()
+	resetUnitsAfterUpdating()
 }
 
-function resetUnitsAfterCreatingOrMoving() {
+function resetUnitsAfterUpdating() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
 	const _synergiesByTeam = getters.synergiesByTeam.value
@@ -195,20 +195,20 @@ const store = {
 				})
 			state.units.push(...units)
 		}
-		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterUpdating()
 	},
 
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
-		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterUpdating()
 		saveUnits()
 	},
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
 		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
-		fromUnit.resetPre(getters.synergiesByTeam.value)
+		fromUnit.genericReset()
 		saveUnits()
-		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterUpdating()
 	},
 	_addItem(item: ItemData, champion: ChampionUnit) {
 		if (!champion.traits.length) {
@@ -239,14 +239,14 @@ const store = {
 			champion.items.shift()
 		}
 		champion.items.push(item)
-		champion.resetPre(getters.synergiesByTeam.value)
+		champion.genericReset()
 		saveUnits()
 		return true
 	},
 	addItemName(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
 		if (!!item && store._addItem(item, champion)) {
-			resetUnitsAfterCreatingOrMoving()
+			resetUnitsAfterUpdating()
 			return true
 		}
 		return false
@@ -257,7 +257,7 @@ const store = {
 			return
 		}
 		if (store._addItem(item, champion)) {
-			resetUnitsAfterCreatingOrMoving()
+			resetUnitsAfterUpdating()
 		}
 		state.dragUnit = null
 	},
@@ -266,7 +266,7 @@ const store = {
 			if (fromUnit) {
 				store.deleteItem(itemName, fromUnit)
 			} else {
-				resetUnitsAfterCreatingOrMoving()
+				resetUnitsAfterUpdating()
 			}
 		}
 		state.dragUnit = null
@@ -288,13 +288,13 @@ const store = {
 	},
 	deleteUnit(hex: HexCoord) {
 		store._deleteUnit(hex)
-		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterUpdating()
 	},
 	addUnit(name: string, hex: HexCoord, starLevel: StarLevel) {
 		const unit = new ChampionUnit(name, hex, starLevel)
 		state.units.push(unit)
-		resetUnitsAfterCreatingOrMoving()
-		resetUnitsAfterCreatingOrMoving() //TODO fix need to call twice (one pass doesn't apply new traits to all units)
+		unit.genericReset()
+		resetUnitsAfterUpdating()
 	},
 	copyUnit(unit: ChampionUnit, hex: HexCoord) {
 		store._deleteUnit(hex)
@@ -313,7 +313,7 @@ const store = {
 				existingUnit.reposition(unit.startHex)
 			}
 			unit.reposition(hex)
-			resetUnitsAfterCreatingOrMoving()
+			resetUnitsAfterUpdating()
 		}
 		state.dragUnit = null
 	},
@@ -326,7 +326,7 @@ const store = {
 	},
 
 	resetGame() {
-		resetUnitsAfterCreatingOrMoving()
+		resetUnitsAfterUpdating()
 	},
 }
 
@@ -368,4 +368,5 @@ export function setSocialiteHex(index: number, hex: HexCoord | null) {
 export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {
 	state.augmentsByTeam[teamNumber][augmentIndex] = augment
 	saveTeamAugments()
+	resetUnitsAfterUpdating()
 }
