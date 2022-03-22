@@ -155,7 +155,7 @@ export class ChampionUnit {
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => !!trait)
 		const teamSynergies = synergiesByTeam[this.team]
-		this.activeSynergies = teamSynergies.filter(({ activeEffect }) => !!activeEffect)
+		this.activeSynergies = teamSynergies.filter(({ key, activeEffect }) => !!activeEffect && this.hasTrait(key))
 		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
 		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this, this.items)
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
@@ -468,10 +468,7 @@ export class ChampionUnit {
 
 		if (initialCast) {
 			this.castCount += 1
-			this.activeSynergies.forEach(({ key, activeEffect }) => {
-				if (!activeEffect) { return }
-				traitEffects[key]?.cast?.(activeEffect, elapsedMS, this)
-			})
+			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.cast?.(activeEffect!, elapsedMS, this))
 			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.cast?.(augment, elapsedMS, this))
 			this.setBonusesFor(SpellKey.ManaReave)
 			this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
@@ -568,10 +565,9 @@ export class ChampionUnit {
 			}
 		})
 		source.activeSynergies.forEach(({ key, activeEffect }) => {
-			if (!activeEffect) { return }
 			const modifyDamageFn = traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(activeEffect, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
+				rawDamage = modifyDamageFn(activeEffect!, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
 
@@ -675,19 +671,15 @@ export class ChampionUnit {
 			}
 		})
 		this.activeSynergies.forEach(({ key, activeEffect }) => {
-			if (!activeEffect) { return }
 			const effects = traitEffects[key]
 			if (effects) {
 				const hpThresholdFn = effects.hpThreshold
-				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect.variables)) {
-					hpThresholdFn(activeEffect, elapsedMS, this)
+				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect!.variables)) {
+					hpThresholdFn(activeEffect!, elapsedMS, this)
 				}
 			}
 		})
-		source.activeSynergies.forEach(({ key, activeEffect }) => {
-			if (!activeEffect) { return }
-			traitEffects[key]?.damageDealtByHolder?.(activeEffect, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
-		})
+		source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 
 		if (sourceType === DamageSourceType.attack) {
 			source.shields.forEach(shield => {

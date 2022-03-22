@@ -71,7 +71,7 @@ export default {
 				return console.log('ERR', augment.name, augment.effects)
 			}
 			units
-				.filter(unit => unit.activeSynergies.filter(({ trait }) => unit.hasTrait(trait.name as TraitKey)).length === 0)
+				.filter(unit => unit.activeSynergies.length === 0)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.BuiltDifferent, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed]))
 		},
 	},
