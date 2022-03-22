@@ -543,19 +543,19 @@ export class ChampionUnit {
 		}
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, originalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
+	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, damageCalculation)
 		source.items.forEach((item, index) => {
 			const modifyDamageFn = itemEffects[item.id as ItemKey]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(item, originalSource, this, source, sourceType, rawDamage, damageType!)
+				rawDamage = modifyDamageFn(item, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
 		source.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
 			const modifyDamageFn = traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(activeEffect, originalSource, this, source, sourceType, rawDamage, damageType!)
+				rawDamage = modifyDamageFn(activeEffect, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
 
@@ -646,10 +646,10 @@ export class ChampionUnit {
 			source.gainHealth(elapsedMS, source, takingDamage * sourceVamp / 100, true)
 		}
 
-		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
-			itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueID, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+			itemEffects[item.id as ItemKey]?.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 			const hpThresholdFn = itemEffects[item.id as ItemKey]?.hpThreshold
 			if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects)) {
 				hpThresholdFn(elapsedMS, item, uniqueID, this)
@@ -664,7 +664,7 @@ export class ChampionUnit {
 		})
 		source.activeSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			traitEffects[key]?.damageDealtByHolder?.(activeEffect, elapsedMS, originalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+			traitEffects[key]?.damageDealtByHolder?.(activeEffect, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 		})
 
 		if (sourceType === DamageSourceType.attack) {

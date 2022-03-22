@@ -25,8 +25,8 @@ interface TraitFns {
 	allyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
 	enemyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
 	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
-	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
-	modifyDamageByHolder?: (activeEffect: TraitEffectData, originalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
+	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
+	modifyDamageByHolder?: (activeEffect: TraitEffectData, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }
@@ -272,15 +272,15 @@ export default {
 				}
 			}
 		},
-		damageDealtByHolder: (activeEffect, elapsedMS, originalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (activeEffect, elapsedMS, isOriginalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (state.mutantType === MutantType.Voidborne) {
 				const executeThreshold = activeEffect.variables['MutantVoidborneExecuteThreshold']
 				if (executeThreshold == null) {
 					return console.log('ERR', 'No executeThreshold', state.mutantType, activeEffect)
 				}
 				if (target.healthProportion() <= executeThreshold / 100) {
-					target.die(elapsedMS)
-				} else if (originalSource) {
+					target.die(elapsedMS, source)
+				} else if (isOriginalSource) {
 					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
 					if (trueDamageBonus != null) {
 						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100, DamageType.true)
@@ -425,8 +425,8 @@ export default {
 	},
 
 	[TraitKey.Sniper]: {
-		modifyDamageByHolder: (activeEffect, originalSource, target, source, sourceType, rawDamage, damageType) => { //TODO modify damage
-			if (originalSource) {
+		modifyDamageByHolder: (activeEffect, isOriginalSource, target, source, sourceType, rawDamage, damageType) => { //TODO modify damage
+			if (isOriginalSource) {
 				const key = 'PercentDamageIncrease'
 				const percentBonusDamagePerHex = activeEffect.variables[key]
 				if (percentBonusDamagePerHex == null) {

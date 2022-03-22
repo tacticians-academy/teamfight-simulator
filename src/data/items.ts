@@ -24,10 +24,10 @@ interface ItemFns {
 	disableDefaultVariables?: true | BonusKey[]
 	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
-	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, originalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
-	modifyDamageByHolder?: (item: ItemData, originalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
+	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	modifyDamageByHolder?: (item: ItemData, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, holder: ChampionUnit, canReProc: boolean) => void
-	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, originalSource: boolean, holder: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, isOriginalSource: boolean, holder: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
 	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
@@ -102,8 +102,8 @@ export default {
 	},
 
 	[ItemKey.BrambleVest]: {
-		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+		damageTaken: (elapsedMS, item, itemID, isOriginalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (isOriginalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, holder, item, itemID, true)) {
 				const aoeDamage = item.effects[`${holder.starLevel}StarAoEDamage`]
 				if (aoeDamage == null) {
 					return console.log('ERR', item.name, item.effects)
@@ -127,8 +127,8 @@ export default {
 	},
 
 	[ItemKey.DragonsClaw]: {
-		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+		damageTaken: (elapsedMS, item, itemID, isOriginalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (isOriginalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
 				holder.queueProjectileEffect(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
@@ -185,8 +185,8 @@ export default {
 	},
 
 	[ItemKey.GiantSlayer]: {
-		modifyDamageByHolder: (item, originalSource, target, holder, sourceType, rawDamage, damageType) => {
-			if (!originalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
+		modifyDamageByHolder: (item, isOriginalSource, target, holder, sourceType, rawDamage, damageType) => {
+			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
 				return rawDamage
 			}
 			const thresholdHP = item.effects['HPThreshold']
@@ -212,7 +212,7 @@ export default {
 	},
 
 	[ItemKey.HandOfJustice]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 				const baseHeal = item.effects['BaseHeal']
 				const increaseEffect = item.effects['AdditionalHeal']
@@ -236,7 +236,7 @@ export default {
 	},
 
 	[ItemKey.HextechGunblade]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
 				const hextechHeal = item.effects[BonusKey.VampSpell]
 				if (hextechHeal == null) {
@@ -280,7 +280,7 @@ export default {
 	},
 
 	[ItemKey.LastWhisper]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			//TODO official implementation applies on critical strikes, this applies after any attack (since crits are averaged)
 			const armorReductionPercent = item.effects['ArmorReductionPercent']
 			const durationSeconds = item.effects['ArmorBreakDuration']
@@ -308,8 +308,8 @@ export default {
 	},
 
 	[ItemKey.Morellonomicon]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, originalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
+		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+			if (isOriginalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
 				const ticksPerSecond = item.effects['TicksPerSecond']
 				if (ticksPerSecond == null) {
 					return console.log('ERR', item.name, item.effects)
@@ -472,8 +472,8 @@ export default {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			applyTitansResolve(item, itemID, holder)
 		},
-		damageTaken: (elapsedMS, item, itemID, originalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (originalSource) {
+		damageTaken: (elapsedMS, item, itemID, isOriginalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
+			if (isOriginalSource) {
 				applyTitansResolve(item, itemID, holder)
 			}
 		},
