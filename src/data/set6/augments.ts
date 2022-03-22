@@ -5,6 +5,7 @@ import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/a
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { BonusVariable, EffectResults, TeamNumber } from '#/helpers/types'
 import { getters } from '#/game/store'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 export interface AugmentFns {
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
@@ -12,6 +13,18 @@ export interface AugmentFns {
 }
 
 export default {
+
+	[AugmentGroupKey.SoSmall]: {
+		apply: (augment, team, units) => {
+			const dodgeIncrease = augment.effects['DodgeIncrease']
+			if (dodgeIncrease == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Yordle))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.SoSmall, [BonusKey.DodgeChance, dodgeIncrease]))
+		},
+	},
 
 	[AugmentGroupKey.StandUnited]: {
 		apply: (augment, team, units) => {
