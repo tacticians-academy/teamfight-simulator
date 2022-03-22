@@ -7,6 +7,7 @@ import type { TeamNumber } from '#/helpers/types'
 import { getters } from '#/game/store'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { createDamageCalculation } from '#/helpers/calculate'
+import { getHexRing } from '#/helpers/boardUtils'
 
 export interface AugmentFns {
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
@@ -63,9 +64,29 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.Exiles]: {
+		apply: (augment, team, units) => {
+			const maxHPPercentMultiplier = augment.effects['MaxHealthShield']
+			const durationSeconds = augment.effects['ShieldDuration']
+			if (maxHPPercentMultiplier == null || durationSeconds == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => {
+					const adjacentHexes = getHexRing(unit.startHex)
+					return !units.some(unit => unit.isIn(adjacentHexes))
+				})
+				.forEach(unit => unit.shields.push({
+					source: unit,
+					amount: unit.healthMax * maxHPPercentMultiplier / 100,
+					expiresAtMS: durationSeconds * 1000,
+				}))
+		},
+	},
+
 	[AugmentGroupKey.DoubleTrouble]: {
 		apply: (augment, team, units) => {
-			const bonusStats = augment.effects['BonusStats'] //TODO normalize
+			const bonusStats = augment.effects['BonusStats']
 			if (bonusStats == null) {
 				return console.log('ERR', augment.name, augment.effects)
 			}
