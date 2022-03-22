@@ -146,6 +146,13 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.FirstAidKit]: {
+		apply: (augment, team, units) => {
+			const [healShieldBoost] = getVariables(augment, 'HealShieldIncrease')
+			units.forEach(unit => unit.addBonuses(AugmentGroupKey.FirstAidKit, [BonusKey.HealShieldBoost, healShieldBoost]))
+		},
+	},
+
 	[AugmentGroupKey.InstantInjection]: {
 		apply: (augment, team, units) => {
 			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Chemtech)
