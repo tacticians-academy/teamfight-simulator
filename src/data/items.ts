@@ -1,15 +1,14 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
-
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { needsPathfindingUpdate } from '#/game/pathfind'
-import { activatedCheck, state } from '#/game/store'
 import { ShapeEffectRectangle } from '#/game/ShapeEffect'
+import { activatedCheck, state } from '#/game/store'
 
-import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getInteractableUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -36,9 +35,8 @@ interface ItemFns {
 function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
 	const checkKey = unit.instanceID + itemID
 	const activatedAtMS = activatedCheck[checkKey]
-	const itemCooldownSeconds = item.effects[cooldownKey]
-	if (itemCooldownSeconds == null) {
-		console.log('ERR icd', item.name, item.effects)
+	const [itemCooldownSeconds] = getVariables(item, cooldownKey)
+	if (itemCooldownSeconds <= 0) {
 		return true
 	}
 	if (activatedAtMS != null && elapsedMS < activatedAtMS + itemCooldownSeconds * 1000) {
@@ -53,30 +51,22 @@ export default {
 	[ItemKey.ArchangelsStaff]: {
 		innate: (item, unit) => {
 			const scalings: BonusScaling[] = []
-			const intervalAmount = item.effects['APPerInterval']
-			const intervalSeconds = item.effects['IntervalSeconds']
-			if (intervalAmount != null && intervalSeconds != null) {
-				scalings.push({
-					source: unit,
-					sourceID: item.id,
-					activatedAtMS: 0,
-					stats: [BonusKey.AbilityPower],
-					intervalAmount,
-					intervalSeconds,
-				})
-			} else {
-				console.log('ERR', item.name, item.effects)
-			}
+			const [intervalAmount, intervalSeconds] = getVariables(item, 'APPerInterval', 'IntervalSeconds')
+			scalings.push({
+				source: unit,
+				sourceID: item.id,
+				activatedAtMS: 0,
+				stats: [BonusKey.AbilityPower],
+				intervalAmount,
+				intervalSeconds,
+			})
 			return { scalings }
 		},
 	},
 
 	[ItemKey.BansheesClaw]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
-			const damageCap = item.effects['DamageCap']
-			if (damageCap == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [damageCap] = getVariables(item, 'DamageCap')
 			adjacentUnits.push(holder)
 			adjacentUnits.forEach(unit => unit.shields.push({
 				source: holder,
@@ -88,15 +78,11 @@ export default {
 
 	[ItemKey.Bloodthirster]: {
 		hpThreshold: (elapsedMS, item, itemID, holder) => {
-			const shieldHPPercent = item.effects['ShieldHPPercent']
-			const shieldDurationSeconds = item.effects['ShieldDuration']
-			if (shieldHPPercent == null || shieldDurationSeconds == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [shieldHPPercent, shieldSeconds] = getVariables(item, 'ShieldHPPercent', 'ShieldDuration')
 			holder.shields.push({
 				source: holder,
 				amount: shieldHPPercent / 100 * holder.healthMax,
-				expiresAtMS: elapsedMS + shieldDurationSeconds * 1000,
+				expiresAtMS: elapsedMS + shieldSeconds * 1000,
 			})
 		},
 	},
@@ -104,10 +90,7 @@ export default {
 	[ItemKey.BrambleVest]: {
 		damageTaken: (elapsedMS, item, itemID, isOriginalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (isOriginalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, holder, item, itemID, true)) {
-				const aoeDamage = item.effects[`${holder.starLevel}StarAoEDamage`]
-				if (aoeDamage == null) {
-					return console.log('ERR', item.name, item.effects)
-				}
+				const [aoeDamage] = getVariables(item, `${holder.starLevel}StarAoEDamage`)
 				holder.getInteractableUnitsWithin(1, holder.opposingTeam()).forEach(unit => {
 					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
 					unit.damage(elapsedMS, false, holder, DamageSourceType.item, damageCalculation, true)
@@ -118,10 +101,7 @@ export default {
 
 	[ItemKey.ChaliceOfPower]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
-			const bonusAP = item.effects['BonusAP']
-			if (bonusAP == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [bonusAP] = getVariables(item, 'BonusAP')
 			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AbilityPower, bonusAP]))
 		},
 	},
@@ -144,11 +124,7 @@ export default {
 	[ItemKey.EdgeOfNight]: {
 		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
 		hpThreshold: (elapsedMS, item, itemID, unit) => {
-			const attackSpeed = item.effects[BonusKey.AttackSpeed]
-			const stealthSeconds = item.effects['StealthDuration']
-			if (attackSpeed == null || stealthSeconds == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [attackSpeed, stealthSeconds] = getVariables(item, BonusKey.AttackSpeed, 'StealthDuration')
 			const stealthMS = stealthSeconds * 1000
 			const negativeEffects = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds]
 			negativeEffects.forEach(statusEffect => unit.statusEffects[statusEffect].active = false)
@@ -159,12 +135,8 @@ export default {
 
 	[ItemKey.FrozenHeart]: {
 		update: (elapsedMS, item, itemID, unit) => {
-			const slowAS = item.effects['ASSlow']
-			const hexRadius = item.effects['HexRadius']
+			const [slowAS, hexRadius] = getVariables(item, 'ASSlow', 'HexRadius')
 			const durationSeconds = 0.5 //NOTE hardcoded apparently??
-			if (hexRadius == null || slowAS == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
 			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, slowAS))
 		},
@@ -172,11 +144,7 @@ export default {
 
 	[ItemKey.GargoyleStoneplate]: {
 		update: (elapsedMS, item, itemID, unit) => {
-			const perEnemyArmor = item.effects['ArmorPerEnemy']
-			const perEnemyMR = item.effects['MRPerEnemy']
-			if (perEnemyArmor == null || perEnemyMR == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [perEnemyArmor, perEnemyMR] = getVariables(item, 'ArmorPerEnemy', 'MRPerEnemy')
 			const unitsTargeting = getInteractableUnitsOfTeam(unit.opposingTeam())
 				.filter(enemy => enemy.target === unit)
 				.length
@@ -189,24 +157,15 @@ export default {
 			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
 				return rawDamage
 			}
-			const thresholdHP = item.effects['HPThreshold']
-			const largeBonusPct = item.effects['LargeBonusPct']
-			const smallBonusPct = item.effects['SmallBonusPct']
-			if (thresholdHP == null || smallBonusPct == null || largeBonusPct == null) {
-				console.log('ERR', item.name, item.effects)
-				return rawDamage
-			}
+			const [thresholdHP, smallBonusPct, largeBonusPct] = getVariables(item, 'HPThreshold', 'SmallBonusPct', 'LargeBonusPct')
 			const bonusPercent = target.healthMax >= thresholdHP ? largeBonusPct : smallBonusPct
-			return rawDamage * (1 + bonusPercent / 100)
+			return bonusPercent <= 0 ? rawDamage : rawDamage * (1 + bonusPercent / 100)
 		},
 	},
 
 	[ItemKey.GuinsoosRageblade]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
-			const perStackAS = item.effects['ASPerStack']
-			if (perStackAS === undefined) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [perStackAS] = getVariables(item, 'ASPerStack')
 			holder.addBonuses(itemID as any, [BonusKey.AttackSpeed, perStackAS])
 		},
 	},
@@ -214,23 +173,15 @@ export default {
 	[ItemKey.HandOfJustice]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
-				const baseHeal = item.effects['BaseHeal']
-				const increaseEffect = item.effects['AdditionalHeal']
-				if (baseHeal == null || increaseEffect == null) {
-					return console.log('ERR', item.name, item.effects)
-				}
+				const [baseHeal, increaseEffect] = getVariables(item, 'BaseHeal', 'AdditionalHeal')
 				holder.gainHealth(elapsedMS, holder, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
 			const variables: BonusVariable[] = []
-			const increaseEffect = item.effects['AdditionalADAP']
-			if (increaseEffect != null) {
-				const increase = increaseEffect / 2 //TODO averaged increaseEffect
-				variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])
-			} else {
-				console.log('ERR', item.name, item.effects)
-			}
+			const [increaseEffect] = getVariables(item, 'AdditionalADAP')
+			const increase = increaseEffect / 2 //TODO averaged increaseEffect
+			variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])
 			return { variables }
 		},
 	},
@@ -238,10 +189,7 @@ export default {
 	[ItemKey.HextechGunblade]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
-				const hextechHeal = item.effects[BonusKey.VampSpell]
-				if (hextechHeal == null) {
-					return console.log('ERR', item.name, item.effects)
-				}
+				const [hextechHeal] = getVariables(item, BonusKey.VampSpell)
 				let lowestHP = Number.MAX_SAFE_INTEGER
 				let lowestUnit: ChampionUnit | undefined
 				holder.alliedUnits().forEach(unit => {
@@ -259,21 +207,14 @@ export default {
 
 	[ItemKey.IonicSpark]: {
 		update: (elapsedMS, item, itemID, unit) => {
-			const mrShred = item.effects['MRShred']
-			const hexRadius = item.effects['HexRange']
+			const [mrShred, hexRadius] = getVariables(item, 'MRShred', 'HexRange')
 			const durationSeconds = 0.25 //NOTE hardcoded
-			if (hexRadius == null || mrShred == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
 			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, durationSeconds * 1000, mrShred / 100))
 		},
 		castWithinHexRange: (elapsedMS, item, itemID, caster, holder) => {
 			if (caster.team === holder.team) { return }
-			const manaRatio = item.effects['ManaRatio']
-			if (manaRatio == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [manaRatio] = getVariables(item, 'ManaRatio')
 			const damageCalculation = createDamageCalculation(item.name, manaRatio / 100 * caster.manaMax(), DamageType.magic)
 			caster.damage(elapsedMS, false, holder, DamageSourceType.item, damageCalculation, false)
 		},
@@ -282,22 +223,14 @@ export default {
 	[ItemKey.LastWhisper]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			//TODO official implementation applies on critical strikes, this applies after any attack (since crits are averaged)
-			const armorReductionPercent = item.effects['ArmorReductionPercent']
-			const durationSeconds = item.effects['ArmorBreakDuration']
-			if (armorReductionPercent == null || durationSeconds == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [armorReductionPercent, durationSeconds] = getVariables(item, 'ArmorReductionPercent', 'ArmorBreakDuration')
 			target.applyStatusEffect(elapsedMS, StatusEffectType.armorReduction, durationSeconds * 1000, armorReductionPercent / 100)
 		},
 	},
 
 	[ItemKey.LocketOfTheIronSolari]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
-			const shieldValue = item.effects[`${holder.starLevel}StarShieldValue`]
-			const shieldSeconds = item.effects['ShieldDuration']
-			if (shieldValue == null || shieldSeconds == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [shieldValue, shieldSeconds] = getVariables(item, `${holder.starLevel}StarShieldValue`, 'ShieldDuration')
 			adjacentUnits.push(holder)
 			adjacentUnits.forEach(unit => unit.shields.push({
 				source: holder,
@@ -310,10 +243,7 @@ export default {
 	[ItemKey.Morellonomicon]: {
 		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (isOriginalSource && sourceType === DamageSourceType.spell && (damageType === DamageType.magic || damageType === DamageType.true)) {
-				const ticksPerSecond = item.effects['TicksPerSecond']
-				if (ticksPerSecond == null) {
-					return console.log('ERR', item.name, item.effects)
-				}
+				const [ticksPerSecond] = getVariables(item, 'TicksPerSecond')
 				applyGrievousBurn(item, elapsedMS, target, holder, ticksPerSecond)
 			}
 		},
@@ -322,17 +252,13 @@ export default {
 	[ItemKey.Quicksilver]: {
 		innate: (item, holder) => {
 			const shields: ShieldData[] = []
-			const shieldSeconds = item.effects['SpellShieldDuration']
-			if (shieldSeconds == null) {
-				console.log('ERR', item.name, item.effects)
-			} else {
-				shields.push({
-					source: holder,
-					isSpellShield: true,
-					amount: 0, //TODO does not break
-					expiresAtMS: shieldSeconds * 1000,
-				})
-			}
+			const [shieldSeconds] = getVariables(item, 'SpellShieldDuration')
+			shields.push({
+				source: holder,
+				isSpellShield: true,
+				amount: 0, //TODO does not break
+				expiresAtMS: shieldSeconds * 1000,
+			})
 			return { shields }
 		},
 	},
@@ -340,14 +266,7 @@ export default {
 	[ItemKey.Redemption]: {
 		update: (elapsedMS, item, itemID, holder) => {
 			if (checkCooldown(elapsedMS, holder, item, itemID, true, 'HealTickRate')) {
-				const aoeDamageReduction = item.effects['AoEDamageReduction']
-				const missingHPHeal = item.effects['MissingHPHeal']
-				const maxHeal = item.effects['MaxHeal']
-				const hexDistanceFromSource = item.effects['HexRadius']
-				const healTickSeconds = item.effects['HealTickRate']
-				if (aoeDamageReduction == null || hexDistanceFromSource == null || missingHPHeal == null || maxHeal == null || healTickSeconds == null) {
-					return console.log('ERR', item.name, item.effects)
-				}
+				const [aoeDamageReduction, missingHPHeal, maxHeal, hexDistanceFromSource, healTickSeconds] = getVariables(item, 'AoEDamageReduction', 'MissingHPHeal', 'MaxHeal', 'HexRadius', 'HealTickRate')
 				const tickMS = healTickSeconds * 1000
 				holder.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: tickMS,
@@ -364,13 +283,9 @@ export default {
 
 	[ItemKey.RunaansHurricane]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
-			const boltCount = item.effects['AdditionalTargets']
-			const boltMultiplier = item.effects['MultiplierForDamage']
-			if (boltCount == null || boltMultiplier == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [boltCount, boltMultiplier] = getVariables(item, 'AdditionalTargets', 'MultiplierForDamage')
 			const additionalTargets = getNearestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
-			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, boltMultiplier / 100)
+			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, boltMultiplier / 100) //TODO verify
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
 				const boltTarget = additionalTargets[boltIndex]
 				if (boltTarget == null) { continue }
@@ -388,10 +303,7 @@ export default {
 
 	[ItemKey.ShroudOfStillness]: {
 		apply: (item, unit) => {
-			const costIncreasePercent = item.effects['CostIncrease']
-			if (costIncreasePercent == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [costIncreasePercent] = getVariables(item, 'CostIncrease')
 			const height = HEX_PROPORTION * 6
 			const center: HexCoord = [...unit.coord]
 			center[1] += height / 2 * (unit.team === 0 ? 1 : -1)
@@ -405,13 +317,7 @@ export default {
 	[ItemKey.StatikkShiv]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			if (!holder.isNthBasicAttack(3)) { return }
-			const totalUnits = item.effects[`${holder.starLevel}StarBounces`]
-			const damage = item.effects['Damage']
-			const shredDurationSeconds = item.effects['MRShredDuration']
-			const mrShred = item.effects['MRShred']
-			if (totalUnits == null || damage == null || shredDurationSeconds == null || mrShred == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [totalUnits, damage, mrShred, shredDurationSeconds] = getVariables(item, `${holder.starLevel}StarBounces`, 'Damage', 'MRShred', 'MRShredDuration')
 			const units: ChampionUnit[] = []
 			let currentBounceTarget = target
 			const team = holder.opposingTeam()
@@ -432,10 +338,7 @@ export default {
 	[ItemKey.SunfireCape]: {
 		update: (elapsedMS, item, itemID, holder) => {
 			if (checkCooldown(elapsedMS, holder, item, itemID, true)) {
-				const hexRange = item.effects['HexRange']
-				if (hexRange == null) {
-					return console.log('ERR', item.name, item.effects)
-				}
+				const [hexRange] = getVariables(item, 'HexRange')
 				const units = holder.getInteractableUnitsWithin(hexRange, holder.opposingTeam())
 				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === BURN_ID))
 				let bestTarget: ChampionUnit | undefined
@@ -478,20 +381,14 @@ export default {
 
 	[ItemKey.ZekesHerald]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
-			const bonusAS = item.effects['AS']
-			if (bonusAS === undefined) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [bonusAS] = getVariables(item, BonusKey.AttackSpeed)
 			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
 		},
 	},
 
 	[ItemKey.Zephyr]: {
 		apply: (item, unit) => {
-			const banishSeconds = item.effects['BanishDuration']
-			if (banishSeconds == null) {
-				return console.log('ERR', item.name, item.effects)
-			}
+			const [banishSeconds] = getVariables(item, 'BanishDuration')
 			const targetHex = getInverseHex(unit.startHex)
 			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined, state.units) //TODO not random
 			if (target) {
@@ -530,13 +427,7 @@ export default {
 } as { [key in ItemKey]?: ItemFns }
 
 function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
-	const stackAD = item.effects['StackingAD']
-	const stackAP = item.effects['StackingAP']
-	const maxStacks = item.effects['StackCap']
-	const resistsAtCap = item.effects['BonusResistsAtStackCap']
-	if (stackAD === undefined || stackAP === undefined || maxStacks == null || resistsAtCap === undefined) {
-		return console.log('ERR', item.name, item.effects)
-	}
+	const [stackAD, stackAP, maxStacks, resistsAtCap] = getVariables(item, 'StackingAD', 'StackingAP', 'StackCap', 'BonusResistsAtStackCap')
 	const bonuses = unit.getBonusesFrom(itemID)
 	if (bonuses.length < maxStacks) {
 		const variables: BonusVariable[] = []
@@ -549,12 +440,8 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 }
 
 function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, ticksPerSecond: number) {
-	const grievousWounds = item.effects['GrievousWoundsPercent']
-	const totalBurn = item.effects['BurnPercent']
-	const durationSeconds = item.effects['BurnDuration']
-	if (grievousWounds == null || totalBurn == null || durationSeconds == null || ticksPerSecond == null) {
-		return console.log('ERR', item.name, item.effects)
-	}
+	if (ticksPerSecond <= 0) { ticksPerSecond = 1 }
+	const [grievousWounds, totalBurn, durationSeconds] = getVariables(item, 'GrievousWoundsPercent', 'BurnPercent', 'BurnDuration')
 	target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
 
 	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === BURN_ID)

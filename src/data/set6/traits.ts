@@ -1,16 +1,16 @@
-import { BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/academy-library'
+import { BonusKey, COMPONENT_ITEM_IDS, DamageType, TraitData } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
+import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, BonusScaling, EffectResults, ShieldData, StarLevel, TeamNumber } from '#/helpers/types'
-import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -51,16 +51,12 @@ export default {
 		},
 		solo: (unit, activeEffect) => {
 			const shields: ShieldData[] = []
-			const shieldAmount = activeEffect.variables['ShieldAmount']
-			if (shieldAmount != null) {
-				shields.push({
-					source: unit,
-					activatesAtMS: BODYGUARD_DELAY_MS,
-					amount: shieldAmount,
-				})
-			} else {
-				console.log('ERR', 'Missing', 'shieldAmount', activeEffect)
-			}
+			const [shieldAmount] = getVariables(activeEffect, 'ShieldAmount')
+			shields.push({
+				source: unit,
+				activatesAtMS: BODYGUARD_DELAY_MS,
+				amount: shieldAmount,
+			})
 			return { shields }
 		},
 	},
@@ -76,14 +72,10 @@ export default {
 			if (!challengersTargeting.length) {
 				return
 			}
-			const durationSeconds = activeEffect.variables['BurstDuration']
-			const bonusAS = activeEffect.variables['BonusAS']
-			if (durationSeconds == null || bonusAS === undefined) {
-				return console.log('ERR', TraitKey.Chemtech, activeEffect.variables)
-			}
+			const [durationSeconds, bonusAS] = getVariables(activeEffect, 'BurstDuration', 'BonusAS')
 			const bonusMoveSpeed = 500 //TODO determine
 			const expiresAtMS = elapsedMS + durationSeconds * 1000
-			traitUnits.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], [BonusKey.MoveSpeed, bonusMoveSpeed, expiresAtMS]))
+			challengersTargeting.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], [BonusKey.MoveSpeed, bonusMoveSpeed, expiresAtMS]))
 		},
 	},
 
@@ -97,41 +89,23 @@ export default {
 	[TraitKey.Clockwork]: {
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
-			const bonusPerAugment = activeEffect.variables['BonusPerAugment']
-			const bonusAS = activeEffect.variables['ASBonus']
-			if (bonusPerAugment != null) {
-				variables.push([BonusKey.AttackSpeed, getters.augmentCount.value * bonusPerAugment * 100])
-			} else {
-				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
-			}
-			if (bonusAS != null) {
-				variables.push([BonusKey.AttackSpeed, bonusAS * 100])
-			} else {
-				console.log('Invalid effect', 'Clockwork', activeEffect.variables)
-			}
+			const [bonusPerAugment, bonusAS] = getVariables(activeEffect, 'BonusPerAugment', 'ASBonus')
+			variables.push([BonusKey.AttackSpeed, bonusAS * 100], [BonusKey.AttackSpeed, getters.augmentCount.value * bonusPerAugment * 100])
 			return { variables }
 		},
 	},
 
 	[TraitKey.Colossus]: {
 		innate: (unit, innateEffect) => {
-			const variables: BonusVariable[] = []
-			const bonusHealth = innateEffect.variables[`Bonus${BonusKey.Health}Tooltip`]
-			if (bonusHealth != null) {
-				variables.push([BonusKey.Health, bonusHealth])
-			} else {
-				console.log('Missing Colossus HP bonus', innateEffect.variables)
-			}
+			const [bonusHealth] = getVariables(innateEffect, `Bonus${BonusKey.Health}Tooltip`)
+			const variables: BonusVariable[] = [[BonusKey.Health, bonusHealth]]
 			return { variables }
 		},
 	},
 
 	[TraitKey.Enforcer]: {
 		onceForTeam: (activeEffect, teamNumber, units) => {
-			const detainCount = activeEffect.variables['DetainCount']
-			if (detainCount == null) {
-				return console.log('ERR', TraitKey.Enforcer, activeEffect)
-			}
+			const [detainCount] = getVariables(activeEffect, 'DetainCount')
 			const stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
 			if (detainCount >= 1) {
 				let highestHP = 0
@@ -170,23 +144,16 @@ export default {
 	[TraitKey.Hextech]: {
 		solo: (unit, activeEffect) => {
 			const shields: ShieldData[] = []
-			const shieldAmount = activeEffect.variables['ShieldAmount']
-			const durationSeconds = activeEffect.variables['ShieldDuration']
-			const damage = activeEffect.variables['MagicDamage']
-			const frequency = activeEffect.variables['Frequency']
-			if (shieldAmount == null || damage == null || durationSeconds == null || frequency == null) {
-				console.log('ERR', 'Missing', TraitKey.Hextech, activeEffect)
-			} else {
-				const repeatsEveryMS = frequency * 1000
-				shields.push({
-					source: unit,
-					amount: shieldAmount,
-					bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
-					expiresAtMS: durationSeconds * 1000,
-					activatesAtMS: repeatsEveryMS,
-					repeatsEveryMS,
-				})
-			}
+			const [shieldAmount, durationSeconds, damage, frequency] = getVariables(activeEffect, 'ShieldAmount', 'ShieldDuration', 'MagicDamage', 'Frequency')
+			const repeatsEveryMS = frequency * 1000
+			shields.push({
+				source: unit,
+				amount: shieldAmount,
+				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
+				expiresAtMS: durationSeconds * 1000,
+				activatesAtMS: repeatsEveryMS,
+				repeatsEveryMS,
+			})
 			return { shields }
 		},
 	},
@@ -197,11 +164,7 @@ export default {
 
 	[TraitKey.Innovator]: {
 		onceForTeam: (activeEffect, teamNumber, units) => {
-			const starLevelMultiplier = activeEffect.variables['InnovatorStarLevelMultiplier']
-			const starLevel = activeEffect.variables['InnovationStarLevel']
-			if (starLevelMultiplier == null || starLevel == null) {
-				return console.log('ERR', TraitKey.Innovator, activeEffect)
-			}
+			const [starLevelMultiplier, starLevel] = getVariables(activeEffect, 'InnovatorStarLevelMultiplier', 'InnovationStarLevel')
 			const innovationNames = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
 			const innovationName = innovationNames[starLevel - 1]
 			const innovations = state.units.filter(unit => unit.team === teamNumber && innovationNames.includes(unit.name as ChampionKey))
@@ -225,10 +188,7 @@ export default {
 
 	[TraitKey.Mastermind]: {
 		applyForOthers: (activeEffect, unit) => {
-			const manaGrant = activeEffect.variables['ManaGrant']
-			if (manaGrant === undefined) {
-				return console.log('ERR', TraitKey.Mastermind, activeEffect)
-			}
+			const [manaGrant] = getVariables(activeEffect, 'ManaGrant')
 			const [unitCol, unitRow] = unit.startHex
 			const projectingRowDirection = unit.team === 0 ? 1 : -1
 			const hexesInFront = getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
@@ -256,15 +216,12 @@ export default {
 		},
 		damageDealtByHolder: (activeEffect, elapsedMS, isOriginalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
 			if (state.mutantType === MutantType.Voidborne) {
-				const executeThreshold = activeEffect.variables['MutantVoidborneExecuteThreshold']
-				if (executeThreshold == null) {
-					return console.log('ERR', 'No executeThreshold', state.mutantType, activeEffect)
-				}
+				const [executeThreshold] = getVariables(activeEffect, 'MutantVoidborneExecuteThreshold')
 				if (target.healthProportion() <= executeThreshold / 100) {
 					target.die(elapsedMS, source)
 				} else if (isOriginalSource) {
-					const trueDamageBonus = activeEffect.variables['MutantVoidborneTrueDamagePercent']
-					if (trueDamageBonus != null) {
+					const [trueDamageBonus] = getVariables(activeEffect, 'MutantVoidborneTrueDamagePercent')
+					if (trueDamageBonus > 0) {
 						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100, DamageType.true)
 						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, false)
 					}
@@ -279,39 +236,29 @@ export default {
 			} else if (state.mutantType === MutantType.SynapticWeb) {
 				variables.push([BonusKey.AbilityPower, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticAP)], [BonusKey.ManaReduction, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticManaCost)])
 			} else if (state.mutantType === MutantType.Metamorphosis) {
-				const intervalSeconds = activeEffect.variables['MutantMetamorphosisGrowthRate']
-				const amountARMR = activeEffect.variables['MutantMetamorphosisArmorMR']
-				const amountADAP = activeEffect.variables['MutantMetamorphosisADAP']
-				if (intervalSeconds != null && amountADAP != null && amountARMR != null) {
-					scalings.push(
-						{
-							source: unit,
-							sourceID: state.mutantType,
-							activatedAtMS: 0,
-							stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
-							intervalAmount: amountADAP,
-							intervalSeconds,
-						},
-						{
-							source: unit,
-							sourceID: state.mutantType,
-							activatedAtMS: 0,
-							stats: [BonusKey.Armor, BonusKey.MagicResist],
-							intervalAmount: amountARMR,
-							intervalSeconds,
-						},
-					)
-				} else {
-					console.log('ERR Invalid Metamorphosis', activeEffect.variables)
-				}
+				const [intervalSeconds, amountARMR, amountADAP] = getVariables(activeEffect, 'MutantMetamorphosisGrowthRate', 'MutantMetamorphosisArmorMR', 'MutantMetamorphosisADAP')
+				scalings.push(
+					{
+						source: unit,
+						sourceID: state.mutantType,
+						activatedAtMS: 0,
+						stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
+						intervalAmount: amountADAP,
+						intervalSeconds,
+					},
+					{
+						source: unit,
+						sourceID: state.mutantType,
+						activatedAtMS: 0,
+						stats: [BonusKey.Armor, BonusKey.MagicResist],
+						intervalAmount: amountARMR,
+						intervalSeconds,
+					},
+				)
 			} else if (state.mutantType === MutantType.Cybernetic) {
 				if (unit.items.length) {
-					const cyberHP = activeEffect.variables['MutantCyberHP']
-					const cyberAD = activeEffect.variables['MutantCyberAD']
-					if (cyberHP != null && cyberAD != null) {
-						variables.push([BonusKey.Health, cyberHP])
-						variables.push([BonusKey.AttackDamage, cyberAD])
-					}
+					const [cyberHP, cyberAD] = getVariables(activeEffect, 'MutantCyberHP', 'MutantCyberAD')
+					variables.push([BonusKey.Health, cyberHP], [BonusKey.AttackDamage, cyberAD])
 				}
 			}
 			return { scalings, variables }
@@ -319,12 +266,8 @@ export default {
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.BioLeeching) {
-				const omnivamp = activeEffect.variables['MutantBioLeechingOmnivamp']
-				if (omnivamp != null) {
-					variables.push([BonusKey.VampOmni, omnivamp])
-				} else {
-					console.log('Invalid effect', 'Mutant', state.mutantType, activeEffect.variables)
-				}
+				const [omnivamp] = getVariables(activeEffect, 'MutantBioLeechingOmnivamp')
+				variables.push([BonusKey.VampOmni, omnivamp])
 			}
 			return { variables }
 		},
@@ -341,10 +284,7 @@ export default {
 	[TraitKey.Rivals]: {
 		solo: (unit, activeEffect) => {
 			if (unit.name === ChampionKey.Vi) {
-				const manaReduction = activeEffect.variables['ViManaReduction']
-				if (manaReduction === undefined) {
-					return console.log('ERR', TraitKey.Rivals, unit.name, activeEffect)
-				}
+				const [manaReduction] = getVariables(activeEffect, 'ViManaReduction')
 				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.ManaReduction, manaReduction])
 			} else if (unit.name !== ChampionKey.Jinx) {
 				console.log('ERR', TraitKey.Rivals, unit.name)
@@ -355,12 +295,8 @@ export default {
 				if (unit.target !== dead) { //TODO use damage credit instead
 					return
 				}
-				const asDurationSeconds = activeEffect.variables['JinxASDuration']
-				const empoweredAS = activeEffect.variables['JinxEmpoweredAS']
-				if (asDurationSeconds == null || empoweredAS == null) {
-					return console.log('ERR', TraitKey.Rivals, unit.name, activeEffect)
-				}
-				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.AttackSpeed, empoweredAS * 100, elapsedMS + asDurationSeconds * 1000])
+				const [empoweredSeconds, empoweredAS] = getVariables(activeEffect, 'JinxASDuration', 'JinxEmpoweredAS')
+				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.AttackSpeed, empoweredAS * 100, elapsedMS + empoweredSeconds * 1000])
 			} else if (unit.name !== ChampionKey.Vi) {
 				console.log('ERR', TraitKey.Rivals, unit.name)
 			}
@@ -370,20 +306,15 @@ export default {
 	[TraitKey.Scholar]: {
 		team: (unit, activeEffect) => {
 			const scalings: BonusScaling[] = []
-			const intervalAmount = activeEffect.variables['ManaPerTick']
-			const intervalSeconds = activeEffect.variables['TickRate']
-			if (intervalAmount != null && intervalSeconds != null) {
-				scalings.push({
-					source: undefined,
-					sourceID: TraitKey.Scholar,
-					activatedAtMS: 0,
-					stats: [BonusKey.Mana],
-					intervalAmount,
-					intervalSeconds,
-				})
-			} else {
-				console.log('Invalid effect', 'Scholar', activeEffect.variables)
-			}
+			const [intervalAmount, intervalSeconds] = getVariables(activeEffect, 'ManaPerTick', 'TickRate')
+			scalings.push({
+				source: undefined,
+				sourceID: TraitKey.Scholar,
+				activatedAtMS: 0,
+				stats: [BonusKey.Mana],
+				intervalAmount,
+				intervalSeconds,
+			})
 			return { scalings }
 		},
 	},
@@ -391,17 +322,15 @@ export default {
 	[TraitKey.Scrap]: {
 		team: (unit, activeEffect) => {
 			const shields: ShieldData[] = []
-			const amountPerComponent = activeEffect.variables['HPShieldAmount']
-			if (amountPerComponent != null) {
-				const amount = getUnitsOfTeam(unit.team)
-					.reduce((unitAcc, unit) => {
-						return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
-					}, 0)
-				shields.push({
-					source: unit,
-					amount,
-				})
-			}
+			const [amountPerComponent] = getVariables(activeEffect, 'HPShieldAmount')
+			const amount = getUnitsOfTeam(unit.team)
+				.reduce((unitAcc, unit) => {
+					return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
+				}, 0)
+			shields.push({
+				source: unit,
+				amount,
+			})
 			return { shields }
 		},
 	},
@@ -409,11 +338,7 @@ export default {
 	[TraitKey.Sniper]: {
 		modifyDamageByHolder: (activeEffect, isOriginalSource, target, source, sourceType, rawDamage, damageType) => { //TODO modify damage
 			if (isOriginalSource) {
-				const key = 'PercentDamageIncrease'
-				const percentBonusDamagePerHex = activeEffect.variables[key]
-				if (percentBonusDamagePerHex == null) {
-					return console.log('ERR', 'Missing', key, activeEffect)
-				}
+				const [percentBonusDamagePerHex] = getVariables(activeEffect, 'PercentDamageIncrease')
 				const hexDistance = source.hexDistanceTo(target)
 				return rawDamage * (1 + percentBonusDamagePerHex / 100 * hexDistance)
 			}
@@ -426,23 +351,17 @@ export default {
 			const variables: BonusVariable[] = []
 			const mirrorHex = getMirrorHex(unit.startHex)
 			if (state.socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
-				const damagePercent = activeEffect.variables['DamagePercent']
-				const manaPerSecond = activeEffect.variables['ManaPerSecond']
-				const omnivampPercent = activeEffect.variables['OmnivampPercent']
-				if (damagePercent !== undefined && omnivampPercent !== undefined) {
-					variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
-					if (manaPerSecond != null) {
-						scalings.push({
-							source: unit,
-							sourceID: TraitKey.Socialite,
-							activatedAtMS: 0,
-							stats: [BonusKey.Mana],
-							intervalAmount: manaPerSecond,
-							intervalSeconds: 1,
-						})
-					}
-				} else {
-					console.log('ERR', TraitKey.Socialite, activeEffect.variables)
+				const [damagePercent, manaPerSecond, omnivampPercent] = getVariables(activeEffect, 'DamagePercent', 'ManaPerSecond', 'OmnivampPercent')
+				variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
+				if (manaPerSecond > 0) {
+					scalings.push({
+						source: unit,
+						sourceID: TraitKey.Socialite,
+						activatedAtMS: 0,
+						stats: [BonusKey.Mana],
+						intervalAmount: manaPerSecond,
+						intervalSeconds: 1,
+					})
 				}
 			}
 			return { variables, scalings }
@@ -452,14 +371,7 @@ export default {
 	[TraitKey.Syndicate]: {
 		disableDefaultVariables: true,
 		update: (activeEffect, elapsedMS, units) => {
-			const syndicateArmor = activeEffect.variables['Armor']
-			const syndicateMR = activeEffect.variables['MR']
-			const syndicateOmnivamp = activeEffect.variables['PercentOmnivamp']
-			const syndicateIncrease = activeEffect.variables['SyndicateIncrease'] ?? 0
-			const traitLevel = activeEffect.variables['TraitLevel']
-			if (traitLevel === undefined || syndicateArmor == null || syndicateMR == null) {
-				return
-			}
+			const [armor, mr, omnivamp, syndicateIncrease, traitLevel] = getVariables(activeEffect, BonusKey.Armor, BonusKey.MagicResist, 'PercentOmnivamp', 'SyndicateIncrease', 'TraitLevel')
 			const syndicateMultiplier = syndicateIncrease + 1
 			if (traitLevel === 1) {
 				let lowestHP = Number.MAX_SAFE_INTEGER
@@ -476,11 +388,11 @@ export default {
 				}
 			}
 			const bonuses: BonusVariable[] = [
-				[BonusKey.Armor, syndicateArmor * syndicateMultiplier],
-				[BonusKey.MagicResist, syndicateMR * syndicateMultiplier],
+				[BonusKey.Armor, armor * syndicateMultiplier],
+				[BonusKey.MagicResist, mr * syndicateMultiplier],
 			]
-			if (syndicateOmnivamp != null) {
-				bonuses.push([BonusKey.VampOmni, syndicateOmnivamp * syndicateMultiplier])
+			if (omnivamp > 0) {
+				bonuses.push([BonusKey.VampOmni, omnivamp * syndicateMultiplier])
 			}
 			units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate, ...bonuses))
 		},
@@ -489,14 +401,14 @@ export default {
 	[TraitKey.Twinshot]: {
 		basicAttack: (activeEffect, target, source, canReProc) => {
 			if (canReProc) {
-				const multiAttackProcChance = activeEffect.variables['ProcChance']
+				const [multiAttackProcChance] = getVariables(activeEffect, 'ProcChance')
 				if (checkProcChance(multiAttackProcChance)) {
 					source.attackStartAtMS = 1
 				}
 			}
 		},
 		cast: (activeEffect, elapsedMS, unit) => {
-			const multiAttackProcChance = activeEffect.variables['ProcChance']
+			const [multiAttackProcChance] = getVariables(activeEffect, 'ProcChance')
 			if (checkProcChance(multiAttackProcChance)) {
 				unit.castAbility(elapsedMS, false) //TODO delay castTime
 			}
@@ -519,34 +431,18 @@ function getMutantBonusFor({ variables }: TraitEffectData, mutantType: MutantTyp
 }
 
 function checkProcChance(procChance: number | null | undefined) {
-	if (procChance == null) {
-		if (procChance === undefined) {
-			console.warn('ERR', 'procChance')
-		}
-		return false
-	}
-	return Math.random() * 100 < procChance //TODO rng
+	return procChance == null ? false : Math.random() * 100 < procChance //TODO rng
 }
 
 function applyEnforcerDetain(activeEffect: TraitEffectData, unit: ChampionUnit) {
-	const detainSeconds = activeEffect.variables['DetainDuration']
-	const healthPercent = activeEffect.variables['HPPercent']
-	if (detainSeconds == null || healthPercent == null) {
-		return console.log('ERR', TraitKey.Enforcer, activeEffect)
-	}
+	const [detainSeconds, healthPercent] = getVariables(activeEffect, 'DetainDuration', 'HPPercent')
 	const healthThreshold = unit.health - healthPercent * unit.healthMax
 	unit.applyStatusEffect(0, StatusEffectType.stunned, detainSeconds * 1000, healthThreshold)
 }
 
 export function applyChemtech(elapsedMS: DOMHighResTimeStamp, activeEffect: TraitEffectData, unit: ChampionUnit) {
 	const sourceID = TraitKey.Chemtech
-	const damageReduction = activeEffect.variables[BonusKey.DamageReduction]
-	const durationSeconds = activeEffect.variables['Duration']
-	const attackSpeed = activeEffect.variables[BonusKey.AttackSpeed]
-	const healthRegen = activeEffect.variables['HPRegen']
-	if (durationSeconds == null || attackSpeed === undefined || damageReduction == null || healthRegen == null) {
-		return console.log('ERR', sourceID, activeEffect.variables)
-	}
+	const [damageReduction, durationSeconds, attackSpeed, healthRegen] = getVariables(activeEffect, BonusKey.DamageReduction, 'Duration', BonusKey.AttackSpeed, 'HPRegen')
 	const durationMS = durationSeconds * 1000
 	const expiresAtMS = elapsedMS + durationMS
 	unit.setBonusesFor(sourceID, [BonusKey.AttackSpeed, attackSpeed, expiresAtMS], [BonusKey.DamageReduction, damageReduction / 100, expiresAtMS])

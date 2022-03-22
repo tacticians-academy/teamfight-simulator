@@ -1,3 +1,4 @@
+import type { EffectVariables } from '@tacticians-academy/academy-library'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
@@ -6,6 +7,17 @@ import { state } from '#/game/store'
 import { BOARD_COL_COUNT } from '#/helpers/constants'
 import type { HexCoord, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
+
+export function getVariables({name, effects, variables}: {name?: string, effects?: EffectVariables, variables?: EffectVariables}, ...keys: string[]) {
+	if (effects === undefined) {
+		effects = variables
+	}
+	return keys.map(key => {
+		const value = effects![key]
+		if (value === undefined) { console.log('ERR', name, key, effects) }
+		return value ?? 0
+	})
+}
 
 export function getUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team))
