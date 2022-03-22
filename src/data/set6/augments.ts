@@ -99,6 +99,25 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.ShrugItOff]: {
+		apply: (augment, team, units) => {
+			const maxHPPercentMultiplier = augment.effects['RegenPerTick']
+			if (maxHPPercentMultiplier == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Bruiser))
+				.forEach(unit => unit.scalings.add({
+					source: unit,
+					sourceID: AugmentGroupKey.ShrugItOff,
+					activatedAtMS: 0,
+					stats: [BonusKey.Health],
+					intervalAmount: unit.healthMax * maxHPPercentMultiplier / 100,
+					intervalSeconds: 1,
+				}))
+		},
+	},
+
 	[AugmentGroupKey.SoSmall]: {
 		apply: (augment, team, units) => {
 			const dodgeIncrease = augment.effects['DodgeIncrease']
