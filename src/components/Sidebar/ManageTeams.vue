@@ -16,7 +16,7 @@ function onToggle(name: SectionName) {
 
 <template>
 <div>
-	<div class="flex justify-around flex-grow">
+	<div class="flex justify-around">
 		<button :class="{ 'bg-quaternary': showSection === 'units' }" @click="onToggle('units')">
 			Units
 		</button>
@@ -27,6 +27,7 @@ function onToggle(name: SectionName) {
 			Players
 		</button>
 	</div>
+	<hr>
 	<SelectUnits v-if="showSection === 'units'" />
 	<SelectItems v-else-if="showSection === 'items'" />
 	<SelectPlayers v-else-if="showSection === 'players'" />
@@ -35,6 +36,6 @@ function onToggle(name: SectionName) {
 
 <style scoped lang="postcss">
 button {
-	@apply m-px flex-grow rounded-full;
+	@apply my-0.5 mx-px flex-grow text-sm rounded-full;
 }
 </style>

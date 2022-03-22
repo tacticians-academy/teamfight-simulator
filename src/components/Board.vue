@@ -27,6 +27,7 @@ function onDrop(event: DragEvent, row: number, col: number) {
 }
 
 const hexForMenu = ref<HexCoord | null>(null)
+const coordForMenu = computed(() => hexForMenu.value && getCoordFrom(hexForMenu.value))
 const sourceHexForMenu = computed(() => hexForMenu.value && getMirrorHex(hexForMenu.value))
 
 function onHexMenu(event: Event, hex: HexCoord) {
@@ -74,7 +75,7 @@ const socialitesByTeam = getters.socialitesByTeam
 
 <template>
 <div class="board  overflow-y-scroll">
-	<div class="relative">
+	<div class="board-contents  relative">
 		<div ref="hexContainer" class="hexes-container">
 			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
 				<div
@@ -104,9 +105,9 @@ const socialitesByTeam = getters.socialitesByTeam
 				</template>
 			</transition-group>
 			<div
-				v-if="hexForMenu && !state.isRunning"
+				v-if="coordForMenu && !state.isRunning"
 				class="hex hex-overlay  pointer-events-auto absolute bg-tertiary text-primary  flex flex-col justify-center space-y-1"
-				:style="{ left: `${getCoordFrom(hexForMenu)[0] * 100}%`, top: `${getCoordFrom(hexForMenu)[1] * 100}%` }"
+				:style="{ left: `${coordForMenu[0] * 100}%`, top: `${coordForMenu[1] * 100}%` }"
 				@click="onClearHexMenu" @contextmenu="onClearHexMenu"
 			>
 				<button class="hex-button  bg-quaternary" @click="setSocialite(0)">{{ isSameHex(state.socialiteHexes[0], sourceHexForMenu) ? '❎' : '' }} Socialite</button>
@@ -156,6 +157,9 @@ const socialitesByTeam = getters.socialitesByTeam
 .board {
 	@apply relative w-full overflow-x-hidden;
 }
+/* .board-contents {
+	margin-top: v-bind(HALF_HEX_UNITS);
+} */
 
 .row {
 	@apply relative  flex;
