@@ -537,8 +537,7 @@ export class ChampionUnit {
 					deathFn(activeEffect, elapsedMS, this, traitUnits)
 				})
 			})
-			console.log(getters.activeAugmentEffects.value[source.team])
-			getters.activeAugmentEffects.value[source.team].forEach(([augment, effects]) => effects.enemyDeath?.(augment, elapsedMS, this, source))
+			getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => effects.enemyDeath?.(augment, elapsedMS, this, source))
 			needsPathfindingUpdate()
 		} else {
 			gameOver(this.team)

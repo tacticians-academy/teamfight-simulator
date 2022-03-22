@@ -22,7 +22,6 @@ import { cancelLoop } from '#/game/loop'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
-import { synergiesByTeam } from '#/helpers/calculate'
 import type { DraggableType } from '#/helpers/dragDrop'
 import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
@@ -124,7 +123,7 @@ export const getters = {
 		return result
 	}),
 
-	activeAugmentEffects: computed(() => {
+	activeAugmentEffectsByTeam: computed(() => {
 		return state.augmentsByTeam
 			.map(augments => augments.filter((e): e is AugmentData => !!e).map(augment => [augment, augmentEffects[augment.groupID as AugmentGroupKey]] as [AugmentData, AugmentFns]).filter(([augment, effects]) => effects != null))
 	}),
@@ -153,15 +152,18 @@ export function clearUnitsAndReset() {
 function resetUnitsAfterUpdating() {
 	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
-	const _synergiesByTeam = getters.synergiesByTeam.value
-	synergiesByTeam[0] = _synergiesByTeam[0]
-	synergiesByTeam[1] = _synergiesByTeam[1]
+	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units = state.units.filter(unit => !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator))
 	state.hexEffects.clear()
 	state.projectileEffects.clear()
 	state.shapeEffects.clear()
 
-	state.units.forEach(unit => unit.resetPre(synergiesByTeam))
+	const unitsByTeam: [ChampionUnit[], ChampionUnit[]] = [[], []]
+	state.units.forEach(unit => {
+		unitsByTeam[unit.team].push(unit)
+		unit.resetPre(synergiesByTeam)
+	})
+
 	state.units.forEach(unit => {
 		unit.items.forEach((item, index) => {
 			const itemEffect = itemEffects[item.id as ItemKey]
@@ -190,6 +192,12 @@ function resetUnitsAfterUpdating() {
 			traitEffectFns.onceForTeam?.(activeEffect, teamNumber as TeamNumber, traitUnits)
 		})
 	})
+	unitsByTeam.forEach((units, team) => {
+		getters.activeAugmentEffectsByTeam.value[team].forEach(([augment, effects]) => {
+			effects.apply?.(augment, team as TeamNumber, units)
+		})
+	})
+
 	state.units.forEach(unit => unit.resetPost())
 }
 

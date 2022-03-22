@@ -6,10 +6,9 @@ import traitEffects from '#/data/set6/traits'
 
 import type { GameEffect, GameEffectChild } from '#/game/GameEffect'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
-import { state } from '#/game/store'
+import { getters, state } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
-import { synergiesByTeam } from '#/helpers/calculate'
 import type { TeamNumber } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
@@ -65,7 +64,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 	const elapsedMS = frameMS - startedAtMS
 
-	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
+	getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (activeEffect) {
 				const updateFn = traitEffects[key]?.update

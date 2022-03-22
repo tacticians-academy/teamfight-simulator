@@ -11,8 +11,6 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
 
-export const synergiesByTeam: SynergyData[][] = []
-
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
 	const synergy = teamSynergies.find(synergy => synergy.key === trait)
 	return synergy?.activeEffect ?? synergy?.trait.effects[0]
