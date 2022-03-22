@@ -7,7 +7,7 @@ import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { needsPathfindingUpdate } from '#/game/pathfind'
 import { activatedCheck, state } from '#/game/store'
-import { ShapeEffect, ShapeEffectRectangle } from '#/game/ShapeEffect'
+import { ShapeEffectRectangle } from '#/game/ShapeEffect'
 
 import { getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'

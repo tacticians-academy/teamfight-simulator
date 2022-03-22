@@ -186,15 +186,15 @@ export default {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
 			const farthestDenseHex = getMostDistanceHex(false, champion, densestEnemyHexes)
-			if (!farthestDenseHex) { return console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
-			const projectedHex = champion.projectHexFromHex(farthestDenseHex, true)
-			if (!projectedHex) { return console.log('ERR', champion.name, spell.name, farthestDenseHex) }
+			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
+			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true)
+			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }
 			champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO
 				onActivate: (elapsedMS, champion) => {
 					champion.moving = true
-					champion.setActiveHex(projectedHex)
+					champion.setActiveHex(projectedHex ?? champion.activeHex)
 					champion.customMoveSpeed = 2000
 					champion.empoweredAuto = {
 						amount: 3, //NOTE hardcoded
@@ -238,7 +238,7 @@ export default {
 
 	[ChampionKey.Warwick]: {
 		passive: (elapsedMS, spell, target, source) => {
-			if (!target) { return }
+			if (!target) { return console.log('No target', source.name, source.team) }
 			const heal = source.getSpellCalculationResult(spell, SpellKey.HealAmount)
 			const percentHealthDamage = source.getSpellCalculationResult(spell, SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
@@ -277,4 +277,4 @@ export default {
 		},
 	},
 
-} as Record<string, ChampionFns>
+} as {[key in ChampionKey]?: ChampionFns}
