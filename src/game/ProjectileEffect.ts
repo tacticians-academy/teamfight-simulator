@@ -18,8 +18,6 @@ import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 type TargetDeathAction = 'continue' | 'closest' | 'farthest'
 
 export interface ProjectileEffectData extends GameEffectData {
-	/** Inferred to be `spell` if passing with a `SpellCalculation`. */
-	sourceType?: DamageSourceType
 	/** Whether the `Projectile` should complete after the first time it collides with a unit. Set to false to apply to all intermediary units collided with. */
 	destroysOnCollision?: boolean
 	/** The fixed number of hexes this `Projectile` should travel, regardless of its target distance. */
@@ -44,7 +42,6 @@ export class ProjectileEffect extends GameEffect {
 	coord: Ref<HexCoord>
 	missile: ChampionSpellMissileData
 	currentSpeed: number
-	sourceType: DamageSourceType
 	target: ChampionUnit | HexCoord
 	targetCoord: HexCoord
 	destroysOnCollision: boolean | undefined
@@ -74,7 +71,6 @@ export class ProjectileEffect extends GameEffect {
 		this.coord = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile!
 		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
-		this.sourceType = data.sourceType!
 		this.target = data.target!
 		this.targetCoord = [0, 0]
 		this.setTarget(data.target!)

@@ -111,7 +111,7 @@ export default {
 				holder.queueProjectileEffect(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
-					sourceType: DamageSourceType.item,
+					damageSourceType: DamageSourceType.item,
 					missile: {
 						speedInitial: 500, //TODO experimentally determine
 					},
@@ -292,8 +292,8 @@ export default {
 					missile: {
 						speedInitial: 1000, //TODO determine
 					},
-					sourceType: DamageSourceType.attack,
 					target: boltTarget,
+					damageSourceType: DamageSourceType.attack,
 					damageCalculation,
 				})
 			}

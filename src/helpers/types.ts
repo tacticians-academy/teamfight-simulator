@@ -1,4 +1,4 @@
-import type { BonusKey, ChampionSpellData, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+import type { BonusKey, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
@@ -35,11 +35,6 @@ export interface SynergyData {
 	activeStyle: number
 	activeEffect: TraitEffectData | undefined
 	uniqueUnitNames: string[]
-}
-
-export interface ChampionFns {
-	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
-	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
 }
 
 export enum StatusEffectType {
@@ -131,6 +126,7 @@ export interface BleedData {
 }
 
 export interface ShieldData {
+	id?: string
 	source: ChampionUnit | undefined
 	activated?: boolean
 	activatesAtMS?: DOMHighResTimeStamp

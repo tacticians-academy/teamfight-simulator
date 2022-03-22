@@ -62,7 +62,7 @@ export class GameEffect extends GameEffectChild {
 	modifiesOnMultiHit: boolean
 	damageIncrease: number | undefined
 	damageMultiplier: number | undefined
-	damageSourceType: DamageSourceType | undefined
+	damageSourceType: DamageSourceType
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
 	statusEffects: StatusEffectData[] | undefined
 
@@ -82,11 +82,14 @@ export class GameEffect extends GameEffectChild {
 		this.modifiesOnMultiHit = data.modifiesOnMultiHit ?? false
 		this.damageIncrease = data.damageIncrease
 		this.damageMultiplier = data.damageMultiplier
-		this.damageSourceType = data.damageSourceType
+		this.damageSourceType = data.damageSourceType!
 		this.bonuses = data.bonuses
 		this.statusEffects = data.statusEffects
 		this.onActivate = data.onActivate
 		this.onCollision = data.onCollision
+		if (this.damageCalculation && this.damageSourceType == null) {
+			console.warn('damageSourceType', spell != null, data)
+		}
 	}
 	postInit() {
 		this.started.value = this.startsAtMS === 0

@@ -1,6 +1,8 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
+import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/ShapeEffect'
 import { state } from '#/game/store'
 
@@ -10,7 +12,11 @@ import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWi
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { ChampionFns } from '#/helpers/types'
+
+export interface ChampionFns {
+	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
+}
 
 export default {
 

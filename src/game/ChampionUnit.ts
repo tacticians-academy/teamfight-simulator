@@ -9,6 +9,7 @@ import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/
 
 import itemEffects from '#/data/items'
 import championEffects from '#/data/set6/champions'
+import type { ChampionFns } from '#/data/set6/champions'
 import traitEffects from '#/data/set6/traits'
 
 import { HexEffect } from '#/game/HexEffect'
@@ -27,7 +28,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -253,7 +254,7 @@ export class ChampionUnit {
 					missile: {
 						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 					},
-					sourceType: DamageSourceType.attack,
+					damageSourceType: DamageSourceType.attack,
 					target: this.target,
 					damageCalculation: damageCalculation,
 					bonusCalculations,
@@ -513,7 +514,9 @@ export class ChampionUnit {
 				amount *= grievousWounds
 			}
 		}
+		const overheal = this.health - this.healthMax + amount
 		this.health = Math.min(this.healthMax, this.health + amount)
+		return overheal > 0 ? overheal : 0
 	}
 
 	setMana(amount: number) {
@@ -968,8 +971,8 @@ export class ChampionUnit {
 			if (!data.damageCalculation) {
 				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 			}
-			if (!data.sourceType) {
-				data.sourceType = DamageSourceType.spell
+			if (!data.damageSourceType) {
+				data.damageSourceType = DamageSourceType.spell
 			}
 			if (!data.missile) {
 				data.missile = spell.missile
