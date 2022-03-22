@@ -63,6 +63,18 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.DoubleTrouble]: {
+		apply: (augment, team, units) => {
+			const bonusStats = augment.effects['BonusStats'] //TODO normalize
+			if (bonusStats == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => units.filter(u => u.name === unit.name).length === 2)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.DoubleTrouble, [BonusKey.AttackDamage, bonusStats], [BonusKey.AbilityPower, bonusStats], [BonusKey.Armor, bonusStats], [BonusKey.MagicResist, bonusStats]))
+		},
+	},
+
 	[AugmentGroupKey.Meditation]: {
 		apply: (augment, team, units) => {
 			const manaRegen = augment.effects['ManaRegen']
