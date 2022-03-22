@@ -10,4 +10,14 @@ export interface AugmentFns {
 
 export default {
 
+	[AugmentGroupKey.ThrillOfTheHunt]: {
+		enemyDeath: (augment, elapsedMS, dead, source) => {
+			const heal = augment.effects['MissingHPHeal']
+			if (heal == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			source.gainHealth(elapsedMS, source, heal, true)
+		},
+	},
+
 } as {[key in AugmentGroupKey]?: AugmentFns}
