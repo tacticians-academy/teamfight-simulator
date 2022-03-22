@@ -30,6 +30,7 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.attackSpeedSlow]: '❄️',
 	[StatusEffectType.banished]: '🕴',
 	[StatusEffectType.grievousWounds]: '❤️‍🔥', // 💔
+	[StatusEffectType.invulnerable]: '🕊',
 	[StatusEffectType.magicResistReduction]: '🧞',
 	[StatusEffectType.stealth]: '👻',
 	[StatusEffectType.stunned]: '⛓',

@@ -504,7 +504,7 @@ export class ChampionUnit {
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
 		const healShieldBoost = source?.getBonuses(BonusKey.HealShieldBoost) ?? 0
-		if (healShieldBoost > 0) {
+		if (healShieldBoost !== 0) {
 			amount *= (1 + healShieldBoost)
 		}
 		if (isAffectedByGrievousWounds) {
@@ -635,6 +635,9 @@ export class ChampionUnit {
 					takingDamage *= 1 - aoeDamageReduction / 100
 				}
 			}
+		}
+		if (this.statusEffects.invulnerable.active) {
+			takingDamage = 0
 		}
 		let healthDamage = takingDamage
 		this.shields
