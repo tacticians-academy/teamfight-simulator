@@ -314,6 +314,29 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.StoredPower]: {
+		apply: (augment, team, units) => {
+			const [ap] = getVariables(augment, BonusKey.AbilityPower)
+			units.forEach(unit => {
+				const hextechSynergy = unit.activeSynergies.find(({ key }) => key === TraitKey.Hextech)
+				if (hextechSynergy) {
+					const { activeEffect } = hextechSynergy
+					if (activeEffect) {
+						const [frequency] = getVariables(activeEffect, 'Frequency')
+						unit.scalings.add({
+							sourceID: AugmentGroupKey.StoredPower,
+							source: unit,
+							activatedAtMS: 0,
+							stats: [BonusKey.AbilityPower],
+							intervalAmount: ap,
+							intervalSeconds: frequency,
+						})
+					}
+				}
+			})
+		},
+	},
+
 	[AugmentGroupKey.ThrillOfTheHunt]: {
 		enemyDeath: (augment, elapsedMS, dead, source) => {
 			const [heal] = getVariables(augment, 'MissingHPHeal')
