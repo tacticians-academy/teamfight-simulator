@@ -101,7 +101,15 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		for (const pendingBonus of unit.pendingBonuses) {
 			const [startsAtMS, pendingKey, bonuses] = pendingBonus
 			if (elapsedMS >= startsAtMS) {
-				unit.addBonuses(pendingKey, ...bonuses)
+				unit.addBonuses(pendingKey, ...bonuses.filter(([key, value]) => {
+					if (key === BonusKey.MissingHealth) {
+						if (value != null) {
+							unit.gainHealth(elapsedMS, unit, unit.missingHealth() * value, true)
+						}
+						return false
+					}
+					return true
+				}))
 				unit.pendingBonuses.delete(pendingBonus)
 			}
 		}

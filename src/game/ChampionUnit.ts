@@ -804,7 +804,7 @@ export class ChampionUnit {
 		}
 
 		if (key === BonusKey.MissingHealth) {
-			return this.healthMax - this.health
+			return this.missingHealth()
 		}
 		console.log('ERR', 'Missing stat', key)
 		return 0
@@ -929,6 +929,9 @@ export class ChampionUnit {
 		return this.customMoveSpeed ?? (this.data.stats.moveSpeed + this.getBonuses(BonusKey.MoveSpeed))
 	}
 
+	missingHealth() {
+		return this.healthMax - this.health
+	}
 	healthProportion() {
 		return this.health / this.healthMax
 	}

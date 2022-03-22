@@ -37,7 +37,7 @@ export default {
 	[AugmentGroupKey.Ascension]: {
 		apply: (augment, team, units) => {
 			const [delaySeconds, damageAmp] = getVariables(augment, 'Delay', 'DamageAmp')
-			units.forEach(unit => unit.pendingBonuses.add([delaySeconds * 1000, AugmentGroupKey.Ascension, [[BonusKey.DamageIncrease, damageAmp / 100]]]))
+			units.forEach(unit => unit.queueBonus(0, delaySeconds * 1000, AugmentGroupKey.Ascension, [BonusKey.DamageIncrease, damageAmp / 100]))
 		},
 	},
 
