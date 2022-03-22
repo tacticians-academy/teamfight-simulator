@@ -3,7 +3,7 @@ import type { AugmentData } from '@tacticians-academy/academy-library'
 import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import type { BonusVariable, EffectResults, TeamNumber } from '#/helpers/types'
+import type { TeamNumber } from '#/helpers/types'
 import { getters } from '#/game/store'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -15,6 +15,53 @@ export interface AugmentFns {
 }
 
 export default {
+
+	[AugmentGroupKey.CyberneticImplants]: {
+		apply: (augment, team, units) => {
+			const hp = augment.effects[BonusKey.Health]
+			const ad = augment.effects[BonusKey.AttackDamage]
+			if (hp == null || ad == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.items.length)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.CyberneticImplants, [BonusKey.Health, hp], [BonusKey.AttackDamage, ad]))
+		},
+	},
+	[AugmentGroupKey.CyberneticShell]: {
+		apply: (augment, team, units) => {
+			const hp = augment.effects['Health'] //TODO normalize
+			const armor = augment.effects['Resists']
+			if (hp == null || armor == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.items.length)
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.CyberneticImplants, [BonusKey.Health, hp], [BonusKey.Armor, armor]))
+		},
+	},
+	[AugmentGroupKey.CyberneticUplink]: {
+		apply: (augment, team, units) => {
+			const hp = augment.effects['Health'] //TODO normalize
+			const manaRegen = augment.effects['ManaRegen']
+			if (hp == null || manaRegen == null) {
+				return console.log('ERR', augment.name, augment.effects)
+			}
+			units
+				.filter(unit => unit.items.length)
+				.forEach(unit => {
+					unit.addBonuses(AugmentGroupKey.CyberneticImplants, [BonusKey.Health, hp])
+					unit.scalings.add({
+						source: unit,
+						sourceID: AugmentGroupKey.CyberneticUplink,
+						activatedAtMS: 0,
+						stats: [BonusKey.Mana],
+						intervalAmount: manaRegen,
+						intervalSeconds: 1,
+					})
+				})
+		},
+	},
 
 	[AugmentGroupKey.Meditation]: {
 		apply: (augment, team, units) => {
