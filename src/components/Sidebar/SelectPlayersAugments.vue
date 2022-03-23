@@ -3,7 +3,10 @@ import { ref } from 'vue'
 
 import { getIconURL } from '@tacticians-academy/academy-library'
 import type { AugmentData } from '@tacticians-academy/academy-library'
-import { activeAugments } from '@tacticians-academy/academy-library/dist/set6/augments'
+import { activeAugments, emptyImplementationAugments } from '@tacticians-academy/academy-library/dist/set6/augments'
+import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
+
+import { augmentEffects } from '#/data/set6/augments'
 
 import { useStore, setAugmentFor } from '#/game/store'
 
@@ -21,6 +24,14 @@ function onAugment(augment: AugmentData | null) {
 	setAugmentFor(teamIndex, augmentIndex, augment)
 	selectAugment.value = null
 }
+
+const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
+
+activeAugments.forEach(augment => {
+	const groupID = augment.groupID as AugmentGroupKey
+	const index = emptyImplementationAugments.includes(groupID) ? 2 : (augmentEffects[groupID] ? 0 : 1)
+	augmentGroups[index][1].push(augment)
+})
 </script>
 
 <template>
@@ -53,14 +64,19 @@ function onAugment(augment: AugmentData | null) {
 			</button>
 			<button class="w-20 h-16 text-gray-400" @click="onAugment(null)">Clear</button>
 		</div>
-		<div v-if="selectAugment[0] != null" class="mb-8  flex flex-wrap justify-center">
-			<button
-				v-for="augment in activeAugments.filter(a => a.tier - 1 === selectAugment![0])" :key="augment.name"
-				class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURL(augment)})` : undefined }"
-				@click="onAugment(augment)"
-			>
-				<span class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
-			</button>
+		<div v-if="selectAugment[0] != null" class="mb-8 space-y-4">
+			<div v-for="[label, augments] in augmentGroups" :key="label">
+				<div class="ml-1 text-primary">{{ label }}</div>
+				<div class="flex flex-wrap justify-center">
+					<button
+						v-for="augment in augments.filter(a => a.tier - 1 === selectAugment![0])" :key="augment.name"
+						class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURL(augment)})` : undefined }"
+						@click="onAugment(augment)"
+					>
+						<span class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
