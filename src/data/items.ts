@@ -7,14 +7,12 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/ShapeEffect'
 import { activatedCheck, state } from '#/game/store'
 
-import { getBestAsMax, getInteractableUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
 import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, EffectResults, HexCoord } from '#/helpers/types'
-
-export const GRIEVOUS_BURN_ID = 'BURN'
 
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
@@ -406,33 +404,5 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 			variables.push([BonusKey.Armor, resistsAtCap], [BonusKey.MagicResist, resistsAtCap])
 		}
 		unit.addBonuses(itemID, ...variables)
-	}
-}
-
-function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit | undefined, ticksPerSecond: number) {
-	if (ticksPerSecond <= 0) { ticksPerSecond = 1 }
-	const [grievousWounds, totalBurn, durationSeconds] = getVariables(item, 'GrievousWoundsPercent', 'BurnPercent', 'BurnDuration')
-	target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
-
-	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)
-	const repeatsEverySeconds = 1 / ticksPerSecond
-	const repeatsEveryMS = repeatsEverySeconds * 1000
-	const tickCount = durationSeconds / repeatsEverySeconds
-	const damage = totalBurn / tickCount / 100
-	const damageCalculation = createDamageCalculation(GRIEVOUS_BURN_ID, damage, DamageType.true, BonusKey.Health, true, 1, false)
-	if (existing) {
-		existing.remainingIterations = tickCount
-		existing.damageCalculation = damageCalculation
-		existing.source = source
-		existing.repeatsEveryMS = repeatsEveryMS
-	} else {
-		target.bleeds.add({
-			sourceID: GRIEVOUS_BURN_ID,
-			source,
-			damageCalculation,
-			activatesAtMS: elapsedMS + repeatsEveryMS,
-			repeatsEveryMS,
-			remainingIterations: tickCount,
-		})
 	}
 }
