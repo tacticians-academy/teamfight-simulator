@@ -117,7 +117,7 @@ export interface BonusScaling {
 
 export interface BleedData {
 	sourceID: string
-	source: ChampionUnit
+	source: ChampionUnit | undefined
 	damageCalculation: SpellCalculation
 	activatesAtMS: DOMHighResTimeStamp
 	repeatsEveryMS: DOMHighResTimeStamp

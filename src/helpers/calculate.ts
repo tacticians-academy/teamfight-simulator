@@ -10,7 +10,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { BonusEntry, BonusVariable, SynergyData } from '#/helpers/types'
 
-export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
+export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, statFromTarget?: boolean, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
 	return {
 		asPercent: asPercent,
 		damageType: damageType,
@@ -19,6 +19,7 @@ export function createDamageCalculation(variable: string, value: number, damageT
 				variable: variable,
 				starValues: [value, value, value, value],
 				stat,
+				statFromTarget,
 				ratio,
 				max: maximum,
 			}],
@@ -26,12 +27,12 @@ export function createDamageCalculation(variable: string, value: number, damageT
 	}
 }
 
-export function solveSpellCalculationFrom(unit: ChampionUnit, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
+export function solveSpellCalculationFrom(source: ChampionUnit | undefined, target: ChampionUnit | undefined, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
 	let damageType = calculation.damageType
 	const total = calculation.parts.reduce((acc, part) => {
 		const multiplyParts = part.operator === 'product'
 		return acc + part.subparts.reduce((subAcc, subpart) => {
-			let value = subpart.starValues[unit.starLevel]
+			let value = subpart.starValues[source?.starLevel ?? 1]
 			if (subpart.stat != null) {
 				if (subpart.stat === BonusKey.AttackDamage) {
 					damageType = DamageType.physical
@@ -41,7 +42,7 @@ export function solveSpellCalculationFrom(unit: ChampionUnit, calculation: Spell
 				} else if (!damageType && subpart.stat === BonusKey.AbilityPower) {
 					damageType = DamageType.magic
 				}
-				value *= unit.getStat(subpart.stat as BonusKey) * subpart.ratio!
+				value *= (subpart.statFromTarget === true ? target : source)!.getStat(subpart.stat as BonusKey) * subpart.ratio!
 			}
 			if (subpart.max != null) {
 				value = Math.min(subpart.max, value)

@@ -240,7 +240,7 @@ export const championEffects = {
 			if (!target) { return }
 			const heal = source.getSpellCalculationResult(spell, SpellKey.HealAmount)
 			const percentHealthDamage = source.getSpellCalculationResult(spell, SpellKey.PercentHealth) / 100
-			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, target.health * percentHealthDamage, DamageType.magic)
+			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, percentHealthDamage, DamageType.magic, BonusKey.CurrentHealth, true, 1)
 			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, false)
 			source.gainHealth(elapsedMS, source, heal, true)
 		},

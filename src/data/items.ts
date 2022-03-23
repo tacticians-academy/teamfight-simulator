@@ -14,7 +14,7 @@ import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, EffectResults, HexCoord } from '#/helpers/types'
 
-const BURN_ID = 'BURN'
+export const GRIEVOUS_BURN_ID = 'BURN'
 
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
@@ -25,7 +25,7 @@ interface ItemFns {
 	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	modifyDamageByHolder?: (item: ItemData, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, holder: ChampionUnit, canReProc: boolean) => void
-	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, isOriginalSource: boolean, holder: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, isOriginalSource: boolean, holder: ChampionUnit, source: ChampionUnit | undefined, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
 	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
 	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
@@ -103,10 +103,10 @@ export const itemEffects = {
 
 	[ItemKey.DragonsClaw]: {
 		damageTaken: (elapsedMS, item, itemID, isOriginalSource, holder, source, sourceType, rawDamage, takingDamage, damageType) => {
-			if (isOriginalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+			if (source && isOriginalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
 				holder.queueProjectileEffect(elapsedMS, undefined, {
 					target: source,
-					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, 1),
+					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, true, 1),
 					damageSourceType: DamageSourceType.item,
 					missile: {
 						speedInitial: 500, //TODO experimentally determine
@@ -265,7 +265,7 @@ export const itemEffects = {
 					statusEffects: [
 						[StatusEffectType.aoeDamageReduction, { durationMS: tickMS, amount: aoeDamageReduction }],
 					],
-					damageCalculation: createDamageCalculation(itemID, missingHPHeal / 100, DamageType.heal, BonusKey.MissingHealth, 1, false, maxHeal),
+					damageCalculation: createDamageCalculation(itemID, missingHPHeal / 100, DamageType.heal, BonusKey.MissingHealth, true, 1, false, maxHeal),
 					targetTeam: holder.team,
 				})
 			}
@@ -276,7 +276,7 @@ export const itemEffects = {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const [boltCount, boltMultiplier] = getVariables(item, 'AdditionalTargets', 'MultiplierForDamage')
 			const additionalTargets = getNearestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
-			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, boltMultiplier / 100) //TODO verify
+			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, false, boltMultiplier / 100) //TODO verify
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
 				const boltTarget = additionalTargets[boltIndex]
 				if (boltTarget == null) { continue }
@@ -331,12 +331,12 @@ export const itemEffects = {
 			if (checkCooldown(elapsedMS, holder, item, itemID, true)) {
 				const [hexRange] = getVariables(item, 'HexRange')
 				const units = holder.getInteractableUnitsWithin(hexRange, holder.opposingTeam())
-				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === BURN_ID))
+				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === GRIEVOUS_BURN_ID))
 				let bestTarget: ChampionUnit | undefined
 				if (bestTargets.length) {
 					bestTarget = getBestAsMax(false, bestTargets, (unit) => unit.hexDistanceTo(holder))
 				} else {
-					bestTarget = getBestAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === BURN_ID)!.remainingIterations)
+					bestTarget = getBestAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)!.remainingIterations)
 				}
 				if (bestTarget) {
 					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified
@@ -409,17 +409,17 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 	}
 }
 
-function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, ticksPerSecond: number) {
+function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit | undefined, ticksPerSecond: number) {
 	if (ticksPerSecond <= 0) { ticksPerSecond = 1 }
 	const [grievousWounds, totalBurn, durationSeconds] = getVariables(item, 'GrievousWoundsPercent', 'BurnPercent', 'BurnDuration')
 	target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
 
-	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === BURN_ID)
+	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)
 	const repeatsEverySeconds = 1 / ticksPerSecond
 	const repeatsEveryMS = repeatsEverySeconds * 1000
 	const tickCount = durationSeconds / repeatsEverySeconds
 	const damage = totalBurn / tickCount / 100
-	const damageCalculation = createDamageCalculation(BURN_ID, damage, DamageType.true, BonusKey.Health, 1)
+	const damageCalculation = createDamageCalculation(GRIEVOUS_BURN_ID, damage, DamageType.true, BonusKey.Health, true, 1, false)
 	if (existing) {
 		existing.remainingIterations = tickCount
 		existing.damageCalculation = damageCalculation
@@ -427,7 +427,7 @@ function applyGrievousBurn(item: ItemData, elapsedMS: DOMHighResTimeStamp, targe
 		existing.repeatsEveryMS = repeatsEveryMS
 	} else {
 		target.bleeds.add({
-			sourceID: BURN_ID,
+			sourceID: GRIEVOUS_BURN_ID,
 			source,
 			damageCalculation,
 			activatesAtMS: elapsedMS + repeatsEveryMS,

@@ -20,9 +20,9 @@ export interface AugmentFns {
 	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
+	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
 	onShield?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, shield: ShieldData, target: ChampionUnit, source: ChampionUnit) => void
-	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
+	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
 	hpThreshold?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }
@@ -125,7 +125,7 @@ export const augmentEffects = {
 			const [hpPercent] = getVariables(augment, BonusKey.Health)
 			dead.queueHexEffect(elapsedMS, undefined, {
 				hexDistanceFromSource: 2,
-				damageCalculation: createDamageCalculation(AugmentGroupKey.ChemicalOverload, hpPercent, DamageType.magic, BonusKey.Health, 0.01),
+				damageCalculation: createDamageCalculation(AugmentGroupKey.ChemicalOverload, hpPercent, DamageType.magic, BonusKey.Health, false, 0.01),
 			})
 		},
 	},
@@ -360,7 +360,7 @@ export const augmentEffects = {
 			const [apMultiplier] = getVariables(augment, 'PercentAbilityPower')
 			unit.empoweredAutos.add({
 				amount: 1,
-				damageCalculation: createDamageCalculation(AugmentGroupKey.SpellBlade, apMultiplier, DamageType.magic, BonusKey.AbilityPower, 0.01),
+				damageCalculation: createDamageCalculation(AugmentGroupKey.SpellBlade, apMultiplier, DamageType.magic, BonusKey.AbilityPower, false, 0.01),
 			})
 		},
 	},
@@ -399,7 +399,7 @@ export const augmentEffects = {
 	[AugmentGroupKey.ThrillOfTheHunt]: {
 		enemyDeath: (augment, elapsedMS, dead, source) => {
 			const [heal] = getVariables(augment, 'MissingHPHeal')
-			source.gainHealth(elapsedMS, source, heal, true)
+			source?.gainHealth(elapsedMS, source, heal, true)
 		},
 	},
 

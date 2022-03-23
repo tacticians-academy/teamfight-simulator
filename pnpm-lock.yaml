@@ -2,7 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@ky-is/eslint-config': ^2.3.6
-  '@tacticians-academy/academy-library': ^0.12.1
+  '@tacticians-academy/academy-library': ^0.12.2
   '@tailwindcss/forms': ^0.5.0
   '@types/node': ^16.11.26
   '@vitejs/plugin-vue': ^2.2.4
@@ -20,7 +20,7 @@ specifiers:
   vue-tsc: ^0.32.1
 
 dependencies:
-  '@tacticians-academy/academy-library': 0.12.1
+  '@tacticians-academy/academy-library': 0.12.2
   '@tailwindcss/forms': 0.5.0_tailwindcss@3.0.23
   tailwindcss: 3.0.23_autoprefixer@10.4.4
   vue: 3.2.31
@@ -153,8 +153,8 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
 
-  /@tacticians-academy/academy-library/0.12.1:
-    resolution: {integrity: sha512-mP4+cba2+pwuUSnS9K+T6SEh4aTlrMN+UDzur+pJrkI/NWDXRXAb2bqasmE/oNi8qSeON+OIMgD8TMCNDmqgfg==}
+  /@tacticians-academy/academy-library/0.12.2:
+    resolution: {integrity: sha512-L/szQgXbCaGIX8/w713r9AJiKqufi+N92eMk3EVFGV6uP3zCrPox3HBSceMMUo8l7xDlmYNfpTA6B2Qx6bPSOA==}
     dev: false
 
   /@tailwindcss/forms/0.5.0_tailwindcss@3.0.23:
@@ -616,7 +616,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001319
-      electron-to-chromium: 1.4.89
+      electron-to-chromium: 1.4.91
       escalade: 3.1.1
       node-releases: 2.0.2
       picocolors: 1.0.0
@@ -827,8 +827,8 @@ packages:
       domhandler: 4.3.1
     dev: true
 
-  /electron-to-chromium/1.4.89:
-    resolution: {integrity: sha512-z1Axg0Fu54fse8wN4fd+GAINdU5mJmLtcl6bqIcYyzNVGONcfHAeeJi88KYMQVKalhXlYuVPzKkFIU5VD0raUw==}
+  /electron-to-chromium/1.4.91:
+    resolution: {integrity: sha512-Z7Jkc4+ouEg8F6RrrgLOs0kkJjI0cnyFQmnGVpln8pPifuKBNbUr37GMgJsCTSwy6Z9TK7oTwW33Oe+3aERYew==}
     dev: true
 
   /emmet/2.3.6:
@@ -1533,8 +1533,8 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /lilconfig/2.0.4:
-    resolution: {integrity: sha512-bfTIN7lEsiooCocSISTWXkiWJkRqtL9wYtYy+8EK3Y41qh3mpwPU0ycTOgjdY9ErwXCc8QyrQp82bdL0Xkm9yA==}
+  /lilconfig/2.0.5:
+    resolution: {integrity: sha512-xaYmXZtTHPAw5m+xLN8ab9C+3a8YmV3asNSPOATITbtwrfbwaLJj8h66H1WMIpALCkqsIzK3h7oQ+PdX+LQ9Eg==}
     engines: {node: '>=10'}
     dev: false
 
@@ -1716,7 +1716,7 @@ packages:
       ts-node:
         optional: true
     dependencies:
-      lilconfig: 2.0.4
+      lilconfig: 2.0.5
       yaml: 1.10.2
     dev: false
 
@@ -2044,8 +2044,8 @@ packages:
     resolution: {integrity: sha1-zCAOqyYT9BZtJ/+a/HylbUnfbrQ=}
     dev: true
 
-  /tsconfig-paths/3.14.0:
-    resolution: {integrity: sha512-cg/1jAZoL57R39+wiw4u/SCC6Ic9Q5NqjBOb+9xISedOYurfog9ZNmKJSxAnb2m/5Bq4lE9lhUcau33Ml8DM0g==}
+  /tsconfig-paths/3.14.1:
+    resolution: {integrity: sha512-fxDhWnFSLt3VuTwtvJt5fpwxBHg5AdKWMsgcPOOIilyjymcYVZoCQF8fvFRezCNfblEXmi+PcM1eYHeOAgXCOQ==}
     dependencies:
       '@types/json5': 0.0.29
       json5: 1.0.1
@@ -2112,7 +2112,7 @@ packages:
       debug: 4.3.4
       globrex: 0.1.2
       recrawl-sync: 2.2.2
-      tsconfig-paths: 3.14.0
+      tsconfig-paths: 3.14.1
       vite: 2.8.6
     transitivePeerDependencies:
       - supports-color
@@ -2147,8 +2147,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /vscode-css-languageservice/5.2.0:
-    resolution: {integrity: sha512-FR5yDEfzbXJtYmZYrA7JWFcRSLHsJw3nv55XAmx7qdwRpFj9yy0ulKfN/NUUdiZW2jZU2fD/+Y4VJYPdafHDag==}
+  /vscode-css-languageservice/5.3.0:
+    resolution: {integrity: sha512-ujWW855AoJlE4ETU17Gff7unlZZTHDA0w26itk9EQFMfJqi9lE6S67zOsMvcPmJf55MrnGQbojDYZRiDVaFjdA==}
     dependencies:
       vscode-languageserver-textdocument: 1.0.4
       vscode-languageserver-types: 3.16.0
@@ -2248,7 +2248,7 @@ packages:
       '@vue/reactivity': 3.2.31
       '@vue/shared': 3.2.31
       upath: 2.0.1
-      vscode-css-languageservice: 5.2.0
+      vscode-css-languageservice: 5.3.0
       vscode-html-languageservice: 4.2.4
       vscode-json-languageservice: 4.2.1
       vscode-languageserver-protocol: 3.17.0-next.16
