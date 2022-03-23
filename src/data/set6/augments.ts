@@ -59,6 +59,15 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.BrokenStopwatch]: {
+		delayed: (augment, elapsedMS, team, units) => {
+			const [stunSeconds] = getVariables(augment, 'StunDuration')
+			state.units
+				.filter(unit => !unit.hasTrait(TraitKey.Clockwork))
+				.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000))
+		},
+	},
+
 	[AugmentGroupKey.Battlemage]: {
 		apply: (augment, team, units) => {
 			const [ap] = getVariables(augment, BonusKey.AbilityPower)
