@@ -8,7 +8,7 @@ import { applyChemtech } from '#/data/set6/traits'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getBestAsMax, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
@@ -393,6 +393,12 @@ export const augmentEffects = {
 					}
 				}
 			})
+		},
+	},
+
+	[AugmentGroupKey.SunfireBoard]: {
+		apply: (augment, team, units) => {
+			getUnitsOfTeam(1 - team as TeamNumber).forEach(target => applyGrievousBurn(augment, 0, target, undefined, 1))
 		},
 	},
 
