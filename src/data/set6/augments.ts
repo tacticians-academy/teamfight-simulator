@@ -6,7 +6,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { applyChemtech } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { getters } from '#/game/store'
+import { getters, state } from '#/game/store'
 
 import { getBestAsMax, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
@@ -268,6 +268,23 @@ export default {
 					intervalAmount: manaRegen,
 					intervalSeconds: 1,
 				}))
+		},
+	},
+
+	[AugmentGroupKey.Overpower]: {
+		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
+				return
+			}
+			const [critBonus] = getVariables(augment, BonusKey.CritChance)
+			const id = AugmentGroupKey.Overpower
+			if (holder.basicAttackCount % 3 === 0 && !Array.from(holder.empoweredAutos).some(empoweredAuto => empoweredAuto.id === id)) {
+				holder.empoweredAutos.add({
+					id,
+					amount: 1,
+					critBonus,
+				})
+			}
 		},
 	},
 
