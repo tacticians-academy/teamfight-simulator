@@ -333,6 +333,19 @@ export default {
 		},
 	},
 
+	[AugmentGroupKey.SnipersNest]: {
+		apply: (augment, team, units) => {
+			const [damageAmpPerRound, maxAmp] = getVariables(augment, 'DamageAmp', 'MaxAmp')
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Sniper))
+				.forEach(unit => {
+					const roundsFromSameHex = 4 //NOTE custom UI
+					const damageAmp = Math.min(maxAmp, damageAmpPerRound * roundsFromSameHex)
+					unit.addBonuses(AugmentGroupKey.SoSmall, [BonusKey.DamageIncrease, damageAmp / 100])
+				})
+		},
+	},
+
 	[AugmentGroupKey.SoSmall]: {
 		apply: (augment, team, units) => {
 			const [dodgeIncrease] = getVariables(augment, 'DodgeIncrease')
