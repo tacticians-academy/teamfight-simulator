@@ -29,7 +29,7 @@ const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimpleme
 
 activeAugments.forEach(augment => {
 	const groupID = augment.groupID as AugmentGroupKey
-	const index = emptyImplementationAugments.includes(groupID) ? 2 : (augmentEffects[groupID] ? 0 : 1)
+	const index = emptyImplementationAugments.includes(groupID) || groupID.endsWith('Crest') || groupID.endsWith('Crown') ? 2 : (augmentEffects[groupID] || groupID.endsWith('Heart') || groupID.endsWith('Soul') ? 0 : 1)
 	augmentGroups[index][1].push(augment)
 })
 </script>
