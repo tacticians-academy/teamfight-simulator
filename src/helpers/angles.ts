@@ -1,4 +1,3 @@
-import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 import type { HexCoord } from '#/helpers/types'
 
 const pi2 = Math.PI * 2

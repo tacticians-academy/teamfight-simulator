@@ -11,7 +11,6 @@ import { getCoordFrom } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
-import type { DamageSourceType } from '#/helpers/types'
 import type { HexCoord} from '#/helpers/types'
 import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 

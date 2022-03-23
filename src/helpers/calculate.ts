@@ -1,6 +1,5 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData, SpellCalculation } from '@tacticians-academy/academy-library'
-
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
@@ -9,7 +8,7 @@ import traitEffects from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData, TeamNumber } from '#/helpers/types'
+import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData } from '#/helpers/types'
 
 function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
 	const synergy = teamSynergies.find(synergy => synergy.key === trait)

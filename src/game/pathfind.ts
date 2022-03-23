@@ -1,6 +1,6 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import { buildBoard, containsHex, getHexRing, isSameHex } from '#/helpers/boardUtils'
+import { buildBoard, containsHex, getHexRing } from '#/helpers/boardUtils'
 import type { HexCoord } from '#/helpers/types'
 
 let pathsByTeam: [HexCoord[][], HexCoord[][]] = [[], []]

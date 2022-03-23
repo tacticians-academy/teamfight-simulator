@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { getIconURL } from '@tacticians-academy/academy-library'
 import type { ChampionData } from '@tacticians-academy/academy-library'
-
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 

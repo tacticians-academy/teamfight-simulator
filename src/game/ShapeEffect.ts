@@ -7,7 +7,7 @@ import type { GameEffectData } from '#/game/GameEffect'
 import { getAngleBetween, doesLineInterceptCircle, radianDistance, doesRectangleInterceptCircle } from '#/helpers/angles'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { HexCoord } from '#/helpers/types'
-import { coordinateDistanceSquared, hexDistanceFrom } from '#/helpers/boardUtils'
+import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 
 class ShapeEffectShape {
 	intersects: (unit: ChampionUnit) => boolean = () => false

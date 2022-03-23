@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { getIconURL } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
-
 import { completedItems, componentItems, ItemKey, spatulaItems } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import { useStore } from '#/game/store'

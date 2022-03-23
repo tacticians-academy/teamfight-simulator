@@ -2,7 +2,6 @@ import { computed, reactive, ref, watch, watchEffect } from 'vue'
 
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
 import type { AugmentData, ItemData, TraitData } from '@tacticians-academy/academy-library'
-
 import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'

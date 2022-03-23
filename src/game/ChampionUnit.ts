@@ -2,7 +2,6 @@ import { markRaw } from 'vue'
 
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
-
 import { ChampionKey, champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
