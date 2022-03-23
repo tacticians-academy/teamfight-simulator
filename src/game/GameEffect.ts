@@ -27,11 +27,13 @@ export interface GameEffectData {
 	bonusCalculations?: SpellCalculation[]
 	/** If the `damageMultiplier` and `damageIncrease` should only apply if the spell has hit the target multiple times. */
 	modifiesOnMultiHit?: boolean
-	/** Multiplies the result of `damageCalculation`. */
-	damageIncrease?: number
-	/** Defaults to `spell` when passed with a `SpellCalculation`. */
-	damageMultiplier?: number
 	/** Adds to the result of `damageCalculation`. */
+	damageIncrease?: number
+	/** Multiplies the result of `damageCalculation`. */
+	damageMultiplier?: number
+	/** Bonus crit chance to apply with `damageCalculation`. */
+	critBonus?: number
+	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
 	/** `BonusVariable`s to apply to any affected units. */
 	bonuses?: [BonusLabelKey, ...BonusVariable[]]
@@ -62,6 +64,7 @@ export class GameEffect extends GameEffectChild {
 	modifiesOnMultiHit: boolean
 	damageIncrease: number | undefined
 	damageMultiplier: number | undefined
+	critBonus: number | undefined
 	damageSourceType: DamageSourceType
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
 	statusEffects: StatusEffectData[] | undefined
@@ -82,6 +85,7 @@ export class GameEffect extends GameEffectChild {
 		this.modifiesOnMultiHit = data.modifiesOnMultiHit ?? false
 		this.damageIncrease = data.damageIncrease
 		this.damageMultiplier = data.damageMultiplier
+		this.critBonus = data.critBonus
 		this.damageSourceType = data.damageSourceType!
 		this.bonuses = data.bonuses
 		this.statusEffects = data.statusEffects
@@ -113,7 +117,7 @@ export class GameEffect extends GameEffectChild {
 			if (wasSpellShielded) {
 				damageIncrease -= spellShield.amount
 			}
-			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, damageMultiplier)
+			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, damageMultiplier, this.critBonus)
 		}
 		this.bonusCalculations.forEach(bonusCalculation => {
 			unit.damage(elapsedMS, false, this.source, DamageSourceType.bonus, bonusCalculation, true)

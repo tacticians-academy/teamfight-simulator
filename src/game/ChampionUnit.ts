@@ -76,10 +76,12 @@ export class ChampionUnit {
 	castCount = 0
 
 	empoweredAutos: Set<{
+		id?: BonusLabelKey
 		amount: number
 		damageCalculation?: SpellCalculation
 		damageIncrease?: number
 		damageMultiplier?: number
+		critBonus?: number
 		statusEffects?: StatusEffectData[]
 	}> = new Set()
 	championEffects: ChampionFns | undefined
@@ -221,11 +223,13 @@ export class ChampionUnit {
 			const passiveFn = this.championEffects?.passive
 			let damageIncrease = 0
 			let damageMultiplier = 0
+			let critBonus = 0
 			const statusEffects: StatusEffectData[] = []
 			const bonusCalculations: SpellCalculation[] = []
 			this.empoweredAutos.forEach(empower => {
 				damageIncrease += empower.damageIncrease ?? 0
 				damageMultiplier += empower.damageMultiplier ?? 0
+				critBonus += empower.critBonus ?? 0
 				if (empower.damageCalculation) {
 					console.log(empower.damageCalculation)
 					bonusCalculations.push(empower.damageCalculation)
@@ -235,7 +239,7 @@ export class ChampionUnit {
 				}
 			})
 			if (this.instantAttack) {
-				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, damageIncrease, damageMultiplier)
+				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, damageIncrease, damageMultiplier, critBonus)
 				this.attackStartAtMS = elapsedMS
 				if (this.data.passive) {
 					passiveFn?.(elapsedMS, this.data.passive, this.target, this)
@@ -260,6 +264,7 @@ export class ChampionUnit {
 					bonusCalculations,
 					damageIncrease,
 					damageMultiplier,
+					critBonus,
 					statusEffects,
 					onCollision(elapsedMS, unit) {
 						if (source.data.passive) {
@@ -358,14 +363,14 @@ export class ChampionUnit {
 		})
 	}
 
-	rawCritChance() {
-		return (this.data.stats.critChance ?? 0) + this.getBonuses(BonusKey.CritChance) / 100
+	rawCritChance(additionalCrit?: number) {
+		return (this.data.stats.critChance ?? 0) + (additionalCrit != null ? additionalCrit / 100 : 0) + this.getBonuses(BonusKey.CritChance) / 100
 	}
-	critChance() {
-		return Math.min(1, this.rawCritChance())
+	critChance(additionalCrit?: number) {
+		return Math.min(1, this.rawCritChance(additionalCrit))
 	}
-	critMultiplier() {
-		const excessCritChance = this.rawCritChance() - 1
+	critMultiplier(additionalCrit?: number) {
+		const excessCritChance = this.rawCritChance(additionalCrit) - 1
 		return this.data.stats.critMultiplier + Math.max(0, excessCritChance) + this.getBonuses(BonusKey.CritMultiplier) / 100
 	}
 	critReduction() {
@@ -566,7 +571,7 @@ export class ChampionUnit {
 		}
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number) {
+	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number, critBonus?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, damageCalculation)
 		source.items.forEach((item, index) => {
 			const modifyDamageFn = itemEffects[item.id as ItemKey]?.modifyDamageByHolder
@@ -615,7 +620,7 @@ export class ChampionUnit {
 		if (damageType === DamageType.physical || (damageType === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet)))) {
 			const critReduction = this.critReduction()
 			if (critReduction < 1) {
-				const critDamage = rawDamage * source.critChance() * source.critMultiplier()
+				const critDamage = rawDamage * source.critChance(critBonus) * source.critMultiplier(critBonus)
 				rawDamage += critDamage * (1 - critReduction)
 			}
 		}
@@ -668,18 +673,19 @@ export class ChampionUnit {
 			source.gainHealth(elapsedMS, source, takingDamage * sourceVamp / 100, true)
 		}
 
-		source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
-		source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
-		getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
-			effects.damageDealtByHolder?.(augment, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
-		})
-
-		if (sourceType === DamageSourceType.attack) {
-			source.shields.forEach(shield => {
-				if (shield.activated === true && shield.bonusDamage) {
-					this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
-				}
+		if (isOriginalSource) {
+			source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+			source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+			getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
+				effects.damageDealtByHolder?.(augment, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 			})
+			if (sourceType === DamageSourceType.attack) {
+				source.shields.forEach(shield => {
+					if (shield.activated === true && shield.bonusDamage) {
+						this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
+					}
+				})
+			}
 		}
 
 		// `this` effects
