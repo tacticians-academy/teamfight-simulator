@@ -15,6 +15,7 @@ import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { TeamNumber } from '#/helpers/types'
 
 export interface AugmentFns {
+	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
 	teamWideTrait?: TraitKey
 	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
@@ -35,9 +36,9 @@ export default {
 	},
 
 	[AugmentGroupKey.Ascension]: {
-		apply: (augment, team, units) => {
-			const [delaySeconds, damageAmp] = getVariables(augment, 'Delay', 'DamageAmp')
-			units.forEach(unit => unit.queueBonus(0, delaySeconds * 1000, AugmentGroupKey.Ascension, [BonusKey.DamageIncrease, damageAmp / 100]))
+		delayed: (augment, elapsedMS, team, units) => {
+			const [damageAmp] = getVariables(augment, 'DamageAmp')
+			units.forEach(unit => unit.setBonusesFor(AugmentGroupKey.Ascension, [BonusKey.DamageIncrease, damageAmp / 100]))
 		},
 	},
 
@@ -284,9 +285,9 @@ export default {
 	},
 
 	[AugmentGroupKey.SecondWind]: {
-		apply: (augment, team, units) => {
-			const [delaySeconds, healPercent] = getVariables(augment, 'Delay', 'HealPercent')
-			units.forEach(unit => unit.queueBonus(0, delaySeconds * 1000, AugmentGroupKey.SecondWind, [BonusKey.MissingHealth, healPercent / 100]))
+		delayed: (augment, elapsedMS, team, units) => {
+			const [healPercent] = getVariables(augment, 'HealPercent')
+			units.forEach(unit => unit.gainHealth(elapsedMS, undefined, unit.missingHealth() * healPercent / 100, true))
 		},
 	},
 

@@ -25,6 +25,14 @@ const MOVE_LOCKOUT_MELEE_MS = 1000
 let didBacklineJump = false
 let didMeleeMove = false
 
+const delays = new Set<[activatesAtMS: DOMHighResTimeStamp, callback: (elapsedMS: DOMHighResTimeStamp) => void]>()
+
+export async function delayUntil(atSeconds: number) {
+	return await new Promise<DOMHighResTimeStamp>((resolve, reject) => {
+		delays.add([atSeconds * 1000, resolve])
+	})
+}
+
 function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (unanimated === true) {
 		runLoop(frameMS + GAME_TICK_MS, true)
@@ -69,6 +77,14 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		return
 	}
 	const elapsedMS = frameMS - startedAtMS
+
+	delays.forEach(delay => {
+		const [atMS, resolve] = delay
+		if (elapsedMS >= atMS) {
+			resolve(elapsedMS)
+			delays.delete(delay)
+		}
+	})
 
 	getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {

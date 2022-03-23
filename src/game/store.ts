@@ -18,9 +18,9 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'
 import type { ProjectileEffect } from '#/game/ProjectileEffect'
 import type { ShapeEffect } from '#/game/ShapeEffect'
-import { cancelLoop } from '#/game/loop'
+import { cancelLoop, delayUntil } from '#/game/loop'
 
-import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
+import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import type { DraggableType } from '#/helpers/dragDrop'
 import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
@@ -165,6 +165,17 @@ function resetUnitsAfterUpdating() {
 	state.units.forEach(unit => {
 		unitsByTeam[unit.team].push(unit)
 		unit.resetPre(synergiesByTeam)
+	})
+
+	getters.activeAugmentEffectsByTeam.value.forEach((augmentEffects, team) => {
+		augmentEffects.forEach(async ([augment, effects]) => {
+			if (effects.delayed != null) {
+				const [delaySeconds] = getVariables(augment, 'Delay')
+				const teamNumber = team as TeamNumber
+				const elapsedMS = await delayUntil(delaySeconds)
+				effects.delayed?.(augment, elapsedMS, teamNumber, getAliveUnitsOfTeam(teamNumber))
+			}
+		})
 	})
 
 	state.units.forEach(unit => {
