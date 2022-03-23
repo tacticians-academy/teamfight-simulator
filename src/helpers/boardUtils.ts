@@ -11,28 +11,16 @@ export function buildBoard(fillObjects: boolean | 0): any[][] {
 	return [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => (fillObjects === 0 ? 0 : (fillObjects ? {} : []))))
 }
 
-function nearestAvailableRecursive(hex: HexCoord, unitHexes: HexCoord[]): HexCoord | null {
-	if (!containsHex(hex, unitHexes)) {
-		return hex
-	}
-	const surroundingHexes = getHexRing(hex)
-	for (const surroundingHex of surroundingHexes) {
-		if (!containsHex(surroundingHex, unitHexes)) {
-			return surroundingHex
-		}
-	}
-	for (const surroundingHex of surroundingHexes) {
-		const result = nearestAvailableRecursive(surroundingHex, unitHexes)
-		if (result) {
-			return result
-		}
-	}
-	console.error('No available hex', hex, unitHexes)
-	return null
-}
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitHexes = units.filter(unit => unit.isInteractable() && unit.hasCollision()).map(unit => unit.activeHex)
-	return nearestAvailableRecursive(startHex, unitHexes)
+	const unitHexes = units.filter(unit => !unit.dead).map(unit => unit.activeHex)
+	for (let distance = 0; distance <= 4; distance += 1) { //TODO recurse to unlimited distance
+		for (const checkHex of getHexRing(startHex, distance)) {
+			if (!containsHex(checkHex, unitHexes)) {
+				return checkHex
+			}
+		}
+	}
+	console.error('No available hex', startHex, unitHexes)
 }
 
 export function getFarthestUnitOfTeamWithinRangeFrom(source: ChampionUnit, teamNumber: TeamNumber | null, units: ChampionUnit[], range?: number) {
