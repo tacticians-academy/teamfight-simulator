@@ -393,6 +393,19 @@ export default {
 		teamWideTrait: TraitKey.Hextech,
 	},
 
+	[AugmentGroupKey.UnstableEvolution]: {
+		apply: (augment, team, units) => {
+			const variables = getVariables(augment, 'BonusHP', 'BonusAS', 'BonusAD', 'BonusAP')
+			const [hp, attackSpeed, ad, ap] = variables
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Mutant))
+				.forEach(unit => {
+					const multiplier = unit.starLevel / variables.length //TODO custom UI
+					unit.addBonuses(AugmentGroupKey.UnstableEvolution, [BonusKey.Health, hp * multiplier], [BonusKey.AttackSpeed, attackSpeed * multiplier], [BonusKey.AttackDamage, ad * multiplier], [BonusKey.AbilityPower, ap * multiplier])
+				})
+		},
+	},
+
 	[AugmentGroupKey.VerdantVeil]: {
 		apply: (augment, team, units) => {
 			const [durationSeconds] = getVariables(augment, 'Duration')
