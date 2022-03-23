@@ -3,8 +3,8 @@ import type { ItemData, SpellCalculation } from '@tacticians-academy/academy-lib
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import itemEffects from '#/data/items'
-import traitEffects from '#/data/set6/traits'
+import { itemEffects } from '#/data/items'
+import { traitEffects } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 

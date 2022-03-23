@@ -6,10 +6,10 @@ import { ChampionKey, champions } from '@tacticians-academy/academy-library/dist
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import itemEffects from '#/data/items'
-import championEffects from '#/data/set6/champions'
+import { itemEffects } from '#/data/items'
+import { championEffects } from '#/data/set6/champions'
 import type { ChampionFns } from '#/data/set6/champions'
-import traitEffects from '#/data/set6/traits'
+import { traitEffects } from '#/data/set6/traits'
 
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'

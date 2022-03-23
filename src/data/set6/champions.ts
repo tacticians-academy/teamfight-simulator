@@ -18,7 +18,7 @@ export interface ChampionFns {
 	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
 }
 
-export default {
+export const championEffects = {
 
 	[ChampionKey.Ahri]: {
 		cast: (elapsedMS, spell, champion) => {

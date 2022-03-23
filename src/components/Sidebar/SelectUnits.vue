@@ -4,7 +4,7 @@ import type { ChampionData } from '@tacticians-academy/academy-library'
 import { champions } from '@tacticians-academy/academy-library/dist/set6/champions'
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
-import championEffects from '#/data/set6/champions'
+import { championEffects } from '#/data/set6/champions'
 
 import { useStore } from '#/game/store'
 

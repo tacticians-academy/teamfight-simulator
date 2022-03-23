@@ -26,7 +26,7 @@ export interface AugmentFns {
 	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }
 
-export default {
+export const augmentEffects = {
 
 	[AugmentGroupKey.ArchangelsEmbrace]: {
 		cast: (augment, elapsedMS, unit) => {

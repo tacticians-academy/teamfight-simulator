@@ -45,7 +45,7 @@ function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, item:
 	return instantlyApplies ? true : activatedAtMS != null
 }
 
-export default {
+export const itemEffects = {
 
 	[ItemKey.ArchangelsStaff]: {
 		innate: (item, unit) => {

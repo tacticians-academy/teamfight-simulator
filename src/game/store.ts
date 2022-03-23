@@ -8,10 +8,10 @@ import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/
 import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import augmentEffects from '#/data/set6/augments'
+import { augmentEffects } from '#/data/set6/augments'
 import type { AugmentFns } from '#/data/set6/augments'
-import itemEffects from '#/data/items'
-import traitEffects from '#/data/set6/traits'
+import { itemEffects } from '#/data/items'
+import { traitEffects } from '#/data/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'

@@ -33,7 +33,7 @@ interface TraitFns {
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
 
-export default {
+export const traitEffects = {
 
 	[TraitKey.Arcanist]: {
 		teamEffect: false,

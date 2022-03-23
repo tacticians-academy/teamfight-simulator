@@ -1,8 +1,8 @@
 import { BonusKey } from '@tacticians-academy/academy-library'
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
-import itemEffects from '#/data/items'
-import traitEffects from '#/data/set6/traits'
+import { itemEffects } from '#/data/items'
+import { traitEffects } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { GameEffect } from '#/game/GameEffect'
