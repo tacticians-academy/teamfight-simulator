@@ -27,7 +27,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BleedData, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -85,9 +85,9 @@ export class ChampionUnit {
 	}> = new Set()
 	championEffects: ChampionFns | undefined
 
-	bonuses: [BonusLabelKey, BonusVariable[]][] = []
+	bonuses: BonusEntry[] = []
 	scalings = new Set<BonusScaling>()
-	shields: ShieldData[] = []
+	shields: ShieldEntry[] = []
 	bleeds = new Set<BleedData>()
 
 	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
@@ -155,15 +155,15 @@ export class ChampionUnit {
 			this.transformIndex = 0
 		}
 
+		this.scalings.clear()
+		this.shields = []
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
 		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => !!trait)
 		const teamSynergies = synergiesByTeam[this.team]
 		this.activeSynergies = teamSynergies.filter(({ key, activeEffect }) => !!activeEffect && this.hasTrait(key))
-		const [synergyTraitBonuses, synergyScalings, synergyShields] = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
-		const [itemBonuses, itemScalings, itemShields] = calculateItemBonuses(this, this.items)
+		const synergyTraitBonuses = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
+		const itemBonuses = calculateItemBonuses(this, this.items)
 		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
-		this.scalings = new Set([...synergyScalings, ...itemScalings])
-		this.shields = [...synergyShields, ...itemShields]
 	}
 	resetPost() {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
@@ -745,10 +745,11 @@ export class ChampionUnit {
 	}
 
 	consumeSpellShield() {
-		const shield = this.shields
+		const availableSpellShields = this.shields
 			.filter(shield => shield.activated === true && shield.isSpellShield === true)
-			.sort((a, b) => a.amount - b.amount)[0] as ShieldData | undefined
-		if (shield && shield.amount > 0) {
+			.sort((a, b) => a.amount - b.amount)
+		const shield = availableSpellShields.length ? availableSpellShields[0] : undefined
+		if (shield != null && shield.amount > 0) {
 			shield.activated = false
 		}
 		return shield
@@ -875,7 +876,7 @@ export class ChampionUnit {
 	}
 	getBonuses(...variableNames: BonusKey[]) {
 		return this.bonuses
-			.reduce((accumulator, bonus: [BonusLabelKey, BonusVariable[]]) => {
+			.reduce((accumulator, bonus: BonusEntry) => {
 				const variables = bonus[1].filter(variable => variableNames.includes(variable[0] as BonusKey))
 				return accumulator + variables.reduce((total, v) => total + (v[1] ?? 0), 0)
 			}, 0)
@@ -977,6 +978,25 @@ export class ChampionUnit {
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {
 		this.pendingBonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
+	queueShield(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, data: ShieldData) {
+		if (source) {
+			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.onShield?.(augment, elapsedMS, data, this, source))
+		}
+		this.shields.push({
+			id: data.id,
+			source: source,
+			activated: false,
+			activatesAtMS: data.activatesAfterMS != null ? elapsedMS + data.activatesAfterMS : undefined,
+			isSpellShield: data.isSpellShield,
+			amount: data.amount,
+			repeatAmount: data.repeatAmount,
+			expiresAtMS: data.expiresAfterMS != null ? elapsedMS + data.expiresAfterMS : undefined,
+			repeatsEveryMS: data.repeatsEveryMS,
+			bonusDamage: data.bonusDamage,
+			onRemoved: data.onRemoved,
+		})
+	}
+
 	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
 		if (spell) {
 			if (!data.damageCalculation) {

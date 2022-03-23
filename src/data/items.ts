@@ -12,7 +12,7 @@ import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableE
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BonusScaling, BonusVariable, EffectResults, HexCoord, ShieldData } from '#/helpers/types'
+import type { BonusVariable, EffectResults, HexCoord } from '#/helpers/types'
 
 const BURN_ID = 'BURN'
 
@@ -49,9 +49,8 @@ export const itemEffects = {
 
 	[ItemKey.ArchangelsStaff]: {
 		innate: (item, unit) => {
-			const scalings: BonusScaling[] = []
 			const [intervalAmount, intervalSeconds] = getVariables(item, 'APPerInterval', 'IntervalSeconds')
-			scalings.push({
+			unit.scalings.add({
 				source: unit,
 				sourceID: item.id,
 				activatedAtMS: 0,
@@ -59,7 +58,6 @@ export const itemEffects = {
 				intervalAmount,
 				intervalSeconds,
 			})
-			return { scalings }
 		},
 	},
 
@@ -67,8 +65,7 @@ export const itemEffects = {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const [damageCap] = getVariables(item, 'DamageCap')
 			adjacentUnits.push(holder)
-			adjacentUnits.forEach(unit => unit.shields.push({
-				source: holder,
+			adjacentUnits.forEach(unit => unit.queueShield(0, holder, {
 				isSpellShield: true,
 				amount: damageCap,
 			}))
@@ -78,10 +75,9 @@ export const itemEffects = {
 	[ItemKey.Bloodthirster]: {
 		hpThreshold: (elapsedMS, item, itemID, holder) => {
 			const [shieldHPPercent, shieldSeconds] = getVariables(item, 'ShieldHPPercent', 'ShieldDuration')
-			holder.shields.push({
-				source: holder,
+			holder.queueShield(elapsedMS, holder, {
 				amount: shieldHPPercent / 100 * holder.healthMax,
-				expiresAtMS: elapsedMS + shieldSeconds * 1000,
+				expiresAfterMS: shieldSeconds * 1000,
 			})
 		},
 	},
@@ -181,7 +177,7 @@ export const itemEffects = {
 			const [increaseEffect] = getVariables(item, 'AdditionalADAP')
 			const increase = increaseEffect / 2 //TODO averaged increaseEffect
 			variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])
-			return { variables }
+			return variables
 		},
 	},
 
@@ -231,10 +227,9 @@ export const itemEffects = {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const [shieldValue, shieldSeconds] = getVariables(item, `${holder.starLevel}StarShieldValue`, 'ShieldDuration')
 			adjacentUnits.push(holder)
-			adjacentUnits.forEach(unit => unit.shields.push({
-				source: holder,
+			adjacentUnits.forEach(unit => unit.queueShield(0, holder, {
 				amount: shieldValue,
-				expiresAtMS: shieldSeconds * 1000,
+				expiresAfterMS: shieldSeconds * 1000,
 			}))
 		},
 	},
@@ -250,15 +245,12 @@ export const itemEffects = {
 
 	[ItemKey.Quicksilver]: {
 		innate: (item, holder) => {
-			const shields: ShieldData[] = []
 			const [shieldSeconds] = getVariables(item, 'SpellShieldDuration')
-			shields.push({
-				source: holder,
+			holder.queueShield(0, holder, {
+				amount: 0,
 				isSpellShield: true,
-				amount: 0, //TODO does not break
-				expiresAtMS: shieldSeconds * 1000,
+				expiresAfterMS: shieldSeconds * 1000,
 			})
-			return { shields }
 		},
 	},
 

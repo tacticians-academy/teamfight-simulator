@@ -212,10 +212,9 @@ export const championEffects = {
 			const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
 			const shieldAmp = champion.getSpellVariable(spell, 'ShieldAmp' as SpellKey)
 			const shieldTotalAmp = champion.getBonuses(shieldKey)
-			champion.shields.push({
-				source: champion,
+			champion.queueShield(elapsedMS, champion, {
 				amount: shieldAmount * (1 + shieldTotalAmp),
-				expiresAtMS: elapsedMS + shieldSeconds * 1000,
+				expiresAfterMS: shieldSeconds * 1000,
 				onRemoved: (elapsedMS, shield) => {
 					champion.manaLockUntilMS = 0
 					const hexDistanceFromSource = champion.data.stats.range

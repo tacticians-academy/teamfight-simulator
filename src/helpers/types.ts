@@ -124,7 +124,21 @@ export interface BleedData {
 	remainingIterations: number
 }
 
+export type BonusEntry = [label: BonusLabelKey, variables: BonusVariable[]]
+
 export interface ShieldData {
+	id?: string
+	activatesAfterMS?: DOMHighResTimeStamp
+	isSpellShield?: boolean
+	amount: number
+	repeatAmount?: number
+	expiresAfterMS?: DOMHighResTimeStamp
+	repeatsEveryMS?: DOMHighResTimeStamp
+	bonusDamage?: SpellCalculation
+	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldData) => void
+}
+
+export interface ShieldEntry {
 	id?: string
 	source: ChampionUnit | undefined
 	activated?: boolean
@@ -138,8 +152,4 @@ export interface ShieldData {
 	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldData) => void
 }
 
-export interface EffectResults {
-	variables?: BonusVariable[]
-	scalings?: BonusScaling[]
-	shields?: ShieldData[]
-}
+export type EffectResults = BonusVariable[] | void

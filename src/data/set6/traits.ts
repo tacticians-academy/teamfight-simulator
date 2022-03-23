@@ -1,4 +1,4 @@
-import { BonusKey, COMPONENT_ITEM_IDS, DamageType, TraitData } from '@tacticians-academy/academy-library'
+import { BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/academy-library'
 import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
@@ -10,7 +10,7 @@ import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } 
 import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
-import type { BonusVariable, BonusScaling, EffectResults, ShieldData, StarLevel, TeamNumber } from '#/helpers/types'
+import type { BonusVariable, EffectResults, StarLevel, TeamNumber } from '#/helpers/types'
 
 type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
 interface TraitFns {
@@ -47,17 +47,13 @@ export const traitEffects = {
 				damageMultiplier: -0.5,
 				taunts: true,
 			})
-			return {}
 		},
 		solo: (unit, activeEffect) => {
-			const shields: ShieldData[] = []
-			const [shieldAmount] = getVariables(activeEffect, 'ShieldAmount')
-			shields.push({
-				source: unit,
-				activatesAtMS: BODYGUARD_DELAY_MS,
-				amount: shieldAmount,
+			const [amount] = getVariables(activeEffect, 'ShieldAmount')
+			unit.queueShield(0, unit, {
+				amount,
+				activatesAfterMS: BODYGUARD_DELAY_MS,
 			})
-			return { shields }
 		},
 	},
 
@@ -91,7 +87,7 @@ export const traitEffects = {
 			const variables: BonusVariable[] = []
 			const [bonusPerAugment, bonusAS] = getVariables(activeEffect, 'BonusPerAugment', 'ASBonus')
 			variables.push([BonusKey.AttackSpeed, bonusAS * 100], [BonusKey.AttackSpeed, getters.augmentCount.value * bonusPerAugment * 100])
-			return { variables }
+			return variables
 		},
 	},
 
@@ -99,7 +95,7 @@ export const traitEffects = {
 		innate: (unit, innateEffect) => {
 			const [bonusHealth] = getVariables(innateEffect, `Bonus${BonusKey.Health}Tooltip`)
 			const variables: BonusVariable[] = [[BonusKey.Health, bonusHealth]]
-			return { variables }
+			return variables
 		},
 	},
 
@@ -130,18 +126,15 @@ export const traitEffects = {
 
 	[TraitKey.Hextech]: {
 		solo: (unit, activeEffect) => {
-			const shields: ShieldData[] = []
 			const [shieldAmount, durationSeconds, damage, frequency] = getVariables(activeEffect, 'ShieldAmount', 'ShieldDuration', 'MagicDamage', 'Frequency')
 			const repeatsEveryMS = frequency * 1000
-			shields.push({
-				source: unit,
+			unit.queueShield(0, unit, {
 				amount: shieldAmount,
-				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
-				expiresAtMS: durationSeconds * 1000,
-				activatesAtMS: repeatsEveryMS,
+				activatesAfterMS: repeatsEveryMS,
 				repeatsEveryMS,
+				expiresAfterMS: durationSeconds * 1000,
+				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
 			})
-			return { shields }
 		},
 	},
 
@@ -216,7 +209,6 @@ export const traitEffects = {
 			}
 		},
 		solo: (unit, activeEffect) => {
-			const scalings: BonusScaling[] = []
 			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.AdrenalineRush) {
 				variables.push([BonusKey.AttackDamage, getMutantBonusFor(activeEffect, MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)])
@@ -224,31 +216,29 @@ export const traitEffects = {
 				variables.push([BonusKey.AbilityPower, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticAP)], [BonusKey.ManaReduction, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticManaCost)])
 			} else if (state.mutantType === MutantType.Metamorphosis) {
 				const [intervalSeconds, amountARMR, amountADAP] = getVariables(activeEffect, 'MutantMetamorphosisGrowthRate', 'MutantMetamorphosisArmorMR', 'MutantMetamorphosisADAP')
-				scalings.push(
-					{
-						source: unit,
-						sourceID: state.mutantType,
-						activatedAtMS: 0,
-						stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
-						intervalAmount: amountADAP,
-						intervalSeconds,
-					},
-					{
-						source: unit,
-						sourceID: state.mutantType,
-						activatedAtMS: 0,
-						stats: [BonusKey.Armor, BonusKey.MagicResist],
-						intervalAmount: amountARMR,
-						intervalSeconds,
-					},
-				)
+				unit.scalings.add({
+					source: unit,
+					sourceID: state.mutantType,
+					activatedAtMS: 0,
+					stats: [BonusKey.AttackDamage, BonusKey.AbilityPower],
+					intervalAmount: amountADAP,
+					intervalSeconds,
+				})
+				unit.scalings.add({
+					source: unit,
+					sourceID: state.mutantType,
+					activatedAtMS: 0,
+					stats: [BonusKey.Armor, BonusKey.MagicResist],
+					intervalAmount: amountARMR,
+					intervalSeconds,
+				})
 			} else if (state.mutantType === MutantType.Cybernetic) {
 				if (unit.items.length) {
 					const [cyberHP, cyberAD] = getVariables(activeEffect, 'MutantCyberHP', 'MutantCyberAD')
 					variables.push([BonusKey.Health, cyberHP], [BonusKey.AttackDamage, cyberAD])
 				}
 			}
-			return { scalings, variables }
+			return variables
 		},
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
@@ -256,7 +246,7 @@ export const traitEffects = {
 				const [omnivamp] = getVariables(activeEffect, 'MutantBioLeechingOmnivamp')
 				variables.push([BonusKey.VampOmni, omnivamp])
 			}
-			return { variables }
+			return variables
 		},
 		allyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
 			if (state.mutantType === MutantType.VoraciousAppetite) {
@@ -270,12 +260,14 @@ export const traitEffects = {
 
 	[TraitKey.Rivals]: {
 		solo: (unit, activeEffect) => {
+			const variables: BonusVariable[] = []
 			if (unit.name === ChampionKey.Vi) {
 				const [manaReduction] = getVariables(activeEffect, 'ViManaReduction')
-				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.ManaReduction, manaReduction])
+				variables.push([BonusKey.ManaReduction, manaReduction])
 			} else if (unit.name !== ChampionKey.Jinx) {
 				console.log('ERR', TraitKey.Rivals, unit.name)
 			}
+			return variables
 		},
 		enemyDeath: (activeEffect, elapsedMS, dead, [unit]) => {
 			if (unit.name === ChampionKey.Jinx) {
@@ -292,9 +284,8 @@ export const traitEffects = {
 
 	[TraitKey.Scholar]: {
 		team: (unit, activeEffect) => {
-			const scalings: BonusScaling[] = []
 			const [intervalAmount, intervalSeconds] = getVariables(activeEffect, 'ManaPerTick', 'TickRate')
-			scalings.push({
+			unit.scalings.add({
 				source: undefined,
 				sourceID: TraitKey.Scholar,
 				activatedAtMS: 0,
@@ -302,23 +293,17 @@ export const traitEffects = {
 				intervalAmount,
 				intervalSeconds,
 			})
-			return { scalings }
 		},
 	},
 
 	[TraitKey.Scrap]: {
 		team: (unit, activeEffect) => {
-			const shields: ShieldData[] = []
 			const [amountPerComponent] = getVariables(activeEffect, 'HPShieldAmount')
 			const amount = getUnitsOfTeam(unit.team)
 				.reduce((unitAcc, unit) => {
 					return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
 				}, 0)
-			shields.push({
-				source: unit,
-				amount,
-			})
-			return { shields }
+			unit.queueShield(0, unit, { amount })
 		},
 	},
 
@@ -334,14 +319,13 @@ export const traitEffects = {
 
 	[TraitKey.Socialite]: {
 		team: (unit, activeEffect) => {
-			const scalings: BonusScaling[] = []
 			const variables: BonusVariable[] = []
 			const mirrorHex = getMirrorHex(unit.startHex)
 			if (state.socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
 				const [damagePercent, manaPerSecond, omnivampPercent] = getVariables(activeEffect, 'DamagePercent', 'ManaPerSecond', 'OmnivampPercent')
 				variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
 				if (manaPerSecond > 0) {
-					scalings.push({
+					unit.scalings.add({
 						source: unit,
 						sourceID: TraitKey.Socialite,
 						activatedAtMS: 0,
@@ -351,7 +335,7 @@ export const traitEffects = {
 					})
 				}
 			}
-			return { variables, scalings }
+			return variables
 		},
 	},
 

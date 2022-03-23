@@ -8,14 +8,7 @@ import { traitEffects } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { BonusLabelKey, BonusScaling, BonusVariable, ShieldData, SynergyData } from '#/helpers/types'
-
-function getInnateEffectForUnitWith(trait: TraitKey, teamSynergies: SynergyData[]) {
-	const synergy = teamSynergies.find(synergy => synergy.key === trait)
-	return synergy?.activeEffect ?? synergy?.trait.effects[0]
-}
-
-type BonusResults = [[BonusLabelKey, BonusVariable[]][], BonusScaling[], ShieldData[]]
+import type { BonusEntry, BonusVariable, SynergyData } from '#/helpers/types'
 
 export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
 	return {
@@ -59,10 +52,8 @@ export function solveSpellCalculationFrom(unit: ChampionUnit, calculation: Spell
 	return [calculation.asPercent === true ? total * 100 : total, damageType]
 }
 
-export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]): BonusResults {
-	const bonuses: [TraitKey, BonusVariable[]][] = []
-	const bonusScalings: BonusScaling[] = []
-	const bonusShields: ShieldData[] = []
+export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]) {
+	const bonuses: BonusEntry[] = []
 	teamSynergies.forEach(({ key: traitKey, activeEffect }) => {
 		if (activeEffect == null) {
 			return
@@ -74,10 +65,8 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 		const teamEffect = traitEffectData?.teamEffect
 		const teamTraitFn = traitEffectData?.team
 		if (teamTraitFn) {
-			const { variables, scalings, shields } = teamTraitFn(unit, activeEffect)
-			if (variables) { bonusVariables.push(...variables) }
-			if (scalings) { bonusScalings.push(...scalings) }
-			if (shields) { bonusShields.push(...shields) }
+			const variables = teamTraitFn(unit, activeEffect) ?? []
+			bonusVariables.push(...variables)
 		}
 		if (teamEffect != null || unitHasTrait) {
 			const disableDefaultVariables = traitEffectData?.disableDefaultVariables
@@ -122,35 +111,31 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 		if (unitHasTrait) {
 			const soloTraitFn = traitEffectData?.solo
 			if (soloTraitFn) {
-				const { variables, scalings, shields } = soloTraitFn(unit, activeEffect)
-				if (variables) { bonusVariables.push(...variables) }
-				if (scalings) { bonusScalings.push(...scalings) }
-				if (shields) { bonusShields.push(...shields) }
+				const variables = soloTraitFn(unit, activeEffect) ?? []
+				bonusVariables.push(...variables)
 			}
 		}
 		if (bonusVariables.length) {
 			bonuses.push([traitKey, bonusVariables])
 		}
 	})
+
 	for (const trait of unitTraitKeys) {
 		const innateTraitFn = traitEffects[trait]?.innate
 		if (innateTraitFn) {
-			const innateEffect = getInnateEffectForUnitWith(trait, teamSynergies)
+			const synergy = teamSynergies.find(synergy => synergy.key === trait)
+			const innateEffect = synergy?.activeEffect ?? synergy?.trait.effects[0]
 			if (innateEffect) {
-				const { variables, scalings, shields } = innateTraitFn(unit, innateEffect)
+				const variables = innateTraitFn(unit, innateEffect)
 				if (variables) { bonuses.push([trait, variables]) }
-				if (scalings) { bonusScalings.push(...scalings) }
-				if (shields) { bonusShields.push(...shields) }
 			}
 		}
 	}
-	return [bonuses, bonusScalings, bonusShields]
+	return bonuses
 }
 
-export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): BonusResults {
-	const bonuses: [ItemKey, BonusVariable[]][] = []
-	const bonusScalings: BonusScaling[] = []
-	const bonusShields: ShieldData[] = []
+export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
+	const bonuses: BonusEntry[] = []
 	items.forEach(item => {
 		const disableDefaultVariables = itemEffects[item.id as ItemKey]?.disableDefaultVariables
 		const bonusVariables: BonusVariable[] = []
@@ -166,14 +151,12 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]): Bon
 
 		const itemFn = itemEffects[item.id as ItemKey]?.innate
 		if (itemFn) {
-			const { variables, scalings, shields } = itemFn(item, unit)
-			if (variables) { bonusVariables.push(...variables) }
-			if (scalings) { bonusScalings.push(...scalings) }
-			if (shields) { bonusShields.push(...shields) }
+			const variables = itemFn(item, unit) ?? []
+			bonusVariables.push(...variables)
 		}
 		if (bonusVariables.length) {
 			bonuses.push([item.id, bonusVariables])
 		}
 	})
-	return [bonuses, bonusScalings, bonusShields]
+	return bonuses
 }

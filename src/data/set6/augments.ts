@@ -12,7 +12,7 @@ import { getBestAsMax, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { TeamNumber } from '#/helpers/types'
+import type { ShieldData, TeamNumber } from '#/helpers/types'
 
 export interface AugmentFns {
 	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
@@ -21,6 +21,7 @@ export interface AugmentFns {
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
+	onShield?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, shield: ShieldData, target: ChampionUnit, source: ChampionUnit) => void
 	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit) => void
 	hpThreshold?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
@@ -108,9 +109,8 @@ export const augmentEffects = {
 					shield.amount = Math.min(maxShield, shield.amount + overheal)
 					shield.activated = true
 				} else {
-					holder.shields.push({
+					holder.queueShield(0, holder, {
 						id,
-						source: holder,
 						amount: overheal,
 					})
 				}
@@ -182,10 +182,9 @@ export const augmentEffects = {
 					const adjacentHexes = getHexRing(unit.startHex)
 					return !units.some(unit => unit.isIn(adjacentHexes))
 				})
-				.forEach(unit => unit.shields.push({
-					source: unit,
+				.forEach(unit => unit.queueShield(0, unit, {
 					amount: unit.healthMax * maxHPPercentMultiplier / 100,
-					expiresAtMS: durationSeconds * 1000,
+					expiresAfterMS: durationSeconds * 1000,
 				}))
 		},
 	},
@@ -302,10 +301,9 @@ export const augmentEffects = {
 			const [durationSeconds, apMultiplier] = getVariables(augment, 'ShieldDuration', 'APShield')
 			units
 				.filter(unit => unit.hasTrait(TraitKey.Arcanist))
-				.forEach(unit => unit.shields.push({
-					source: unit,
+				.forEach(unit => unit.queueShield(0, unit, {
 					amount: unit.abilityPower() * apMultiplier / 100,
-					expiresAtMS: durationSeconds * 1000,
+					expiresAfterMS: durationSeconds * 1000,
 				}))
 		},
 	},
@@ -449,11 +447,10 @@ export const augmentEffects = {
 	[AugmentGroupKey.VerdantVeil]: {
 		apply: (augment, team, units) => {
 			const [durationSeconds] = getVariables(augment, 'Duration')
-			units.forEach(unit => unit.shields.push({
-				source: unit,
+			units.forEach(unit => unit.queueShield(0, unit, {
 				amount: 0,
 				isSpellShield: true,
-				expiresAtMS: durationSeconds * 1000,
+				expiresAfterMS: durationSeconds * 1000,
 			}))
 		},
 	},
