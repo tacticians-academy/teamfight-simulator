@@ -2,10 +2,10 @@
 import DisplayTrait from '#/components/Sidebar/DisplayTrait.vue'
 import SelectPlayersAugments from '#/components/Sidebar/SelectPlayersAugments.vue'
 
-import { useStore } from '#/game/store'
+import { useStore, clearBoardStateAndReset } from '#/game/store'
 
 import { getTeamName } from '#/helpers/boardUtils'
-import { clearUnits } from '#/helpers/storage'
+import { clearBoardStorage } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 
 const { getters: { synergiesByTeam }, state } = useStore()
@@ -13,14 +13,15 @@ const { getters: { synergiesByTeam }, state } = useStore()
 function onReset() {
 	const confirmed = window.confirm('Clear all units from board?')
 	if (confirmed) {
-		clearUnits()
+		clearBoardStateAndReset()
+		clearBoardStorage()
 	}
 }
 </script>
 
 <template>
 <div class="p-1">
-	<form>
+	<form @submit.prevent>
 		<fieldset :disabled="state.isRunning">
 			<div>
 				<label for="select-stage" class="mr-1">Stage:</label>
@@ -34,12 +35,12 @@ function onReset() {
 					<option v-for="type in MutantType" :key="type">{{ type }}</option>
 				</select>
 			</div>
+			<SelectPlayersAugments />
 			<div v-if="!state.isRunning && state.units.length">
-				<button class="px-3 h-8 my-2 bg-quaternary rounded-full" @click.prevent="onReset">Reset board...</button>
+				<button class="px-3 h-8 mb-2 bg-quaternary rounded-full" @click="onReset">Reset board...</button>
 			</div>
 		</fieldset>
 	</form>
-	<SelectPlayersAugments />
 	<template v-if="state.units.length">
 		<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
 			<div class="font-semibold">Team {{ getTeamName(teamIndex) }}</div>

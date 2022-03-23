@@ -143,8 +143,9 @@ watch([getters.augmentCount], () => {
 
 // Store
 
-export function clearUnitsAndReset() {
+export function clearBoardStateAndReset() {
 	state.units = []
+	state.augmentsByTeam.forEach(augments => augments.forEach((augment, index) => augments[index] = null))
 	resetUnitsAfterUpdating()
 }
 

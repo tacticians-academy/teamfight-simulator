@@ -1,7 +1,7 @@
 import type { AugmentData } from '@tacticians-academy/academy-library'
 import { activeAugments } from '@tacticians-academy/academy-library/dist/set6/augments'
 
-import { state, clearUnitsAndReset } from '#/game/store'
+import { state } from '#/game/store'
 
 import type { StorageChampion } from '#/helpers/types'
 
@@ -38,6 +38,11 @@ export function setStorageJSON(key: StorageKey, value: Object) {
 	return setStorage(key, JSON.stringify(value))
 }
 
+export function removeStorage(key: StorageKey) {
+	window.localStorage.removeItem(key)
+
+}
+
 // Augments
 
 export function saveTeamAugments() {
@@ -55,9 +60,9 @@ export function loadTeamAugments(): [AugmentList, AugmentList] {
 
 // Units
 
-export function clearUnits() {
-	clearUnitsAndReset()
-	window.localStorage.setItem(StorageKey.Units, '')
+export function clearBoardStorage() {
+	removeStorage(StorageKey.Units)
+	removeStorage(StorageKey.Augments)
 }
 
 export function saveUnits() {
