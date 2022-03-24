@@ -9,10 +9,11 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { applyGrievousBurn, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
-import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
+import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { ShieldData, TeamNumber } from '#/helpers/types'
+import { randomItem } from '#/helpers/utils'
 
 export interface AugmentFns {
 	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
@@ -244,6 +245,28 @@ export const augmentEffects = {
 			units
 				.filter(unit => !isInBackLines(unit))
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.KnifesEdge, [BonusKey.AttackDamage, adPerStar * unit.starLevel]))
+		},
+	},
+
+	[AugmentGroupKey.LudensEcho]: {
+		onFirstEffectTargetHit: (augment, elapsedMS, target, source, damageType) => {
+			if (damageType !== DamageType.magic) { return }
+
+			const [magicDamage] = getVariables(augment, 'MagicDamage')
+			const targets = [target]
+			const nearestToTarget = getClosestAttackableOfTeam(target.team, target, state.units)
+			if (nearestToTarget.length) {
+				targets.push(randomItem(nearestToTarget)!)
+			}
+			targets.forEach(unit => target.queueProjectileEffect(elapsedMS, undefined, {
+				target: unit,
+				damageCalculation: createDamageCalculation(AugmentGroupKey.LudensEcho, magicDamage, DamageType.magic),
+				damageSourceType: DamageSourceType.item,
+				missile: {
+					speedInitial: 1000,
+					// travelTime: 1, //TODO
+				},
+			}))
 		},
 	},
 
