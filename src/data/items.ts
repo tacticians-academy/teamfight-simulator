@@ -8,7 +8,7 @@ import { ShapeEffectRectangle } from '#/game/ShapeEffect'
 import { activatedCheck, state } from '#/game/store'
 
 import { applyGrievousBurn, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
-import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getNearestAttackableEnemies } from '#/helpers/boardUtils'
+import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getClosestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -273,7 +273,7 @@ export const itemEffects = {
 	[ItemKey.RunaansHurricane]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const [boltCount, boltMultiplier] = getVariables(item, 'AdditionalTargets', 'MultiplierForDamage')
-			const additionalTargets = getNearestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
+			const additionalTargets = getClosestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
 			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, false, boltMultiplier / 100) //TODO verify
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
 				const boltTarget = additionalTargets[boltIndex]

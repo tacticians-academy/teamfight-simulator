@@ -164,7 +164,11 @@ export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	return false
 }
 
-export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
+export function getClosestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
+	return getClosestAttackableOfTeam(unit.opposingTeam(), unit, allUnits, range, minimumUnits)
+}
+
+export function getClosestAttackableOfTeam(team: TeamNumber, unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
 	let currentRange = 0
 	if (range == null) {
 		range = unit.range()
@@ -180,7 +184,7 @@ export function getNearestAttackableEnemies(unit: ChampionUnit, allUnits: Champi
 					checkedHexes.push(surroundingHex)
 					visitedSurroundingHexes.push(surroundingHex)
 					for (const checkUnit of allUnits) {
-						if (checkUnit.isAttackable() && checkUnit.team !== unit.team && checkUnit.isAt(surroundingHex)) {
+						if (checkUnit.isAttackable() && checkUnit.team === team && checkUnit.isAt(surroundingHex)) {
 							enemies.push(checkUnit)
 						}
 					}
