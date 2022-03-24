@@ -12,22 +12,7 @@ import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getClosestAttackableE
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BonusVariable, EffectResults, HexCoord } from '#/helpers/types'
-
-interface ItemFns {
-	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
-	apply?: (item: ItemData, unit: ChampionUnit) => void
-	disableDefaultVariables?: true | BonusKey[]
-	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
-	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
-	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
-	modifyDamageByHolder?: (item: ItemData, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
-	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, holder: ChampionUnit, canReProc: boolean) => void
-	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, isOriginalSource: boolean, holder: ChampionUnit, source: ChampionUnit | undefined, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
-	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
-	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
-	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
-}
+import type { BonusVariable, HexCoord, ItemEffects } from '#/helpers/types'
 
 function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
 	const checkKey = unit.instanceID + itemID
@@ -392,7 +377,7 @@ export const itemEffects = {
 		},
 	},
 
-} as { [key in ItemKey]?: ItemFns }
+} as ItemEffects
 
 function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 	const [stackAD, stackAP, maxStacks, resistsAtCap] = getVariables(item, 'StackingAD', 'StackingAP', 'StackCap', 'BonusResistsAtStackCap')

@@ -10,26 +10,7 @@ import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } 
 import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
-import type { BonusVariable, EffectResults, StarLevel, TeamNumber } from '#/helpers/types'
-
-type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
-interface TraitFns {
-	teamEffect: boolean | number | BonusKey[]
-	disableDefaultVariables?: true | BonusKey[]
-	solo?: TraitEffectFn
-	team?: TraitEffectFn
-	applyForOthers?: (activeEffect: TraitEffectData, unit: ChampionUnit) => void
-	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber, units: ChampionUnit[]) => void
-	innate?: TraitEffectFn
-	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
-	allyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
-	enemyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => number
-	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
-	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
-	modifyDamageByHolder?: (activeEffect: TraitEffectData, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
-	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-}
+import type { BonusVariable, StarLevel, TeamNumber, TraitEffects } from '#/helpers/types'
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
 
@@ -386,7 +367,7 @@ export const traitEffects = {
 		},
 	},
 
-} as { [key in TraitKey]?: TraitFns }
+} as TraitEffects
 
 function getMutantBonusFor({ variables }: TraitEffectData, mutantType: MutantType, bonus: MutantBonus) {
 	if (state.mutantType !== mutantType) {

@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { getIconURL } from '@tacticians-academy/academy-library'
 import type { AugmentData } from '@tacticians-academy/academy-library'
-import { activeAugments, emptyImplementationAugments } from '@tacticians-academy/academy-library/dist/set6/augments'
 import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 
-import { augmentEffects } from '#/data/set6/augments'
-
-import { useStore, setAugmentFor } from '#/game/store'
+import { useStore, setAugmentFor, setData } from '#/game/store'
 
 import type { TeamNumber } from '#/helpers/types'
 
@@ -25,12 +22,14 @@ function onAugment(augment: AugmentData | null) {
 	selectAugment.value = null
 }
 
-const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
-
-activeAugments.forEach(augment => {
-	const groupID = augment.groupID as AugmentGroupKey
-	const index = emptyImplementationAugments.includes(groupID) || groupID.endsWith('Crest') || groupID.endsWith('Crown') ? 2 : (augmentEffects[groupID] || groupID.endsWith('Heart') || groupID.endsWith('Soul') ? 0 : 1)
-	augmentGroups[index][1].push(augment)
+const augmentGroups = computed(() => {
+	const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
+	setData.activeAugments.forEach(augment => {
+		const groupID = augment.groupID as AugmentGroupKey
+		const index = setData.emptyImplementationAugments.includes(groupID) || groupID.endsWith('Crest') || groupID.endsWith('Crown') ? 2 : (setData.augmentEffects[groupID] || groupID.endsWith('Heart') || groupID.endsWith('Soul') ? 0 : 1)
+		augmentGroups[index][1].push(augment)
+	})
+	return augmentGroups
 })
 </script>
 
@@ -42,7 +41,7 @@ activeAugments.forEach(augment => {
 			<div class="w-full text-secondary">{{ teamNumber === 0 ? 'Blue' : 'Red' }}:</div>
 			<button
 				v-for="(augment, augmentIndex) in augments" :key="augmentIndex"
-				class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURL(augment)})` : undefined }"
+				class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURL(state.setNumber, augment)})` : undefined }"
 				:disabled="state.isRunning"
 				@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
 			>
@@ -70,7 +69,7 @@ activeAugments.forEach(augment => {
 				<div class="flex flex-wrap justify-center">
 					<button
 						v-for="augment in augments.filter(a => a.tier - 1 === selectAugment![0])" :key="augment.name"
-						class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURL(augment)})` : undefined }"
+						class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURL(state.setNumber, augment)})` : undefined }"
 						@click="onAugment(augment)"
 					>
 						<span class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>

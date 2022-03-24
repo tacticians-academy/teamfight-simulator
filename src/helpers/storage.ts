@@ -1,7 +1,8 @@
-import type { AugmentData } from '@tacticians-academy/academy-library'
-import { activeAugments } from '@tacticians-academy/academy-library/dist/set6/augments'
+import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library'
 
-import { state } from '#/game/store'
+const DEFAULT_SET: SetNumber = 6
+
+import { setData, state } from '#/game/store'
 
 import type { StorageChampion } from '#/helpers/types'
 
@@ -13,33 +14,48 @@ export const enum StorageKey {
 	Units = 'TFTSIM_units',
 }
 
+export function getSetNumber(): SetNumber {
+	const value = window.localStorage.getItem('TFTSIM_set')
+	if (value != null) {
+		const int = parseInt(value, 10)
+		if (!isNaN(int)) {
+			return int as SetNumber
+		}
+	}
+	return DEFAULT_SET
+}
+
 // Generic
 
-export function getStorageInt(key: StorageKey, defaultValue: number = 0) {
-	const value = window.localStorage.getItem(key)
+function keyToSet(key: StorageKey, set: SetNumber): string {
+	return key.replace('_', set.toString())
+}
+
+export function getStorageInt(set: SetNumber, key: StorageKey, defaultValue: number = 0) {
+	const value = window.localStorage.getItem(keyToSet(key, set))
 	if (value == null) {
 		return defaultValue
 	}
 	const int = parseInt(value, 10)
 	return isNaN(int) ? defaultValue : int
 }
-export function getStorageString(key: StorageKey) {
-	return window.localStorage.getItem(key)
+export function getStorageString(set: SetNumber, key: StorageKey) {
+	return window.localStorage.getItem(keyToSet(key, set))
 }
-export function getStorageJSON(key: StorageKey) {
-	const raw = window.localStorage.getItem(key)
+export function getStorageJSON(set: SetNumber, key: StorageKey) {
+	const raw = window.localStorage.getItem(keyToSet(key, set))
 	return raw != null && raw.length ? JSON.parse(raw) : null
 }
 
-export function setStorage(key: StorageKey, value: Object) {
-	return window.localStorage.setItem(key, value.toString())
+export function setStorage(set: SetNumber, key: StorageKey, value: Object) {
+	return window.localStorage.setItem(keyToSet(key, set), value.toString())
 }
-export function setStorageJSON(key: StorageKey, value: Object) {
-	return setStorage(key, JSON.stringify(value))
+export function setStorageJSON(set: SetNumber, key: StorageKey, value: Object) {
+	return setStorage(set, key, JSON.stringify(value))
 }
 
-export function removeStorage(key: StorageKey) {
-	window.localStorage.removeItem(key)
+export function removeStorage(set: SetNumber, key: StorageKey) {
+	window.localStorage.removeItem(keyToSet(key, set))
 
 }
 
@@ -53,19 +69,19 @@ export function saveTeamAugments() {
 
 type AugmentList = [AugmentData | null, AugmentData | null, AugmentData | null]
 
-export function loadTeamAugments(): [AugmentList, AugmentList] {
-	const json = getStorageJSON(StorageKey.Augments)
-	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
+export async function loadTeamAugments(set: SetNumber): Promise<[AugmentList, AugmentList]> {
+	const json = getStorageJSON(set, StorageKey.Augments)
+	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => setData.activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
 }
 
 // Units
 
-export function clearBoardStorage() {
-	removeStorage(StorageKey.Units)
-	removeStorage(StorageKey.Augments)
+export function clearBoardStorage(set: SetNumber) {
+	removeStorage(set, StorageKey.Units)
+	removeStorage(set, StorageKey.Augments)
 }
 
-export function saveUnits() {
+export function saveUnits(set: SetNumber) {
 	const output: StorageChampion[] = state.units
 		.filter(unit => !unit.wasSpawned)
 		.map(unit => ({
@@ -75,12 +91,12 @@ export function saveUnits() {
 			items: unit.items.map(item => item.id),
 		}))
 	if (output.length) {
-		window.localStorage.setItem(StorageKey.Units, JSON.stringify(output))
+		window.localStorage.setItem(keyToSet(StorageKey.Units, set), JSON.stringify(output))
 	}
 }
 
-export function getSavedUnits() {
-	return (getStorageJSON(StorageKey.Units) ?? []) as StorageChampion[]
+export function getSavedUnits(set: SetNumber) {
+	return (getStorageJSON(set, StorageKey.Units) ?? []) as StorageChampion[]
 }
 
 //SEED

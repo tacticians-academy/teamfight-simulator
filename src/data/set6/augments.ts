@@ -12,22 +12,8 @@ import { applyGrievousBurn, getBestAsMax, getUnitsOfTeam, getVariables, spawnUni
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { ShieldData, TeamNumber } from '#/helpers/types'
+import type { AugmentEffects, TeamNumber } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
-
-export interface AugmentFns {
-	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
-	teamWideTrait?: TraitKey
-	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
-	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
-	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
-	onShield?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, shield: ShieldData, target: ChampionUnit, source: ChampionUnit) => void
-	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
-	onFirstEffectTargetHit?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, damageType: DamageType | undefined) => void
-	hpThreshold?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
-}
 
 export const augmentEffects = {
 
@@ -521,7 +507,7 @@ export const augmentEffects = {
 		},
 	},
 
-} as {[key in AugmentGroupKey]?: AugmentFns}
+} as AugmentEffects
 
 function spawnWoodlands(cloneCount: number, augment: AugmentData, units: ChampionUnit[], valueFn: (unit: ChampionUnit) => number) {
 	const bestUnit = getBestAsMax(true, units, valueFn)

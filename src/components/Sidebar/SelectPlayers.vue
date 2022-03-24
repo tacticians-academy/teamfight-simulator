@@ -14,7 +14,7 @@ function onReset() {
 	const confirmed = window.confirm('Clear all units from board?')
 	if (confirmed) {
 		clearBoardStateAndReset()
-		clearBoardStorage()
+		clearBoardStorage(state.setNumber)
 	}
 }
 </script>
@@ -29,13 +29,13 @@ function onReset() {
 					<option v-for="stageNumber in 9" :key="stageNumber">{{ stageNumber }}</option>
 				</select>
 			</div>
-			<div>
+			<div v-if="state.setNumber === 6">
 				<label for="select-mutant" class="mr-1">Mutants:</label>
 				<select id="select-mutant" v-model="state.mutantType" class="w-full">
 					<option v-for="type in MutantType" :key="type">{{ type }}</option>
 				</select>
 			</div>
-			<SelectPlayersAugments />
+			<SelectPlayersAugments v-if="state.setNumber >= 6" />
 			<div v-if="!state.isRunning && state.units.length">
 				<button class="px-3 h-8 mb-2 bg-quaternary rounded-full" @click="onReset">Reset board...</button>
 			</div>

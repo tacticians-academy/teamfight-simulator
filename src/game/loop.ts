@@ -1,13 +1,10 @@
 import { BonusKey } from '@tacticians-academy/academy-library'
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
-import { itemEffects } from '#/data/items'
-import { traitEffects } from '#/data/set6/traits'
-
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { GameEffect } from '#/game/GameEffect'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
-import { getters, state } from '#/game/store'
+import { getters, setData, state } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import type { TeamNumber } from '#/helpers/types'
@@ -89,7 +86,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (activeEffect) {
-				const updateFn = traitEffects[key]?.update
+				const updateFn = setData.traitEffects[key]?.update
 				if (updateFn) {
 					updateFn(activeEffect, elapsedMS, getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key))
 				}
@@ -112,7 +109,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		unit.updateShields(elapsedMS)
 		unit.updateStatusEffects(elapsedMS)
 		unit.items.forEach((item, index) => {
-			itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
+			setData.itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
 		for (const pendingBonus of unit.pendingBonuses) {
 			const [startsAtMS, pendingKey, bonuses] = pendingBonus

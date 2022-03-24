@@ -3,12 +3,10 @@ import type { ItemData, SpellCalculation } from '@tacticians-academy/academy-lib
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { itemEffects } from '#/data/items'
-import { traitEffects } from '#/data/set6/traits'
-
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 import type { BonusEntry, BonusVariable, SynergyData } from '#/helpers/types'
+import { setData } from '#/game/store'
 
 export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, statFromTarget?: boolean, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
 	return {
@@ -62,7 +60,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 
 		const unitHasTrait = unitTraitKeys.includes(traitKey)
 		const bonusVariables: BonusVariable[] = []
-		const traitEffectData = traitEffects[traitKey]
+		const traitEffectData = setData.traitEffects[traitKey]
 		const teamEffect = traitEffectData?.teamEffect
 		const teamTraitFn = traitEffectData?.team
 		if (teamTraitFn) {
@@ -122,7 +120,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 	})
 
 	for (const trait of unitTraitKeys) {
-		const innateTraitFn = traitEffects[trait]?.innate
+		const innateTraitFn = setData.traitEffects[trait]?.innate
 		if (innateTraitFn) {
 			const synergy = teamSynergies.find(synergy => synergy.key === trait)
 			const innateEffect = synergy?.activeEffect ?? synergy?.trait.effects[0]
@@ -138,7 +136,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
 	const bonuses: BonusEntry[] = []
 	items.forEach(item => {
-		const disableDefaultVariables = itemEffects[item.id as ItemKey]?.disableDefaultVariables
+		const disableDefaultVariables = setData.itemEffects[item.id as ItemKey]?.disableDefaultVariables
 		const bonusVariables: BonusVariable[] = []
 		for (const effectKey in item.effects) {
 			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(effectKey as BonusKey))) {
@@ -150,8 +148,8 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
 			}
 		}
 
-		const itemFn = itemEffects[item.id as ItemKey]?.innate
-		if (itemFn) {
+		const itemFn = setData.itemEffects[item.id as ItemKey]?.innate
+		if (itemFn != null) {
 			const variables = itemFn(item, unit) ?? []
 			bonusVariables.push(...variables)
 		}

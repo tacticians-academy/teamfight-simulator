@@ -1,4 +1,4 @@
-import type { BonusKey, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+import type { AugmentData, BonusKey, ChampionSpellData, DamageType, ItemData, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -154,3 +154,60 @@ export interface ShieldEntry {
 }
 
 export type EffectResults = BonusVariable[] | void
+
+export interface AugmentFns {
+	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
+	teamWideTrait?: TraitKey
+	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
+	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
+	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
+	onShield?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, shield: ShieldData, target: ChampionUnit, source: ChampionUnit) => void
+	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
+	onFirstEffectTargetHit?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, damageType: DamageType | undefined) => void
+	hpThreshold?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+}
+export type AugmentEffects = {[key in string]?: AugmentFns}
+
+export interface ChampionFns {
+	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
+}
+export type ChampionEffects = {[key in string]?: ChampionFns}
+
+interface ItemFns {
+	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
+	apply?: (item: ItemData, unit: ChampionUnit) => void
+	disableDefaultVariables?: true | BonusKey[]
+	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
+	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
+	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	modifyDamageByHolder?: (item: ItemData, isOriginalSource: boolean, target: ChampionUnit, holder: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
+	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, holder: ChampionUnit, canReProc: boolean) => void
+	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, isOriginalSource: boolean, holder: ChampionUnit, source: ChampionUnit | undefined, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
+	hpThreshold?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
+	deathOfHolder?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
+}
+export type ItemEffects = { [key in string]?: ItemFns }
+
+type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => EffectResults
+interface TraitFns {
+	teamEffect?: boolean | number | BonusKey[]
+	disableDefaultVariables?: true | BonusKey[]
+	solo?: TraitEffectFn
+	team?: TraitEffectFn
+	applyForOthers?: (activeEffect: TraitEffectData, unit: ChampionUnit) => void
+	onceForTeam?: (activeEffect: TraitEffectData, teamNumber: TeamNumber, units: ChampionUnit[]) => void
+	innate?: TraitEffectFn
+	update?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) => EffectResults
+	allyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => void
+	enemyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => void
+	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
+	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => void
+	modifyDamageByHolder?: (activeEffect: TraitEffectData, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, damageType: DamageType) => number
+	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+}
+export type TraitEffects = { [key in string]?: TraitFns }

@@ -3,10 +3,12 @@ import '#/assets/main.postcss'
 
 import Board from '#/components/Board.vue'
 import Sidebar from '#/components/Sidebar/Sidebar.vue'
+
+import { state } from '#/game/store'
 </script>
 
 <template>
-<div class="h-full  flex">
+<div v-if="!state.loadedSetNumber" class="h-full  flex">
 	<Sidebar />
 	<Board />
 </div>

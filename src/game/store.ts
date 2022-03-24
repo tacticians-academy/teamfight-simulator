@@ -1,17 +1,14 @@
-import { computed, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, reactive, ref, shallowReactive, watch, watchEffect } from 'vue'
 
 import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
-import type { AugmentData, ItemData, TraitData } from '@tacticians-academy/academy-library'
+import type { AugmentData, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
+import { importAugments, importChampions, importItems, importTraits } from '@tacticians-academy/academy-library/dist/imports'
 import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { currentItems, ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import { traits } from '@tacticians-academy/academy-library/dist/set6/traits'
+import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { augmentEffects } from '#/data/set6/augments'
-import type { AugmentFns } from '#/data/set6/augments'
-import { itemEffects } from '#/data/items'
-import { traitEffects } from '#/data/set6/traits'
+import { importAugmentEffects, importChampionEffects, importItemEffects, importTraitEffects } from '#/data/imports'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/HexEffect'
@@ -22,9 +19,10 @@ import { cancelLoop, delayUntil } from '#/game/loop'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import type { DraggableType } from '#/helpers/dragDrop'
-import { getSavedUnits, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
+import { getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
-import type { HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/helpers/types'
+import type { AugmentEffects, AugmentFns, HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/helpers/types'
+import type { ChampionEffects, ItemEffects, TraitEffects } from '#/helpers/types'
 
 type TraitAndUnits = [TraitData, string[]]
 
@@ -32,22 +30,70 @@ type TraitAndUnits = [TraitData, string[]]
 
 const hexRowsCols: HexRowCol[][] = buildBoard(true)
 
-export const state = reactive({
-	isRunning: false,
-	winningTeam: null as TeamNumber | null,
-	hexRowsCols,
-	dragUnit: null as ChampionUnit | null,
-	units: [] as ChampionUnit[],
-	hexEffects: new Set<HexEffect>(),
-	projectileEffects: new Set<ProjectileEffect>(),
-	shapeEffects: new Set<ShapeEffect>(),
-
-	augmentsByTeam: loadTeamAugments(),
-
-	socialiteHexes: (getStorageJSON(StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
-	stageNumber: ref(getStorageInt(StorageKey.StageNumber, 3)),
-	mutantType: ref((getStorageString(StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
+export const setData = shallowReactive({
+	activeAugments: [] as AugmentData[],
+	emptyImplementationAugments: [] as string[],
+	champions: [] as ChampionData[],
+	traits: [] as TraitData[],
+	currentItems: [] as ItemData[],
+	completedItems: [] as ItemData[],
+	componentItems: [] as ItemData[],
+	spatulaItems: [] as ItemData[],
+	augmentEffects: {} as AugmentEffects,
+	championEffects: {} as ChampionEffects,
+	itemEffects: {} as ItemEffects,
+	traitEffects: {} as TraitEffects,
 })
+
+async function initState() {
+	const setNumber = getSetNumber()
+	const state = {
+		setNumber,
+		loadedSetNumber: null as SetNumber | null,
+		isRunning: false,
+		winningTeam: null as TeamNumber | null,
+		hexRowsCols,
+		dragUnit: null as ChampionUnit | null,
+		units: [] as ChampionUnit[],
+		hexEffects: new Set<HexEffect>(),
+		projectileEffects: new Set<ProjectileEffect>(),
+		shapeEffects: new Set<ShapeEffect>(),
+
+		augmentsByTeam: await loadTeamAugments(setNumber),
+
+		socialiteHexes: (getStorageJSON(setNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
+		stageNumber: ref(getStorageInt(setNumber, StorageKey.StageNumber, 3)),
+		mutantType: ref((getStorageString(setNumber, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
+	}
+
+	const { activeAugments, emptyImplementationAugments } = await importAugments(setNumber)
+	const { champions } = await importChampions(setNumber)
+	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(setNumber)
+	const { traits } = await importTraits(setNumber)
+	setData.activeAugments = activeAugments ?? []
+	setData.emptyImplementationAugments = emptyImplementationAugments ?? []
+	setData.champions = champions ?? []
+	setData.currentItems = currentItems ?? []
+	setData.completedItems = completedItems ?? []
+	setData.componentItems = componentItems ?? []
+	setData.spatulaItems = spatulaItems ?? []
+	setData.traits = traits ?? []
+
+	const promises = [
+		importAugmentEffects(setNumber).then((data: any) => setData.augmentEffects = data.augmentEffects ?? {}),
+		importChampionEffects(setNumber).then((data: any) => setData.championEffects = data.championEffects ?? {}),
+		importItemEffects(setNumber).then((data: any) => setData.itemEffects = data.itemEffects ?? {}),
+		importTraitEffects(setNumber).then((data: any) => setData.traitEffects = data.traitEffects ?? {}),
+	]
+	Promise.all(promises).then(() => {
+		state.loadedSetNumber = setNumber
+		resetUnitsAfterUpdating()
+	})
+	// console.log(setData)
+
+	return state
+}
+export const state = reactive(await initState())
 
 export const activatedCheck: Record<string, number | undefined> = {}
 export const thresholdCheck: Record<string, number | undefined> = {}
@@ -80,7 +126,7 @@ export const getters = {
 				const suffix = augment.name.endsWith('Heart') ? 'Heart' : (augment.name.endsWith('Soul') ? 'Soul' : undefined)
 				if (!suffix) { return }
 				const traitName = augment.name.replace(suffix, '').trim()
-				const trait = traits.find(trait => trait.name === traitName)
+				const trait = setData.traits.find(trait => trait.name === traitName)
 				if (!trait) { return console.log('ERR', traitName, 'missing augment trait', augment.name) }
 
 				let entry = traitsAndUnits.find(([teamTrait]) => teamTrait.name === traitName)
@@ -124,18 +170,18 @@ export const getters = {
 
 	activeAugmentEffectsByTeam: computed(() => {
 		return state.augmentsByTeam
-			.map(augments => augments.filter((e): e is AugmentData => !!e).map(augment => [augment, augmentEffects[augment.groupID as AugmentGroupKey]] as [AugmentData, AugmentFns]).filter(([augment, effects]) => effects != null))
+			.map(augments => augments.filter((e): e is AugmentData => !!e).map(augment => [augment, setData.augmentEffects[augment.groupID as AugmentGroupKey]] as [AugmentData, AugmentFns]).filter(([augment, effects]) => effects != null))
 	}),
 }
 
 // Watch
 
 watch([getters.mutantType], () => {
-	setStorage(StorageKey.Mutant, state.mutantType)
+	setStorage(state.setNumber, StorageKey.Mutant, state.mutantType)
 	resetUnitsAfterUpdating()
 })
 watchEffect(() => {
-	setStorage(StorageKey.StageNumber, state.stageNumber)
+	setStorage(state.setNumber, StorageKey.StageNumber, state.stageNumber)
 })
 watch([getters.augmentCount], () => {
 	resetUnitsAfterUpdating()
@@ -180,7 +226,7 @@ function resetUnitsAfterUpdating() {
 
 	state.units.forEach(unit => {
 		unit.items.forEach((item, index) => {
-			const itemEffect = itemEffects[item.id as ItemKey]
+			const itemEffect = setData.itemEffects[item.id as ItemKey]
 			if (itemEffect) {
 				itemEffect.apply?.(item, unit)
 				if (itemEffect.adjacentHexBuff) {
@@ -197,7 +243,7 @@ function resetUnitsAfterUpdating() {
 	synergiesByTeam.forEach((teamSynergies, teamNumber) => {
 		teamSynergies.forEach(({ key, activeEffect }) => {
 			if (!activeEffect) { return }
-			const traitEffectFns = traitEffects[key]
+			const traitEffectFns = setData.traitEffects[key]
 			if (!traitEffectFns) { return }
 			const traitUnits = getAliveUnitsOfTeamWithTrait(teamNumber as TeamNumber, key)
 			if (traitEffectFns.applyForOthers) {
@@ -216,7 +262,7 @@ function resetUnitsAfterUpdating() {
 }
 
 function getItemFrom(name: string) {
-	const item = currentItems.find(item => item.name === name)
+	const item = setData.currentItems.find(item => item.name === name)
 	if (!item) {
 		console.log('Invalid item', name)
 	}
@@ -231,7 +277,7 @@ const store = {
 	loadUnits() {
 		if (!state.units.length) {
 			const synergiesByTeam = [[], []]
-			const units = getSavedUnits()
+			const units = getSavedUnits(state.setNumber)
 				.filter(storageChampion => { //TODO remove
 					if (storageChampion.hex == null) {
 						storageChampion.hex = (storageChampion as any).coord
@@ -240,7 +286,7 @@ const store = {
 				})
 				.map(storageChampion => {
 					const championItems = storageChampion.items
-						.map(itemKey => currentItems.find(item => item.id === itemKey))
+						.map(itemKey => setData.currentItems.find(item => item.id === itemKey))
 						.filter((item): item is ItemData => !!item)
 					const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
 					champion.items = championItems
@@ -255,13 +301,13 @@ const store = {
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
 		resetUnitsAfterUpdating()
-		saveUnits()
+		saveUnits(state.setNumber)
 	},
 	deleteItem(itemName: string, fromUnit: ChampionUnit) {
 		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
 		state.dragUnit = null
 		fromUnit.genericReset()
-		saveUnits()
+		saveUnits(state.setNumber)
 		resetUnitsAfterUpdating()
 	},
 	_addItem(item: ItemData, champion: ChampionUnit) {
@@ -279,7 +325,7 @@ const store = {
 		}
 		if (item.name.endsWith('Emblem')) {
 			const emblemTrait = item.name.replace(' Emblem', '') as TraitKey
-			const trait = traits.find(trait => trait.name === emblemTrait)
+			const trait = setData.traits.find(trait => trait.name === emblemTrait)
 			if (trait == null) {
 				console.log('ERR: No trait for emblem', item)
 			} else {
@@ -294,7 +340,7 @@ const store = {
 		}
 		champion.items.push(item)
 		champion.genericReset()
-		saveUnits()
+		saveUnits(state.setNumber)
 		return true
 	},
 	addItemName(itemName: string, champion: ChampionUnit) {
@@ -338,7 +384,7 @@ const store = {
 	_deleteUnit(hex: HexCoord) {
 		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(hex))
 		state.dragUnit = null
-		saveUnits()
+		saveUnits(state.setNumber)
 	},
 	deleteUnit(hex: HexCoord) {
 		store._deleteUnit(hex)
@@ -416,7 +462,7 @@ export function setSocialiteHex(index: number, hex: HexCoord | null) {
 		})
 	}
 	state.socialiteHexes[index] = hex
-	setStorageJSON(StorageKey.SocialiteHexes, state.socialiteHexes)
+	setStorageJSON(state.setNumber, StorageKey.SocialiteHexes, state.socialiteHexes)
 }
 
 export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {

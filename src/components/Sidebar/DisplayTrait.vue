@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 
-import { ASSET_PREFIX, substituteVariables, getIconURL } from '@tacticians-academy/academy-library'
+import { substituteVariables, getIconURL, getAssetPrefixFor } from '@tacticians-academy/academy-library'
 import type { EffectVariables, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
+
+import { state } from '#/game/store'
 
 const props = defineProps<{
 	trait: TraitData
@@ -11,9 +13,9 @@ const props = defineProps<{
 	units: string[]
 }>()
 
-const traitTexture = `url(${ASSET_PREFIX}/assets/ux/tft/tft_traits_texture_atlas.png)`
+const traitTexture = `url(${getAssetPrefixFor(state.setNumber)}/assets/ux/tft/tft_traits_texture_atlas.png)`
 
-const iconURL = getIconURL(props.trait)
+const iconURL = getIconURL(state.setNumber, props.trait)
 const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
 const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
 

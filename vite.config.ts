@@ -7,6 +7,9 @@ export default defineConfig({ // https://vitejs.dev/config/
 		tsconfigPaths({ loose: true }),
 		vue(),
 	],
+	build: {
+		target: 'es2022',
+	},
 	server: {
 		open: true,
 	},

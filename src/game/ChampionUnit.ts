@@ -2,14 +2,9 @@ import { markRaw } from 'vue'
 
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
-import { ChampionKey, champions } from '@tacticians-academy/academy-library/dist/set6/champions'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import { TraitKey, traits } from '@tacticians-academy/academy-library/dist/set6/traits'
-
-import { itemEffects } from '#/data/items'
-import { championEffects } from '#/data/set6/champions'
-import type { ChampionFns } from '#/data/set6/champions'
-import { traitEffects } from '#/data/set6/traits'
+import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { HexEffect } from '#/game/HexEffect'
 import type { HexEffectData } from '#/game/HexEffect'
@@ -18,7 +13,7 @@ import type { ProjectileEffectData } from '#/game/ProjectileEffect'
 import { ShapeEffect } from '#/game/ShapeEffect'
 import type { ShapeEffectData } from '#/game/ShapeEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
-import { getCoordFrom, gameOver, getters, state, thresholdCheck } from '#/game/store'
+import { getCoordFrom, gameOver, getters, state, thresholdCheck, setData } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait, getBestAsMax } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
@@ -27,7 +22,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
-import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -94,12 +89,11 @@ export class ChampionUnit {
 
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
-		const stats = champions.find(unit => unit.name === name) ?? champions[0]
+		const stats = setData.champions.find(unit => unit.name === name) ?? setData.champions[0]
 		this.isStarLocked = stats.isSpawn && name !== ChampionKey.TrainingDummy
 		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLevel
-		this.championEffects = championEffects[name as ChampionKey]
 		this.instantAttack = this.data.stats.range <= 1
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
@@ -120,6 +114,7 @@ export class ChampionUnit {
 		this.resetPost()
 	}
 	resetPre(synergiesByTeam: SynergyData[][]) {
+		this.championEffects = setData.championEffects[this.name as ChampionKey]
 		this.pendingBonuses.clear()
 		this.bleeds.clear()
 		this.hitBy = []
@@ -158,7 +153,7 @@ export class ChampionUnit {
 		this.scalings.clear()
 		this.shields = []
 		const unitTraitKeys = (this.data.traits as TraitKey[]).concat(this.items.filter(item => item.name.endsWith(' Emblem')).map(item => item.name.replace(' Emblem', '') as TraitKey))
-		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => !!trait)
+		this.traits = Array.from(new Set(unitTraitKeys)).map(traitKey => setData.traits.find(trait => trait.name === traitKey)).filter((trait): trait is TraitData => !!trait)
 		const teamSynergies = synergiesByTeam[this.team]
 		this.activeSynergies = teamSynergies.filter(({ key, activeEffect }) => !!activeEffect && this.hasTrait(key))
 		const synergyTraitBonuses = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
@@ -280,8 +275,8 @@ export class ChampionUnit {
 					this.empoweredAutos.delete(empoweredAuto)
 				}
 			})
-			this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
-			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
+			this.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
+			this.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
 	}
 
@@ -460,7 +455,7 @@ export class ChampionUnit {
 		state.units.forEach(unit => {
 			if (unit === this) { return }
 			unit.items.forEach((item, index) => {
-				const effectFn = itemEffects[item.id as ItemKey]?.castWithinHexRange
+				const effectFn = setData.itemEffects[item.id as ItemKey]?.castWithinHexRange
 				if (effectFn) {
 					const hexRange = item.effects['HexRange']
 					if (hexRange == null) {
@@ -475,7 +470,7 @@ export class ChampionUnit {
 
 		if (initialCast) {
 			this.castCount += 1
-			this.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.cast?.(activeEffect!, elapsedMS, this))
+			this.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.cast?.(activeEffect!, elapsedMS, this))
 			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.cast?.(augment, elapsedMS, this))
 			this.setBonusesFor(SpellKey.ManaReave)
 			this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
@@ -544,14 +539,14 @@ export class ChampionUnit {
 		this.health = 0
 		this.dead = true
 
-		this.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
+		this.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 
 		const teamUnits = this.alliedUnits()
 		if (teamUnits.length) {
 			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 				teamSynergies.forEach(({ key, activeEffect }) => {
 					if (!activeEffect) { return }
-					const traitEffect = traitEffects[key]
+					const traitEffect = setData.traitEffects[key]
 					if (!traitEffect) { return }
 					const deathFn = teamNumber === this.team ? traitEffect.allyDeath : traitEffect.enemyDeath
 					if (!deathFn) { return }
@@ -574,13 +569,13 @@ export class ChampionUnit {
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number, critBonus?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
 		source?.items.forEach((item, index) => {
-			const modifyDamageFn = itemEffects[item.id as ItemKey]?.modifyDamageByHolder
+			const modifyDamageFn = setData.itemEffects[item.id as ItemKey]?.modifyDamageByHolder
 			if (modifyDamageFn) {
 				rawDamage = modifyDamageFn(item, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
 			}
 		})
 		source?.activeSynergies.forEach(({ key, activeEffect }) => {
-			const modifyDamageFn = traitEffects[key]?.modifyDamageByHolder
+			const modifyDamageFn = setData.traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
 				rawDamage = modifyDamageFn(activeEffect!, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
 			}
@@ -675,8 +670,8 @@ export class ChampionUnit {
 			}
 
 			if (isOriginalSource) {
-				source.items.forEach((item, index) => itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
-				source.activeSynergies.forEach(({ key, activeEffect }) => traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+				source.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+				source.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 				getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
 					effects.damageDealtByHolder?.(augment, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 				})
@@ -694,7 +689,7 @@ export class ChampionUnit {
 
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
-			const effects = itemEffects[item.id as ItemKey]
+			const effects = setData.itemEffects[item.id as ItemKey]
 			if (effects) {
 				effects.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 				const hpThresholdFn = effects.hpThreshold
@@ -704,7 +699,7 @@ export class ChampionUnit {
 			}
 		})
 		this.activeSynergies.forEach(({ key, activeEffect }) => {
-			const effects = traitEffects[key]
+			const effects = setData.traitEffects[key]
 			if (effects) {
 				const hpThresholdFn = effects.hpThreshold
 				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect!.variables)) {
@@ -795,7 +790,7 @@ export class ChampionUnit {
 		}
 		this.startHex = hex
 		this.team = hex[1] < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1
-		window.setTimeout(saveUnits)
+		window.setTimeout(() => saveUnits(state.setNumber))
 	}
 	getCoord() {
 		return getCoordFrom(this.activeHex)
