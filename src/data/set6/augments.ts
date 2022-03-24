@@ -427,6 +427,31 @@ export const augmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.Underdogs]: {
+		apply: (augment, team, units) => {
+			const [missingHeal, healCap] = getVariables(augment, 'MissingHeal', 'HealCap')
+			units.forEach(underdogUnit => underdogUnit.scalings.add({
+				source: undefined,
+				sourceID: AugmentGroupKey.Underdogs,
+				activatedAtMS: 0,
+				stats: [BonusKey.Health],
+				calculateAmount: (elapsedMS) => {
+					const teamUnitCounts = [0, 0]
+					state.units.forEach(unit => {
+						if (!unit.dead) {
+							teamUnitCounts[unit.team] += 1
+						}
+					})
+					if (teamUnitCounts[underdogUnit.team] >= teamUnitCounts[underdogUnit.opposingTeam()]) {
+						return 0
+					}
+					return Math.min(healCap, underdogUnit.missingHealth() * missingHeal / 100)
+				},
+				intervalSeconds: 1,
+			}))
+		},
+	},
+
 	[AugmentGroupKey.ChallengerUnity]: {
 		teamWideTrait: TraitKey.Challenger,
 	},
