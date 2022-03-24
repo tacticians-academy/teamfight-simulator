@@ -111,7 +111,8 @@ export interface BonusScaling {
 	activatedAtMS: DOMHighResTimeStamp
 	expiresAfterMS?: DOMHighResTimeStamp
 	stats: BonusKey[]
-	intervalAmount: number
+	intervalAmount?: number
+	calculateAmount?: (elapsedMS: DOMHighResTimeStamp) => number
 	intervalSeconds: number
 }
 

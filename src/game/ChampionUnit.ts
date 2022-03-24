@@ -318,14 +318,15 @@ export class ChampionUnit {
 			scaling.activatedAtMS = elapsedMS
 			const bonuses: BonusVariable[] = []
 			for (const stat of scaling.stats) {
+				const amount = scaling.intervalAmount ?? scaling.calculateAmount!(elapsedMS)
 				if (stat === BonusKey.Health) {
-					this.gainHealth(elapsedMS, scaling.source, scaling.intervalAmount, false)
+					this.gainHealth(elapsedMS, scaling.source, amount, false)
 				} else if (stat === BonusKey.Mana) {
 					if (this.manaLockUntilMS < elapsedMS) {
-						this.addMana(scaling.intervalAmount)
+						this.addMana(amount)
 					}
 				} else {
-					bonuses.push([stat, scaling.intervalAmount])
+					bonuses.push([stat, amount])
 				}
 			}
 			if (bonuses.length) {
