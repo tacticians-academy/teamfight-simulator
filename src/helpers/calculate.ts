@@ -32,7 +32,7 @@ export function solveSpellCalculationFrom(source: ChampionUnit | undefined, targ
 	const total = calculation.parts.reduce((acc, part) => {
 		const multiplyParts = part.operator === 'product'
 		return acc + part.subparts.reduce((subAcc, subpart) => {
-			let value = subpart.starValues[source?.starLevel ?? 1]
+			let value = subpart.starValues?.[source?.starLevel ?? 1] ?? 1
 			if (subpart.stat != null) {
 				if (subpart.stat === BonusKey.AttackDamage) {
 					damageType = DamageType.physical
