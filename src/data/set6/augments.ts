@@ -23,6 +23,7 @@ export interface AugmentFns {
 	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
 	onShield?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, shield: ShieldData, target: ChampionUnit, source: ChampionUnit) => void
 	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
+	onFirstEffectTargetHit?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, damageType: DamageType | undefined) => void
 	hpThreshold?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, target: ChampionUnit, source: ChampionUnit, sourceType: DamageSourceType, rawDamage: number, takingDamage: number, damageType: DamageType) => number
 }

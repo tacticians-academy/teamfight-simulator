@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { getters } from '#/game/store'
 
+import { solveSpellCalculationFrom } from '#/helpers/calculate'
 import { DamageSourceType } from '#/helpers/types'
 import type { BonusLabelKey, BonusVariable, CollisionFn, StatusEffectData, TeamNumber } from '#/helpers/types'
 
@@ -103,6 +105,7 @@ export class GameEffect extends GameEffectChild {
 		if (this.collidedWith.includes(unit.instanceID)) {
 			return false
 		}
+		const isFirstTarget = !this.collidedWith.length
 
 		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
@@ -134,6 +137,10 @@ export class GameEffect extends GameEffectChild {
 			this.onCollision?.(elapsedMS, unit)
 		}
 
+		if (isFirstTarget && this.damageCalculation) {
+			const [rawDamage, damageType] = solveSpellCalculationFrom(this.source, unit, this.damageCalculation)
+			getters.activeAugmentEffectsByTeam.value[this.source.team].forEach(([augment, effects]) => effects.onFirstEffectTargetHit?.(augment, elapsedMS, unit, this.source, damageType))
+		}
 		this.collidedWith.push(unit.instanceID)
 		unit.hitBy.push(this.hitID)
 		return true
