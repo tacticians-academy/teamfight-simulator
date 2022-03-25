@@ -3,7 +3,6 @@ import type { EffectVariables } from '@tacticians-academy/academy-library'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
-import { needsPathfindingUpdate } from '#/game/pathfind'
 import { state } from '#/game/store'
 
 import { getClosestHexAvailableTo } from '#/helpers/boardUtils'
@@ -13,17 +12,38 @@ import { StatusEffectType } from '#/helpers/types'
 import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
-export function getBestAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number) {
+export function getBestAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
 	let bestValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
 	let bestResult: T | undefined
 	entries.forEach(entry => {
 		const value = valueFn(entry)
+		if (value == null) { return }
 		if (isMaximum ? value > bestValue : value < bestValue) {
 			bestValue = value
 			bestResult = entry
 		}
 	})
 	return bestResult
+}
+
+export function getBestArrayAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
+	let bestValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
+	let bestResults: T[] = []
+	entries.forEach(entry => {
+		const value = valueFn(entry)
+		if (value == null) { return }
+		if (isMaximum ? value > bestValue : value < bestValue) {
+			bestValue = value
+			bestResults = [entry]
+		} else if (value === bestValue) {
+			bestResults.push(entry)
+		}
+	})
+	return bestResults
+}
+
+export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | null {
+	return randomItem(getBestArrayAsMax(isMaximum, entries, valueFn))
 }
 
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
@@ -33,7 +53,6 @@ export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarL
 	spawn.genericReset()
 	spawn.team = fromUnit.team
 	state.units.push(spawn)
-	needsPathfindingUpdate()
 	return spawn
 }
 

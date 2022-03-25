@@ -3,7 +3,6 @@ import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/item
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { GameEffect } from '#/game/effects/GameEffect'
-import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
 import { getters, setData, state } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
@@ -41,8 +40,6 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (previousFrameMS === 0) {
 		previousFrameMS = frameMS
 		startedAtMS = frameMS
-		needsPathfindingUpdate()
-		updatePathsIfNeeded(state.units)
 		didBacklineJump = false
 		didMeleeMove = false
 		state.units.forEach(unit => {
@@ -129,26 +126,23 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 
 	for (const unit of state.units) {
-		if (!unit.isInteractable()) {
+		if (!unit.isInteractable() || unit.range() <= 0) {
 			continue
 		}
-		if (didBacklineJump) {
-			unit.updateTarget()
-		}
-		const beganInteracting = didMeleeMove || (didBacklineJump && unit.data.stats.range === 1) || unit.jumpsToBackline()
-		if (!beganInteracting) {
+		unit.updateTarget()
+		const unitBeganInteracting = didMeleeMove || unit.jumpsToBackline()
+		if (!unitBeganInteracting) {
 			continue
 		}
 
-		if (didBacklineJump && unit.canAttack(elapsedMS)) {
+		if (didBacklineJump && unit.canPerformAction(elapsedMS)) {
 			if (unit.readyToCast()) {
 				unit.castAbility(elapsedMS, true)
-			} else if (unit.target) {
+			} else if (unit.canAttackTarget()) {
 				unit.updateAttack(elapsedMS)
 			}
 		}
 		if (didBacklineJump || unit.jumpsToBackline()) {
-			updatePathsIfNeeded(state.units)
 			if (unit.updateMove(elapsedMS, diffMS)) {
 				continue
 			}
@@ -162,8 +156,6 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			}
 		})
 	})
-
-	updatePathsIfNeeded(state.units)
 
 	previousFrameMS = frameMS
 	requestNextFrame(frameMS, unanimated)

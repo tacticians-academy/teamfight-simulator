@@ -1,8 +1,8 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { getBestRandomAsMax, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/helpers/constants'
 import type { HexCoord, TeamNumber } from '#/helpers/types'
-import { randomItem } from '#/helpers/utils'
 
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
@@ -26,41 +26,20 @@ export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit
 export function getFarthestUnitOfTeamWithinRangeFrom(source: ChampionUnit, teamNumber: TeamNumber | null, units: ChampionUnit[], range?: number) {
 	const sourceHex = source.activeHex
 	const testRange = range ?? source.range()
-	let maxDistance = 0
-	let closestUnits: ChampionUnit[] = []
-	units.forEach(unit => {
-		if ((teamNumber != null && unit.team !== teamNumber) || !unit.isInteractable()) {
-			return
-		}
-		const dist = unit.hexDistanceToHex(sourceHex)
-		if (dist > testRange) { return }
-		if (dist > maxDistance) {
-			maxDistance = dist
-			closestUnits = [unit]
-		} else if (dist === maxDistance) {
-			closestUnits.push(unit)
-		}
+	return getBestRandomAsMax(true, units.filter(unit => (teamNumber == null || unit.team === teamNumber) && unit.isInteractable()), (unit) => {
+		const distance = unit.hexDistanceToHex(sourceHex)
+		return distance > testRange ? undefined : distance
 	})
-	return randomItem(closestUnits)
 }
 
-export function getClosestUnitOfTeamWithinRangeTo(targetHex: HexCoord, teamNumber: TeamNumber | null, maxDistance: number | undefined, units: ChampionUnit[]) {
-	let minDistance = Number.MAX_SAFE_INTEGER
-	let closestUnits: ChampionUnit[] = []
-	units.forEach(unit => {
-		if ((teamNumber != null && unit.team !== teamNumber) || !unit.isInteractable()) {
-			return
-		}
-		const dist = unit.hexDistanceToHex(targetHex)
-		if (maxDistance != null && dist > maxDistance) { return }
-		if (dist < minDistance) {
-			minDistance = dist
-			closestUnits = [unit]
-		} else if (dist === minDistance) {
-			closestUnits.push(unit)
-		}
+export function getClosestUnitOfTeamWithinRangeTo(targetHex: HexCoord, teamNumber: TeamNumber | null, maxDistance: number | undefined, units?: ChampionUnit[]) {
+	if (!units) {
+		units = getInteractableUnitsOfTeam(teamNumber)
+	}
+	return getBestRandomAsMax(false, units, (unit) => {
+		const distance = unit.hexDistanceToHex(targetHex)
+		return maxDistance != null && distance > maxDistance ? undefined : distance
 	})
-	return randomItem(closestUnits)
 }
 
 export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, units: ChampionUnit[]) {

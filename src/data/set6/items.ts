@@ -168,16 +168,9 @@ export const itemEffects = {
 		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
 				const [hextechHeal] = getVariables(item, BonusKey.VampSpell)
-				let lowestHP = Number.MAX_SAFE_INTEGER
-				let lowestUnit: ChampionUnit | undefined
-				holder.alliedUnits().forEach(unit => {
-					if (unit.health < lowestHP) {
-						lowestHP = unit.health
-						lowestUnit = unit
-					}
-				})
-				if (lowestUnit) {
-					lowestUnit.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
+				const lowestHPAlly = getBestAsMax(false, holder.alliedUnits(), (unit) => unit.health)
+				if (lowestHPAlly) {
+					lowestHPAlly.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}
 			}
 		},
@@ -297,7 +290,7 @@ export const itemEffects = {
 			const team = holder.opposingTeam()
 			while (units.length < totalUnits) {
 				units.push(currentBounceTarget)
-				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, [...state.units].filter(unit => !units.includes(unit)))
+				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, state.units.filter(unit => !units.includes(unit)))
 				if (!newTarget) { break }
 				currentBounceTarget = newTarget
 			}
@@ -350,7 +343,7 @@ export const itemEffects = {
 		apply: (item, unit) => {
 			const [banishSeconds] = getVariables(item, 'BanishDuration')
 			const targetHex = getInverseHex(unit.startHex)
-			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined, state.units) //TODO not random
+			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined) //TODO not random
 			if (target) {
 				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
 			}
@@ -361,7 +354,7 @@ export const itemEffects = {
 		apply: (item, unit) => {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: 4100, //TODO determine
-				hexDistanceFromSource: 1, //TODO pathing to target is not yet supported
+				hexDistanceFromSource: 4,
 				damageMultiplier: -0.5,
 				taunts: true,
 			})

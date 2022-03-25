@@ -171,7 +171,7 @@ export interface AugmentFns {
 export type AugmentEffects = {[key in string]?: AugmentFns}
 
 export interface ChampionFns {
-	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => void
+	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => boolean
 	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
 }
 export type ChampionEffects = {[key in string]?: ChampionFns}

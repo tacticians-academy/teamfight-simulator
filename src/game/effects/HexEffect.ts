@@ -12,6 +12,7 @@ import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constant
 import type { HexCoord } from '#/helpers/types'
 
 export interface HexEffectData extends GameEffectData {
+	/** Hexes to apply the effect to. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexes?: HexCoord[]
 	/** Distance from the source unit that this HexEffect applies to at the time of activation. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexDistanceFromSource?: number

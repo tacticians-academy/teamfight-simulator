@@ -16,6 +16,7 @@ export const championEffects = {
 
 	[ChampionKey.Ahri]: {
 		cast: (elapsedMS, spell, champion) => {
+			if (!champion.wasInRangeOfTarget) { return false }
 			const missileSpell = champion.getSpellFor('OrbMissile')
 			const degreesBetweenOrbs = champion.getSpellVariable(spell, 'AngleBetweenOrbs' as SpellKey)
 			const radiansBetweenOrbs = toRadians(degreesBetweenOrbs)
@@ -36,17 +37,21 @@ export const championEffects = {
 					onTargetDeath: 'continue',
 				})
 			}
+			return true
 		},
 	},
 
 	[ChampionKey.Blitzcrank]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			const durationMS = stunSeconds * 1000
+			const target = getDistanceUnit(false, champion)
+			champion.setTarget(target)
 			champion.queueProjectileEffect(elapsedMS, spell, {
-				target: getDistanceUnit(false, champion),
+				target,
 				returnMissile: spell.missile,
 				statusEffects: [
-					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+					[StatusEffectType.stunned, { durationMS }],
 				],
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.performActionUntilMS = 0
@@ -55,6 +60,9 @@ export const championEffects = {
 						affectedUnit.moving = true
 						affectedUnit.customMoveSpeed = spell.missile?.speedInitial
 						affectedUnit.setActiveHex(adjacentHex) //TODO travel time
+						if (!champion.checkInRangeOfTarget()) {
+							champion.setTarget(null)
+						}
 						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
 						champion.empoweredAutos.add({
 							amount: 1,
@@ -65,14 +73,15 @@ export const championEffects = {
 					}
 				},
 			})
-			champion.performActionUntilMS = 60 * 1000
+			// champion.performActionUntilMS = elapsedMS + durationMS
+			return true
 		},
 	},
 
 	[ChampionKey.Braum]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			champion.queueProjectileEffect(elapsedMS, spell, {
+			return champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: false,
 				fixedHexRange: MAX_HEX_COUNT,
 				statusEffects: [
@@ -85,8 +94,11 @@ export const championEffects = {
 	[ChampionKey.Caitlyn]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = getDistanceUnit(false, champion)
-			if (!target) { return console.log('No target', champion.name, champion.team) }
-			champion.queueProjectileEffect(elapsedMS, spell, {
+			if (!target) {
+				console.log('No target', champion.name, champion.team)
+				return false
+			}
+			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				destroysOnCollision: true,
 				onTargetDeath: 'farthest',
@@ -97,16 +109,18 @@ export const championEffects = {
 	[ChampionKey.Camille]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
-			if (!target) { return console.log('No target', champion.name, champion.team) }
+			if (!target) { return false }
 			champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCone(champion, champion.angleTo(target), HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
 			})
+			return true
 		},
 	},
 
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
-			champion.queueShapeEffect(elapsedMS, spell, {
+			if (!champion.wasInRangeOfTarget) { return false }
+			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS * 1.125),
 				onCollision: (elapsedMS, affectedUnit) => {
 					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(spell, SpellKey.Heal)!, true)
@@ -117,7 +131,7 @@ export const championEffects = {
 
 	[ChampionKey.Ezreal]: {
 		cast: (elapsedMS, spell, champion) => {
-			champion.queueProjectileEffect(elapsedMS, spell, {
+			return champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: true,
 				onCollision: (elapsedMS, unit) => {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)
@@ -153,8 +167,10 @@ export const championEffects = {
 					}
 				}
 			}
-			if (!target) { return console.log('ERR', 'No target', champion.name, spell.name) }
-			champion.queueProjectileEffect(elapsedMS, spell, {
+			if (!target) { //TODO
+				return true
+			}
+			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				missile: boulderSpell.missile,
 				destroysOnCollision: false,
@@ -164,7 +180,7 @@ export const championEffects = {
 
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
-			champion.queueProjectileEffect(elapsedMS, spell, {
+			return champion.queueProjectileEffect(elapsedMS, spell, {
 				onCollision: (elapsedMS, affectedUnit) => {
 					const manaReave = champion.getSpellVariable(spell, SpellKey.ManaReave)
 					const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
@@ -181,7 +197,7 @@ export const championEffects = {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const durationMS = stunSeconds * 1000
 			const tickEveryMS = 100 //TODO verify
-			champion.queueTargetEffect(elapsedMS, spell, {
+			return champion.queueTargetEffect(elapsedMS, spell, {
 				tickEveryMS,
 				expiresAfterMS: durationMS,
 				statusEffects: [
@@ -198,7 +214,7 @@ export const championEffects = {
 			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
 			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true)
 			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }
-			champion.queueShapeEffect(elapsedMS, spell, {
+			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO
 				onActivate: (elapsedMS, champion) => {
@@ -241,24 +257,31 @@ export const championEffects = {
 				},
 			})
 			champion.manaLockUntilMS = 60 * 1000
+			return true
 		},
 	},
 
 	[ChampionKey.Warwick]: {
 		passive: (elapsedMS, spell, target, source) => {
-			if (!target) { return }
+			if (!target) {
+				return true
+			}
 			const heal = source.getSpellCalculationResult(spell, SpellKey.HealAmount)
 			const percentHealthDamage = source.getSpellCalculationResult(spell, SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, percentHealthDamage, DamageType.magic, BonusKey.CurrentHealth, true, 1)
 			target.damage(elapsedMS, false, source, DamageSourceType.attack, damageCalculation, false)
 			source.gainHealth(elapsedMS, source, heal, true)
+			return true
 		},
 	},
 
 	[ChampionKey.Ziggs]: {
 		cast: (elapsedMS, spell, champion) => {
 			const targetHex = champion.target?.activeHex
-			if (!targetHex) { return console.log('No target', champion.name, champion.team) }
+			if (!targetHex) {
+				console.log('No target', champion.name, champion.team)
+				return false
+			}
 			const centerHexes = [targetHex]
 			const outerHexes = getSurroundingWithin(targetHex, 1)
 			champion.queueHexEffect(elapsedMS, spell, {
@@ -268,13 +291,14 @@ export const championEffects = {
 				hexes: outerHexes,
 				damageMultiplier: -0.5,
 			})
+			return true
 		},
 	},
 
 	[ChampionKey.Zyra]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			champion.queueHexEffect(elapsedMS, spell, {
+			return champion.queueHexEffect(elapsedMS, spell, {
 				hexes: getRowOfMostAttackable(champion.opposingTeam()),
 				statusEffects: [
 					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],

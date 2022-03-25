@@ -68,13 +68,12 @@ export class TargetEffect extends GameEffect {
 			this.activated = true
 		}
 		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
-		if (updateResult === false) {
-			if (this.ticksRemaining != null && this.ticksRemaining > 0) {
-				console.log('ERR', 'Expired with ticks remainining', this.source.name, this.ticksRemaining, this.targets)
-			}
-			return updateResult
+		if (updateResult === false && (this.ticksRemaining == null || this.ticksRemaining <= 0)) {
+			return false
 		}
-		if (!applies) { return true }
+		if (!applies) {
+			return true
+		}
 
 		this.targets.forEach(target => {
 			if (!target.isInteractable() || !this.apply(elapsedMS, target)) {

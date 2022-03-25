@@ -326,17 +326,10 @@ export const traitEffects = {
 			const [armor, mr, omnivamp, syndicateIncrease, traitLevel] = getVariables(activeEffect, BonusKey.Armor, BonusKey.MagicResist, 'PercentOmnivamp', 'SyndicateIncrease', 'TraitLevel')
 			const syndicateMultiplier = syndicateIncrease + 1
 			if (traitLevel === 1) {
-				let lowestHP = Number.MAX_SAFE_INTEGER
-				let lowestHPUnit: ChampionUnit | undefined
-				units.forEach(unit => {
-					if (unit.health < lowestHP) {
-						lowestHP = unit.health
-						lowestHPUnit = unit
-					}
-				})
-				if (lowestHPUnit) {
+				const lowestHPSyndicate = getBestAsMax(false, units, (unit) => unit.health)
+				if (lowestHPSyndicate) {
 					units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate))
-					units = [lowestHPUnit]
+					units = [lowestHPSyndicate]
 				}
 			}
 			const bonuses: BonusVariable[] = [

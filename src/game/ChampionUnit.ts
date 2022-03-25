@@ -14,10 +14,10 @@ import { ShapeEffect } from '#/game/effects/ShapeEffect'
 import type { ShapeEffectData } from '#/game/effects/ShapeEffect'
 import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
-import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
+import { recursivePathTo } from '#/game/pathfind'
 import { getCoordFrom, gameOver, getters, state, thresholdCheck, setData } from '#/game/store'
 
-import { getAliveUnitsOfTeamWithTrait, getBestAsMax } from '#/helpers/abilityUtils'
+import { getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
@@ -45,6 +45,8 @@ export class ChampionUnit {
 	coord: HexCoord
 	dead = false
 	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
+	wasInRangeOfTarget = false
+	movesBeforeDroppingTarget = 0
 	mana = 0
 	health = 0
 	healthMax = 0
@@ -178,17 +180,35 @@ export class ChampionUnit {
 		this.bonuses.push([key, bonuses])
 	}
 
+	canAttackTarget() {
+		return this.target ? this.wasInRangeOfTarget && this.target.isAttackable() : false
+	}
+
+	setTarget(unit: ChampionUnit | null | undefined) {
+		this.target = unit ?? null
+		this.wasInRangeOfTarget = false
+		if (unit) {
+			this.movesBeforeDroppingTarget = 3
+		}
+		// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
+	}
+	checkInRangeOfTarget() {
+		return this.target ? this.hexDistanceTo(this.target) <= this.range() : false
+	}
 	updateTarget() {
-		if (this.target != null) {
-			if (!this.target.isAttackable() || this.hexDistanceTo(this.target) > this.range()) {
-				this.target = null
-			}
+		if (this.target != null && (!this.target.isAttackable() || (this.movesBeforeDroppingTarget <= 0 && !this.checkInRangeOfTarget()))) {
+			this.setTarget(null)
 		}
 		if (this.target == null) {
-			const target = getClosestUnitOfTeamWithinRangeTo(this.activeHex, this.opposingTeam(), this.range(), state.units)
+			const target = getBestRandomAsMax(false, getAttackableUnitsOfTeam(this.opposingTeam()), (unit) => this.hexDistanceTo(unit))
 			if (target != null) {
-				this.target = target
-				// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
+				this.setTarget(target)
+			}
+		}
+		if (this.target) {
+			this.wasInRangeOfTarget = this.checkInRangeOfTarget()
+			if (this.wasInRangeOfTarget) {
+				this.movesBeforeDroppingTarget = 3
 			}
 		}
 	}
@@ -235,6 +255,22 @@ export class ChampionUnit {
 				}
 			})
 			if (this.instantAttack) {
+				// this.queueTargetEffect(elapsedMS, undefined, {
+				// 	startsAfterMS: msBetweenAttacks / 4, //TODO from data
+				// 	damageSourceType: DamageSourceType.attack,
+				// 	damageCalculation,
+				// 	bonusCalculations,
+				// 	damageIncrease,
+				// 	damageMultiplier,
+				// 	critBonus,
+				// 	statusEffects,
+				// 	onActivate: (elapsedMS, source) => {
+				// 		source.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
+				// 		if (source.data.passive && source.target) {
+				// 			passiveFn?.(elapsedMS, source.data.passive, source.target, this)
+				// 		}
+				// 	},
+				// })
 				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, damageIncrease, damageMultiplier, critBonus)
 				this.attackStartAtMS = elapsedMS
 				if (this.data.passive) {
@@ -374,17 +410,26 @@ export class ChampionUnit {
 		return this.getBonuses(BonusKey.CritReduction) / 100
 	}
 
+	getNextHex() {
+		if (!this.target) {
+			return undefined
+		}
+		const occupiedHexes: HexCoord[] = state.units
+			.filter(unit => unit.hasCollision())
+			.map(unit => unit.activeHex)
+		return recursivePathTo(this.activeHex, this.target.activeHex, occupiedHexes, [this.target.activeHex], [this.target.activeHex])
+	}
 	updateMove(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp) {
 		if (!this.moving) {
-			if (this.target || !this.canAttack(elapsedMS)) {
+			if (this.canAttackTarget() || !this.canPerformAction(elapsedMS)) {
 				return false
 			}
-			const nextHex = getNextHex(this)
+			const nextHex = this.getNextHex()
 			if (!nextHex) {
 				return false
 			}
 			this.moving = true
-			this.setActiveHex(nextHex) //TODO travel time
+			this.setActiveHex(nextHex)
 		}
 
 		const [currentX, currentY] = this.coord
@@ -419,9 +464,6 @@ export class ChampionUnit {
 			statusEffect.active = true
 			statusEffect.expiresAtMS = expireAtMS
 			statusEffect.amount = amount
-			if (effectType === StatusEffectType.stealth) {
-				needsPathfindingUpdate()
-			}
 		}
 	}
 
@@ -445,12 +487,15 @@ export class ChampionUnit {
 	}
 
 	readyToCast(): boolean {
-		return !!(this.championEffects?.cast || this.championEffects?.passive) && this.mana >= this.manaMax()
+		return !!(this.championEffects?.cast || this.championEffects?.passive) && this.mana > 0 && this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
 		const spell = this.getCurrentSpell()
 		if (spell) {
-			this.championEffects?.cast?.(elapsedMS, spell, this)
+			const castFn = this.championEffects?.cast
+			if (castFn && !castFn(elapsedMS, spell, this)) {
+				return false
+			}
 		} else if (this.data.passive) {
 			this.championEffects?.passive?.(elapsedMS, this.data.passive, undefined, this)
 		}
@@ -486,17 +531,17 @@ export class ChampionUnit {
 		this.customMoveSpeed = 1500 // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
 		this.moving = true
 		if (jumpHex) {
-			this.setActiveHex(jumpHex, true)
+			this.setActiveHex(jumpHex)
 		}
 		this.collides = true
 		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
-	canAttack(elapsedMS: DOMHighResTimeStamp) {
+	canPerformAction(elapsedMS: DOMHighResTimeStamp) {
 		return !this.moving && this.data.stats.range > 0 && !this.statusEffects.stunned.active && this.performActionUntilMS < elapsedMS
 	}
 	isAttackable() {
-		return this.isInteractable() && !this.statusEffects.stealth.active
+		return this.isInteractable() && !this.statusEffects.stealth.active && !this.statusEffects.banished.active
 	}
 	isInteractable() {
 		return !this.dead && !this.statusEffects.banished.active
@@ -562,7 +607,6 @@ export class ChampionUnit {
 			getters.activeAugmentEffectsByTeam.value[this.opposingTeam()].forEach(([augment, effects]) => {
 				effects.enemyDeath?.(augment, elapsedMS, this, source)
 			})
-			needsPathfindingUpdate()
 		} else {
 			gameOver(this.team)
 		}
@@ -779,12 +823,10 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	setActiveHex(hex: HexCoord, disablePathUpdate: boolean = false) {
+	setActiveHex(hex: HexCoord) {
+		this.movesBeforeDroppingTarget -= 1
 		this.activeHex[0] = hex[0]
 		this.activeHex[1] = hex[1]
-		if (!disablePathUpdate) {
-			needsPathfindingUpdate()
-		}
 	}
 	reposition(hex: HexCoord) {
 		if (state.isRunning) {
@@ -808,7 +850,9 @@ export class ChampionUnit {
 		if (key === BonusKey.Health) {
 			return this.healthMax
 		}
-
+		if (key === BonusKey.CurrentHealth) {
+			return this.health
+		}
 		if (key === BonusKey.MissingHealth) {
 			return this.missingHealth()
 		}
@@ -1013,21 +1057,22 @@ export class ChampionUnit {
 			const target = this.target
 			if (!target) {
 				console.error('ERR', 'No target for projectile', this.name, spell?.name)
-				return
+				return false
 			}
 			data.target = data.fixedHexRange != null || data.missile?.tracksTarget === false ? target.activeHex : target
 		}
 		const projectile = new ProjectileEffect(this, elapsedMS, spell, data)
 		state.projectileEffects.add(projectile)
 		if (elapsedMS > 0) {
-			this.attackStartAtMS = projectile.startsAtMS
 			if (spell) {
 				this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
 				this.performActionUntilMS = projectile.activatesAtMS
 			} else {
+				this.attackStartAtMS = projectile.startsAtMS
 				this.performActionUntilMS = projectile.startsAtMS
 			}
 		}
+		return true
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
 		if (spell && !data.damageCalculation) {
@@ -1041,11 +1086,12 @@ export class ChampionUnit {
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
 		state.hexEffects.add(hexEffect)
-		if (elapsedMS > 0) {
+		if (elapsedMS > 0 && spell) {
 			this.attackStartAtMS = hexEffect.activatesAtMS
 			this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = hexEffect.activatesAtMS
 		}
+		return true
 	}
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
@@ -1057,11 +1103,12 @@ export class ChampionUnit {
 		}
 		const shapeEffect = new ShapeEffect(this, elapsedMS, spell, data)
 		state.shapeEffects.add(shapeEffect)
-		if (elapsedMS > 0) {
+		if (spell) {
 			this.attackStartAtMS = shapeEffect.activatesAtMS
 			this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = shapeEffect.activatesAtMS
 		}
+		return true
 	}
 	queueTargetEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: TargetEffectData) {
 		if (spell && !data.damageCalculation) {
@@ -1072,17 +1119,19 @@ export class ChampionUnit {
 		}
 		if (!data.targets) {
 			if (!this.target) {
-				return console.log('ERR', 'No target', this.name, spell?.name)
+				console.log('ERR', 'No target', this.name, spell?.name)
+				return false
 			}
 			data.targets = [this.target]
 		}
 		const targetEffect = new TargetEffect(this, elapsedMS, spell, data)
 		state.targetEffects.add(targetEffect)
-		if (elapsedMS > 0) {
+		if (spell) {
 			this.attackStartAtMS = targetEffect.activatesAtMS
 			this.manaLockUntilMS = targetEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = targetEffect.activatesAtMS
 		}
+		return true
 	}
 
 	angleTo(unit: ChampionUnit) {
