@@ -7,7 +7,11 @@ import type { GameEffectData } from '#/game/effects/GameEffect'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 
 export interface TargetEffectData extends GameEffectData {
+	/** The delay to apply after starting. Inferred from the passed `SpellCalculation` if provided. */
+	activatesAfterMS?: DOMHighResTimeStamp
+	/** The interval between ticks applied to this target. If omitted, the effect applies once. */
 	tickEveryMS?: DOMHighResTimeStamp
+	/** Array of affected units. */
 	targets?: ChampionUnit[]
 }
 
@@ -20,7 +24,7 @@ export class TargetEffect extends GameEffect {
 		super(source, spell, data)
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
-		this.activatesAfterMS = spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
+		this.activatesAfterMS = spell ? (data.activatesAfterMS != null ? data.activatesAfterMS : (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS)) * 1000 : 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		if (data.tickEveryMS != null) {

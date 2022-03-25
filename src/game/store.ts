@@ -14,6 +14,7 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/effects/HexEffect'
 import type { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ShapeEffect } from '#/game/effects/ShapeEffect'
+import type { TargetEffect } from '#/game/effects/TargetEffect'
 import { cancelLoop, delayUntil } from '#/game/loop'
 
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables } from '#/helpers/abilityUtils'
@@ -23,7 +24,6 @@ import { getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageS
 import { MutantType } from '#/helpers/types'
 import type { AugmentEffects, AugmentFns, HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/helpers/types'
 import type { ChampionEffects, ItemEffects, TraitEffects } from '#/helpers/types'
-import { TargetEffect } from '#/game/effects/TargetEffect'
 
 type TraitAndUnits = [TraitData, string[]]
 

@@ -253,39 +253,32 @@ export class ChampionUnit {
 					statusEffects.push(...empower.statusEffects)
 				}
 			})
+			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
 			if (this.instantAttack) {
-				// this.queueTargetEffect(elapsedMS, undefined, {
-				// 	startsAfterMS: msBetweenAttacks / 4, //TODO from data
-				// 	damageSourceType: DamageSourceType.attack,
-				// 	damageCalculation,
-				// 	bonusCalculations,
-				// 	damageIncrease,
-				// 	damageMultiplier,
-				// 	critBonus,
-				// 	statusEffects,
-				// 	onActivate: (elapsedMS, source) => {
-				// 		source.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
-				// 		if (source.data.passive && source.target) {
-				// 			passiveFn?.(elapsedMS, source.data.passive, source.target, this)
-				// 		}
-				// 	},
-				// })
-				this.target.damage(elapsedMS, true, this, DamageSourceType.attack, damageCalculation, false, damageIncrease, damageMultiplier, critBonus)
+				this.queueTargetEffect(elapsedMS, undefined, {
+					activatesAfterMS: windupMS,
+					damageSourceType: DamageSourceType.attack,
+					damageCalculation,
+					bonusCalculations,
+					damageIncrease,
+					damageMultiplier,
+					critBonus,
+					statusEffects,
+					onActivate: (elapsedMS, source) => {
+						source.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
+						if (source.data.passive && source.target) {
+							passiveFn?.(elapsedMS, source.data.passive, source.target, this)
+						}
+						statusEffects.forEach(([key, statusEffect]) => {
+							this.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
+						})
+					},
+				})
 				this.attackStartAtMS = elapsedMS
-				if (this.data.passive) {
-					passiveFn?.(elapsedMS, this.data.passive, this.target, this)
-				}
-				this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
-				bonusCalculations.forEach(bonusCalculation => {
-					this.target?.damage(elapsedMS, false, this, DamageSourceType.bonus, bonusCalculation, false)
-				})
-				statusEffects.forEach(([key, statusEffect]) => {
-					this.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
-				})
 			} else {
 				const source = this
 				this.queueProjectileEffect(elapsedMS, undefined, {
-					startsAfterMS: msBetweenAttacks / 4, //TODO from data
+					startsAfterMS: windupMS,
 					missile: {
 						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 					},
