@@ -23,6 +23,7 @@ import { getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageS
 import { MutantType } from '#/helpers/types'
 import type { AugmentEffects, AugmentFns, HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/helpers/types'
 import type { ChampionEffects, ItemEffects, TraitEffects } from '#/helpers/types'
+import { TargetEffect } from '#/game/effects/TargetEffect'
 
 type TraitAndUnits = [TraitData, string[]]
 
@@ -58,6 +59,7 @@ export const state = reactive({
 	hexEffects: new Set<HexEffect>(),
 	projectileEffects: new Set<ProjectileEffect>(),
 	shapeEffects: new Set<ShapeEffect>(),
+	targetEffects: new Set<TargetEffect>(),
 
 	augmentsByTeam: loadTeamAugments(setNumber),
 	socialiteHexes: (getStorageJSON(setNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
@@ -210,6 +212,7 @@ function resetUnitsAfterUpdating() {
 	state.hexEffects.clear()
 	state.projectileEffects.clear()
 	state.shapeEffects.clear()
+	state.targetEffects.clear()
 
 	const unitsByTeam: [ChampionUnit[], ChampionUnit[]] = [[], []]
 	state.units.forEach(unit => {

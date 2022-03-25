@@ -12,6 +12,8 @@ import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ProjectileEffectData } from '#/game/effects/ProjectileEffect'
 import { ShapeEffect } from '#/game/effects/ShapeEffect'
 import type { ShapeEffectData } from '#/game/effects/ShapeEffect'
+import { TargetEffect } from '#/game/effects/TargetEffect'
+import type { TargetEffectData } from '#/game/effects/TargetEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
 import { getCoordFrom, gameOver, getters, state, thresholdCheck, setData } from '#/game/store'
 
@@ -1059,6 +1061,27 @@ export class ChampionUnit {
 			this.attackStartAtMS = shapeEffect.activatesAtMS
 			this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = shapeEffect.activatesAtMS
+		}
+	}
+	queueTargetEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: TargetEffectData) {
+		if (spell && !data.damageCalculation) {
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
+		}
+		if (data.damageCalculation && !data.damageSourceType) {
+			data.damageSourceType = DamageSourceType.spell
+		}
+		if (!data.targets) {
+			if (!this.target) {
+				return console.log('ERR', 'No target', this.name, spell?.name)
+			}
+			data.targets = [this.target]
+		}
+		const targetEffect = new TargetEffect(this, elapsedMS, spell, data)
+		state.targetEffects.add(targetEffect)
+		if (elapsedMS > 0) {
+			this.attackStartAtMS = targetEffect.activatesAtMS
+			this.manaLockUntilMS = targetEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+			this.performActionUntilMS = targetEffect.activatesAtMS
 		}
 	}
 

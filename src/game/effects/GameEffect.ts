@@ -101,12 +101,18 @@ export class GameEffect extends GameEffectChild {
 		this.started.value = this.startsAtMS === 0
 	}
 
-	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
-		if (this.collidedWith.includes(unit.instanceID)) {
-			return false
+	applyBonuses(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+		if (this.bonuses) {
+			unit.setBonusesFor(this.bonuses[0], this.bonuses[1])
 		}
-		const isFirstTarget = !this.collidedWith.length
+		if (this.statusEffects) {
+			this.statusEffects.forEach(([key, statusEffect]) => {
+				unit.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
+			})
+		}
+	}
 
+	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
 		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
 		if (this.damageCalculation != null) {
@@ -122,18 +128,21 @@ export class GameEffect extends GameEffectChild {
 			}
 			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, damageMultiplier, this.critBonus)
 		}
+		return wasSpellShielded
+	}
+
+	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+		if (this.collidedWith.includes(unit.instanceID)) {
+			return false
+		}
+		const isFirstTarget = !this.collidedWith.length
+		const wasSpellShielded = this.applyDamage(elapsedMS, unit)
+
 		this.bonusCalculations.forEach(bonusCalculation => {
 			unit.damage(elapsedMS, false, this.source, DamageSourceType.bonus, bonusCalculation, true)
 		})
 		if (!wasSpellShielded) {
-			if (this.bonuses) {
-				unit.setBonusesFor(this.bonuses[0], this.bonuses[1])
-			}
-			if (this.statusEffects) {
-				this.statusEffects.forEach(([key, statusEffect]) => {
-					unit.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
-				})
-			}
+			this.applyBonuses(elapsedMS, unit)
 			this.onCollision?.(elapsedMS, unit)
 		}
 
