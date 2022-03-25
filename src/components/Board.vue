@@ -2,6 +2,7 @@
 import HexEffect from '#/components/Effects/HexEffect.vue'
 import ProjectileEffect from '#/components/Effects/ProjectileEffect.vue'
 import ShapeEffect from '#/components/Effects/ShapeEffect.vue'
+import TargetEffect from '#/components/Effects/TargetEffect.vue'
 import Unit from '#/components/Unit.vue'
 
 import { computed, onMounted, ref } from 'vue'
@@ -100,6 +101,13 @@ const socialitesByTeam = getters.socialitesByTeam
 			<transition-group name="fade">
 				<template v-for="shapeEffect in state.shapeEffects" :key="shapeEffect.instanceID">
 					<ShapeEffect v-if="shapeEffect.started" :shapeEffect="shapeEffect" />
+				</template>
+			</transition-group>
+			<transition-group name="fade">
+				<template v-for="targetEffect in state.targetEffects" :key="targetEffect.instanceID">
+					<template v-if="targetEffect.started">
+						<TargetEffect v-for="(target, index) in targetEffect.targets" :key="index" :targetEffect="targetEffect" :target="target" />
+					</template>
 				</template>
 			</transition-group>
 			<div
