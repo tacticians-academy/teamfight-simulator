@@ -156,6 +156,9 @@ const socialitesByTeam = getters.socialitesByTeam
 }
 
 .fade-leave-active {
+	transition: opacity 1500ms;
+}
+.hex-effect.fade-leave-active {
 	transition: opacity 1500ms !important;
 }
 .fade-enter-from, .fade-leave-to {

@@ -15,7 +15,7 @@ const hexCoords = (props.hexEffect.hexes as unknown as HexCoord[]).map(hex => ge
 </script>
 
 <template>
-<div :style="{ opacity: hexEffect.activated ? maxOpacity : maxOpacity / 3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
+<div class="hex-effect" :style="{ opacity: hexEffect.activated ? maxOpacity : maxOpacity / 3, transition: `opacity ${hexEffect.activated ? 100 : hexEffect.activatesAfterMS}ms` }">
 	<div v-for="[col, row] in hexCoords" :key="`${row},${col}`">
 		<div
 			class="hex hex-overlay  absolute z-10" :class="hexEffect.source.team === 0 ? 'team-a' : 'team-b'"

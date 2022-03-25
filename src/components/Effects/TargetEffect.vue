@@ -20,12 +20,12 @@ const angle = Math.atan2(distanceY, distanceX)
 <template>
 <div
 	class="target-effect" :class="targetEffect.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
-	:style="{ left: `${x1 * 100}%`, top: `${y1 * 100}%`, width: `${length * 100}%`, height: '1vw', transformOrigin: '0 calc(100% - 0.5vw)', transform: `translate(0, -0.5vw) rotate(${angle}rad)` }"
+	:style="{ left: `${x1 * 100}%`, top: `${y1 * 100}%`, width: `${length * 100}%`, height: '1vw', transformOrigin: '0 calc(100% - 0.5vw)', transform: `translate(0, -0.5vw) rotate(${angle}rad)`, transitionDuration: target.dead || targetEffect.source.dead ? '100ms' : undefined }"
 />
 </template>
 
 <style scoped lang="postcss">
 .target-effect {
-	@apply absolute z-40 rounded-full;
+	@apply absolute z-40 rounded-full opacity-75;
 }
 </style>
