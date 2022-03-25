@@ -213,3 +213,22 @@ export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 export function getTeamName(team: number) {
 	return team === 0 ? 'Blue' : 'Red'
 }
+
+export function recursivePathTo(originHex: HexCoord, destHex: HexCoord, occupiedHexes: HexCoord[], fromHexes: HexCoord[], checkedHexes: HexCoord[]): HexCoord | undefined {
+	const newSearchHexes: HexCoord[] = []
+	for (const fromHex of fromHexes) {
+		for (const surroundingHex of getHexRing(fromHex)) {
+			if (isSameHex(surroundingHex, originHex)) {
+				return fromHex
+			}
+			if (containsHex(surroundingHex, checkedHexes)) {
+				continue
+			}
+			checkedHexes.push(surroundingHex)
+			if (!containsHex(surroundingHex, occupiedHexes)) {
+				newSearchHexes.push(surroundingHex)
+			}
+		}
+	}
+	return !newSearchHexes.length ? undefined : recursivePathTo(originHex, destHex, occupiedHexes, newSearchHexes, checkedHexes)
+}
