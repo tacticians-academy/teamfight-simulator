@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import HexEffect from '#/components/HexEffect.vue'
-import ProjectileEffect from '#/components/ProjectileEffect.vue'
-import ShapeEffect from '#/components/ShapeEffect.vue'
+import HexEffect from '#/components/Effects/HexEffect.vue'
+import ProjectileEffect from '#/components/Effects/ProjectileEffect.vue'
+import ShapeEffect from '#/components/Effects/ShapeEffect.vue'
 import Unit from '#/components/Unit.vue'
 
 import { computed, onMounted, ref } from 'vue'

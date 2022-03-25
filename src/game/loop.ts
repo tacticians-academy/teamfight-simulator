@@ -2,7 +2,7 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import type { GameEffect } from '#/game/GameEffect'
+import type { GameEffect } from '#/game/effects/GameEffect'
 import { needsPathfindingUpdate, updatePathsIfNeeded } from '#/game/pathfind'
 import { getters, setData, state } from '#/game/store'
 

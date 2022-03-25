@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
-import type { ShapeEffect } from '#/game/ShapeEffect'
+import type { ShapeEffect } from '#/game/effects/ShapeEffect'
 
 const props = defineProps<{
 	shapeEffect: ShapeEffect

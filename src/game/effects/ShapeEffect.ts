@@ -1,8 +1,8 @@
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { GameEffect } from '#/game/GameEffect'
-import type { GameEffectData } from '#/game/GameEffect'
+import { GameEffect } from '#/game/effects/GameEffect'
+import type { GameEffectData } from '#/game/effects/GameEffect'
 
 import { getAngleBetween, doesLineInterceptCircle, radianDistance, doesRectangleInterceptCircle } from '#/helpers/angles'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'

@@ -5,8 +5,8 @@ import type { Ref } from 'vue'
 import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { GameEffect } from '#/game/GameEffect'
-import type { GameEffectData } from '#/game/GameEffect'
+import { GameEffect } from '#/game/effects/GameEffect'
+import type { GameEffectData } from '#/game/effects/GameEffect'
 import { getCoordFrom } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'

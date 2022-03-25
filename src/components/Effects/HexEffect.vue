@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
 
-import type { HexEffect } from '#/game/HexEffect'
+import type { HexEffect } from '#/game/effects/HexEffect'
 import { getCoordFrom } from '#/game/store'
 
 import type { HexCoord } from '#/helpers/types'

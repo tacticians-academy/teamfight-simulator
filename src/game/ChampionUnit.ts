@@ -6,12 +6,12 @@ import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champ
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { HexEffect } from '#/game/HexEffect'
-import type { HexEffectData } from '#/game/HexEffect'
-import { ProjectileEffect } from '#/game/ProjectileEffect'
-import type { ProjectileEffectData } from '#/game/ProjectileEffect'
-import { ShapeEffect } from '#/game/ShapeEffect'
-import type { ShapeEffectData } from '#/game/ShapeEffect'
+import { HexEffect } from '#/game/effects/HexEffect'
+import type { HexEffectData } from '#/game/effects/HexEffect'
+import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
+import type { ProjectileEffectData } from '#/game/effects/ProjectileEffect'
+import { ShapeEffect } from '#/game/effects/ShapeEffect'
+import type { ShapeEffectData } from '#/game/effects/ShapeEffect'
 import { getNextHex, needsPathfindingUpdate } from '#/game/pathfind'
 import { getCoordFrom, gameOver, getters, state, thresholdCheck, setData } from '#/game/store'
 

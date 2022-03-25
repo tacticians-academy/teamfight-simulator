@@ -4,11 +4,11 @@ import type { Ref } from 'vue'
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { GameEffect } from '#/game/effects/GameEffect'
+import type { GameEffectData } from '#/game/effects/GameEffect'
 
 import { getSurroundingWithin } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
-import { GameEffect } from '#/game/GameEffect'
-import type { GameEffectData } from '#/game/GameEffect'
 import type { HexCoord } from '#/helpers/types'
 
 export interface HexEffectData extends GameEffectData {

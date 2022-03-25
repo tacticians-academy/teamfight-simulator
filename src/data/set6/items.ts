@@ -4,7 +4,7 @@ import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champ
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { ShapeEffectRectangle } from '#/game/ShapeEffect'
+import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { activatedCheck, state } from '#/game/store'
 
 import { applyGrievousBurn, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'

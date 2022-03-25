@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
-import type { ProjectileEffect } from '#/game/ProjectileEffect'
+import type { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 
 const props = defineProps<{
 	projectile: ProjectileEffect

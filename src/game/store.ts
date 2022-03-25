@@ -11,9 +11,9 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { importAugmentEffects, importChampionEffects, importItemEffects, importTraitEffects } from '#/data/imports'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
-import type { HexEffect } from '#/game/HexEffect'
-import type { ProjectileEffect } from '#/game/ProjectileEffect'
-import type { ShapeEffect } from '#/game/ShapeEffect'
+import type { HexEffect } from '#/game/effects/HexEffect'
+import type { ProjectileEffect } from '#/game/effects/ProjectileEffect'
+import type { ShapeEffect } from '#/game/effects/ShapeEffect'
 import { cancelLoop, delayUntil } from '#/game/loop'
 
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables } from '#/helpers/abilityUtils'

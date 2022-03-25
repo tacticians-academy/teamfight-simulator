@@ -1,7 +1,7 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
-import { ShapeEffectCircle, ShapeEffectCone } from '#/game/ShapeEffect'
+import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
 import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
