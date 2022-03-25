@@ -52,7 +52,7 @@ const augmentGroups = computed(() => {
 	</div>
 </div>
 <div v-if="selectAugment" class=" absolute inset-0 z-50">
-	<div class="overflow-y-scroll bg-gray-800/75  flex flex-col justify-center items-center">
+	<div class="overflow-y-scroll bg-gray-600/90  flex flex-col justify-center items-center">
 		<div>
 			<button
 				v-for="(tier, tierIndex) in ['Silver', 'Gold', 'Prismatic']" :key="tierIndex"
@@ -65,7 +65,7 @@ const augmentGroups = computed(() => {
 		</div>
 		<div v-if="selectAugment[0] != null" class="mb-8 space-y-4">
 			<div v-for="[label, augments] in augmentGroups" :key="label">
-				<div class="ml-1 text-primary">{{ label }}</div>
+				<div class="ml-1 text-gray-300">{{ label }}</div>
 				<div class="flex flex-wrap justify-center">
 					<button
 						v-for="augment in augments.filter(a => a.tier - 1 === selectAugment![0])" :key="augment.name"

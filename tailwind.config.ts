@@ -6,9 +6,5 @@ module.exports = {
 		require('@tailwindcss/forms'),
 	],
 	theme: {
-		container: {
-			center: true,
-			padding: '1rem',
-		},
 	},
 }
