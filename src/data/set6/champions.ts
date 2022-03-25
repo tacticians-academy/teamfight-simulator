@@ -176,6 +176,21 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Nocturne]: {
+		cast: (elapsedMS, spell, champion) => {
+			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			const durationMS = stunSeconds * 1000
+			const tickEveryMS = 100 //TODO verify
+			champion.queueTargetEffect(elapsedMS, spell, {
+				tickEveryMS,
+				expiresAfterMS: durationMS,
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS }],
+				],
+			})
+		},
+	},
+
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
