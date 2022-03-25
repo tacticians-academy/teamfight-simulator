@@ -1,6 +1,6 @@
 # `teamfight-simulator`
 
-The goal of this project is to simulate fights from [Teamfight Tactics](https://teamfighttactics.leagueoflegends.com/en-us/) (TFT). This has the potential to help players improve their board strength intuition via a "puzzle mode", and theorycraft better team compositions, unit positioning, and item builds through statistical analysis.
+Simulate fights from [Teamfight Tactics](https://teamfighttactics.leagueoflegends.com/en-us/) (TFT). The goal is to assist in theorycrafting better team compositions, unit positioning, and item builds through statistical analysis, and perhaps create a "puzzle mode" to improve players' board strength intuition.
 
 https://tftsim.netlify.app
 
@@ -18,27 +18,29 @@ _Unplanned features are listed in the [Nice-To-Have's project](https://github.co
 ### Units setup
 - Place/move any units onto 2 teams
 - Equip/move any valid items, and adjust star levels
-- Applies trait/item effects to affected units
+- Augment/item/trait effects are applied to relevant units
 
 ### Play a fight
 - Assassins jump to backline
-- Units pathfind (naively) into attack range (see [`game/pathfind`](src/game/pathfind.ts?ts=2))
+- Units pathfind into attack range of their target
 - Units auto-attack and generate mana
 - Supported units cast their abilities
 - Runs until one team is left standing
 
 ## Unimplemented
 
-- Abilities: Each Set adds new champions whose abilities must be implemented before the unit can be fully supported. See [Current Set support](#current-set-support) for progress.
-- Augments: Not implemented
-- Various minor gameplay features (30 second overtime limit/etc)
-- Engine refinements (pathfinding improvements/experimentally determining undocumented values) so that gameplay resembles TFT enough to reproduce fights
+Each Set adds new champion abilities, traits, and augments to be implemented. See [Current Set support](#current-set-support) to track this progress.
+
+- Engine refinements (i.e. 30 second overtime limit/pathfinding improvements/experimentally determining undocumented values) so that gameplay resembles TFT enough to accurately reproduce fights
 - Some features are too niche or can be accomplished by other means, and thus are not prioritized for implementation (PR's are welcome though!). See the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2) for a current list.
 
 ## Out of scope
 
 ### End-to-end gameplay
 In theory, this project could eventually be fleshed out into a full gameplay mode (carousel/economy/augment selection/alternating opponents/health tracking/etc). It could then be used to train an AI to play TFT (unlike standard TFT, it can run faster than realtime).
+
+### Past Sets
+All the data for past sets is available thanks to the historical patch data provided by CommunityDragon. It would be a fun exercise to implement past sets, and I've scaffolded Set 1 to make this possible, but it's too big a project for now. If you're interested in contributing to any past set, get in touch!
 
 ### Visual effects
 In a game like TFT, you can think of 3 layers running on top of the raw numbers that specify stats/abilities/etc used to play out a fight:
@@ -65,6 +67,4 @@ _Note `tacticians-academy` uses [`pnpm`](https://pnpm.io) rather than `npm` for 
 
 The largest outstanding project is to script champion abilities. (Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.)
 
-To get started, find an unimplemented champion from the [current Set milestone](#current-set-support). Refer to its spell data in [`academy-library/champions`](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [`set6/champions`](src/data/set6/champions.ts?ts=2) as a template, give it a try!
-
-If you're feeling adventurous, you could try tackling something from the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2)!
+To get started, find an unimplemented issue from the [current Set milestone](#current-set-support). Champion abilities are a good place to start – you can refer to spell data in [`academy-library/champions`](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [`set6/champions`](src/data/set6/champions.ts?ts=2) as a template, give it a try!
