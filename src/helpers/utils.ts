@@ -1,4 +1,11 @@
+import { getIconURL } from '@tacticians-academy/academy-library'
+import type { SetNumber } from '@tacticians-academy/academy-library'
+
 export const TESTING = process.env.NODE_ENV !== 'production'
+
+export function getIconURLFor(state: { loadedSetNumber: SetNumber | null, setNumber: SetNumber }, deriveAsset: { icon: string | null | undefined; }, isRaw?: boolean) {
+	return state.loadedSetNumber ? getIconURL(state.setNumber, deriveAsset, isRaw) : ''
+}
 
 export function uniqueIdentifier(index: number, entity: {name: string}) {
 	return `${index}+${entity.name}`

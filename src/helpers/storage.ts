@@ -25,6 +25,10 @@ export function getSetNumber(): SetNumber {
 	return DEFAULT_SET
 }
 
+export function saveSetNumber(set: SetNumber) {
+	window.localStorage.setItem('TFTSIM_set', set.toString())
+}
+
 // Generic
 
 function keyToSet(key: StorageKey, set: SetNumber): string {
@@ -69,7 +73,7 @@ export function saveTeamAugments() {
 
 type AugmentList = [AugmentData | null, AugmentData | null, AugmentData | null]
 
-export async function loadTeamAugments(set: SetNumber): Promise<[AugmentList, AugmentList]> {
+export function loadTeamAugments(set: SetNumber): [AugmentList, AugmentList] {
 	const json = getStorageJSON(set, StorageKey.Augments)
 	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => setData.activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
 }
@@ -102,5 +106,5 @@ export function getSavedUnits(set: SetNumber) {
 //SEED
 if (window.localStorage.getItem('TFTSIM_v') == null) {
 	window.localStorage.setItem('TFTSIM_v', '1')
-	window.localStorage.setItem(StorageKey.Units, `[{"name":"Zyra","hex":[0,0],"starLevel":2,"items":[]},{"name":"Zyra","hex":[5,4],"starLevel":1,"items":[]},{"name":"Caitlyn","hex":[1,5],"starLevel":1,"items":[44]}]`)
+	window.localStorage.setItem(keyToSet(StorageKey.Units, DEFAULT_SET), `[{"name":"Zyra","hex":[0,0],"starLevel":2,"items":[]},{"name":"Zyra","hex":[5,4],"starLevel":1,"items":[]},{"name":"Caitlyn","hex":[1,5],"starLevel":1,"items":[44]}]`)
 }

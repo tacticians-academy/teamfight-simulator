@@ -16,7 +16,7 @@ import { getDragName, getDragType, onDragOver } from '#/helpers/dragDrop'
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
-	return state.isRunning || (state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
+	return state.isRunning || (state.loadedSetNumber && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
 })
 
 function onFight() {

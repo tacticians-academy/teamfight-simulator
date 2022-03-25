@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { getIconURL } from '@tacticians-academy/academy-library'
 import type { AugmentData } from '@tacticians-academy/academy-library'
 import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 
 import { useStore, setAugmentFor, setData } from '#/game/store'
 
 import type { TeamNumber } from '#/helpers/types'
+import { getIconURLFor } from '#/helpers/utils'
 
 const { state } = useStore()
 
@@ -34,14 +34,14 @@ const augmentGroups = computed(() => {
 </script>
 
 <template>
-<div class="mb-1">
+<div>
 	Augments:
 	<div class="flex justify-between">
 		<div v-for="(augments, teamNumber) in state.augmentsByTeam" :key="teamNumber" class="w-1/2 flex flex-col items-center">
 			<div class="w-full text-secondary">{{ teamNumber === 0 ? 'Blue' : 'Red' }}:</div>
 			<button
 				v-for="(augment, augmentIndex) in augments" :key="augmentIndex"
-				class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURL(state.setNumber, augment)})` : undefined }"
+				class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
 				:disabled="state.isRunning"
 				@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
 			>
@@ -69,7 +69,7 @@ const augmentGroups = computed(() => {
 				<div class="flex flex-wrap justify-center">
 					<button
 						v-for="augment in augments.filter(a => a.tier - 1 === selectAugment![0])" :key="augment.name"
-						class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURL(state.setNumber, augment)})` : undefined }"
+						class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
 						@click="onAugment(augment)"
 					>
 						<span class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>

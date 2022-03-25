@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { getIconURL } from '@tacticians-academy/academy-library'
 import type { ChampionData } from '@tacticians-academy/academy-library'
 
 import { useStore, state, setData } from '#/game/store'
+
+import { getIconURLFor } from '#/helpers/utils'
 
 const { startDragging } = useStore()
 
@@ -32,7 +33,7 @@ const unitGroups = computed(() => {
 		<div class="sidebar-icons-container">
 			<div
 				v-for="unit in group" :key="unit.name"
-				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURL(state.setNumber, unit)})` }"
+				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
 				:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
 			>
 				<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>

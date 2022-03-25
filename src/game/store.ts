@@ -45,31 +45,39 @@ export const setData = shallowReactive({
 	traitEffects: {} as TraitEffects,
 })
 
-async function initState() {
-	const setNumber = getSetNumber()
-	const state = {
-		setNumber,
-		loadedSetNumber: null as SetNumber | null,
-		isRunning: false,
-		winningTeam: null as TeamNumber | null,
-		hexRowsCols,
-		dragUnit: null as ChampionUnit | null,
-		units: [] as ChampionUnit[],
-		hexEffects: new Set<HexEffect>(),
-		projectileEffects: new Set<ProjectileEffect>(),
-		shapeEffects: new Set<ShapeEffect>(),
+const setNumber = getSetNumber()
+export const state = reactive({
+	setNumber,
+	loadedSetNumber: null as SetNumber | null,
+	// loadedSetNumber: ref<SetNumber | null>(null),
+	isRunning: false,
+	winningTeam: null as TeamNumber | null,
+	hexRowsCols,
+	dragUnit: null as ChampionUnit | null,
+	units: [] as ChampionUnit[],
+	hexEffects: new Set<HexEffect>(),
+	projectileEffects: new Set<ProjectileEffect>(),
+	shapeEffects: new Set<ShapeEffect>(),
 
-		augmentsByTeam: await loadTeamAugments(setNumber),
+	augmentsByTeam: loadTeamAugments(setNumber),
+	socialiteHexes: (getStorageJSON(setNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
+	stageNumber: getStorageInt(setNumber, StorageKey.StageNumber, 3),
+	mutantType: (getStorageString(setNumber, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic,
+})
+setSetNumber(setNumber)
 
-		socialiteHexes: (getStorageJSON(setNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
-		stageNumber: ref(getStorageInt(setNumber, StorageKey.StageNumber, 3)),
-		mutantType: ref((getStorageString(setNumber, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic),
-	}
+export async function setSetNumber(set: SetNumber) {
+	state.loadedSetNumber = null
+	state.setNumber = set
+	state.augmentsByTeam = loadTeamAugments(set)
+	state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
+	state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
+	state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
 
-	const { activeAugments, emptyImplementationAugments } = await importAugments(setNumber)
-	const { champions } = await importChampions(setNumber)
-	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(setNumber)
-	const { traits } = await importTraits(setNumber)
+	const { activeAugments, emptyImplementationAugments } = await importAugments(set)
+	const { champions } = await importChampions(set)
+	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
+	const { traits } = await importTraits(set)
 	setData.activeAugments = activeAugments ?? []
 	setData.emptyImplementationAugments = emptyImplementationAugments ?? []
 	setData.champions = champions ?? []
@@ -80,20 +88,16 @@ async function initState() {
 	setData.traits = traits ?? []
 
 	const promises = [
-		importAugmentEffects(setNumber).then((data: any) => setData.augmentEffects = data.augmentEffects ?? {}),
-		importChampionEffects(setNumber).then((data: any) => setData.championEffects = data.championEffects ?? {}),
-		importItemEffects(setNumber).then((data: any) => setData.itemEffects = data.itemEffects ?? {}),
-		importTraitEffects(setNumber).then((data: any) => setData.traitEffects = data.traitEffects ?? {}),
+		importAugmentEffects(set).then(data => setData.augmentEffects = data.augmentEffects ?? {}),
+		importChampionEffects(set).then(data => setData.championEffects = data.championEffects ?? {}),
+		importItemEffects(set).then(data => setData.itemEffects = data.itemEffects ?? {}),
+		importTraitEffects(set).then(data => setData.traitEffects = data.traitEffects ?? {}),
 	]
 	Promise.all(promises).then(() => {
-		state.loadedSetNumber = setNumber
-		resetUnitsAfterUpdating()
+		state.loadedSetNumber = set
+		loadUnits()
 	})
-	// console.log(setData)
-
-	return state
 }
-export const state = reactive(await initState())
 
 export const activatedCheck: Record<string, number | undefined> = {}
 export const thresholdCheck: Record<string, number | undefined> = {}
@@ -274,30 +278,6 @@ const store = {
 
 	getters,
 
-	loadUnits() {
-		if (!state.units.length) {
-			const synergiesByTeam = [[], []]
-			const units = getSavedUnits(state.setNumber)
-				.filter(storageChampion => { //TODO remove
-					if (storageChampion.hex == null) {
-						storageChampion.hex = (storageChampion as any).coord
-					}
-					return storageChampion.hex != null
-				})
-				.map(storageChampion => {
-					const championItems = storageChampion.items
-						.map(itemKey => setData.currentItems.find(item => item.id === itemKey))
-						.filter((item): item is ItemData => !!item)
-					const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
-					champion.items = championItems
-					champion.resetPre(synergiesByTeam)
-					return champion
-				})
-			state.units.push(...units)
-		}
-		resetUnitsAfterUpdating()
-	},
-
 	setStarLevel(unit: ChampionUnit, starLevel: StarLevel) {
 		unit.starLevel = starLevel
 		resetUnitsAfterUpdating()
@@ -468,5 +448,27 @@ export function setSocialiteHex(index: number, hex: HexCoord | null) {
 export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {
 	state.augmentsByTeam[teamNumber][augmentIndex] = augment
 	saveTeamAugments()
+	resetUnitsAfterUpdating()
+}
+
+function loadUnits() {
+	const synergiesByTeam = [[], []]
+	const units = getSavedUnits(state.setNumber)
+		.filter(storageChampion => { //TODO remove
+			if (storageChampion.hex == null) {
+				storageChampion.hex = (storageChampion as any).coord
+			}
+			return storageChampion.hex != null
+		})
+		.map(storageChampion => {
+			const championItems = storageChampion.items
+				.map(itemKey => setData.currentItems.find(item => item.id === itemKey))
+				.filter((item): item is ItemData => !!item)
+			const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
+			champion.items = championItems
+			champion.resetPre(synergiesByTeam)
+			return champion
+		})
+	state.units = units
 	resetUnitsAfterUpdating()
 }

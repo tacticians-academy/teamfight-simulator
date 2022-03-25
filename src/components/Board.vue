@@ -15,7 +15,7 @@ import type { HexCoord } from '#/helpers/types'
 
 const hexContainer = ref<HTMLElement | null>(null)
 
-const { getters, state, dropUnit, loadUnits } = useStore()
+const { getters, state, dropUnit } = useStore()
 
 function onDrop(event: DragEvent, row: number, col: number) {
 	const championName = getDragNameOf('unit', event)
@@ -66,17 +66,15 @@ onMounted(() => {
 			state.hexRowsCols[rowIndex][colIndex].coord = [x / containerSize, y / containerSize]
 		}
 	}
-
-	loadUnits()
 })
 
 const socialitesByTeam = getters.socialitesByTeam
 </script>
 
 <template>
-<div class="board  overflow-y-scroll">
-	<div class="board-contents  relative">
-		<div ref="hexContainer" class="hexes-container">
+<div class="board">
+	<div class="relative">
+		<div ref="hexContainer" class="overflow-x-hidden aspect-square">
 			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
@@ -87,7 +85,7 @@ const socialitesByTeam = getters.socialitesByTeam
 				/>
 			</div>
 		</div>
-		<div class="absolute inset-0 pointer-events-none">
+		<div :key="state.loadedSetNumber ?? undefined" class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
 				<Unit v-if="!unit.dead" :unit="unit" />
 			</template>
@@ -119,9 +117,6 @@ const socialitesByTeam = getters.socialitesByTeam
 </template>
 
 <style lang="postcss">
-.hexes-container { /* TODO work on small screen sizes */
-	@apply aspect-square;
-}
 .hex {
 	width: v-bind(HEX_UNITS);
 	height: v-bind(HEX_UNITS);
@@ -161,13 +156,6 @@ const socialitesByTeam = getters.socialitesByTeam
 </style>
 
 <style scoped lang="postcss">
-.board {
-	@apply relative w-full overflow-x-hidden;
-}
-/* .board-contents {
-	margin-top: v-bind(HALF_HEX_UNITS);
-} */
-
 .row {
 	@apply relative  flex;
 	margin-bottom: v-bind(QUARTER_HEX_INSET_UNITS);

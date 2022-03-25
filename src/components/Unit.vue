@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, defineProps, ref } from 'vue'
 
-import { BonusKey, getIconURL } from '@tacticians-academy/academy-library'
+import { BonusKey } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { DraggableType } from '#/helpers/dragDrop'
@@ -11,6 +11,7 @@ import { UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import { getDragName, getDragType, onDragOver } from '#/helpers/dragDrop'
 import { StatusEffectType } from '#/helpers/types'
 import type { StarLevel } from '#/helpers/types'
+import { getIconURLFor } from '#/helpers/utils'
 
 const { state, setStarLevel, startDragging, copyItem, moveItem, dropUnit } = useStore()
 
@@ -43,8 +44,6 @@ function onDragStart(event: DragEvent, type: DraggableType, name: string) {
 function onStar(starLevel: number) {
 	setStarLevel(props.unit, starLevel as StarLevel)
 }
-
-const iconURL = `url(${getIconURL(state.setNumber, props.unit.data)})`
 
 function onDrop(event: DragEvent) {
 	const type = getDragType(event)
@@ -103,7 +102,7 @@ function onInfo(event: Event) {
 				class="w-1/3" :class="state.isRunning ? 'pointer-events-none' : null"
 				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
 			>
-				<img :src="getIconURL(state.setNumber, item)" :alt="item.name">
+				<img :src="getIconURLFor(state, item)" :alt="item.name">
 			</div>
 		</div>
 		<div class="flex">
@@ -113,7 +112,7 @@ function onInfo(event: Event) {
 		</div>
 	</div>
 	<!-- <div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'"> -->
-	<div class="circle" :style="{ backgroundImage: iconURL }" :class="unit.team === 0 ? 'border-violet-500' : 'border-rose-500'">
+	<div class="circle" :style="{ backgroundImage: `url(${getIconURLFor(state, props.unit.data)})` }" :class="unit.team === 0 ? 'border-violet-500' : 'border-rose-500'">
 		<span class="group-hover-visible">{{ unit.name }}</span>
 	</div>
 	<div class="overlay stars">
