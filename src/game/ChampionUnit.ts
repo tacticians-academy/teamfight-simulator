@@ -61,8 +61,6 @@ export class ChampionUnit {
 	hitBy: string[] = []
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
-	collides = true
-
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moving = false
 	customMoveSpeed: number | undefined
@@ -143,8 +141,6 @@ export class ChampionUnit {
 		this.customMoveSpeed = undefined
 		this.performActionUntilMS = 0
 		this.manaLockUntilMS = 0
-		const jumpToBackline = this.jumpsToBackline()
-		this.collides = !jumpToBackline
 		this.basicAttackCount = 0
 		this.castCount = 0
 		if (this.hasTrait(TraitKey.Transformer)) {
@@ -517,17 +513,14 @@ export class ChampionUnit {
 		}
 	}
 
-	jumpToBackline(elapsedMS: DOMHighResTimeStamp) {
-		const [col, row] = this.activeHex
+	jumpToBackline() {
+		const [col, row] = this.startHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		const jumpHex = getClosestHexAvailableTo(targetHex, state.units)
 		this.customMoveSpeed = 1500 // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
 		this.moving = true
-		if (jumpHex) {
-			this.setActiveHex(jumpHex)
-		}
-		this.collides = true
-		this.applyStatusEffect(elapsedMS, StatusEffectType.stealth, BACKLINE_JUMP_MS)
+		this.setActiveHex(jumpHex ?? this.startHex)
+		this.applyStatusEffect(0, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
 	canPerformAction(elapsedMS: DOMHighResTimeStamp) {
@@ -539,11 +532,8 @@ export class ChampionUnit {
 	isInteractable() {
 		return !this.dead && !this.statusEffects.banished.active
 	}
-	isRendered() {
-		return !this.dead || this.resurrecting
-	}
 	hasCollision() {
-		return this.isRendered() && this.collides
+		return !this.dead || this.resurrecting
 	}
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {

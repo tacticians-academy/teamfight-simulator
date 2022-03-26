@@ -43,10 +43,10 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		startedAtMS = frameMS
 		didBacklineJump = false
 		didMeleeMove = false
+		const backlineJumpers = state.units.filter(unit => unit.jumpsToBackline())
+		backlineJumpers.forEach(unit => unit.activeHex = [-1, -1])
+		backlineJumpers.forEach(unit => unit.jumpToBackline())
 		state.units.forEach(unit => {
-			if (unit.jumpsToBackline()) {
-				unit.jumpToBackline(0)
-			}
 			unit.shields.forEach(shield => {
 				shield.activated = shield.activatesAtMS == null
 				const healShieldBoost = shield.source?.getBonuses(BonusKey.HealShieldBoost)

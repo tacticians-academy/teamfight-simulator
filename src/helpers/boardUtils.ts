@@ -12,7 +12,7 @@ export function buildBoard(fillObjects: boolean | 0): any[][] {
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitHexes = units.filter(unit => !unit.hasCollision()).map(unit => unit.activeHex)
+	const unitHexes = units.filter(unit => unit.hasCollision()).map(unit => unit.activeHex)
 	for (let distance = 0; distance <= 4; distance += 1) { //TODO recurse to unlimited distance
 		for (const checkHex of getHexRing(startHex, distance)) {
 			if (!containsHex(checkHex, unitHexes)) {
