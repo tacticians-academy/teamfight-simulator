@@ -603,7 +603,7 @@ export class ChampionUnit {
 				})
 			})
 			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
-				effects.onDeath?.(augment, elapsedMS, this, source)
+				effects.allyDeath?.(augment, elapsedMS, this, source)
 			})
 			getters.activeAugmentEffectsByTeam.value[this.opposingTeam()].forEach(([augment, effects]) => {
 				effects.enemyDeath?.(augment, elapsedMS, this, source)

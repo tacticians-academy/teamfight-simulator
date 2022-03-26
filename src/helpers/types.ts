@@ -162,8 +162,8 @@ export interface AugmentFns {
 	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	apply?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void
 	cast?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-	onDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
 	onHealShield?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, amount: number, target: ChampionUnit, source: ChampionUnit) => void
+	allyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
 	enemyDeath?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, source: ChampionUnit | undefined) => void
 	onFirstEffectTargetHit?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, damageType: DamageType | undefined) => void
 	hpThreshold?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void

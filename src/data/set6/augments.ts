@@ -116,7 +116,7 @@ export const augmentEffects = {
 	},
 
 	[AugmentGroupKey.ChemicalOverload]: {
-		onDeath: (augment, elapsedMS, dead, source) => {
+		allyDeath: (augment, elapsedMS, dead, source) => {
 			if (!dead.hasTrait(TraitKey.Chemtech)) { return }
 
 			const [hpPercent] = getVariables(augment, BonusKey.Health)
