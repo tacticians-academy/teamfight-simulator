@@ -2,6 +2,7 @@ import { markRaw } from 'vue'
 
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
+import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
@@ -612,6 +613,17 @@ export class ChampionUnit {
 		}
 	}
 
+	canDamageCrit(sourceType: DamageSourceType, damageType: DamageType) {
+		if (sourceType === DamageSourceType.spell) {
+			if (damageType === DamageType.magic || damageType === DamageType.true) {
+				return this.hasActive(TraitKey.Assassin) || this.hasItem(ItemKey.JeweledGauntlet) || getters.activeAugmentEffectsByTeam.value[this.team].some(([augment]) => augment.groupID === AugmentGroupKey.JeweledLotus)
+			}
+		} else if (sourceType === DamageSourceType.attack) {
+			return damageType === DamageType.physical || damageType === DamageType.true
+		}
+		return false
+	}
+
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number, critBonus?: number) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
 		source?.items.forEach((item, index) => {
@@ -658,7 +670,7 @@ export class ChampionUnit {
 		if (reduction != null && reduction > 0) {
 			defenseStat! *= reduction
 		}
-		if (source && (damageType === DamageType.physical || (damageType === DamageType.magic && (source.hasActive(TraitKey.Assassin) || source.hasItem(ItemKey.JeweledGauntlet))))) {
+		if (source && (damageType === DamageType.physical || (damageType === DamageType.magic && source.canDamageCrit(sourceType, damageType)))) {
 			const critReduction = this.critReduction()
 			if (critReduction < 1) {
 				const critDamage = rawDamage * source.critChance(critBonus) * source.critMultiplier(critBonus)

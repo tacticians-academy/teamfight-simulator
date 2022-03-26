@@ -245,6 +245,13 @@ export const augmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.JeweledLotus]: {
+		apply: (augment, team, units) => {
+			const [critChance] = getVariables(augment, BonusKey.CritChance)
+			units.forEach(unit => unit.setBonusesFor(AugmentGroupKey.JeweledLotus, [BonusKey.CritChance, critChance]))
+		},
+	},
+
 	[AugmentGroupKey.KnifesEdge]: {
 		apply: (augment, team, units) => {
 			const [adPerStar] = getVariables(augment, 'ADPerStarLevel')
