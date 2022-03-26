@@ -35,6 +35,8 @@ export function getFarthestUnitOfTeamWithinRangeFrom(source: ChampionUnit, teamN
 export function getClosestUnitOfTeamWithinRangeTo(targetHex: HexCoord, teamNumber: TeamNumber | null, maxDistance: number | undefined, units?: ChampionUnit[]) {
 	if (!units) {
 		units = getInteractableUnitsOfTeam(teamNumber)
+	} else {
+		units = units.filter(unit => unit.team === teamNumber && unit.isInteractable())
 	}
 	return getBestRandomAsMax(false, units, (unit) => {
 		const distance = unit.hexDistanceToHex(targetHex)

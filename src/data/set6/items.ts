@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { applyGrievousBurn, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
 import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getClosestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -270,15 +270,7 @@ export const itemEffects = {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			if (!holder.isNthBasicAttack(3)) { return }
 			const [totalUnits, damage, mrShred, shredDurationSeconds] = getVariables(item, `${holder.starLevel}StarBounces`, 'Damage', 'MRShred', 'MRShredDuration')
-			const units: ChampionUnit[] = []
-			let currentBounceTarget = target
-			const team = holder.opposingTeam()
-			while (units.length < totalUnits) {
-				units.push(currentBounceTarget)
-				const newTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, team, undefined, state.units.filter(unit => !units.includes(unit)))
-				if (!newTarget) { break }
-				currentBounceTarget = newTarget
-			}
+			const units = getChainFrom(target, totalUnits)
 			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)
 			units.forEach(unit => {
 				unit.damage(elapsedMS, false, holder, DamageSourceType.bonus, damageCalculation, true)

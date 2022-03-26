@@ -3,9 +3,10 @@ import type { EffectVariables } from '@tacticians-academy/academy-library'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
+import type { AttackBounce } from '#/game/effects/GameEffect'
 import { state } from '#/game/store'
 
-import { getClosestHexAvailableTo } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT } from '#/helpers/constants'
 import { StatusEffectType } from '#/helpers/types'
@@ -159,4 +160,20 @@ export function getDistanceUnit(closest: boolean, fromUnit: ChampionUnit, team?:
 	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 		.filter(unit => unit !== fromUnit)
 	return getBestAsMax(!closest, units, (unit) => fromUnit.hexDistanceTo(unit))
+}
+
+// Bounces
+
+export function getChainFrom(unit: ChampionUnit, bounces: number, maxDistance?: number) {
+	const units: ChampionUnit[] = []
+	let currentBounceTarget: ChampionUnit | null = unit
+	while (currentBounceTarget && units.length < bounces) {
+		units.push(currentBounceTarget)
+		currentBounceTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, unit.team, maxDistance, state.units.filter(unit => !units.includes(unit)))
+	}
+	return units
+}
+
+export function getNextBounceFrom(unit: ChampionUnit, bounce: AttackBounce) {
+	return getClosestUnitOfTeamWithinRangeTo(unit.activeHex, unit.team, bounce.hexRange, state.units.filter(unit => !bounce.hitUnits!.includes(unit)))
 }
