@@ -3,7 +3,7 @@ import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { getSocialiteHexesFor, INNOVATION_NAMES } from '#/data/set6/constants'
+import { getSocialiteHexesFor, INNOVATION_NAMES } from '#/data/set6/utils'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'

@@ -4,7 +4,7 @@ import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/a
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { getSocialiteHexesFor, getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/data/set6/constants'
+import { getSocialiteHexesFor, getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/data/set6/utils'
 import { applyChemtech } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
