@@ -1,14 +1,17 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { AugmentData } from '@tacticians-academy/academy-library'
 import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
+import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import { INNOVATION_NAMES } from '#/data/set6/constants'
 import { applyChemtech } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { delayUntil } from '#/game/loop'
 import { getters, state } from '#/game/store'
 
-import { applyGrievousBurn, checkCooldown, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, checkCooldown, getAliveUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
@@ -349,6 +352,23 @@ export const augmentEffects = {
 		delayed: (augment, elapsedMS, team, units) => {
 			const [healPercent] = getVariables(augment, 'HealPercent')
 			units.forEach(unit => unit.gainHealth(elapsedMS, undefined, unit.missingHealth() * healPercent / 100, true))
+		},
+	},
+
+	[AugmentGroupKey.SelfRepair]: {
+		allyDeath: async (augment, elapsedMS, dead, source) => {
+			if (!INNOVATION_NAMES.includes(dead.name as ChampionKey)) { return }
+
+			if (getAliveUnitsOfTeam(dead.team).some(unit => unit.hasTrait(TraitKey.Innovator))) {
+				const [resurrectSeconds] = getVariables(augment, '{357f0e55}') //TODO rename
+				dead.resurrecting = true
+				await delayUntil(elapsedMS, resurrectSeconds)
+				dead.resurrecting = false
+				if (getAliveUnitsOfTeam(dead.team).some(unit => unit.hasTrait(TraitKey.Innovator))) {
+					dead.dead = false
+					dead.health = dead.healthMax
+				}
+			}
 		},
 	},
 
