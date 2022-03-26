@@ -49,10 +49,9 @@ export class HexEffect extends GameEffect {
 		}
 	}
 
-	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
-		if (!this.applySuper(elapsedMS, unit)) {
-			return false
-		}
+	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => {
+		const wasSpellShielded = this.applySuper(elapsedMS, unit)
+		if (wasSpellShielded == null) { return false }
 		if (this.taunts && this.source.isInteractable()) {
 			unit.target = this.source
 		}

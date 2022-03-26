@@ -6,11 +6,12 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 
 const props = defineProps<{
 	targetEffect: TargetEffect
+	source: ChampionUnit
 	target: ChampionUnit
 }>()
 
 const data = computed(() => {
-	const [x1, y1] = props.targetEffect.source.coord // eslint-disable-line vue/no-setup-props-destructure
+	const [x1, y1] = props.source.coord // eslint-disable-line vue/no-setup-props-destructure
 	const [x2, y2] = props.target.coord // eslint-disable-line vue/no-setup-props-destructure
 	const distanceX = x2 - x1
 	const distanceY = y2 - y1

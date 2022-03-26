@@ -6,17 +6,17 @@ import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-ac
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
-import type { GameEffectData } from '#/game/effects/GameEffect'
+import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 import { getCoordFrom } from '#/game/store'
 
-import { getDistanceUnit, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
+import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { HexCoord} from '#/helpers/types'
-import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 
 type TargetDeathAction = 'continue' | 'closest' | 'farthest'
 
-export interface ProjectileEffectData extends GameEffectData {
+export interface ProjectileEffectData extends AttackEffectData {
 	/** Whether the `Projectile` should complete after the first time it collides with a unit. Set to false to apply to all intermediary units collided with. */
 	destroysOnCollision?: boolean
 	/** The fixed number of hexes this `Projectile` should travel, regardless of its target distance. */
@@ -48,6 +48,7 @@ export class ProjectileEffect extends GameEffect {
 	returnMissile: ChampionSpellMissileData | undefined
 	width: number
 	isReturning = false
+	bounce: AttackBounce | undefined
 
 	collisionRadiusSquared: number
 
@@ -76,6 +77,10 @@ export class ProjectileEffect extends GameEffect {
 		this.destroysOnCollision = data.destroysOnCollision
 		this.onTargetDeath = data.onTargetDeath
 		this.returnMissile = data.returnMissile
+		this.bounce = data.bounce
+		if (this.bounce && isUnit(this.target)) {
+			this.bounce.hitUnits = [this.target]
+		}
 
 		if (data.fixedHexRange != null) {
 			const [deltaX, deltaY] = this.getDelta(this.targetCoord, data.changeRadians)
@@ -101,8 +106,20 @@ export class ProjectileEffect extends GameEffect {
 		return [Math.cos(angle), Math.sin(angle), distanceX, distanceY]
 	}
 
-	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
-		return this.applySuper(elapsedMS, unit)
+	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => {
+		const wasSpellShielded = this.applySuper(elapsedMS, unit)
+		if (wasSpellShielded == null) { return }
+		if (!wasSpellShielded && isFinalTarget) {
+			if (this.bounce) {
+				const bounceTarget = getNextBounceFrom(this.target as ChampionUnit, this.bounce)
+				if (bounceTarget) {
+					this.bounce.bouncesRemaining -= 1
+					this.setTarget(bounceTarget)
+					return false
+				}
+			}
+		}
+		return true
 	}
 
 	checkIfDies() {
@@ -151,7 +168,9 @@ export class ProjectileEffect extends GameEffect {
 		if (this.maxDistance != null) {
 			if (this.traveledDistance >= this.maxDistance) {
 				if (!this.isReturning && isUnit(this.target)) {
-					this.apply(elapsedMS, this.target)
+					if (this.apply(elapsedMS, this.target, true) === false) {
+						return true
+					}
 				}
 				return this.checkIfDies()
 			}
@@ -161,7 +180,9 @@ export class ProjectileEffect extends GameEffect {
 			const [deltaX, deltaY, distanceX, distanceY] = this.getDelta()
 			if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
 				if (!this.isReturning && isUnit(this.target)) {
-					this.apply(elapsedMS, this.target)
+					if (this.apply(elapsedMS, this.target, true) === false) {
+						return true
+					}
 				}
 				return this.checkIfDies()
 			}
@@ -189,7 +210,7 @@ export class ProjectileEffect extends GameEffect {
 		if (this.destroysOnCollision != null) {
 			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
 				if (coordinateDistanceSquared(position, unit.coord) < this.collisionRadiusSquared) {
-					if (this.apply(elapsedMS, unit)) {
+					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
 						if (this.destroysOnCollision) {
 							return this.checkIfDies()
 						}

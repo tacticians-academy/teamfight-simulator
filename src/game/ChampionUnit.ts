@@ -1139,12 +1139,12 @@ export class ChampionUnit {
 		if (data.damageCalculation && data.damageSourceType == null) {
 			data.damageSourceType = DamageSourceType.spell
 		}
-		if (!data.targets) {
+		if (!data.sourceTargets) {
 			if (!this.target) {
 				console.log('ERR', 'No target', this.name, spell?.name)
 				return false
 			}
-			data.targets = [this.target]
+			data.sourceTargets = [[this, this.target]]
 		}
 		const targetEffect = new TargetEffect(this, elapsedMS, spell, data)
 		state.targetEffects.add(targetEffect)

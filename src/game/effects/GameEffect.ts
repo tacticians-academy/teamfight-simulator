@@ -7,10 +7,10 @@ import { getters } from '#/game/store'
 
 import { solveSpellCalculationFrom } from '#/helpers/calculate'
 import { DamageSourceType } from '#/helpers/types'
-import type { BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, StatusEffectData, TeamNumber } from '#/helpers/types'
+import type { BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
-	apply: (elapsedMS: number, unit: ChampionUnit) => boolean = () => false
+	apply: (elapsedMS: number, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => undefined
 	intersects: (unit: ChampionUnit) => boolean = () => false
 	update: (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => boolean | undefined = () => false
 	start: () => void = () => {}
@@ -41,6 +41,20 @@ export interface GameEffectData {
 	onActivate?: CollisionFn
 	/** Callback for each unit the `GameEffect` applies to. */
 	onCollision?: CollisionFn
+}
+
+export interface AttackBounce {
+	hexRange?: number
+	bouncesRemaining: number
+	damageCalculation?: SpellCalculation
+	damageModifier?: DamageModifier
+	startHex?: HexCoord
+	hitUnits?: ChampionUnit[]
+}
+
+export interface AttackEffectData extends GameEffectData {
+	/** Attacks should bounce to new targets. */
+	bounce?: AttackBounce
 }
 
 let instanceIndex = 0
@@ -130,7 +144,7 @@ export class GameEffect extends GameEffectChild {
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
 		if (this.collidedWith.includes(unit.instanceID)) {
-			return false
+			return
 		}
 		const isFirstTarget = !this.collidedWith.length
 		const wasSpellShielded = this.applyDamage(elapsedMS, unit)
@@ -148,7 +162,7 @@ export class GameEffect extends GameEffectChild {
 			getters.activeAugmentEffectsByTeam.value[this.source.team].forEach(([augment, effects]) => effects.onFirstEffectTargetHit?.(augment, elapsedMS, unit, this.source, damageType))
 		}
 		this.applyPost(elapsedMS, unit)
-		return true
+		return wasSpellShielded
 	}
 
 	checkCollision(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
@@ -159,7 +173,7 @@ export class GameEffect extends GameEffectChild {
 			return unit.isInteractable() && this.intersects(unit)
 		})
 		// console.log(targetingUnits.map(u => u.name)) //SAMPLE
-		targetingUnits.forEach(unit => this.apply(elapsedMS, unit))
+		targetingUnits.forEach(unit => this.apply(elapsedMS, unit, false))
 	}
 
 	updateSuper(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) {

@@ -1,30 +1,36 @@
+import { ref } from 'vue'
+import type { Ref } from 'vue'
+
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
-import type { GameEffectData } from '#/game/effects/GameEffect'
+import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 
+import { getNextBounceFrom } from '#/helpers/abilityUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 
-export interface TargetEffectData extends GameEffectData {
+export interface TargetEffectData extends AttackEffectData {
 	/** The delay to apply after starting. Inferred from the passed `SpellCalculation` if provided. */
 	activatesAfterMS?: DOMHighResTimeStamp
 	/** The interval between ticks applied to this target. If omitted, the effect applies once. */
 	tickEveryMS?: DOMHighResTimeStamp
 	/** Array of affected units. */
-	targets?: ChampionUnit[]
+	sourceTargets?: [ChampionUnit, ChampionUnit][]
 }
 
 export class TargetEffect extends GameEffect {
-	targets: Set<ChampionUnit>
+	sourceTargets: Ref<Set<[ChampionUnit, ChampionUnit]>>
+	currentTargets: Set<ChampionUnit>
 	ticksRemaining: number | undefined
 	tickEveryMS: DOMHighResTimeStamp | undefined
+	bounce: AttackBounce | undefined
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: TargetEffectData) {
 		super(source, spell, data)
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
-		this.activatesAfterMS = spell ? (data.activatesAfterMS != null ? data.activatesAfterMS : (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS)) * 1000 : 0
+		this.activatesAfterMS = data.activatesAfterMS != null ? data.activatesAfterMS : (spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0)
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 		if (data.tickEveryMS != null) {
@@ -39,19 +45,28 @@ export class TargetEffect extends GameEffect {
 			}
 		}
 
-		this.targets = new Set(data.targets)
+		this.currentTargets = new Set(data.sourceTargets!.map(sourceTarget => sourceTarget[1]))
+		this.sourceTargets = ref(new Set(data.sourceTargets))
+		this.bounce = data.bounce
+		if (this.bounce) {
+			this.bounce.hitUnits = Array.from(this.currentTargets)
+		}
 
 		this.postInit()
 	}
 
-	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
+	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFirstApply: boolean) => {
 		const wasSpellShielded = this.applyDamage(elapsedMS, unit)
-		this.applyPost(elapsedMS, unit)
+		if (!wasSpellShielded && isFirstApply) {
+			this.applyBonuses(elapsedMS, unit)
+			this.applyPost(elapsedMS, unit)
+		}
 		return !wasSpellShielded
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
 		let applies = false
+		let isFirst = false
 		if (elapsedMS >= this.activatesAtMS) {
 			if (this.ticksRemaining != null) {
 				if (this.ticksRemaining > 0) {
@@ -59,37 +74,46 @@ export class TargetEffect extends GameEffect {
 					this.activatesAtMS += this.tickEveryMS!
 					this.onActivate?.(elapsedMS, this.source)
 					applies = true
-					if (!this.activated) {
-						this.targets.forEach(target => {
-							if (target.isInteractable()) {
-								this.applyBonuses(elapsedMS, target)
-							}
-						})
-					}
+					isFirst = this.activated === false
+					this.activated = true
 				}
 			} else if (!this.activated) {
 				this.onActivate?.(elapsedMS, this.source)
+				isFirst = true
 				applies = true
 			} else {
 				return false
 			}
-			this.activated = true
 		}
 		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
-		if (updateResult === false && (this.ticksRemaining == null || this.ticksRemaining <= 0)) {
+		if (updateResult === false) {
 			return false
 		}
-		if (!applies) {
-			return true
+		if (applies) {
+			this.currentTargets.forEach(target => {
+				if (target.isInteractable()) {
+					if (!this.apply(elapsedMS, target, isFirst)) {
+						this.currentTargets.delete(target)
+					}
+				}
+			})
 		}
-
-		this.targets.forEach(target => {
-			if (!target.isInteractable() || !this.apply(elapsedMS, target)) {
-				this.targets.delete(target)
+		if (this.activated) {
+			if (this.bounce && this.bounce.bouncesRemaining > 0) {
+				const newTargets = new Set<ChampionUnit>()
+				this.currentTargets.forEach(target => {
+					const bounceTarget = getNextBounceFrom(target, this.bounce!)
+					if (bounceTarget && this.apply(elapsedMS, bounceTarget, isFirst)) {
+						newTargets.add(bounceTarget)
+						this.sourceTargets.value.add([target, bounceTarget])
+					}
+				})
+				this.bounce.bouncesRemaining -= 1
+				this.currentTargets = newTargets
 			}
-		})
-		if (!this.targets.size) {
-			return false
+		} else if (applies) {
+			this.activated = true
 		}
+		return true
 	}
 }

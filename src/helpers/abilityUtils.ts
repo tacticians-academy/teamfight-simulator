@@ -175,5 +175,12 @@ export function getChainFrom(unit: ChampionUnit, bounces: number, maxDistance?: 
 }
 
 export function getNextBounceFrom(unit: ChampionUnit, bounce: AttackBounce) {
-	return getClosestUnitOfTeamWithinRangeTo(unit.activeHex, unit.team, bounce.hexRange, state.units.filter(unit => !bounce.hitUnits!.includes(unit)))
+	if (bounce.bouncesRemaining <= 0) {
+		return undefined
+	}
+	const target = getClosestUnitOfTeamWithinRangeTo(unit.activeHex, unit.team, bounce.hexRange, state.units.filter(unit => !bounce.hitUnits!.includes(unit)))
+	if (target) {
+		bounce.hitUnits?.push(target)
+	}
+	return target
 }

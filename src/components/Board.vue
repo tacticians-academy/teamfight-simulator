@@ -104,7 +104,7 @@ onMounted(() => {
 			<transition-group name="fade">
 				<template v-for="targetEffect in state.targetEffects" :key="targetEffect.instanceID">
 					<template v-if="targetEffect.started">
-						<TargetEffect v-for="(target, index) in targetEffect.targets" :key="index" :targetEffect="targetEffect" :target="target" />
+						<TargetEffect v-for="([source, target], index) in targetEffect.sourceTargets" :key="index" :targetEffect="targetEffect" :source="source" :target="target" />
 					</template>
 				</template>
 			</transition-group>
