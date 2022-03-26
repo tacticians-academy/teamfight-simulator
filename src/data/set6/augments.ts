@@ -12,7 +12,7 @@ import { delayUntil } from '#/game/loop'
 import { getters, state } from '#/game/store'
 
 import { applyGrievousBurn, checkCooldown, getAliveUnitsOfTeamWithTrait, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
-import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
+import { getHexRing, getClosestAttackableOfTeam, isInBackLines, getFrontBehindHexes } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { AugmentEffects, TeamNumber } from '#/helpers/types'
@@ -82,6 +82,32 @@ export const augmentEffects = {
 		apply: (augment, team, units) => {
 			const [manaRestore] = getVariables(augment, BonusKey.ManaRestore)
 			units.forEach(unit => unit.addBonuses(AugmentGroupKey.BlueBattery, [BonusKey.ManaRestore, manaRestore]))
+		},
+	},
+
+	[AugmentGroupKey.StandBehindMe]: {
+		apply: (augment, team, units) => {
+			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Bodyguard)
+			if (!synergy) { return }
+
+			const [bodyguardArmor] = getVariables(synergy.activeEffect!, 'BonusArmor')
+			const [bodyguardPercent, standBehindPercent] = getVariables(augment, 'DefenseBonus', 'DefensePercent')
+			const bodyguards = units.filter(unit => unit.hasTrait(TraitKey.Bodyguard))
+			const behindHexes = bodyguards.flatMap(unit => getFrontBehindHexes(unit, false))
+			units
+				.filter(unit => unit.isIn(behindHexes))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.StandBehindMe, [BonusKey.Armor, bodyguardArmor * standBehindPercent / 100]))
+			bodyguards
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.StandBehindMe, [BonusKey.Armor, bodyguardArmor * bodyguardPercent / 100]))
+			const sampleBodyguard = bodyguards[0]
+			if (sampleBodyguard != null) {
+				window.setTimeout(() => {
+					sampleBodyguard.queueHexEffect(0, undefined, {
+						targetTeam: sampleBodyguard.team,
+						hexes: behindHexes,
+					})
+				})
+			}
 		},
 	},
 
