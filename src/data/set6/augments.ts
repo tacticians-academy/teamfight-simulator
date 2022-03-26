@@ -4,10 +4,11 @@ import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/a
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { getSocialiteHexesFor, getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/data/set6/utils'
+import { getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/data/set6/utils'
 import { applyChemtech } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import type { AttackBounce } from '#/game/effects/GameEffect'
 import { delayUntil } from '#/game/loop'
 import { getters, state } from '#/game/store'
 
@@ -453,6 +454,22 @@ export const augmentEffects = {
 					dead.health = dead.healthMax
 				}
 			}
+		},
+	},
+
+	[AugmentGroupKey.Sharpshooter]: {
+		modifyAttacks: (augment, team, unit) => {
+			const [reductionPercent] = getVariables(augment, 'BounceReduction')
+			let bounce: AttackBounce | undefined
+			if (unit.hasTrait(TraitKey.Twinshot)) {
+				bounce = {
+					bouncesRemaining: 1,
+					damageModifier: {
+						multiplier: -reductionPercent / 100,
+					},
+				}
+			}
+			return { bounce }
 		},
 	},
 
