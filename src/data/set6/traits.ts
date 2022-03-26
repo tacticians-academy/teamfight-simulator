@@ -3,6 +3,8 @@ import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
+import { INNOVATION_NAMES } from '#/data/set6/constants'
+
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
@@ -126,11 +128,10 @@ export const traitEffects = {
 	[TraitKey.Innovator]: {
 		onceForTeam: (activeEffect, teamNumber, units) => {
 			const [starLevelMultiplier, starLevel] = getVariables(activeEffect, 'InnovatorStarLevelMultiplier', 'InnovationStarLevel')
-			const innovationNames = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
-			const innovationName = innovationNames[starLevel - 1]
-			const innovations = state.units.filter(unit => unit.team === teamNumber && innovationNames.includes(unit.name as ChampionKey))
+			const innovationName = INNOVATION_NAMES[starLevel - 1]
+			const innovations = state.units.filter(unit => unit.team === teamNumber && INNOVATION_NAMES.includes(unit.name as ChampionKey))
 			let innovation = innovations.find(unit => unit.name === innovationName)
-			state.units = state.units.filter(unit => unit.team !== teamNumber || !innovationNames.includes(unit.name as ChampionKey) || unit === innovation)
+			state.units = state.units.filter(unit => unit.team !== teamNumber || !INNOVATION_NAMES.includes(unit.name as ChampionKey) || unit === innovation)
 			if (!innovation || innovation.name !== innovationName) {
 				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [6, 0] : [1, 1], state.units)
 				if (innovationHex != null) {
