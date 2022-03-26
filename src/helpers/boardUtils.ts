@@ -143,6 +143,12 @@ export function containsHex(targetHex: HexCoord, hexes: Iterable<HexCoord>) {
 	return false
 }
 
+export function getFrontBehindHexes(unit: ChampionUnit, inFront: boolean) {
+	const [unitCol, unitRow] = unit.activeHex
+	const projectingRowDirection = (unit.team === 0 ? 1 : -1) * (inFront ? 1 : -1)
+	return getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
+}
+
 export function getClosestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
 	return getClosestAttackableOfTeam(unit.opposingTeam(), unit, allUnits, range, minimumUnits)
 }

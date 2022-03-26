@@ -9,7 +9,7 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getFrontBehindHexes, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber, TraitEffects } from '#/helpers/types'
@@ -153,9 +153,7 @@ export const traitEffects = {
 	[TraitKey.Mastermind]: {
 		applyForOthers: (activeEffect, unit) => {
 			const [manaGrant] = getVariables(activeEffect, 'ManaGrant')
-			const [unitCol, unitRow] = unit.startHex
-			const projectingRowDirection = unit.team === 0 ? 1 : -1
-			const hexesInFront = getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
+			const hexesInFront = getFrontBehindHexes(unit, true)
 			getUnitsOfTeam(unit.team)
 				.filter(unit => unit.isIn(hexesInFront))
 				.forEach(unit => unit.setBonusesFor(TraitKey.Mastermind, [BonusKey.Mana, manaGrant]))
