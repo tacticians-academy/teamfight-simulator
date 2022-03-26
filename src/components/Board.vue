@@ -88,7 +88,7 @@ const socialitesByTeam = getters.socialitesByTeam
 		</div>
 		<div :key="state.loadedSetNumber ?? undefined" class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
-				<Unit v-if="!unit.dead" :unit="unit" />
+				<Unit v-if="unit.isRendered()" :unit="unit" />
 			</template>
 			<transition-group name="fade">
 				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">

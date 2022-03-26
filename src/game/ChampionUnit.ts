@@ -44,6 +44,7 @@ export class ChampionUnit {
 	activeHex: HexCoord
 	coord: HexCoord
 	dead = false
+	resurrecting = false
 	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
 	wasInRangeOfTarget = false
 	movesBeforeDroppingTarget = 0
@@ -540,8 +541,11 @@ export class ChampionUnit {
 	isInteractable() {
 		return !this.dead && !this.statusEffects.banished.active
 	}
+	isRendered() {
+		return !this.dead || this.resurrecting
+	}
 	hasCollision() {
-		return !this.dead && this.collides
+		return this.isRendered() && this.collides
 	}
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
