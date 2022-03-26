@@ -255,6 +255,21 @@ export const augmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.Keepers]: {
+		apply: (augment, team, units) => {
+			const [amount, durationSeconds] = getVariables(augment, 'ShieldHealth', 'ShieldDuration')
+			units.forEach(source => {
+				const adjacentHexes = getHexRing(source.startHex)
+				units
+					.filter(adjacentUnit => adjacentUnit.isIn(adjacentHexes))
+					.forEach(adjacentUnit => adjacentUnit.queueShield(0, source, {
+						amount,
+						expiresAfterMS: durationSeconds * 1000,
+					}))
+			})
+		},
+	},
+
 	[AugmentGroupKey.KnifesEdge]: {
 		apply: (augment, team, units) => {
 			const [adPerStar] = getVariables(augment, 'ADPerStarLevel')
