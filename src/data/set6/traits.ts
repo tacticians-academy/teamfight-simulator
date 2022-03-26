@@ -184,7 +184,7 @@ export const traitEffects = {
 					const [trueDamageBonus] = getVariables(activeEffect, 'MutantVoidborneTrueDamagePercent')
 					if (trueDamageBonus > 0) {
 						const damageCalculation = createDamageCalculation('MutantVoidborneTrueDamagePercent', rawDamage * trueDamageBonus / 100, DamageType.true)
-						target.damage(elapsedMS, false, source, DamageSourceType.trait, damageCalculation, false)
+						target.damage(elapsedMS, false, source, DamageSourceType.bonus, damageCalculation, false)
 					}
 				}
 			}
