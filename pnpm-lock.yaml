@@ -3,7 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@babel/types': ^7.17.0
   '@ky-is/eslint-config': ^2.3.6
-  '@tacticians-academy/academy-library': ^0.14.2
+  '@tacticians-academy/academy-library': ^0.14.3
   '@tailwindcss/forms': ^0.5.0
   '@types/node': ^16.11.26
   '@vitejs/plugin-vue': ^2.2.4
@@ -21,7 +21,7 @@ specifiers:
   vue-tsc: ^0.33.9
 
 dependencies:
-  '@tacticians-academy/academy-library': 0.14.2
+  '@tacticians-academy/academy-library': 0.14.3
   '@tailwindcss/forms': 0.5.0_tailwindcss@3.0.23
   tailwindcss: 3.0.23_autoprefixer@10.4.4
   vue: 3.2.31
@@ -139,8 +139,8 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
 
-  /@tacticians-academy/academy-library/0.14.2:
-    resolution: {integrity: sha512-i2eh7c0sTlkPvBBcb69xLJMZNwk0dBNXezsqA4iXWoUhPxk7/0Xl0uDWWSXG+4JBXWkK+wD68h5EjdAcYsaMog==}
+  /@tacticians-academy/academy-library/0.14.3:
+    resolution: {integrity: sha512-sM8MI26MHOC6wzpftg88DhyloIIXBV1vrQguLB+3h7Ol6tqHBUZ1Whur+g81wPotDjhFGMCIU478I1rxybyndQ==}
     dev: false
 
   /@tailwindcss/forms/0.5.0_tailwindcss@3.0.23:
@@ -581,7 +581,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001320
-      electron-to-chromium: 1.4.94
+      electron-to-chromium: 1.4.95
       escalade: 3.1.1
       node-releases: 2.0.2
       picocolors: 1.0.0
@@ -754,8 +754,8 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /electron-to-chromium/1.4.94:
-    resolution: {integrity: sha512-CoOKsuACoa0PAG3hQXxbh/XDiFcjGuSyGKUi09cjMHOt6RCi7/EXgXhaFF3I+aC89Omudqmkzd0YOQKxwtf/Bg==}
+  /electron-to-chromium/1.4.95:
+    resolution: {integrity: sha512-h2VAMV/hPtmAeiDkwA8c5sjS+cWt6GlQL4ERdrOUWu7cRIG5IRk9uwR9f0utP+hPJ9ZZsADTq9HpbuT46eBYAg==}
     dev: true
 
   /error-ex/1.3.2:
