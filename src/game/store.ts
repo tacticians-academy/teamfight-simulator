@@ -17,7 +17,7 @@ import type { ShapeEffect } from '#/game/effects/ShapeEffect'
 import type { TargetEffect } from '#/game/effects/TargetEffect'
 import { cancelLoop, delayUntil } from '#/game/loop'
 
-import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables } from '#/helpers/abilityUtils'
+import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/helpers/abilityUtils'
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import type { DraggableType } from '#/helpers/dragDrop'
 import { getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
@@ -101,9 +101,6 @@ export async function setSetNumber(set: SetNumber) {
 		loadUnits()
 	})
 }
-
-export const activatedCheck: Record<string, number | undefined> = {}
-export const thresholdCheck: Record<string, number | undefined> = {}
 
 // Getters
 
@@ -203,8 +200,7 @@ export function clearBoardStateAndReset() {
 }
 
 function resetUnitsAfterUpdating() {
-	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
-	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
+	resetChecks()
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units = state.units.filter(unit => {
 		if (unit.wasSpawned) { return false }

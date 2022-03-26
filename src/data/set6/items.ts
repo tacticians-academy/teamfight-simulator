@@ -5,28 +5,14 @@ import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
-import { activatedCheck, state } from '#/game/store'
+import { state } from '#/game/store'
 
-import { applyGrievousBurn, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
 import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getClosestAttackableEnemies } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, HexCoord, ItemEffects } from '#/helpers/types'
-
-function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, item: ItemData, itemID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
-	const checkKey = unit.instanceID + itemID
-	const activatedAtMS = activatedCheck[checkKey]
-	const [itemCooldownSeconds] = getVariables(item, cooldownKey)
-	if (itemCooldownSeconds <= 0) {
-		return true
-	}
-	if (activatedAtMS != null && elapsedMS < activatedAtMS + itemCooldownSeconds * 1000) {
-		return false
-	}
-	activatedCheck[checkKey] = elapsedMS
-	return instantlyApplies ? true : activatedAtMS != null
-}
 
 export const itemEffects = {
 

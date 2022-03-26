@@ -102,6 +102,28 @@ export function applyGrievousBurn(itemAugment: ItemAugmentCompatible, elapsedMS:
 	}
 }
 
+export const activatedCheck: Record<string, number | undefined> = {}
+export const thresholdCheck: Record<string, number | undefined> = {}
+
+export function resetChecks() {
+	Object.keys(activatedCheck).forEach(key => delete activatedCheck[key])
+	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
+}
+
+export function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, entity: ItemAugmentCompatible, cooldownID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
+	const checkKey = unit.instanceID + cooldownID
+	const activatedAtMS = activatedCheck[checkKey]
+	const [cooldownSeconds] = getVariables(entity, cooldownKey)
+	if (cooldownSeconds <= 0) {
+		return true
+	}
+	if (activatedAtMS != null && elapsedMS < activatedAtMS + cooldownSeconds * 1000) {
+		return false
+	}
+	activatedCheck[checkKey] = elapsedMS
+	return instantlyApplies ? true : activatedAtMS != null
+}
+
 export function getUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team))
 }
