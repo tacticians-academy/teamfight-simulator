@@ -23,7 +23,7 @@ import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHe
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { SpellKey, DamageSourceType, StatusEffectType } from '#/helpers/types'
+import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
 import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
@@ -798,6 +798,10 @@ export class ChampionUnit {
 			console.log('ERR', 'HPThreshold', uniqueID, effects)
 		}
 		return false
+	}
+
+	clearNegativeEffects() {
+		NEGATIVE_STATUS_EFFECTS.forEach(statusEffect => this.statusEffects[statusEffect].active = false)
 	}
 
 	consumeSpellShield() {

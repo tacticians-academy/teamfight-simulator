@@ -90,8 +90,7 @@ export const itemEffects = {
 		hpThreshold: (elapsedMS, item, itemID, unit) => {
 			const [attackSpeed, stealthSeconds] = getVariables(item, BonusKey.AttackSpeed, 'StealthDuration')
 			const stealthMS = stealthSeconds * 1000
-			const negativeEffects = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds]
-			negativeEffects.forEach(statusEffect => unit.statusEffects[statusEffect].active = false)
+			unit.clearNegativeEffects()
 			unit.applyStatusEffect(elapsedMS, StatusEffectType.stealth, stealthMS)
 			unit.queueBonus(elapsedMS, stealthMS, ItemKey.EdgeOfNight, [BonusKey.AttackSpeed, attackSpeed])
 		},

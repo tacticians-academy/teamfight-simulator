@@ -47,6 +47,7 @@ export enum StatusEffectType {
 	stealth = 'stealth',
 	stunned = 'stunned',
 }
+export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds, StatusEffectType.magicResistReduction, StatusEffectType.stunned]
 
 export type StatusEffectData = [StatusEffectType, {
 	durationMS: number
