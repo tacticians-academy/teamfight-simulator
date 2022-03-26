@@ -14,7 +14,7 @@ import { getters, state } from '#/game/store'
 import { applyGrievousBurn, checkCooldown, getAliveUnitsOfTeamWithTrait, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { DamageSourceType, StatusEffectType } from '#/helpers/types'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { AugmentEffects, TeamNumber } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
@@ -127,6 +127,18 @@ export const augmentEffects = {
 				hexDistanceFromSource: 2,
 				damageCalculation: createDamageCalculation(AugmentGroupKey.ChemicalOverload, hpPercent, DamageType.magic, BonusKey.Health, false, 0.01),
 			})
+		},
+	},
+
+	[AugmentGroupKey.Cutthroat]: {
+		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+			if (!holder.hasTrait(TraitKey.Assassin)) { return }
+
+			console.log(holder.basicAttackCount)
+			if (holder.basicAttackCount === 1) {
+				const [manaReductionPercent] = getVariables(augment, 'ManaReavePercent')
+				target.addBonuses(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReductionPercent])
+			}
 		},
 	},
 
