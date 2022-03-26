@@ -215,6 +215,21 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Twitch]: {
+		cast: (elapsedMS, spell, champion) => {
+			const grievousWoundsProportion = champion.getSpellVariable(spell, 'GWStrength' as SpellKey)
+			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'GWDuration' as SpellKey)
+			const durationMS = grievousWoundsSeconds * 1000
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				destroysOnCollision: false,
+				fixedHexRange: MAX_HEX_COUNT,
+				statusEffects: [
+					[StatusEffectType.grievousWounds, { durationMS, amount: grievousWoundsProportion }],
+				],
+			})
+		},
+	},
+
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
