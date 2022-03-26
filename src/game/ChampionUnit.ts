@@ -9,6 +9,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { HexEffect } from '#/game/effects/HexEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
+import type { AttackEffectData } from '#/game/effects/GameEffect'
 import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ProjectileEffectData } from '#/game/effects/ProjectileEffect'
 import { ShapeEffect } from '#/game/effects/ShapeEffect'
@@ -1037,6 +1038,12 @@ export class ChampionUnit {
 		return this.getInteractableUnitsIn(hexes, team)
 	}
 
+	getAttackModifier(elapsedMS: DOMHighResTimeStamp) {
+		return getters.activeAugmentEffectsByTeam.value[this.team].reduce((modifier, [augment, effects]) => {
+			return effects.modifyAttacks ? Object.assign(modifier, effects.modifyAttacks(augment, elapsedMS, this)) : modifier
+		}, {} as AttackEffectData)
+	}
+
 	queueBonus(elapsedMS: DOMHighResTimeStamp, startsAfterMS: DOMHighResTimeStamp, bonusLabel: BonusLabelKey, ...variables: BonusVariable[]) {
 		this.pendingBonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
@@ -1064,6 +1071,9 @@ export class ChampionUnit {
 	}
 
 	queueProjectileEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
+		if (spell || data.damageSourceType === DamageSourceType.spell || data.damageSourceType === DamageSourceType.attack) {
+			Object.assign(data, this.getAttackModifier(elapsedMS))
+		}
 		if (spell) {
 			if (!data.damageCalculation) {
 				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
@@ -1133,6 +1143,9 @@ export class ChampionUnit {
 		return true
 	}
 	queueTargetEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: TargetEffectData) {
+		if (spell || data.damageSourceType === DamageSourceType.spell || data.damageSourceType === DamageSourceType.attack) {
+			Object.assign(data, this.getAttackModifier(elapsedMS))
+		}
 		if (spell && !data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 		}

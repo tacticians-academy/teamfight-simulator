@@ -113,6 +113,11 @@ export class ProjectileEffect extends GameEffect {
 			if (this.bounce) {
 				const bounceTarget = getNextBounceFrom(this.target as ChampionUnit, this.bounce)
 				if (bounceTarget) {
+					if (this.damageModifier) {
+						Object.assign(this.damageModifier, this.bounce!.damageModifier)
+					} else {
+						this.damageModifier = this.bounce?.damageModifier
+					}
 					this.bounce.bouncesRemaining -= 1
 					this.setTarget(bounceTarget)
 					return false

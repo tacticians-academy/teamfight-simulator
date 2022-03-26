@@ -5,6 +5,7 @@ import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/item
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import type { AttackEffectData } from '#/game/effects/GameEffect'
 
 export type HexCoord = [col: number, row: number]
 
@@ -164,6 +165,7 @@ export interface ShieldEntry {
 export type EffectResults = BonusVariable[] | void
 
 export interface AugmentFns {
+	modifyAttacks?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => AttackEffectData
 	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
 	teamWideTrait?: TraitKey
 	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void

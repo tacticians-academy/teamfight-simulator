@@ -103,9 +103,16 @@ export class TargetEffect extends GameEffect {
 				const newTargets = new Set<ChampionUnit>()
 				this.currentTargets.forEach(target => {
 					const bounceTarget = getNextBounceFrom(target, this.bounce!)
-					if (bounceTarget && this.apply(elapsedMS, bounceTarget, isFirst)) {
-						newTargets.add(bounceTarget)
-						this.sourceTargets.value.add([target, bounceTarget])
+					if (bounceTarget) {
+						if (this.damageModifier) {
+							Object.assign(this.damageModifier, this.bounce!.damageModifier)
+						} else {
+							this.damageModifier = this.bounce?.damageModifier
+						}
+						if (this.apply(elapsedMS, bounceTarget, isFirst)) {
+							newTargets.add(bounceTarget)
+							this.sourceTargets.value.add([target, bounceTarget])
+						}
 					}
 				})
 				this.bounce.bouncesRemaining -= 1
