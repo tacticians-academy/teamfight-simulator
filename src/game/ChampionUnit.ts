@@ -544,6 +544,13 @@ export class ChampionUnit {
 	}
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
+		if (source) {
+			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
+				if (effects.onHealShield) {
+					effects.onHealShield(augment, elapsedMS, amount, this, source)
+				}
+			})
+		}
 		const healShieldBoost = source?.getBonuses(BonusKey.HealShieldBoost) ?? 0
 		if (healShieldBoost !== 0) {
 			amount *= (1 + healShieldBoost)
@@ -1017,7 +1024,11 @@ export class ChampionUnit {
 	}
 	queueShield(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, data: ShieldData) {
 		if (source) {
-			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.onShield?.(augment, elapsedMS, data, this, source))
+			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
+				if (effects.onHealShield) {
+					effects.onHealShield(augment, elapsedMS, data.amount, this, source)
+				}
+			})
 		}
 		this.shields.push({
 			id: data.id,
