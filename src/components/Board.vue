@@ -111,7 +111,7 @@ const socialitesByTeam = getters.socialitesByTeam
 				</template>
 			</transition-group>
 			<div
-				v-if="coordForMenu && !state.isRunning"
+				v-if="coordForMenu && !state.isRunning && state.setNumber === 6"
 				class="hex hex-overlay  pointer-events-auto absolute bg-tertiary text-primary  flex flex-col justify-center space-y-1"
 				:style="{ left: `${coordForMenu[0] * 100}%`, top: `${coordForMenu[1] * 100}%` }"
 				@click="onClearHexMenu" @contextmenu="onClearHexMenu"
