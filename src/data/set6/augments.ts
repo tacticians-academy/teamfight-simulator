@@ -11,7 +11,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { delayUntil } from '#/game/loop'
 import { getters, state } from '#/game/store'
 
-import { applyGrievousBurn, checkCooldown, getAliveUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, checkCooldown, getAliveUnitsOfTeamWithTrait, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
@@ -64,7 +64,7 @@ export const augmentEffects = {
 		delayed: (augment, elapsedMS, team, units) => {
 			const [stunSeconds] = getVariables(augment, 'StunDuration')
 			state.units
-				.filter(unit => !unit.hasTrait(TraitKey.Clockwork))
+				.filter(unit => !unit.dead && !unit.hasTrait(TraitKey.Clockwork))
 				.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000))
 		},
 	},
@@ -310,6 +310,16 @@ export const augmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.OneForAll]: {
+		allyDeath: (augment, elapsedMS, dead, source) => {
+			if (!dead.hasTrait(TraitKey.Syndicate)) { return }
+			const [stats] = getVariables(augment, 'Stats')
+			getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Syndicate).forEach(unit => {
+				unit.addBonuses(AugmentGroupKey.OneForAll, [BonusKey.AttackDamage, stats], [BonusKey.AbilityPower, stats])
+			})
+		},
+	},
+
 	[AugmentGroupKey.Overpower]: {
 		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
@@ -359,14 +369,15 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.SelfRepair]: {
 		allyDeath: async (augment, elapsedMS, dead, source) => {
-			if (!INNOVATION_NAMES.includes(dead.name as ChampionKey)) { return }
-
-			if (getAliveUnitsOfTeam(dead.team).some(unit => unit.hasTrait(TraitKey.Innovator))) {
+			if (!INNOVATION_NAMES.includes(dead.name as ChampionKey)) {
+				return
+			}
+			if (getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Innovator).length) {
 				const [resurrectSeconds] = getVariables(augment, '{357f0e55}') //TODO rename
 				dead.resurrecting = true
 				await delayUntil(elapsedMS, resurrectSeconds)
 				dead.resurrecting = false
-				if (getAliveUnitsOfTeam(dead.team).some(unit => unit.hasTrait(TraitKey.Innovator))) {
+				if (getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Innovator).length) {
 					dead.dead = false
 					dead.health = dead.healthMax
 				}
