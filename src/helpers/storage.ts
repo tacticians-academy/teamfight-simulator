@@ -2,7 +2,7 @@ import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library
 
 const DEFAULT_SET: SetNumber = 6
 
-import { setData, state } from '#/game/store'
+import { state } from '#/game/store'
 
 import type { StorageChampion } from '#/helpers/types'
 
@@ -65,17 +65,17 @@ export function removeStorage(set: SetNumber, key: StorageKey) {
 
 // Augments
 
-export function saveTeamAugments() {
+export type AugmentList = [AugmentData | null, AugmentData | null, AugmentData | null]
+
+export function saveTeamAugments(set: SetNumber) {
 	const output: string[][] = state.augmentsByTeam
 		.map(augments => augments.map(augment => augment?.name ?? ''))
-	window.localStorage.setItem('TFTSIM_augments', JSON.stringify(output))
+	window.localStorage.setItem(keyToSet(StorageKey.Augments, set), JSON.stringify(output))
 }
 
-type AugmentList = [AugmentData | null, AugmentData | null, AugmentData | null]
-
-export function loadTeamAugments(set: SetNumber): [AugmentList, AugmentList] {
+export function loadTeamAugments(set: SetNumber, activeAugments: AugmentData[]): [AugmentList, AugmentList] {
 	const json = getStorageJSON(set, StorageKey.Augments)
-	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => setData.activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
+	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
 }
 
 // Units

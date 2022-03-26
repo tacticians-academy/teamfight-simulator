@@ -21,6 +21,7 @@ import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables } from 
 import { buildBoard, getAdjacentRowUnitsTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import type { DraggableType } from '#/helpers/dragDrop'
 import { getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/helpers/storage'
+import type { AugmentList } from '#/helpers/storage'
 import { MutantType } from '#/helpers/types'
 import type { AugmentEffects, AugmentFns, HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/helpers/types'
 import type { ChampionEffects, ItemEffects, TraitEffects } from '#/helpers/types'
@@ -61,7 +62,7 @@ export const state = reactive({
 	shapeEffects: new Set<ShapeEffect>(),
 	targetEffects: new Set<TargetEffect>(),
 
-	augmentsByTeam: loadTeamAugments(setNumber),
+	augmentsByTeam: [[null, null, null], [null, null, null]] as [AugmentList, AugmentList],
 	socialiteHexes: (getStorageJSON(setNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
 	stageNumber: getStorageInt(setNumber, StorageKey.StageNumber, 3),
 	mutantType: (getStorageString(setNumber, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic,
@@ -69,14 +70,14 @@ export const state = reactive({
 setSetNumber(setNumber)
 
 export async function setSetNumber(set: SetNumber) {
+	const { activeAugments, emptyImplementationAugments } = await importAugments(set)
 	state.loadedSetNumber = null
 	state.setNumber = set
-	state.augmentsByTeam = loadTeamAugments(set)
+	state.augmentsByTeam = loadTeamAugments(set, activeAugments)
 	state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
 	state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
 	state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
 
-	const { activeAugments, emptyImplementationAugments } = await importAugments(set)
 	const { champions } = await importChampions(set)
 	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
 	const { traits } = await importTraits(set)
@@ -450,7 +451,7 @@ export function setSocialiteHex(index: number, hex: HexCoord | null) {
 
 export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {
 	state.augmentsByTeam[teamNumber][augmentIndex] = augment
-	saveTeamAugments()
+	saveTeamAugments(state.setNumber)
 	resetUnitsAfterUpdating()
 }
 
