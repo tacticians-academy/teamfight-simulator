@@ -30,6 +30,7 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.armorReduction]: '🛡',
 	[StatusEffectType.attackSpeedSlow]: '❄️',
 	[StatusEffectType.banished]: '🕴',
+	[StatusEffectType.disarm]: '🤺',
 	[StatusEffectType.grievousWounds]: '❤️‍🔥', // 💔
 	[StatusEffectType.invulnerable]: '🕊',
 	[StatusEffectType.magicResistReduction]: '🧞',
@@ -72,7 +73,7 @@ function onInfo(event: Event) {
 
 <template>
 <div
-	class="unit hex-overlay  group" :class="!unit.isInteractable() ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : null)"
+	class="unit hex-overlay  z-20  group" :class="!unit.isInteractable() ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
 	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"

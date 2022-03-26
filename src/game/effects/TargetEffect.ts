@@ -46,6 +46,7 @@ export class TargetEffect extends GameEffect {
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
 		const wasSpellShielded = this.applyDamage(elapsedMS, unit)
+		this.applyPost(elapsedMS, unit)
 		return !wasSpellShielded
 	}
 

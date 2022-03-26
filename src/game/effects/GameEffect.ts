@@ -105,7 +105,7 @@ export class GameEffect extends GameEffectChild {
 	}
 
 	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
-		const spellShield = this.damageCalculation ? unit.consumeSpellShield() : undefined
+		const spellShield = this.damageCalculation && this.damageSourceType !== DamageSourceType.attack ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
 		if (this.damageCalculation != null) {
 			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.includes(this.hitID)
@@ -118,6 +118,14 @@ export class GameEffect extends GameEffectChild {
 			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageModifier)
 		}
 		return wasSpellShielded
+	}
+
+	applyPost(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+		this.collidedWith.push(unit.instanceID)
+		unit.hitBy.push(this.hitID)
+		if (!unit.hitBy.includes(this.source.instanceID)) {
+			unit.hitBy.push(this.source.instanceID)
+		}
 	}
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
@@ -139,8 +147,7 @@ export class GameEffect extends GameEffectChild {
 			const [rawDamage, damageType] = solveSpellCalculationFrom(this.source, unit, this.damageCalculation)
 			getters.activeAugmentEffectsByTeam.value[this.source.team].forEach(([augment, effects]) => effects.onFirstEffectTargetHit?.(augment, elapsedMS, unit, this.source, damageType))
 		}
-		this.collidedWith.push(unit.instanceID)
-		unit.hitBy.push(this.hitID)
+		this.applyPost(elapsedMS, unit)
 		return true
 	}
 
