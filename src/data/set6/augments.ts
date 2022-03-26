@@ -133,8 +133,6 @@ export const augmentEffects = {
 	[AugmentGroupKey.Cutthroat]: {
 		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (!holder.hasTrait(TraitKey.Assassin)) { return }
-
-			console.log(holder.basicAttackCount)
 			if (holder.basicAttackCount === 1) {
 				const [manaReductionPercent] = getVariables(augment, 'ManaReavePercent')
 				target.addBonuses(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReductionPercent])
@@ -205,6 +203,16 @@ export const augmentEffects = {
 	},
 	[AugmentGroupKey.ShareTheSpotlight]: {
 		// See `#/data/set6/traits#[TraitKey.Socialite]`
+	},
+
+	[AugmentGroupKey.EnGarde]: {
+		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+			if (!holder.hasTrait(TraitKey.Challenger)) { return }
+			if (!target.hitBy.includes(holder.instanceID)) {
+				const [disarmSeconds] = getVariables(augment, 'DisarmDuration')
+				target.applyStatusEffect(elapsedMS, StatusEffectType.disarm, disarmSeconds * 1000)
+			}
+		},
 	},
 
 	[AugmentGroupKey.Exiles]: {
