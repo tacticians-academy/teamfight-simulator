@@ -32,7 +32,10 @@ export class TargetEffect extends GameEffect {
 			if (ticks > 0) {
 				this.tickEveryMS = data.tickEveryMS
 				this.ticksRemaining = ticks
-				this.damageMultiplier = 1 / ticks - 1
+				if (!this.damageModifier) {
+					this.damageModifier = {}
+				}
+				this.damageModifier.multiplier = (this.damageModifier.multiplier ?? 0) + 1 / ticks - 1
 			}
 		}
 

@@ -7,7 +7,7 @@ import { getters } from '#/game/store'
 
 import { solveSpellCalculationFrom } from '#/helpers/calculate'
 import { DamageSourceType } from '#/helpers/types'
-import type { BonusLabelKey, BonusVariable, CollisionFn, StatusEffectData, TeamNumber } from '#/helpers/types'
+import type { BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: number, unit: ChampionUnit) => boolean = () => false
@@ -25,16 +25,12 @@ export interface GameEffectData {
 	targetTeam?: TeamNumber
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
-	/** Bonus `SpellCalculation` to apply to any affected units (ignores `damageIncrease`/`damageMultiplier`). */
+	/** Bonus `SpellCalculation` to apply to any affected units (ignores `damageModifier`). */
 	bonusCalculations?: SpellCalculation[]
-	/** If the `damageMultiplier` and `damageIncrease` should only apply if the spell has hit the target multiple times. */
+	/** If the `damageModifier` should only apply if the spell has hit the target multiple times. */
 	modifiesOnMultiHit?: boolean
-	/** Adds to the result of `damageCalculation`. */
-	damageIncrease?: number
-	/** Multiplies the result of `damageCalculation`. */
-	damageMultiplier?: number
-	/** Bonus crit chance to apply with `damageCalculation`. */
-	critBonus?: number
+	/** Modifies the result of `damageCalculation`. */
+	damageModifier?: DamageModifier
 	/** Defaults to `spell` when passed with a `SpellCalculation`. */
 	damageSourceType?: DamageSourceType
 	/** `BonusVariable`s to apply to any affected units. */
@@ -64,9 +60,7 @@ export class GameEffect extends GameEffectChild {
 	damageCalculation: SpellCalculation | undefined
 	bonusCalculations: SpellCalculation[]
 	modifiesOnMultiHit: boolean
-	damageIncrease: number | undefined
-	damageMultiplier: number | undefined
-	critBonus: number | undefined
+	damageModifier: DamageModifier | undefined
 	damageSourceType: DamageSourceType
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
 	statusEffects: StatusEffectData[] | undefined
@@ -85,9 +79,7 @@ export class GameEffect extends GameEffectChild {
 		this.damageCalculation = data.damageCalculation
 		this.bonusCalculations = data.bonusCalculations ?? []
 		this.modifiesOnMultiHit = data.modifiesOnMultiHit ?? false
-		this.damageIncrease = data.damageIncrease
-		this.damageMultiplier = data.damageMultiplier
-		this.critBonus = data.critBonus
+		this.damageModifier = data.damageModifier
 		this.damageSourceType = data.damageSourceType!
 		this.bonuses = data.bonuses
 		this.statusEffects = data.statusEffects
@@ -117,16 +109,13 @@ export class GameEffect extends GameEffectChild {
 		const wasSpellShielded = !!spellShield
 		if (this.damageCalculation != null) {
 			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.includes(this.hitID)
-			let damageIncrease = 0
-			let damageMultiplier: number | undefined
-			if (modifiesDamage) {
-				damageIncrease = this.damageIncrease ?? 0
-				damageMultiplier = this.damageMultiplier
-			}
+			const damageModifier: DamageModifier = modifiesDamage && this.damageModifier
+				? this.damageModifier
+				: { increase: 0 }
 			if (wasSpellShielded) {
-				damageIncrease -= spellShield.amount
+				damageModifier.increase! -= spellShield.amount
 			}
-			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageIncrease === 0 ? undefined : damageIncrease, damageMultiplier, this.critBonus)
+			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageModifier)
 		}
 		return wasSpellShielded
 	}

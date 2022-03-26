@@ -315,13 +315,15 @@ export const augmentEffects = {
 			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
 				return
 			}
-			const [critBonus] = getVariables(augment, BonusKey.CritChance)
+			const [critChance] = getVariables(augment, BonusKey.CritChance)
 			const id = AugmentGroupKey.Overpower
 			if (holder.basicAttackCount % 3 === 0 && !Array.from(holder.empoweredAutos).some(empoweredAuto => empoweredAuto.id === id)) {
 				holder.empoweredAutos.add({
 					id,
 					amount: 1,
-					critBonus,
+					damageModifier: {
+						critChance,
+					},
 				})
 			}
 		},

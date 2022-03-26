@@ -24,7 +24,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
-import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageModifier, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -78,9 +78,7 @@ export class ChampionUnit {
 		id?: BonusLabelKey
 		amount: number
 		damageCalculation?: SpellCalculation
-		damageIncrease?: number
-		damageMultiplier?: number
-		critBonus?: number
+		damageModifier?: DamageModifier
 		statusEffects?: StatusEffectData[]
 	}> = new Set()
 	championEffects: ChampionFns | undefined
@@ -238,15 +236,18 @@ export class ChampionUnit {
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, false, 1)
 			const passiveFn = this.championEffects?.passive
-			let damageIncrease = 0
-			let damageMultiplier = 0
-			let critBonus = 0
+			const damageModifier: DamageModifier = {
+				increase: 0,
+				multiplier: 0,
+				critChance: 0,
+			}
 			const statusEffects: StatusEffectData[] = []
 			const bonusCalculations: SpellCalculation[] = []
 			this.empoweredAutos.forEach(empower => {
-				damageIncrease += empower.damageIncrease ?? 0
-				damageMultiplier += empower.damageMultiplier ?? 0
-				critBonus += empower.critBonus ?? 0
+				Object.keys(damageModifier).forEach((modifier) => {
+					const modifierKey = modifier as keyof DamageModifier
+					damageModifier[modifierKey]! += empower.damageModifier?.[modifierKey] ?? 0
+				})
 				if (empower.damageCalculation) {
 					console.log(empower.damageCalculation)
 					bonusCalculations.push(empower.damageCalculation)
@@ -263,9 +264,7 @@ export class ChampionUnit {
 					damageSourceType,
 					damageCalculation,
 					bonusCalculations,
-					damageIncrease,
-					damageMultiplier,
-					critBonus,
+					damageModifier,
 					statusEffects,
 					onActivate: (elapsedMS, source) => {
 						source.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
@@ -289,9 +288,7 @@ export class ChampionUnit {
 					target: this.target,
 					damageCalculation: damageCalculation,
 					bonusCalculations,
-					damageIncrease,
-					damageMultiplier,
-					critBonus,
+					damageModifier,
 					statusEffects,
 					onCollision(elapsedMS, unit) {
 						if (source.data.passive) {
@@ -391,14 +388,14 @@ export class ChampionUnit {
 		})
 	}
 
-	rawCritChance(additionalCrit?: number) {
-		return (this.data.stats.critChance ?? 0) + (additionalCrit != null ? additionalCrit / 100 : 0) + this.getBonuses(BonusKey.CritChance) / 100
+	rawCritChance(damageModifier?: DamageModifier) {
+		return (this.data.stats.critChance ?? 0) + (damageModifier?.critChance != null ? damageModifier.critChance / 100 : 0) + this.getBonuses(BonusKey.CritChance) / 100
 	}
-	critChance(additionalCrit?: number) {
-		return Math.min(1, this.rawCritChance(additionalCrit))
+	critChance(damageModifier?: DamageModifier) {
+		return Math.min(1, this.rawCritChance(damageModifier))
 	}
-	critMultiplier(additionalCrit?: number) {
-		const excessCritChance = this.rawCritChance(additionalCrit) - 1
+	critMultiplier(damageModifier?: DamageModifier) {
+		const excessCritChance = this.rawCritChance(damageModifier) - 1
 		return this.data.stats.critMultiplier + Math.max(0, excessCritChance) + this.getBonuses(BonusKey.CritMultiplier) / 100
 	}
 	critReduction() {
@@ -628,7 +625,7 @@ export class ChampionUnit {
 		return false
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageIncrease?: number, damageMultiplier?: number, critBonus?: number) {
+	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
 		source?.items.forEach((item, index) => {
 			const modifyDamageFn = setData.itemEffects[item.id as ItemKey]?.modifyDamageByHolder
@@ -653,13 +650,13 @@ export class ChampionUnit {
 				rawDamage *= 1 - dodgeChance
 			}
 		}
-		if (damageIncrease != null) {
-			rawDamage += damageIncrease
+		if (damageModifier?.increase != null) {
+			rawDamage += damageModifier.increase
 		}
 		if (rawDamage <= 0) {
 			return
 		}
-		rawDamage *= 1 + (damageMultiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
+		rawDamage *= 1 + (damageModifier?.multiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
 		let defenseStat = damageType === DamageType.physical
 			? this.armor()
 			: damageType === DamageType.magic
@@ -677,7 +674,7 @@ export class ChampionUnit {
 		if (source && (damageType === DamageType.physical || (damageType === DamageType.magic && source.canDamageCrit(sourceType, damageType)))) {
 			const critReduction = this.critReduction()
 			if (critReduction < 1) {
-				const critDamage = rawDamage * source.critChance(critBonus) * source.critMultiplier(critBonus)
+				const critDamage = rawDamage * source.critChance(damageModifier) * source.critMultiplier(damageModifier)
 				rawDamage += critDamage * (1 - critReduction)
 			}
 		}

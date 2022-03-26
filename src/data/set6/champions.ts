@@ -30,7 +30,9 @@ export const championEffects = {
 					fixedHexRange: maxRange,
 					destroysOnCollision: false,
 					modifiesOnMultiHit: true,
-					damageMultiplier,
+					damageModifier: {
+						multiplier: damageMultiplier,
+					},
 					changeRadians: orbOffsetRadians + radiansBetweenOrbs * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1),
 					missile: missileSpell?.missile,
 					returnMissile: champion.getSpellFor('OrbReturn')?.missile ?? missileSpell?.missile,
@@ -223,7 +225,9 @@ export const championEffects = {
 					champion.customMoveSpeed = 2000
 					champion.empoweredAutos.add({
 						amount: 3, //NOTE hardcoded
-						damageMultiplier: champion.getSpellVariable(spell, 'BonusAAPercent' as SpellKey),
+						damageModifier: {
+							multiplier: champion.getSpellVariable(spell, 'BonusAAPercent' as SpellKey),
+						},
 					})
 				},
 			})
@@ -289,7 +293,9 @@ export const championEffects = {
 			})
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: outerHexes,
-				damageMultiplier: -0.5,
+				damageModifier: {
+					multiplier: -0.5,
+				},
 			})
 			return true
 		},

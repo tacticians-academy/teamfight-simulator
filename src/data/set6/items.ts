@@ -340,7 +340,9 @@ export const itemEffects = {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: 4100, //TODO determine
 				hexDistanceFromSource: 4,
-				damageMultiplier: -0.5,
+				damageModifier: {
+					multiplier: -0.5,
+				},
 				taunts: true,
 			})
 		},
@@ -349,7 +351,9 @@ export const itemEffects = {
 			voidling.queueHexEffect(elapsedMS, undefined, {
 				startsAfterMS: 500,
 				hexDistanceFromSource: 1,
-				damageMultiplier: -0.5,
+				damageModifier: {
+					multiplier: -0.5,
+				},
 				taunts: true,
 			})
 		},

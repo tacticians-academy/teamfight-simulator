@@ -10,7 +10,7 @@ const props = defineProps<{
 	hexEffect: HexEffect
 }>()
 
-const maxOpacity = Math.max(0, Math.min(1, 1 + (props.hexEffect.damageMultiplier ?? 0)))
+const maxOpacity = Math.max(0, Math.min(1, 1 + (props.hexEffect.damageModifier?.multiplier ?? 0)))
 const hexCoords = (props.hexEffect.hexes as unknown as HexCoord[]).map(hex => getCoordFrom(hex)) //NOTE Vue ref workaround
 </script>
 

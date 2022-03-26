@@ -28,6 +28,12 @@ export const enum DamageSourceType {
 	attack = 'attack', spell = 'spell', bonus = 'bonus'
 }
 
+export interface DamageModifier {
+	increase?: number
+	multiplier?: number
+	critChance?: number
+}
+
 export interface SynergyData {
 	key: TraitKey
 	trait: TraitData
