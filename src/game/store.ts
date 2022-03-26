@@ -222,7 +222,7 @@ function resetUnitsAfterUpdating() {
 			if (effects.delayed != null) {
 				const [delaySeconds] = getVariables(augment, 'Delay')
 				const teamNumber = team as TeamNumber
-				const elapsedMS = await delayUntil(delaySeconds)
+				const elapsedMS = await delayUntil(0, delaySeconds)
 				effects.delayed?.(augment, elapsedMS, teamNumber, getAliveUnitsOfTeam(teamNumber))
 			}
 		})

@@ -23,9 +23,9 @@ let didMeleeMove = false
 
 const delays = new Set<[activatesAtMS: DOMHighResTimeStamp, callback: (elapsedMS: DOMHighResTimeStamp) => void]>()
 
-export async function delayUntil(atSeconds: number) {
+export async function delayUntil(elapsedMS: DOMHighResTimeStamp, atSeconds: number) {
 	return await new Promise<DOMHighResTimeStamp>((resolve, reject) => {
-		delays.add([atSeconds * 1000, resolve])
+		delays.add([elapsedMS + atSeconds * 1000, resolve])
 	})
 }
 
@@ -38,6 +38,7 @@ function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 }
 export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (previousFrameMS === 0) {
+		delays.clear()
 		previousFrameMS = frameMS
 		startedAtMS = frameMS
 		didBacklineJump = false
