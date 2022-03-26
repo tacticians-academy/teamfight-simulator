@@ -715,6 +715,7 @@ export class ChampionUnit {
 
 		// Update health
 
+		const originalHealth = this.health
 		this.health -= healthDamage
 		const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 		this.gainMana(elapsedMS, manaGain)
@@ -751,7 +752,7 @@ export class ChampionUnit {
 			if (effects) {
 				effects.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 				const hpThresholdFn = effects.hpThreshold
-				if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects)) {
+				if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects, originalHealth, healthDamage)) {
 					hpThresholdFn(elapsedMS, item, uniqueID, this)
 				}
 			}
@@ -760,14 +761,14 @@ export class ChampionUnit {
 			const effects = setData.traitEffects[key]
 			if (effects) {
 				const hpThresholdFn = effects.hpThreshold
-				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect!.variables)) {
+				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect!.variables, originalHealth, healthDamage)) {
 					hpThresholdFn(activeEffect!, elapsedMS, this)
 				}
 			}
 		})
 		getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
 			const hpThresholdFn = effects.hpThreshold
-			if (hpThresholdFn && this.checkHPThreshold(augment.name, augment.effects)) {
+			if (hpThresholdFn && this.checkHPThreshold(augment.name, augment.effects, originalHealth, healthDamage)) {
 				hpThresholdFn(augment, elapsedMS, this)
 			}
 		})
@@ -779,7 +780,7 @@ export class ChampionUnit {
 		}
 	}
 
-	checkHPThreshold(uniqueID: string, effects: EffectVariables) {
+	checkHPThreshold(uniqueID: string, effects: EffectVariables, originalHealth: number, healthDamage: number) {
 		uniqueID += this.instanceID
 		const hpThreshold = effects['HPThreshold'] ?? effects['HealthThreshold'] ?? effects['HealthThreshold1'] //TODO normalize Health
 		if (hpThreshold != null) {
@@ -788,9 +789,9 @@ export class ChampionUnit {
 				thresholdCheck[uniqueID] = hpThreshold
 				const damageReduction = effects[BonusKey.DamageReduction] ?? (effects['InvulnDuration'] != null ? 100 : undefined)
 				if (damageReduction != null) {
-					if (damageReduction === 100) {
-						this.health = this.healthMax * hpThreshold / 100
-					}
+					const thresholdHealth = this.healthMax * hpThreshold / 100
+					const damageAfterThreshold = healthDamage - (originalHealth - thresholdHealth)
+					this.health = thresholdHealth - damageAfterThreshold * (1 - damageReduction / 100)
 				}
 				return true
 			}
