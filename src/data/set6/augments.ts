@@ -8,7 +8,7 @@ import { applyChemtech } from '#/data/set6/traits'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { applyGrievousBurn, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, checkCooldown, getBestAsMax, getUnitsOfTeam, getVariables, spawnUnit } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
@@ -21,6 +21,15 @@ export const augmentEffects = {
 		cast: (augment, elapsedMS, unit) => {
 			const [manaPercent] = getVariables(augment, 'ManaPercent')
 			unit.addBonuses(AugmentGroupKey.ArchangelsEmbrace, [BonusKey.AbilityPower, unit.manaMax() * manaPercent / 100])
+		},
+	},
+
+	[AugmentGroupKey.ArdentCenser]: {
+		onHealShield: (augment, elapsedMS, amount, target, source) => {
+			if (source.hasTrait(TraitKey.Enchanter) && checkCooldown(elapsedMS, target, augment, augment.name, true, 'CD')) {
+				const [attackSpeed] = getVariables(augment, BonusKey.AttackSpeed)
+				target.addBonuses(AugmentGroupKey.ArdentCenser, [BonusKey.AttackSpeed, attackSpeed])
+			}
 		},
 	},
 
