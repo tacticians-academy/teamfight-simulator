@@ -368,6 +368,15 @@ export const augmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.SmokeBomb]: {
+		hpThreshold: (augment, elapsedMS, unit) => {
+			if (!unit.hasTrait(TraitKey.Assassin)) { return }
+			const stealthMS = 1 * 1000 //TODO experimentally determine
+			unit.clearNegativeEffects()
+			unit.applyStatusEffect(elapsedMS, StatusEffectType.stealth, stealthMS)
+		},
+	},
+
 	[AugmentGroupKey.SnipersNest]: {
 		apply: (augment, team, units) => {
 			const [damageAmpPerRound, maxAmp] = getVariables(augment, 'DamageAmp', 'MaxAmp')
