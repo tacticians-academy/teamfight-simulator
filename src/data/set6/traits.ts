@@ -157,9 +157,11 @@ export const traitEffects = {
 			getUnitsOfTeam(unit.team)
 				.filter(unit => unit.isIn(hexesInFront))
 				.forEach(unit => unit.setBonusesFor(TraitKey.Mastermind, [BonusKey.Mana, manaGrant]))
-			unit.queueHexEffect(0, undefined, { //TODO display underneath
-				targetTeam: unit.team,
-				hexes: hexesInFront,
+			window.setTimeout(() => { //TODO remove
+				unit.queueHexEffect(0, undefined, {
+					targetTeam: unit.team,
+					hexes: hexesInFront,
+				})
 			})
 		},
 	},

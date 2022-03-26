@@ -217,17 +217,6 @@ function resetUnitsAfterUpdating() {
 		unit.resetPre(synergiesByTeam)
 	})
 
-	getters.activeAugmentEffectsByTeam.value.forEach((augmentEffects, team) => {
-		augmentEffects.forEach(async ([augment, effects]) => {
-			if (effects.delayed != null) {
-				const [delaySeconds] = getVariables(augment, 'Delay')
-				const teamNumber = team as TeamNumber
-				const elapsedMS = await delayUntil(0, delaySeconds)
-				effects.delayed?.(augment, elapsedMS, teamNumber, getAliveUnitsOfTeam(teamNumber))
-			}
-		})
-	})
-
 	state.units.forEach(unit => {
 		unit.items.forEach((item, index) => {
 			const itemEffect = setData.itemEffects[item.id as ItemKey]
@@ -256,9 +245,15 @@ function resetUnitsAfterUpdating() {
 			traitEffectFns.onceForTeam?.(activeEffect, teamNumber as TeamNumber, traitUnits)
 		})
 	})
+
 	unitsByTeam.forEach((units, team) => {
 		getters.activeAugmentEffectsByTeam.value[team].forEach(([augment, effects]) => {
 			effects.apply?.(augment, team as TeamNumber, units)
+			if (effects.delayed != null) {
+				const [delaySeconds] = getVariables(augment, 'Delay')
+				const teamNumber = team as TeamNumber
+				delayUntil(0, delaySeconds).then(elapsedMS => effects.delayed?.(augment, elapsedMS, teamNumber, getAliveUnitsOfTeam(teamNumber)))
+			}
 		})
 	})
 
