@@ -25,7 +25,7 @@ export interface StorageChampion {
 export type UnitLevelStats = [number, number?, number?]
 
 export const enum DamageSourceType {
-	attack, spell, item, trait, bonus
+	attack = 'attack', spell = 'spell', bonus = 'bonus'
 }
 
 export interface SynergyData {

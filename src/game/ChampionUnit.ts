@@ -254,10 +254,11 @@ export class ChampionUnit {
 				}
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
+			const damageSourceType = DamageSourceType.attack
 			if (this.instantAttack) {
 				this.queueTargetEffect(elapsedMS, undefined, {
 					activatesAfterMS: windupMS,
-					damageSourceType: DamageSourceType.attack,
+					damageSourceType,
 					damageCalculation,
 					bonusCalculations,
 					damageIncrease,
@@ -282,7 +283,7 @@ export class ChampionUnit {
 					missile: {
 						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 					},
-					damageSourceType: DamageSourceType.attack,
+					damageSourceType,
 					target: this.target,
 					damageCalculation: damageCalculation,
 					bonusCalculations,
@@ -315,7 +316,7 @@ export class ChampionUnit {
 			if (elapsedMS >= bleed.activatesAtMS) {
 				bleed.activatesAtMS += bleed.repeatsEveryMS
 				bleed.remainingIterations -= 1
-				this.damage(elapsedMS, false, bleed.source, DamageSourceType.item, bleed.damageCalculation, false)
+				this.damage(elapsedMS, false, bleed.source, DamageSourceType.bonus, bleed.damageCalculation, false)
 				if (bleed.remainingIterations <= 0) {
 					this.bleeds.delete(bleed)
 				}
@@ -701,8 +702,8 @@ export class ChampionUnit {
 
 		// `source` effects
 
-		if (source) {
-			const sourceVamp = source.getVamp(damageType!, sourceType)
+		if (source && damageType) {
+			const sourceVamp = source.getVamp(damageType, sourceType)
 			if (sourceVamp > 0) {
 				source.gainHealth(elapsedMS, source, takingDamage * sourceVamp / 100, true)
 			}
@@ -716,7 +717,7 @@ export class ChampionUnit {
 				if (sourceType === DamageSourceType.attack) {
 					source.shields.forEach(shield => {
 						if (shield.activated === true && shield.bonusDamage) {
-							this.damage(elapsedMS, false, source, DamageSourceType.trait, shield.bonusDamage, false)
+							this.damage(elapsedMS, false, source, DamageSourceType.bonus, shield.bonusDamage, false)
 						}
 					})
 				}
@@ -987,7 +988,7 @@ export class ChampionUnit {
 
 	getVamp(damageType: DamageType, damageSource: DamageSourceType) {
 		const vampBonuses = [BonusKey.VampOmni]
-		if (damageSource !== DamageSourceType.item) {
+		if (damageSource !== DamageSourceType.bonus) {
 			if (damageType === DamageType.physical) {
 				vampBonuses.push(BonusKey.VampPhysical)
 			}
@@ -1106,7 +1107,7 @@ export class ChampionUnit {
 		if (spell && !data.damageCalculation) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
 		}
-		if (data.damageCalculation && !data.damageSourceType) {
+		if (data.damageCalculation && data.damageSourceType == null) {
 			data.damageSourceType = DamageSourceType.spell
 		}
 		if (!data.targets) {
