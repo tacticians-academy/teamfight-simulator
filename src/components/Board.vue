@@ -68,8 +68,6 @@ onMounted(() => {
 		}
 	}
 })
-
-const socialitesByTeam = getters.socialitesByTeam
 </script>
 
 <template>
@@ -80,7 +78,7 @@ const socialitesByTeam = getters.socialitesByTeam
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
 					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
-					:style="{ boxShadow: !state.isRunning && socialitesByTeam[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
+					:style="{ boxShadow: !state.isRunning && getters.socialitesByTeam.value[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
 					@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
 					@contextmenu="onHexMenu($event, [colIndex, rowIndex])"
 				/>

@@ -3,7 +3,7 @@ import type { TraitEffectData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { INNOVATION_NAMES } from '#/data/set6/constants'
+import { getSocialiteHexesFor, INNOVATION_NAMES } from '#/data/set6/constants'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
@@ -305,20 +305,22 @@ export const traitEffects = {
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
 			const mirrorHex = getMirrorHex(unit.startHex)
-			if (state.socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
-				const [damagePercent, manaPerSecond, omnivampPercent] = getVariables(activeEffect, 'DamagePercent', 'ManaPerSecond', 'OmnivampPercent')
-				variables.push(['DamagePercent' as BonusKey, damagePercent], [BonusKey.VampOmni, omnivampPercent])
-				if (manaPerSecond > 0) {
-					unit.scalings.add({
-						source: unit,
-						sourceID: TraitKey.Socialite,
-						activatedAtMS: 0,
-						stats: [BonusKey.Mana],
-						intervalAmount: manaPerSecond,
-						intervalSeconds: 1,
-					})
+			getSocialiteHexesFor(unit.team).forEach(([statsMultiplier, socialiteHexes]) => {
+				if (socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
+					const [damagePercent, manaPerSecond, omnivampPercent] = getVariables(activeEffect, 'DamagePercent', 'ManaPerSecond', 'OmnivampPercent')
+					variables.push([BonusKey.DamageIncrease, damagePercent * statsMultiplier], [BonusKey.VampOmni, omnivampPercent * statsMultiplier])
+					if (manaPerSecond > 0) {
+						unit.scalings.add({
+							source: unit,
+							sourceID: TraitKey.Socialite,
+							activatedAtMS: 0,
+							stats: [BonusKey.Mana],
+							intervalAmount: manaPerSecond * statsMultiplier,
+							intervalSeconds: 1,
+						})
+					}
 				}
-			}
+			})
 			return variables
 		},
 	},

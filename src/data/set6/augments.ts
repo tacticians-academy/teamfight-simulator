@@ -4,7 +4,7 @@ import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/a
 import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
-import { INNOVATION_NAMES } from '#/data/set6/constants'
+import { getSocialiteHexesFor, getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/data/set6/constants'
 import { applyChemtech } from '#/data/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
@@ -183,6 +183,16 @@ export const augmentEffects = {
 				.filter(unit => units.filter(u => u.name === unit.name).length === 2)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.DoubleTrouble, [BonusKey.AttackDamage, bonusStats], [BonusKey.AbilityPower, bonusStats], [BonusKey.Armor, bonusStats], [BonusKey.MagicResist, bonusStats]))
 		},
+	},
+
+	[AugmentGroupKey.Duet]: {
+		apply: (augment, team, units) => {
+			const [bonusHealth] = getVariables(augment, 'BonusHealth')
+			getUnitsInSocialiteHexes(team, units).forEach(([multiplier, units]) => units.forEach(unit => unit.addBonuses(AugmentGroupKey.Duet, [BonusKey.Health, bonusHealth])))
+		},
+	},
+	[AugmentGroupKey.ShareTheSpotlight]: {
+		// See `#/data/set6/traits#[TraitKey.Socialite]`
 	},
 
 	[AugmentGroupKey.Exiles]: {
