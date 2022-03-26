@@ -147,6 +147,12 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Gangplank]: {
+		cast: (elapsedMS, spell, champion) => {
+			return champion.queueProjectileEffect(elapsedMS, spell, {})
+		},
+	},
+
 	[ChampionKey.Gnar]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = getFarthestUnitOfTeamWithinRangeFrom(champion, champion.opposingTeam(), state.units)
