@@ -404,6 +404,21 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Swain]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return false } //TODO detaches from caster to reach?
+			const arcRadians = toRadians(45) //TODO experimentally determine
+			return champion.queueShapeEffect(elapsedMS, spell, {
+				shape: new ShapeEffectCone(champion, target, HEX_MOVE_LEAGUEUNITS * 2, arcRadians),
+				onCollision: (elapsedMS, unit) => {
+					const heal = champion.getSpellCalculationResult(spell, 'Healing' as SpellKey)
+					champion.gainHealth(elapsedMS, champion, heal, true)
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
