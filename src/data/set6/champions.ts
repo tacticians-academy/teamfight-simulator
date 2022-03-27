@@ -304,6 +304,29 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Sivir]: {
+		cast: (elapsedMS, spell, champion) => {
+			const empowerSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+			const bounceCount = champion.getSpellVariable(spell, 'NumBounces' as SpellKey)
+			const maxHexRangeFromOriginalTarget = champion.getSpellVariable(spell, 'BounceRange' as SpellKey)
+			const damageCalculation = champion.getSpellCalculation(spell, 'DamageCalc' as SpellKey)
+			const attackSpeedProportion = champion.getSpellCalculationResult(spell, 'BonusAttackSpeed' as SpellKey)
+			const expiresAtMS = elapsedMS + empowerSeconds * 1000
+			champion.setBonusesFor(ChampionKey.Sivir, [BonusKey.AttackSpeed, attackSpeedProportion, expiresAtMS])
+			champion.empoweredAutos.add({
+				amount: 99,
+				expiresAtMS,
+				bounce: {
+					maxHexRangeFromOriginalTarget,
+					bouncesRemaining: bounceCount,
+					damageCalculation,
+				},
+			})
+			champion.manaLockUntilMS = expiresAtMS
+			return true
+		},
+	},
+
 	[ChampionKey.Senna]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.target) { return false }
