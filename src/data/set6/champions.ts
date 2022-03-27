@@ -434,6 +434,34 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Seraphine]: {
+		cast: (elapsedMS, spell, champion) => {
+			const densestEnemyHex = randomItem(getHotspotHexes(true, state.units, null, 1)) //TODO experimentally determine
+			if (!densestEnemyHex) { return false }
+
+			const bonusASProportion = champion.getSpellVariable(spell, 'ASBonus' as SpellKey)
+			const bonusSeconds = champion.getSpellVariable(spell, 'ASBonusDuration' as SpellKey)
+			champion.queueProjectileEffect(elapsedMS, spell, {
+				target: densestEnemyHex,
+				targetTeam: champion.team,
+				fixedHexRange: MAX_HEX_COUNT,
+				destroysOnCollision: false,
+				opacity: 0.5,
+				onCollision: (elapsedMS, affectedUnit) => {
+					const healAmount = champion.getSpellCalculationResult(spell, SpellKey.Heal)
+					affectedUnit.gainHealth(elapsedMS, champion, healAmount, true)
+					affectedUnit.setBonusesFor(ChampionKey.Seraphine, [BonusKey.AttackSpeed, bonusASProportion * 100, elapsedMS + bonusSeconds * 1000])
+				},
+			})
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				target: densestEnemyHex,
+				fixedHexRange: MAX_HEX_COUNT,
+				destroysOnCollision: false,
+				opacity: 0.5,
+			})
+		},
+	},
+
 	[ChampionKey.Sivir]: {
 		cast: (elapsedMS, spell, champion) => {
 			const empowerSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
