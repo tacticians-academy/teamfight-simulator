@@ -4,15 +4,15 @@ import { defineProps } from 'vue'
 import type { ShapeEffect } from '#/game/effects/ShapeEffect'
 
 const props = defineProps<{
-	shapeEffect: ShapeEffect
+	effect: ShapeEffect
 }>()
 
-const maxOpacity = Math.max(0, Math.min(1, 1 + (props.shapeEffect.damageModifier?.multiplier ?? 0)))
+const maxOpacity = props.effect.opacity ?? 1
 </script>
 
 <template>
 <div
-	class="absolute z-10" :class="shapeEffect.source.team === 0 ? 'text-team-a' : 'text-team-b'"
-	:style="Object.assign(shapeEffect.shape.styles(), { opacity: shapeEffect.activated ? maxOpacity : maxOpacity / 3, transition: `opacity ${shapeEffect.activated ? 100 : shapeEffect.activatesAfterMS}ms` })"
+	class="shape-effect  absolute z-10" :class="effect.source.team === 0 ? 'text-team-a' : 'text-team-b'"
+	:style="Object.assign(effect.shape.styles(), { opacity: effect.activated ? maxOpacity : maxOpacity / 3, transition: `opacity ${effect.activated ? 100 : effect.activatesAfterMS}ms` })"
 />
 </template>

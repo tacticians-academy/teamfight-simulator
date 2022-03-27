@@ -27,9 +27,7 @@ export const traitEffects = {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: BODYGUARD_DELAY_MS,
 				hexDistanceFromSource: 1,
-				damageModifier: {
-					multiplier: -0.5,
-				},
+				opacity: 0.5,
 				taunts: true,
 			})
 		},

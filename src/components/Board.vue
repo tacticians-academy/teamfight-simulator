@@ -156,7 +156,7 @@ onMounted(() => {
 .fade-leave-active {
 	transition: opacity 1500ms;
 }
-.hex-effect.fade-leave-active {
+.hex-effect.fade-leave-active, .shape-effect.fade-leave-active {
 	transition: opacity 1500ms !important;
 }
 .fade-enter-from, .fade-leave-to {

@@ -5,6 +5,7 @@ import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
 import type { GameEffectData } from '#/game/effects/GameEffect'
+import { getCoordFrom } from '#/game/store'
 
 import { getAngleBetween, doesLineInterceptCircle, radianDistance, doesRectangleInterceptCircle } from '#/helpers/angles'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
@@ -97,8 +98,8 @@ export class ShapeEffectCircle implements ShapeEffectShape {
 	radius: number
 	maxDistanceSquared: number
 
-	constructor(source: ChampionUnit, radius: number) {
-		this.coord = source.coord
+	constructor(source: ChampionUnit | HexCoord, radius: number) {
+		this.coord = 'coord' in source ? source.coord : getCoordFrom(source)
 		this.radius = radius
 		const maxDistance = this.radius * HEX_PROPORTION_PER_LEAGUEUNIT + UNIT_SIZE_PROPORTION / 2
 		this.maxDistanceSquared = maxDistance * maxDistance

@@ -41,6 +41,8 @@ export interface GameEffectData {
 	onActivate?: CollisionFn
 	/** Callback for each unit the `GameEffect` applies to. */
 	onCollision?: CollisionFn
+	/** The effect's rendered visual opacity. Defaults to 1. */
+	opacity?: number
 }
 
 export interface AttackBounce {
@@ -78,6 +80,7 @@ export class GameEffect extends GameEffectChild {
 	damageSourceType: DamageSourceType
 	bonuses: [BonusLabelKey, ...BonusVariable[]] | undefined
 	statusEffects: StatusEffectData[] | undefined
+	opacity: number | undefined
 
 	collidedWith: string[] = []
 
@@ -99,6 +102,7 @@ export class GameEffect extends GameEffectChild {
 		this.statusEffects = data.statusEffects
 		this.onActivate = data.onActivate
 		this.onCollision = data.onCollision
+		this.opacity = data.opacity
 		if (this.damageCalculation && this.damageSourceType == null) {
 			console.warn('damageSourceType', spell != null, data)
 		}

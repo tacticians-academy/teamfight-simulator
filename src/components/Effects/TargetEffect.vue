@@ -5,7 +5,7 @@ import type { TargetEffect } from '#/game/effects/TargetEffect'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
 const props = defineProps<{
-	targetEffect: TargetEffect
+	effect: TargetEffect
 	source: ChampionUnit
 	target: ChampionUnit
 }>()
@@ -23,8 +23,8 @@ const data = computed(() => {
 
 <template>
 <div
-	class="target-effect" :class="targetEffect.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
-	:style="{ left: `${data[0] * 100}%`, top: `${data[1] * 100}%`, width: `${data[2] * 100}%`, height: '1vw', transformOrigin: '0 calc(100% - 0.5vw)', transform: `translate(0, -0.5vw) rotate(${data[3]}rad)`, transitionDuration: target.dead || targetEffect.source.dead ? '100ms' : undefined }"
+	class="target-effect" :class="effect.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
+	:style="{ left: `${data[0] * 100}%`, top: `${data[1] * 100}%`, width: `${data[2] * 100}%`, height: '1vw', transformOrigin: '0 calc(100% - 0.5vw)', transform: `translate(0, -0.5vw) rotate(${data[3]}rad)`, transitionDuration: target.dead || effect.source.dead ? '100ms' : undefined }"
 />
 </template>
 

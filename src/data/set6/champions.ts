@@ -370,7 +370,7 @@ export const championEffects = {
 			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
-				expiresAfterMS: 0.5 * 1000, //TODO
+				expiresAfterMS: 0.5 * 1000, //TODO calculate
 				onActivate: (elapsedMS, champion) => {
 					champion.moving = true
 					champion.setActiveHex(projectedHex ?? champion.activeHex)
@@ -468,6 +468,7 @@ export const championEffects = {
 				damageModifier: {
 					multiplier: -0.5,
 				},
+				opacity: 0.5,
 			})
 			return true
 		},

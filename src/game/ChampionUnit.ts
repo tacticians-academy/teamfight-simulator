@@ -1132,7 +1132,7 @@ export class ChampionUnit {
 			this.queueShapeEffect(elapsedMS, undefined, {
 				shape: new ShapeEffectVisualRectangle(this, angle, [spell.missile!.width! * 2 * HEX_PROPORTION_PER_LEAGUEUNIT, HEX_PROPORTION * MAX_HEX_COUNT]),
 				expiresAfterMS: 1000,
-				damageModifier: { multiplier: -0.5 },
+				opacity: 0.5,
 			})
 		}
 		return true
