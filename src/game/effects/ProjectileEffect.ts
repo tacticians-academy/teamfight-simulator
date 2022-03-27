@@ -7,6 +7,7 @@ import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-ac
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
 import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
+import type { HexEffectData } from '#/game/effects/HexEffect'
 import { getCoordFrom } from '#/game/store'
 
 import { getDistanceUnit, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
@@ -27,6 +28,8 @@ export interface ProjectileEffectData extends AttackEffectData {
 	missile?: ChampionSpellMissileData
 	/** Defaults to the source unit's attack target unit, or the unit's hex at cast time if `fixedHexRange` is set. */
 	target?: ChampionUnit | HexCoord
+	/** Creates a `HexEffect` upon completion. */
+	hexEffect?: HexEffectData
 	/** If the `Projectile` should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
 	onTargetDeath?: TargetDeathAction
 	/** Optional missile data for the `Projectile` to use if it should return to its source. */
@@ -45,6 +48,7 @@ export class ProjectileEffect extends GameEffect {
 	currentSpeed: number
 	target: ChampionUnit | HexCoord
 	targetCoord: HexCoord
+	hexEffect: HexEffectData | undefined
 	destroysOnCollision: boolean | undefined
 	onTargetDeath: TargetDeathAction | undefined
 	returnMissile: ChampionSpellMissileData | undefined
@@ -76,6 +80,7 @@ export class ProjectileEffect extends GameEffect {
 		this.target = data.target!
 		this.targetCoord = [0, 0]
 		this.setTarget(data.target!)
+		this.hexEffect = data.hexEffect
 		this.destroysOnCollision = data.destroysOnCollision
 		this.onTargetDeath = data.onTargetDeath
 		this.returnMissile = data.returnMissile
@@ -112,6 +117,9 @@ export class ProjectileEffect extends GameEffect {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
 		if (wasSpellShielded == null) { return }
 		if (!wasSpellShielded && isFinalTarget) {
+			if (this.hexEffect) {
+				this.source.queueHexEffect(elapsedMS, undefined, this.hexEffect)
+			}
 			if (this.bounce) {
 				const bounceTarget = getNextBounceFrom(this.target as ChampionUnit, this.bounce)
 				if (bounceTarget) {
@@ -150,6 +158,9 @@ export class ProjectileEffect extends GameEffect {
 	setTarget(target: ChampionUnit | HexCoord) {
 		this.target = target
 		this.targetCoord = isUnit(target) ? target.coord : getCoordFrom(target)
+		if (this.hexEffect?.hexSource) {
+			this.hexEffect.hexSource = this.target
+		}
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {

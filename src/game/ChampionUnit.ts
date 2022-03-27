@@ -1076,7 +1076,12 @@ export class ChampionUnit {
 		}
 		if (spell) {
 			if (!data.damageCalculation && data.targetTeam !== this.team) {
-				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
+				const damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
+				if (data.hexEffect) {
+					data.hexEffect.damageCalculation = damageCalculation
+				} else {
+					data.damageCalculation = damageCalculation
+				}
 			}
 			if (!data.damageSourceType) {
 				data.damageSourceType = DamageSourceType.spell
@@ -1092,6 +1097,11 @@ export class ChampionUnit {
 				return false
 			}
 			data.target = data.fixedHexRange != null || data.missile?.tracksTarget === false ? target.activeHex : target
+		}
+		if (data.hexEffect) {
+			if (data.hexEffect.hexDistanceFromSource != null && !data.hexEffect.hexSource) {
+				data.hexEffect.hexSource = data.target
+			}
 		}
 		const projectile = new ProjectileEffect(this, elapsedMS, spell, data)
 		state.projectileEffects.add(projectile)
