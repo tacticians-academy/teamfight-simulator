@@ -90,21 +90,21 @@ onMounted(() => {
 			</template>
 			<transition-group name="fade">
 				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">
-					<HexEffect v-if="hexEffect.started" :hexEffect="hexEffect" />
+					<HexEffect v-if="hexEffect.started" :effect="hexEffect" />
 				</template>
 			</transition-group>
 			<template v-for="projectileEffect in state.projectileEffects" :key="projectileEffect.instanceID">
-				<ProjectileEffect v-if="projectileEffect.started" :projectile="projectileEffect" />
+				<ProjectileEffect v-if="projectileEffect.started" :effect="projectileEffect" />
 			</template>
 			<transition-group name="fade">
 				<template v-for="shapeEffect in state.shapeEffects" :key="shapeEffect.instanceID">
-					<ShapeEffect v-if="shapeEffect.started" :shapeEffect="shapeEffect" />
+					<ShapeEffect v-if="shapeEffect.started" :effect="shapeEffect" />
 				</template>
 			</transition-group>
 			<transition-group name="fade">
 				<template v-for="targetEffect in state.targetEffects" :key="targetEffect.instanceID">
 					<template v-if="targetEffect.started">
-						<TargetEffect v-for="([source, target], index) in targetEffect.sourceTargets" :key="index" :targetEffect="targetEffect" :source="source" :target="target" />
+						<TargetEffect v-for="([source, target], index) in targetEffect.sourceTargets" :key="index" :effect="targetEffect" :source="source" :target="target" />
 					</template>
 				</template>
 			</transition-group>

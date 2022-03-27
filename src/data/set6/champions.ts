@@ -331,6 +331,25 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Senna]: {
+		cast: (elapsedMS, spell, champion) => {
+			if (!champion.target) { return false }
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				destroysOnCollision: false,
+				fixedHexRange: MAX_HEX_COUNT,
+				hasBackingVisual: true,
+				onCollision: (elapsedMS, unit, damage) => {
+					if (damage == null) { return }
+					const lowestHPAlly = getBestAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
+					if (lowestHPAlly) {
+						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing' as SpellKey)
+						lowestHPAlly.gainHealth(elapsedMS, champion, damage * percentHealing / 100, true)
+					}
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Sivir]: {
 		cast: (elapsedMS, spell, champion) => {
 			const empowerSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
@@ -351,40 +370,6 @@ export const championEffects = {
 			})
 			champion.manaLockUntilMS = expiresAtMS
 			return true
-		},
-	},
-
-	[ChampionKey.Senna]: {
-		cast: (elapsedMS, spell, champion) => {
-			if (!champion.target) { return false }
-			return champion.queueProjectileEffect(elapsedMS, spell, {
-				destroysOnCollision: false,
-				fixedHexRange: MAX_HEX_COUNT,
-				hasBackingVisual: true,
-				onCollision: (elapsedMS, unit, damage) => {
-					if (damage == null) { return }
-					const lowestHPAlly = getBestAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
-					if (lowestHPAlly) {
-						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing' as SpellKey)
-						lowestHPAlly.gainHealth(elapsedMS, champion, damage * percentHealing / 100, true)
-					}
-				},
-			})
-		},
-	},
-
-	[ChampionKey.Twitch]: {
-		cast: (elapsedMS, spell, champion) => {
-			const grievousWoundsProportion = champion.getSpellVariable(spell, 'GWStrength' as SpellKey)
-			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'GWDuration' as SpellKey)
-			const durationMS = grievousWoundsSeconds * 1000
-			return champion.queueProjectileEffect(elapsedMS, spell, {
-				destroysOnCollision: false,
-				fixedHexRange: MAX_HEX_COUNT,
-				statusEffects: [
-					[StatusEffectType.grievousWounds, { durationMS, amount: grievousWoundsProportion }],
-				],
-			})
 		},
 	},
 
@@ -409,6 +394,21 @@ export const championEffects = {
 						},
 					})
 				},
+			})
+		},
+	},
+
+	[ChampionKey.Twitch]: {
+		cast: (elapsedMS, spell, champion) => {
+			const grievousWoundsProportion = champion.getSpellVariable(spell, 'GWStrength' as SpellKey)
+			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'GWDuration' as SpellKey)
+			const durationMS = grievousWoundsSeconds * 1000
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				destroysOnCollision: false,
+				fixedHexRange: MAX_HEX_COUNT,
+				statusEffects: [
+					[StatusEffectType.grievousWounds, { durationMS, amount: grievousWoundsProportion }],
+				],
 			})
 		},
 	},
