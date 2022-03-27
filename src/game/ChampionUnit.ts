@@ -264,12 +264,13 @@ export class ChampionUnit {
 					damageModifier,
 					statusEffects,
 					onActivate: (elapsedMS, source) => {
-						source.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
-						if (source.data.passive && source.target) {
-							passiveFn?.(elapsedMS, source.data.passive, source.target, this)
+						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
+						if (source.data.passive && source.target && source.readyToCast()) {
+							passiveFn?.(elapsedMS, source.data.passive, source.target, source)
+							source.postCast(elapsedMS, canReProcAttack)
 						}
 						statusEffects.forEach(([key, statusEffect]) => {
-							this.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
+							source.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
 						})
 					},
 				})
@@ -288,8 +289,9 @@ export class ChampionUnit {
 					damageModifier,
 					statusEffects,
 					onCollision(elapsedMS, unit) {
-						if (source.data.passive) {
+						if (source.data.passive && source.readyToCast()) {
 							passiveFn?.(elapsedMS, source.data.passive, unit, source)
+							source.postCast(elapsedMS, canReProcAttack)
 						}
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 					},
@@ -476,7 +478,7 @@ export class ChampionUnit {
 	}
 
 	readyToCast(): boolean {
-		return !!(this.championEffects?.cast || this.championEffects?.passive) && this.mana > 0 && this.mana >= this.manaMax()
+		return this.mana >= this.manaMax()
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
 		const spell = this.getCurrentSpell()
@@ -485,9 +487,11 @@ export class ChampionUnit {
 			if (castFn && !castFn(elapsedMS, spell, this)) {
 				return false
 			}
-		} else if (this.data.passive) {
-			this.championEffects?.passive?.(elapsedMS, this.data.passive, undefined, this)
 		}
+		this.postCast(elapsedMS, initialCast)
+	}
+
+	postCast(elapsedMS: DOMHighResTimeStamp, isInitialCast: boolean) {
 		state.units.forEach(unit => {
 			if (unit === this) { return }
 			unit.items.forEach((item, index) => {
@@ -503,8 +507,7 @@ export class ChampionUnit {
 				}
 			})
 		})
-
-		if (initialCast) {
+		if (isInitialCast) {
 			this.castCount += 1
 			this.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.cast?.(activeEffect!, elapsedMS, this))
 			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.cast?.(augment, elapsedMS, this))

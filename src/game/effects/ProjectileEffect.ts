@@ -129,17 +129,20 @@ export class ProjectileEffect extends GameEffect {
 		return true
 	}
 
-	checkIfDies() {
+	checkIfDies(elapsedMS: DOMHighResTimeStamp) {
 		const returnIDSuffix = 'Returns'
-		if (this.returnMissile && !this.isReturning) {
-			this.maxDistance = undefined
-			this.setTarget(this.source)
-			this.missile = this.returnMissile
-			this.currentSpeed = this.missile.speedInitial!
-			this.instanceID += returnIDSuffix
-			this.hitID += returnIDSuffix //TODO if damage is unique to outward direction
-			this.isReturning = true
-			return true
+		if (this.returnMissile) {
+			if (!this.isReturning) {
+				this.maxDistance = undefined
+				this.setTarget(this.source)
+				this.missile = this.returnMissile
+				this.currentSpeed = this.missile.speedInitial!
+				this.instanceID += returnIDSuffix
+				this.hitID += returnIDSuffix //TODO if damage is unique to outward direction
+				this.isReturning = true
+				return true
+			}
+			this.onCollision?.(elapsedMS, this.source)
 		}
 		return false
 	}
@@ -179,7 +182,7 @@ export class ProjectileEffect extends GameEffect {
 						return true
 					}
 				}
-				return this.checkIfDies()
+				return this.checkIfDies(elapsedMS)
 			}
 			angleX = this.fixedDeltaX!
 			angleY = this.fixedDeltaY!
@@ -191,7 +194,7 @@ export class ProjectileEffect extends GameEffect {
 						return true
 					}
 				}
-				return this.checkIfDies()
+				return this.checkIfDies(elapsedMS)
 			}
 			angleX = deltaX
 			angleY = deltaY
@@ -217,7 +220,7 @@ export class ProjectileEffect extends GameEffect {
 				if (coordinateDistanceSquared(position, unit.coord) < this.collisionRadiusSquared) {
 					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
 						if (this.destroysOnCollision) {
-							return this.checkIfDies()
+							return this.checkIfDies(elapsedMS)
 						}
 					}
 				}
