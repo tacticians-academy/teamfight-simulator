@@ -12,7 +12,7 @@ import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { ChampionEffects } from '#/helpers/types'
-import { shuffle } from '#/helpers/utils'
+import { randomItem, shuffle } from '#/helpers/utils'
 
 export const championEffects = {
 
@@ -240,6 +240,36 @@ export const championEffects = {
 					[StatusEffectType.stunned, { durationMS }],
 				],
 			})
+		},
+	},
+
+	[ChampionKey.Orianna]: {
+		cast: (elapsedMS, spell, champion) => {
+			const hexRange = 2 //NOTE hardcoded
+			const hotspotHex = randomItem(getHotspotHexes(true, state.units, null, hexRange))
+			if (hotspotHex) {
+				const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+				const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
+				const shieldSeconds = champion.getSpellVariable(spell, 'Duration' as SpellKey)
+				const hexes = getSurroundingWithin(hotspotHex, hexRange, true)
+				champion.queueHexEffect(elapsedMS, spell, {
+					hexes,
+					statusEffects: [
+						[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+					],
+				})
+				champion.queueHexEffect(elapsedMS, spell, {
+					targetTeam: champion.team,
+					hexes,
+					onCollision: (elapsedMS, unit) => {
+						unit.queueShield(elapsedMS, champion, {
+							amount: shieldAmount,
+							expiresAfterMS: shieldSeconds * 1000,
+						})
+					},
+				})
+			}
+			return true
 		},
 	},
 
