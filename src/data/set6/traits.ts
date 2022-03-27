@@ -9,7 +9,7 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getFrontBehindHexes, getHexRing, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getFrontBehindHexes, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber, TraitEffects } from '#/helpers/types'
@@ -362,6 +362,22 @@ export const traitEffects = {
 			if (checkProcChance(multiAttackProcChance)) {
 				unit.castAbility(elapsedMS, false) //TODO delay castTime
 			}
+		},
+	},
+
+	[TraitKey.YordleLord]: {
+		solo: (unit, activeEffect) => {
+			const variables: BonusVariable[] = []
+			const yordleEffectVariables = getters.synergiesByTeam.value[unit.team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Yordle)?.activeEffect?.variables
+			if (yordleEffectVariables) {
+				for (const key in yordleEffectVariables) {
+					const yordleValue = yordleEffectVariables[key]
+					if (yordleValue != null) {
+						variables.push([key, yordleValue])
+					}
+				}
+			}
+			return variables
 		},
 	},
 
