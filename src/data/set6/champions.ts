@@ -318,6 +318,39 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Morgana]: {
+		cast: (elapsedMS, spell, champion) => {
+			const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
+			const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
+			const targetsInHexRange = champion.getSpellVariable(spell, 'Radius' as SpellKey)
+			const expiresAfterMS = shieldSeconds * 1000
+			const tickEveryMS = 1000
+
+			const effect = champion.queueTargetEffect(elapsedMS, spell, {
+				targetsInHexRange,
+				damageCalculation: champion.getSpellCalculation(spell, 'DamagePerSecond' as SpellKey),
+				tickEveryMS,
+				expiresAfterMS,
+			})
+			champion.queueShield(elapsedMS, champion, {
+				amount: shieldAmount,
+				expiresAfterMS,
+				onRemoved: (elapsedMS, shield) => {
+					if (shield.amount > 0) {
+						if (effect) {
+							const stunMS = champion.getSpellVariable(spell, SpellKey.StunDuration) * 1000
+							effect.currentTargets.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunMS))
+						}
+					} else {
+						const manaRefund = champion.getSpellVariable(spell, 'RefundedMana' as SpellKey)
+						champion.addMana(manaRefund)
+					}
+				},
+			})
+			return true
+		},
+	},
+
 	[ChampionKey.MissFortune]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.target) { return false }
@@ -618,13 +651,13 @@ export const championEffects = {
 					champion.queueHexEffect(elapsedMS, spell, {
 						hexDistanceFromSource,
 					})
-					if (shield.amount <= 0) {
-						champion.addBonuses(ChampionKey.Vex, [shieldKey, shieldAmp])
-					} else {
+					if (shield.amount > 0) {
 						champion.queueHexEffect(elapsedMS, undefined, {
 							hexDistanceFromSource,
 							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
 						})
+					} else {
+						champion.addBonuses(ChampionKey.Vex, [shieldKey, shieldAmp])
 					}
 				},
 			})
