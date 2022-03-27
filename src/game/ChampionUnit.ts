@@ -893,14 +893,16 @@ export class ChampionUnit {
 		const calculation = this.getSpellCalculation(spell, key)
 		return calculation ? solveSpellCalculationFrom(this, undefined, calculation)[0] : 0
 	}
-	getSpellCalculation(spell: ChampionSpellData | undefined, key: SpellKey) {
+	getSpellCalculation(spell: ChampionSpellData | undefined, key: SpellKey, silent: boolean = false) {
 		if (!spell) {
 			console.log('ERR', 'No spell', this.name, key)
 			return undefined
 		}
 		const calculation = spell.calculations[key]
 		if (calculation == null) {
-			console.log('ERR', 'Missing calculation for', spell.name, key)
+			if (!silent) {
+				console.log('ERR', 'Missing calculation for', spell.name, key)
+			}
 			return undefined
 		}
 		return calculation
@@ -1067,7 +1069,7 @@ export class ChampionUnit {
 		}
 		if (spell) {
 			if (!data.damageCalculation) {
-				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
+				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 			}
 			if (!data.damageSourceType) {
 				data.damageSourceType = DamageSourceType.spell
@@ -1107,7 +1109,7 @@ export class ChampionUnit {
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
 		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
 			data.damageSourceType = DamageSourceType.spell
@@ -1127,7 +1129,7 @@ export class ChampionUnit {
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
 		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
 			data.damageSourceType = DamageSourceType.spell
@@ -1146,7 +1148,7 @@ export class ChampionUnit {
 			Object.assign(data, this.getAttackModifier(elapsedMS))
 		}
 		if (spell && !data.damageCalculation) {
-			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage)
+			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 		}
 		if (data.damageCalculation && data.damageSourceType == null) {
 			data.damageSourceType = DamageSourceType.spell

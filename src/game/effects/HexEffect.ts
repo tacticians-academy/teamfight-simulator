@@ -16,13 +16,16 @@ export interface HexEffectData extends GameEffectData {
 	hexes?: HexCoord[]
 	/** Distance from the source unit that this HexEffect applies to at the time of activation. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexDistanceFromSource?: number
+	/** A custom unit for `hexDistanceFromSource` to originate from (defaults to `source`). */
+	hexSource?: ChampionUnit
 	/** Taunts affected units to the source unit. */
 	taunts?: boolean
 }
 
 export class HexEffect extends GameEffect {
 	hexes: Ref<HexCoord[] | undefined>
-	hexDistanceFromSource?: number
+	hexDistanceFromSource: number | undefined
+	hexSource: ChampionUnit | undefined
 	taunts: boolean
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
@@ -35,6 +38,7 @@ export class HexEffect extends GameEffect {
 
 		this.hexes = ref(data.hexes)
 		this.hexDistanceFromSource = data.hexDistanceFromSource
+		this.hexSource = data.hexSource
 		this.taunts = data.taunts ?? false
 
 		this.postInit()
@@ -42,7 +46,7 @@ export class HexEffect extends GameEffect {
 
 	start = () => {
 		if (!this.hexes.value) {
-			const sourceHex = this.source.activeHex
+			const sourceHex = (this.hexSource ?? this.source).activeHex
 			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!)
 			hexes.push(sourceHex)
 			this.hexes.value = hexes
