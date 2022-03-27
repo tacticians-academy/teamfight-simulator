@@ -9,7 +9,7 @@ import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsM
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
+import { HEX_MOVE_LEAGUEUNITS, HEX_PROPORTION, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { ChampionEffects } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
@@ -235,6 +235,33 @@ export const championEffects = {
 					unit.gainHealth(elapsedMS, champion, healAmount, true)
 					unit.addBonuses(ChampionKey.Lulu)
 				})
+			return true
+		},
+	},
+
+	[ChampionKey.MissFortune]: {
+		cast: (elapsedMS, spell, champion) => {
+			if (!champion.target) { return false }
+			const damageCalculation = champion.getSpellCalculation(spell, 'MagicDamage' as SpellKey)
+			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'HealingReductionDuration' as SpellKey)
+			const grievousWoundsPercent = champion.getSpellVariable(spell, 'HealingReduction' as SpellKey)
+			const wavesCount = 4 //NOTE hardcoded
+			const hexRadius = 2 //TODO experimentally determine
+			const castMS = 1000
+			const msBetweenAttacks = castMS / wavesCount
+			for (let waveIndex = 0; waveIndex < wavesCount; waveIndex += 1) {
+				champion.queueShapeEffect(elapsedMS, spell, {
+					startsAfterMS: waveIndex * msBetweenAttacks,
+					shape: new ShapeEffectCircle(champion.target.activeHex, HEX_MOVE_LEAGUEUNITS * hexRadius),
+					damageCalculation,
+					damageModifier: {
+						multiplier: -(1 - 1 / wavesCount),
+					},
+					statusEffects: [
+						[StatusEffectType.grievousWounds, { amount: grievousWoundsPercent / 100, durationMS: grievousWoundsSeconds * 1000 }],
+					],
+				})
+			}
 			return true
 		},
 	},
