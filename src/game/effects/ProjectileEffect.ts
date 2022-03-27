@@ -31,6 +31,8 @@ export interface ProjectileEffectData extends AttackEffectData {
 	onTargetDeath?: TargetDeathAction
 	/** Optional missile data for the `Projectile` to use if it should return to its source. */
 	returnMissile?: ChampionSpellMissileData
+	/** If the projectile should display its path. */
+	hasBackingVisual?: boolean
 }
 
 function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {

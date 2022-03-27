@@ -12,7 +12,7 @@ import type { HexEffectData } from '#/game/effects/HexEffect'
 import type { AttackEffectData } from '#/game/effects/GameEffect'
 import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ProjectileEffectData } from '#/game/effects/ProjectileEffect'
-import { ShapeEffect } from '#/game/effects/ShapeEffect'
+import { ShapeEffect, ShapeEffectVisualRectangle } from '#/game/effects/ShapeEffect'
 import type { ShapeEffectData } from '#/game/effects/ShapeEffect'
 import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
@@ -22,7 +22,7 @@ import { getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, g
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION_PER_LEAGUEUNIT } from '#/helpers/constants'
+import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
 import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageModifier, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
@@ -1094,6 +1094,14 @@ export class ChampionUnit {
 				this.performActionUntilMS = projectile.startsAtMS
 			}
 		}
+		if (spell && data.hasBackingVisual === true) {
+			const angle = this.angleTo(data.target) + (data.changeRadians ?? 0)
+			this.queueShapeEffect(elapsedMS, undefined, {
+				shape: new ShapeEffectVisualRectangle(this, angle, [spell.missile!.width! * 2 * HEX_PROPORTION_PER_LEAGUEUNIT, HEX_PROPORTION * MAX_HEX_COUNT]),
+				expiresAfterMS: 1000,
+				damageModifier: { multiplier: -0.5 },
+			})
+		}
 		return true
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
@@ -1159,11 +1167,9 @@ export class ChampionUnit {
 		return true
 	}
 
-	angleTo(unit: ChampionUnit) {
-		return getAngleBetween(this.coord, unit.coord)
-	}
-	angleToHex(hex: HexCoord) {
-		return getAngleBetween(this.coord, getCoordFrom(hex))
+	angleTo(target: ChampionUnit | HexCoord) {
+		const coord = 'coord' in target ? target.coord : getCoordFrom(target)
+		return getAngleBetween(this.coord, coord)
 	}
 
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {

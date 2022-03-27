@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'vue'
+
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
@@ -11,7 +13,7 @@ import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 
 class ShapeEffectShape {
 	intersects: (unit: ChampionUnit) => boolean = () => false
-	styles: () => Record<string, string> = () => { return {} }
+	styles: () => CSSProperties = () => { return {} }
 }
 
 export interface ShapeEffectData extends GameEffectData {
@@ -75,7 +77,7 @@ export class ShapeEffectCone implements ShapeEffectShape {
 		return doesLineInterceptCircle(unit.coord, UNIT_SIZE_PROPORTION / 2, startPoint, lineDelta)
 	}
 
-	styles() {
+	styles(): CSSProperties {
 		const [left, top] = this.coord
 		return {
 			borderRadius: '100%',
@@ -106,7 +108,7 @@ export class ShapeEffectCircle implements ShapeEffectShape {
 		return coordinateDistanceSquared(this.coord, unit.coord) < this.maxDistanceSquared
 	}
 
-	styles() {
+	styles(): CSSProperties {
 		const [left, top] = this.coord
 		return {
 			borderRadius: '100%',
@@ -133,7 +135,7 @@ export class ShapeEffectRectangle implements ShapeEffectShape {
 		return doesRectangleInterceptCircle(unit.coord, UNIT_SIZE_PROPORTION / 2, this.coord, this.size)
 	}
 
-	styles() {
+	styles(): CSSProperties {
 		const [left, top] = this.coord
 		return {
 			left: `${left * 100}%`,
@@ -141,6 +143,33 @@ export class ShapeEffectRectangle implements ShapeEffectShape {
 			width: `${this.size[0] * 100}%`,
 			height: `${this.size[1] * 100}%`,
 			transform: `translate(-50%, -50%)`,
+			background: `currentColor`,
+		}
+	}
+}
+
+export class ShapeEffectVisualRectangle implements ShapeEffectShape {
+	coord: HexCoord
+	size: HexCoord
+	direction: number
+
+	constructor(source: ChampionUnit, direction: number, size: HexCoord) {
+		this.coord = [...source.coord]
+		this.size = size
+		this.direction = direction
+	}
+
+	intersects(unit: ChampionUnit) { return false }
+
+	styles(): CSSProperties {
+		const [left, top] = this.coord
+		return {
+			left: `${left * 100}%`,
+			top: `${top * 100}%`,
+			width: `${this.size[0] * 100}%`,
+			height: `${this.size[1] * 100}%`,
+			transformOrigin: `50% 0`,
+			transform: `translate(-50%, 0%) rotate(${this.direction + Math.PI * 3 / 2}rad)`,
 			background: `currentColor`,
 		}
 	}
