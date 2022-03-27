@@ -1,11 +1,11 @@
-import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { BonusKey, ChampionSpellMissileData, DamageType } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax } from '#/helpers/abilityUtils'
+import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -625,6 +625,35 @@ export const championEffects = {
 				opacity: 0.5,
 			})
 			return true
+		},
+	},
+
+	[ChampionKey.Zilean]: {
+		cast: (elapsedMS, spell, champion) => {
+			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			const slowProportion = champion.getSpellVariable(spell, 'Slow' as SpellKey)
+			const slowSeconds = champion.getSpellVariable(spell, 'SlowDuration' as SpellKey)
+			const missile = modifyMissile(spell, { width: 30 })
+			const durationMS = stunSeconds * 1000
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				missile,
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS }],
+				],
+				delayAfterReachingTargetMS: durationMS,
+				onCollision: (elapsedMS, unit, damage) => {
+					if (damage == null) {
+						champion.queueHexEffect(elapsedMS, undefined, {
+							damageCalculation: champion.getSpellCalculation(spell, SpellKey.Damage),
+							hexSource: unit,
+							hexDistanceFromSource: 1,
+							statusEffects: [
+								[StatusEffectType.attackSpeedSlow, { amount: slowProportion, durationMS: slowSeconds * 1000 }],
+							],
+						})
+					}
+				},
+			})
 		},
 	},
 
