@@ -153,7 +153,7 @@ export const itemEffects = {
 		damageDealtByHolder: (item, itemID, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
 			if (damageType !== DamageType.physical) {
 				const [hextechHeal] = getVariables(item, BonusKey.VampSpell)
-				const lowestHPAlly = getBestAsMax(false, holder.alliedUnits(), (unit) => unit.health)
+				const lowestHPAlly = getBestAsMax(false, holder.alliedUnits(true), (unit) => unit.health)
 				if (lowestHPAlly) {
 					lowestHPAlly.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}

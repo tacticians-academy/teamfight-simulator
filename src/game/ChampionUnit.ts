@@ -581,7 +581,7 @@ export class ChampionUnit {
 
 		this.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 
-		const teamUnits = this.alliedUnits()
+		const teamUnits = this.alliedUnits(false)
 		if (teamUnits.length) {
 			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 				teamSynergies.forEach(({ key, activeEffect }) => {
@@ -809,8 +809,8 @@ export class ChampionUnit {
 		return shield
 	}
 
-	alliedUnits(): ChampionUnit[] {
-		return state.units.filter(unit => unit !== this && !unit.dead && unit.team === this.team)
+	alliedUnits(includingSelf: boolean): ChampionUnit[] {
+		return state.units.filter(unit => (includingSelf ? true : unit !== this) && !unit.dead && unit.team === this.team)
 	}
 
 	coordDistanceSquaredToHex(hex: HexCoord) {

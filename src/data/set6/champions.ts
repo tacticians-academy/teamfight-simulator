@@ -65,7 +65,7 @@ export const championEffects = {
 						if (!champion.checkInRangeOfTarget()) {
 							champion.setTarget(null)
 						}
-						champion.alliedUnits().forEach(unit => unit.target = affectedUnit) //TODO target if in range
+						champion.alliedUnits(false).forEach(unit => unit.target = affectedUnit) //TODO target if in range
 						champion.empoweredAutos.add({
 							amount: 1,
 							statusEffects: [
