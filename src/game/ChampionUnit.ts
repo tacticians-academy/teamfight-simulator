@@ -854,6 +854,9 @@ export class ChampionUnit {
 	}
 
 	getStat(key: BonusKey) {
+		if (key === BonusKey.Armor) {
+			return this.armor()
+		}
 		if (key === BonusKey.AttackDamage) {
 			return this.attackDamage()
 		}

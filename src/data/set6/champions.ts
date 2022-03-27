@@ -247,29 +247,49 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const hexRange = 2 //NOTE hardcoded
 			const hotspotHex = randomItem(getHotspotHexes(true, state.units, null, hexRange))
-			if (hotspotHex) {
-				const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-				const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
-				const shieldSeconds = champion.getSpellVariable(spell, 'Duration' as SpellKey)
-				const hexes = getSurroundingWithin(hotspotHex, hexRange, true)
-				champion.queueHexEffect(elapsedMS, spell, {
-					hexes,
-					statusEffects: [
-						[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
-					],
-				})
-				champion.queueHexEffect(elapsedMS, spell, {
-					targetTeam: champion.team,
-					hexes,
-					onCollision: (elapsedMS, unit) => {
-						unit.queueShield(elapsedMS, champion, {
-							amount: shieldAmount,
-							expiresAfterMS: shieldSeconds * 1000,
-						})
-					},
-				})
+			if (!hotspotHex) {
+				return false
 			}
+			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
+			const shieldSeconds = champion.getSpellVariable(spell, 'Duration' as SpellKey)
+			const hexes = getSurroundingWithin(hotspotHex, hexRange, true)
+			champion.queueHexEffect(elapsedMS, spell, {
+				hexes,
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+				],
+			})
+			champion.queueHexEffect(elapsedMS, spell, {
+				targetTeam: champion.team,
+				hexes,
+				onCollision: (elapsedMS, unit) => {
+					unit.queueShield(elapsedMS, champion, {
+						amount: shieldAmount,
+						expiresAfterMS: shieldSeconds * 1000,
+					})
+				},
+			})
 			return true
+		},
+	},
+
+	[ChampionKey.Poppy]: {
+		passive: (elapsedMS, spell, target, champion) => {
+			const mostDistantEnemy = getDistanceUnit(false, champion, champion.opposingTeam())
+			if (!mostDistantEnemy) { return false }
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				target: mostDistantEnemy,
+				returnMissile: spell.missile,
+				onCollision: (elapsedMS, affectedUnit) => {
+					if (affectedUnit === champion) {
+						const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
+						champion.queueShield(elapsedMS, champion, {
+							amount: shieldAmount,
+						})
+					}
+				},
+			})
 		},
 	},
 
