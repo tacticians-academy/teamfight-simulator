@@ -2,15 +2,17 @@ import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
+import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax } from '#/helpers/abilityUtils'
+import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { ChampionEffects } from '#/helpers/types'
+import { shuffle } from '#/helpers/utils'
 
 export const championEffects = {
 
@@ -228,7 +230,6 @@ export const championEffects = {
 					const lowestHPAlly = getBestAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
 						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing' as SpellKey)
-						console.log(damage, damage * percentHealing / 100)
 						lowestHPAlly.gainHealth(elapsedMS, champion, damage * percentHealing / 100, true)
 					}
 				},
@@ -273,6 +274,26 @@ export const championEffects = {
 					})
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Veigar]: {
+		cast: (elapsedMS, spell, champion) => {
+			const strikeCount = champion.getSpellVariable(spell, 'NumStrikes' as SpellKey)
+			const enemies = getInteractableUnitsOfTeam(champion.opposingTeam())
+			shuffle(enemies)
+			const castSeconds = 3 //TODO experimentally determine
+			const secondsBetweenCasts = castSeconds / strikeCount
+			for (let strikeIndex = 0; strikeIndex < strikeCount; strikeIndex += 1) {
+				const enemy = enemies[strikeIndex % enemies.length]
+				delayUntil(elapsedMS, strikeIndex * secondsBetweenCasts).then(elapsedMS => {
+					champion.queueHexEffect(elapsedMS, spell, {
+						startsAfterMS: secondsBetweenCasts,
+						hexes: [[...enemy.activeHex]],
+					})
+				})
+			}
+			return true
 		},
 	},
 
