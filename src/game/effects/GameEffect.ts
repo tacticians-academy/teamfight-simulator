@@ -44,7 +44,7 @@ export interface GameEffectData {
 }
 
 export interface AttackBounce {
-	hexRange?: number
+	maxHexRangeFromOriginalTarget?: number
 	bouncesRemaining: number
 	damageCalculation?: SpellCalculation
 	damageModifier?: DamageModifier

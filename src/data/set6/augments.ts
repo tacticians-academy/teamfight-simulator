@@ -459,17 +459,17 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Sharpshooter]: {
 		modifyAttacks: (augment, team, unit) => {
-			const [reductionPercent] = getVariables(augment, 'BounceReduction')
-			let bounce: AttackBounce | undefined
 			if (unit.hasTrait(TraitKey.Twinshot)) {
-				bounce = {
+				const [reductionPercent] = getVariables(augment, 'BounceReduction')
+				const bounce: AttackBounce = {
 					bouncesRemaining: 1,
 					damageModifier: {
 						multiplier: -reductionPercent / 100,
 					},
 				}
+				return { bounce }
 			}
-			return { bounce }
+			return {}
 		},
 	},
 

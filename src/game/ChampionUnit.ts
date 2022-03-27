@@ -9,7 +9,7 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { HexEffect } from '#/game/effects/HexEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
-import type { AttackEffectData } from '#/game/effects/GameEffect'
+import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ProjectileEffectData } from '#/game/effects/ProjectileEffect'
 import { ShapeEffect, ShapeEffectVisualRectangle } from '#/game/effects/ShapeEffect'
@@ -32,6 +32,16 @@ let instanceIndex = 0
 
 function stageIndex() {
 	return Math.min(Math.max(2, state.stageNumber), 5) - 2
+}
+
+interface EmpoweredAuto {
+	id?: BonusLabelKey
+	amount: number
+	expiresAtMS?: DOMHighResTimeStamp
+	bounce?: AttackBounce
+	damageCalculation?: SpellCalculation
+	damageModifier?: DamageModifier
+	statusEffects?: StatusEffectData[]
 }
 
 export class ChampionUnit {
@@ -73,13 +83,7 @@ export class ChampionUnit {
 	basicAttackCount = 0
 	castCount = 0
 
-	empoweredAutos: Set<{
-		id?: BonusLabelKey
-		amount: number
-		damageCalculation?: SpellCalculation
-		damageModifier?: DamageModifier
-		statusEffects?: StatusEffectData[]
-	}> = new Set()
+	empoweredAutos: Set<EmpoweredAuto> = new Set()
 	championEffects: ChampionFns | undefined
 
 	bonuses: BonusEntry[] = []
@@ -240,17 +244,24 @@ export class ChampionUnit {
 			}
 			const statusEffects: StatusEffectData[] = []
 			const bonusCalculations: SpellCalculation[] = []
+			let bounce: AttackBounce | undefined
 			this.empoweredAutos.forEach(empower => {
+				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
+					this.empoweredAutos.delete(empower)
+					return
+				}
 				Object.keys(damageModifier).forEach((modifier) => {
 					const modifierKey = modifier as keyof DamageModifier
 					damageModifier[modifierKey]! += empower.damageModifier?.[modifierKey] ?? 0
 				})
 				if (empower.damageCalculation) {
-					console.log(empower.damageCalculation)
 					bonusCalculations.push(empower.damageCalculation)
 				}
 				if (empower.statusEffects) {
 					statusEffects.push(...empower.statusEffects)
+				}
+				if (empower.bounce) {
+					bounce = Object.assign({}, empower.bounce)
 				}
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
@@ -263,6 +274,7 @@ export class ChampionUnit {
 					bonusCalculations,
 					damageModifier,
 					statusEffects,
+					bounce,
 					onActivate: (elapsedMS, source) => {
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 						if (source.data.passive && source.target && source.readyToCast()) {
@@ -288,6 +300,7 @@ export class ChampionUnit {
 					bonusCalculations,
 					damageModifier,
 					statusEffects,
+					bounce,
 					onCollision(elapsedMS, unit) {
 						if (source.data.passive && source.readyToCast()) {
 							passiveFn?.(elapsedMS, source.data.passive, unit, source)

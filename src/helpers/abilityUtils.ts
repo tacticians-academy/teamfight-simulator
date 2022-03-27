@@ -186,11 +186,18 @@ export function getChainFrom(unit: ChampionUnit, bounces: number, maxDistance?: 
 	return units
 }
 
-export function getNextBounceFrom(unit: ChampionUnit, bounce: AttackBounce) {
+export function getNextBounceFrom(fromUnit: ChampionUnit, bounce: AttackBounce) {
 	if (bounce.bouncesRemaining <= 0) {
 		return undefined
 	}
-	const target = getClosestUnitOfTeamWithinRangeTo(unit.activeHex, unit.team, bounce.hexRange, state.units.filter(unit => !bounce.hitUnits!.includes(unit)))
+	const originalTarget = bounce.hitUnits![0]
+	const target = getBestRandomAsMax(false, getInteractableUnitsOfTeam(fromUnit.team), (allyUnit) => {
+		if (bounce.hitUnits!.includes(allyUnit)) { return undefined }
+		if (bounce.maxHexRangeFromOriginalTarget != null && allyUnit.hexDistanceTo(originalTarget) > bounce.maxHexRangeFromOriginalTarget) {
+			return undefined
+		}
+		return allyUnit.hexDistanceTo(fromUnit)
+	})
 	if (target) {
 		bounce.hitUnits?.push(target)
 	}
