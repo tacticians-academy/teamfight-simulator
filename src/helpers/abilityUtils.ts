@@ -13,6 +13,18 @@ import { StatusEffectType } from '#/helpers/types'
 import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
+export function getBestSortedAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
+	const results: [number, T][] = []
+	entries.forEach(entry => {
+		const value = valueFn(entry)
+		if (value == null) { return }
+		results.push([value, entry])
+	})
+	return results
+		.sort((a, b) => (b[0] - a[0]) * (isMaximum ? 1 : -1))
+		.map(data => data[1])
+}
+
 export function getBestAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
 	let bestValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
 	let bestResult: T | undefined

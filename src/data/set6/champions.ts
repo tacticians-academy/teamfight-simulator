@@ -5,7 +5,7 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -200,6 +200,31 @@ export const championEffects = {
 					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + durationSeconds * 1000])
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Lulu]: {
+		cast: (elapsedMS, spell, champion) => {
+			const alliesByLowestHP = getBestSortedAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
+			const allyCount = champion.getSpellVariable(spell, 'NumAllies' as SpellKey)
+			const stunSeconds = champion.getSpellVariable(spell, 'CCDuration' as SpellKey)
+			const healAmount = champion.getSpellVariable(spell, 'BonusHealth' as SpellKey)
+			alliesByLowestHP
+				.slice(0, allyCount)
+				.forEach(unit => {
+					if (!unit.getBonusesFrom(ChampionKey.Lulu).length) {
+						champion.queueHexEffect(elapsedMS, spell, {
+							hexSource: unit,
+							hexDistanceFromSource: 1,
+							statusEffects: [
+								[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+							],
+						})
+					}
+					unit.gainHealth(elapsedMS, champion, healAmount, true)
+					unit.addBonuses(ChampionKey.Lulu)
+				})
+			return true
 		},
 	},
 
