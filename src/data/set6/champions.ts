@@ -1,4 +1,4 @@
-import { BonusKey, ChampionSpellMissileData, DamageType } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
@@ -9,9 +9,9 @@ import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsM
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { HEX_MOVE_LEAGUEUNITS, HEX_PROPORTION, MAX_HEX_COUNT } from '#/helpers/constants'
+import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { ChampionEffects } from '#/helpers/types'
+import type { BleedData, ChampionEffects } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
 
 export const championEffects = {
@@ -272,6 +272,48 @@ export const championEffects = {
 					unit.gainHealth(elapsedMS, champion, healAmount, true)
 					unit.addBonuses(ChampionKey.Lulu)
 				})
+			return true
+		},
+	},
+
+	[ChampionKey.Malzahar]: {
+		cast: (elapsedMS, spell, champion) => {
+			let target = champion.target
+			if (!target) { return false }
+			const sourceID = ChampionKey.Malzahar
+			if (target.getBleed(sourceID)) {
+				const unafflictedEnemies = getInteractableUnitsOfTeam(target.team).filter(unit => !unit.getBleed(sourceID))
+				const newTarget = getBestAsMax(false, unafflictedEnemies, (unit) => unit.hexDistanceTo(target!))
+				if (newTarget) {
+					target = newTarget
+				}
+			}
+			const mrShredProportion = champion.getSpellVariable(spell, 'MRShred' as SpellKey)
+			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)!
+			const durationMS = champion.getSpellVariable(spell, SpellKey.Duration) * 1000
+			const repeatsEveryMS = champion.getSpellVariable(spell, 'TickRate' as SpellKey) * 1000
+			const iterationCount = durationMS / repeatsEveryMS
+			const bleed: BleedData = {
+				sourceID,
+				source: champion,
+				activatesAtMS: elapsedMS,
+				damageCalculation,
+				damageModifier: {
+					multiplier: -(1 - 1 / iterationCount),
+				},
+				repeatsEveryMS,
+				remainingIterations: iterationCount,
+				onDeath: (elapsedMS, oldTarget) => {
+					const spreadCount = champion.getSpellVariable(spell, 'SpreadTargets' as SpellKey)
+					getBestSortedAsMax(false, getInteractableUnitsOfTeam(oldTarget.team), (unit) => unit.hexDistanceTo(oldTarget) + (unit.getBleed(sourceID) ? MAX_HEX_COUNT : 0))
+						.slice(0, spreadCount)
+						.forEach(newTarget => {
+							newTarget.addBleedIfStrongerThan(sourceID, bleed)
+						})
+				},
+			}
+			target.addBleedIfStrongerThan(sourceID, bleed)
+			target.setBonusesFor(ChampionKey.Malzahar, [BonusKey.MagicResistShred, mrShredProportion, elapsedMS + durationMS])
 			return true
 		},
 	},
