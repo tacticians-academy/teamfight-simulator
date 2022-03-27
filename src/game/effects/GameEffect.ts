@@ -70,7 +70,7 @@ export class GameEffect extends GameEffectChild {
 	startsAtMS: DOMHighResTimeStamp = 0
 	activatesAfterMS: DOMHighResTimeStamp = 0
 	activatesAtMS: DOMHighResTimeStamp = 0
-	expiresAtMS: DOMHighResTimeStamp = 0
+	expiresAtMS: DOMHighResTimeStamp | undefined
 	source: ChampionUnit
 	targetTeam: TeamNumber | null
 	damageCalculation: SpellCalculation | undefined
@@ -182,7 +182,7 @@ export class GameEffect extends GameEffectChild {
 	}
 
 	updateSuper(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
-		if (this.activated && elapsedMS > this.expiresAtMS) {
+		if (this.activated && this.expiresAtMS != null && elapsedMS > this.expiresAtMS) {
 			return false
 		}
 		if (!this.started.value && elapsedMS >= this.startsAtMS) {

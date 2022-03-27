@@ -18,6 +18,8 @@ import type { HexCoord} from '#/helpers/types'
 type TargetDeathAction = 'continue' | 'closest' | 'farthest'
 
 export interface ProjectileEffectData extends AttackEffectData {
+	/** Delays activation of the `Projectile` until after reaching the target by this amount. */
+	delayAfterReachingTargetMS?: DOMHighResTimeStamp
 	/** Whether the `Projectile` should complete after the first time it collides with a unit. Set to false to apply to all intermediary units collided with. */
 	destroysOnCollision?: boolean
 	/** The fixed number of hexes this `Projectile` should travel, regardless of its target distance. */
@@ -31,7 +33,7 @@ export interface ProjectileEffectData extends AttackEffectData {
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData
 	/** If the `Projectile` should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
-	onTargetDeath?: TargetDeathAction
+	targetDeathAction?: TargetDeathAction
 	/** Optional missile data for the `Projectile` to use if it should return to its source. */
 	returnMissile?: ChampionSpellMissileData
 	/** If the projectile should display its path. */
@@ -50,11 +52,12 @@ export class ProjectileEffect extends GameEffect {
 	targetCoord: HexCoord
 	hexEffect: HexEffectData | undefined
 	destroysOnCollision: boolean | undefined
-	onTargetDeath: TargetDeathAction | undefined
+	targetDeathAction: TargetDeathAction | undefined
 	returnMissile: ChampionSpellMissileData | undefined
 	width: number
 	isReturning = false
 	bounce: AttackBounce | undefined
+	delayAfterReachingTargetMS: DOMHighResTimeStamp | undefined
 
 	collisionRadiusSquared: number
 
@@ -71,8 +74,7 @@ export class ProjectileEffect extends GameEffect {
 		this.startsAtMS = elapsedMS + startsAfterMS + (startDelay != null ? startDelay * 1000 : 0)
 		this.activatesAfterMS = 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
-		const expiresAfterMS = 10 * 1000
-		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : expiresAfterMS)
+		this.expiresAtMS = data.expiresAfterMS != null ? data.expiresAfterMS : undefined
 
 		this.coord = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile!
@@ -82,9 +84,10 @@ export class ProjectileEffect extends GameEffect {
 		this.setTarget(data.target!)
 		this.hexEffect = data.hexEffect
 		this.destroysOnCollision = data.destroysOnCollision
-		this.onTargetDeath = data.onTargetDeath
+		this.targetDeathAction = data.targetDeathAction
 		this.returnMissile = data.returnMissile
 		this.bounce = data.bounce
+		this.delayAfterReachingTargetMS = data.delayAfterReachingTargetMS
 		if (this.bounce && isUnit(this.target)) {
 			this.bounce.hitUnits = [this.target]
 		}
@@ -152,6 +155,12 @@ export class ProjectileEffect extends GameEffect {
 			}
 			this.onCollision?.(elapsedMS, this.source)
 		}
+		if (this.delayAfterReachingTargetMS != null && isUnit(this.target)) {
+			if (this.expiresAtMS == null) {
+				this.expiresAtMS = elapsedMS + this.delayAfterReachingTargetMS
+			}
+			return true
+		}
 		return false
 	}
 
@@ -163,19 +172,31 @@ export class ProjectileEffect extends GameEffect {
 		}
 	}
 
+	checkDelayCollision(elapsedMS: DOMHighResTimeStamp) {
+		if (this.delayAfterReachingTargetMS != null && this.expiresAtMS != null && isUnit(this.target)) {
+			this.onCollision?.(elapsedMS, this.target)
+		}
+	}
+
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
 		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
-		if (updateResult != null) { return updateResult }
+		if (updateResult != null) {
+			if (!updateResult) {
+				this.checkDelayCollision(elapsedMS)
+			}
+			return updateResult
+		}
 
 		if (isUnit(this.target)) {
 			if (this.target.dead) {
-				if (this.onTargetDeath == null) {
+				if (this.targetDeathAction == null) {
+					this.checkDelayCollision(elapsedMS)
 					return false
 				}
-				if (this.onTargetDeath === 'continue') {
+				if (this.targetDeathAction === 'continue') {
 					this.setTarget(this.target.activeHex)
 				} else {
-					const newTarget = getDistanceUnit(this.onTargetDeath === 'closest', this.source)
+					const newTarget = getDistanceUnit(this.targetDeathAction === 'closest', this.source)
 					if (newTarget) {
 						this.setTarget(newTarget)
 					}

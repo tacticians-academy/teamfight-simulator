@@ -38,7 +38,7 @@ export const championEffects = {
 					changeRadians: orbOffsetRadians + radiansBetweenOrbs * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1),
 					missile: missileSpell?.missile,
 					returnMissile: champion.getSpellFor('OrbReturn')?.missile ?? missileSpell?.missile,
-					onTargetDeath: 'continue',
+					targetDeathAction: 'continue',
 				})
 			}
 			return true
@@ -106,7 +106,7 @@ export const championEffects = {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				destroysOnCollision: true,
-				onTargetDeath: 'farthest',
+				targetDeathAction: 'farthest',
 			})
 		},
 	},

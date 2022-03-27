@@ -1,5 +1,5 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { EffectVariables } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData, ChampionSpellMissileData, EffectVariables } from '@tacticians-academy/academy-library'
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
@@ -172,6 +172,17 @@ export function getDistanceUnit(closest: boolean, fromUnit: ChampionUnit, team?:
 	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 		.filter(unit => unit !== fromUnit)
 	return getBestAsMax(!closest, units, (unit) => fromUnit.hexDistanceTo(unit))
+}
+
+export function modifyMissile(spell: ChampionSpellData, data: ChampionSpellMissileData) {
+	const missile: ChampionSpellMissileData = {...spell.missile}
+	Object.keys(data).forEach(stringKey => {
+		const key = stringKey as keyof ChampionSpellMissileData
+		if (missile[key] == null) {
+			missile[key] = data[key] as any
+		}
+	})
+	return missile
 }
 
 // Bounces
