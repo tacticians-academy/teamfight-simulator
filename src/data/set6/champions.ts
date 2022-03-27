@@ -375,7 +375,7 @@ export const championEffects = {
 				return false
 			}
 			const centerHexes = [targetHex]
-			const outerHexes = getSurroundingWithin(targetHex, 1)
+			const outerHexes = getSurroundingWithin(targetHex, 1, false)
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: centerHexes,
 			})

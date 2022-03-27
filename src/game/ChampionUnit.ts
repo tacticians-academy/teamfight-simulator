@@ -1027,7 +1027,7 @@ export class ChampionUnit {
 		})
 	}
 	getInteractableUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
-		const hexes = getSurroundingWithin(this.activeHex, distance)
+		const hexes = getSurroundingWithin(this.activeHex, distance, true)
 		return this.getInteractableUnitsIn(hexes, team)
 	}
 
@@ -1048,11 +1048,12 @@ export class ChampionUnit {
 				}
 			})
 		}
+		const delaysActivation = data.activatesAfterMS != null
 		this.shields.push({
 			id: data.id,
 			source: source,
-			activated: false,
-			activatesAtMS: data.activatesAfterMS != null ? elapsedMS + data.activatesAfterMS : undefined,
+			activated: !delaysActivation,
+			activatesAtMS: delaysActivation ? elapsedMS + data.activatesAfterMS! : undefined,
 			isSpellShield: data.isSpellShield,
 			amount: data.amount,
 			repeatAmount: data.repeatAmount,
@@ -1068,7 +1069,7 @@ export class ChampionUnit {
 			Object.assign(data, this.getAttackModifier(elapsedMS))
 		}
 		if (spell) {
-			if (!data.damageCalculation) {
+			if (!data.damageCalculation && data.targetTeam !== this.team) {
 				data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 			}
 			if (!data.damageSourceType) {
@@ -1108,7 +1109,7 @@ export class ChampionUnit {
 		return true
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
-		if (spell && !data.damageCalculation) {
+		if (spell && !data.damageCalculation && data.targetTeam !== this.team) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
@@ -1128,7 +1129,7 @@ export class ChampionUnit {
 	}
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
-		if (spell && !data.damageCalculation) {
+		if (spell && !data.damageCalculation && data.targetTeam !== this.team) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 		}
 		if (data.damageCalculation && !data.damageSourceType) {
@@ -1147,7 +1148,7 @@ export class ChampionUnit {
 		if (spell || data.damageSourceType === DamageSourceType.spell || data.damageSourceType === DamageSourceType.attack) {
 			Object.assign(data, this.getAttackModifier(elapsedMS))
 		}
-		if (spell && !data.damageCalculation) {
+		if (spell && !data.damageCalculation && data.targetTeam !== this.team) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 		}
 		if (data.damageCalculation && data.damageSourceType == null) {
