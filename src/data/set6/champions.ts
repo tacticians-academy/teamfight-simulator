@@ -145,6 +145,43 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Ekko]: {
+		cast: (elapsedMS, spell, champion) => {
+			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
+			const hotspotHex = randomItem(getHotspotHexes(true, state.units, null, hexRadius as any))
+			if (!hotspotHex) {
+				return false
+			}
+			const delaySeconds = champion.getSpellVariable(spell, 'FieldDelay' as SpellKey)
+			const fieldSeconds = champion.getSpellVariable(spell, 'FieldDuration' as SpellKey)
+			const allyASProportion = champion.getSpellVariable(spell, 'BonusAS' as SpellKey)
+			const enemyASProportion = champion.getSpellVariable(spell, 'ASSlow' as SpellKey)
+			const allySeconds = champion.getSpellVariable(spell, 'BuffDuration' as SpellKey)
+			const enemySeconds = champion.getSpellVariable(spell, 'SlowDuration' as SpellKey)
+			const startsAfterMS = delaySeconds * 1000
+			const expiresAfterMS = fieldSeconds * 1000
+			const shape = new ShapeEffectCircle(hotspotHex, HEX_MOVE_LEAGUEUNITS * (hexRadius + 0.2))
+			champion.queueShapeEffect(elapsedMS, spell, {
+				targetTeam: champion.team,
+				shape,
+				startsAfterMS,
+				expiresAfterMS,
+				opacity: 0.5,
+				onCollision: (elapsedMS, affectedUnit) => {
+					affectedUnit.setBonusesFor(ChampionKey.Ekko, [BonusKey.AttackSpeed, allyASProportion * 100, elapsedMS + allySeconds * 1000])
+				},
+			})
+			return champion.queueShapeEffect(elapsedMS, spell, {
+				shape,
+				startsAfterMS,
+				expiresAfterMS,
+				opacity: 0.5,
+				onCollision: (elapsedMS, affectedUnit) => {
+					affectedUnit.setBonusesFor(ChampionKey.Ekko, [BonusKey.AttackSpeed, -enemyASProportion * 100, elapsedMS + enemySeconds * 1000])
+				},
+			})
+		},
+	},
 	[ChampionKey.Ezreal]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
