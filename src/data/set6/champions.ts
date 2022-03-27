@@ -4,7 +4,7 @@ import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champ
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable } from '#/helpers/abilityUtils'
+import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -86,6 +86,7 @@ export const championEffects = {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: false,
 				fixedHexRange: MAX_HEX_COUNT,
+				hasBackingVisual: true,
 				statusEffects: [
 					[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
 				],
@@ -211,6 +212,26 @@ export const championEffects = {
 				statusEffects: [
 					[StatusEffectType.stunned, { durationMS }],
 				],
+			})
+		},
+	},
+
+	[ChampionKey.Senna]: {
+		cast: (elapsedMS, spell, champion) => {
+			if (!champion.target) { return false }
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				destroysOnCollision: false,
+				fixedHexRange: MAX_HEX_COUNT,
+				hasBackingVisual: true,
+				onCollision: (elapsedMS, unit, damage) => {
+					if (damage == null) { return }
+					const lowestHPAlly = getBestAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
+					if (lowestHPAlly) {
+						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing' as SpellKey)
+						console.log(damage, damage * percentHealing / 100)
+						lowestHPAlly.gainHealth(elapsedMS, champion, damage * percentHealing / 100, true)
+					}
+				},
 			})
 		},
 	},
