@@ -231,7 +231,7 @@ export const championEffects = {
 			if (!champion.castCount) {
 				const rangeReduction = 2 //NOTE hardcoded
 				const transformSeconds = champion.getSpellVariable(spell, 'TransformDuration' as SpellKey)
-				const bonusHealth = champion.getSpellVariable(spell, 'TransformHealth' as SpellKey)
+				const bonusHealth = champion.getSpellCalculationResult(spell, 'TransformHealth' as SpellKey)
 				const manaReduction = champion.getSpellVariable(spell, 'TransformManaReduc' as SpellKey)
 				const expiresAt = elapsedMS + transformSeconds * 1000
 				champion.health += bonusHealth
@@ -279,7 +279,7 @@ export const championEffects = {
 			const alliesByLowestHP = getBestSortedAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 			const allyCount = champion.getSpellVariable(spell, 'NumAllies' as SpellKey)
 			const stunSeconds = champion.getSpellVariable(spell, 'CCDuration' as SpellKey)
-			const healAmount = champion.getSpellVariable(spell, 'BonusHealth' as SpellKey)
+			const healAmount = champion.getSpellCalculationResult(spell, 'BonusHealth' as SpellKey)
 			alliesByLowestHP
 				.slice(0, allyCount)
 				.forEach(unit => {
