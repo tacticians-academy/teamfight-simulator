@@ -116,7 +116,7 @@ export const championEffects = {
 			const target = champion.target
 			if (!target) { return false }
 			champion.queueShapeEffect(elapsedMS, spell, {
-				shape: new ShapeEffectCone(champion, champion.angleTo(target), HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
+				shape: new ShapeEffectCone(champion, target, HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
 			})
 			return true
 		},
