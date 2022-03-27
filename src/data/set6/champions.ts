@@ -122,6 +122,17 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Corki]: {
+		cast: (elapsedMS, spell, champion) => {
+			const hexRange = 1 //NOTE hardcoded
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				hexEffect: {
+					hexDistanceFromSource: hexRange,
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Darius]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.wasInRangeOfTarget) { return false }
