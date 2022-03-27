@@ -200,7 +200,7 @@ export class ChampionUnit {
 			this.setTarget(null)
 		}
 		if (this.target == null) {
-			const target = getBestRandomAsMax(false, getAttackableUnitsOfTeam(this.opposingTeam()), (unit) => this.hexDistanceTo(unit))
+			const target = getBestRandomAsMax(false, getAttackableUnitsOfTeam(this.opposingTeam()), (unit) => this.coordDistanceSquaredTo(unit))
 			if (target != null) {
 				this.setTarget(target)
 			}
@@ -849,14 +849,11 @@ export class ChampionUnit {
 		return state.units.filter(unit => (includingSelf ? true : unit !== this) && !unit.dead && unit.team === this.team)
 	}
 
-	coordDistanceSquaredToHex(hex: HexCoord) {
-		return coordinateDistanceSquared(this.coord, getCoordFrom(hex))
+	coordDistanceSquaredTo(target: ChampionUnit | HexCoord) {
+		return coordinateDistanceSquared(this.coord, 'coord' in target ? target.coord : getCoordFrom(target))
 	}
-	hexDistanceTo(unit: ChampionUnit) {
-		return this.hexDistanceToHex(unit.activeHex)
-	}
-	hexDistanceToHex(hex: HexCoord) {
-		return hexDistanceFrom(this.activeHex, hex)
+	hexDistanceTo(target: ChampionUnit | HexCoord) {
+		return hexDistanceFrom(this.activeHex, 'coord' in target ? target.activeHex : target)
 	}
 
 	isAt(hex: HexCoord) {
@@ -1233,8 +1230,8 @@ export class ChampionUnit {
 	}
 
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {
-		const bestHex = getBestAsMax(pastTarget, getHexRing(targetHex, 1), (hex) => this.coordDistanceSquaredToHex(hex))
-		return getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
+		const bestHex = getBestAsMax(pastTarget, getHexRing(targetHex, 1), (hex) => this.coordDistanceSquaredTo(hex))
+		return bestHex && isSameHex(bestHex, this.activeHex) ? bestHex : getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
 	}
 	projectHexFrom(target: ChampionUnit, pastTarget: boolean) {
 		return this.projectHexFromHex(target.activeHex, pastTarget)

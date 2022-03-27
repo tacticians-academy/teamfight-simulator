@@ -6,7 +6,7 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import type { AttackBounce } from '#/game/effects/GameEffect'
 import { state } from '#/game/store'
 
-import { getClosestHexAvailableTo, getClosestUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT } from '#/helpers/constants'
 import { StatusEffectType } from '#/helpers/types'
@@ -164,14 +164,17 @@ export function getRowOfMostAttackable(team: TeamNumber | null) {
 	return [...Array(BOARD_COL_COUNT).keys()].map((col): HexCoord => [col, row])
 }
 
-export function getMostDistanceHex(closest: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
-	return getBestAsMax(!closest, hexes, (hex) => fromUnit.hexDistanceToHex(hex))
+export function getDistanceHex(isMaximum: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
+	return getBestAsMax(isMaximum, hexes, (hex) => fromUnit.coordDistanceSquaredTo(hex))
 }
 
-export function getDistanceUnit(closest: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
+export function getDistanceUnit(isMaximum: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
 	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 		.filter(unit => unit !== fromUnit)
-	return getBestAsMax(!closest, units, (unit) => fromUnit.hexDistanceTo(unit))
+	return getBestAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
+}
+export function getDistanceUnitFrom(isMaximum: boolean, fromUnit: ChampionUnit, units: ChampionUnit[]) {
+	return getBestAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
 
 export function modifyMissile(spell: ChampionSpellData, data: ChampionSpellMissileData) {
@@ -188,13 +191,14 @@ export function modifyMissile(spell: ChampionSpellData, data: ChampionSpellMissi
 // Bounces
 
 export function getChainFrom(unit: ChampionUnit, bounces: number, maxDistance?: number) {
-	const units: ChampionUnit[] = []
+	const chainUnits: ChampionUnit[] = []
 	let currentBounceTarget: ChampionUnit | null = unit
-	while (currentBounceTarget && units.length < bounces) {
-		units.push(currentBounceTarget)
-		currentBounceTarget = getClosestUnitOfTeamWithinRangeTo(currentBounceTarget.activeHex, unit.team, maxDistance, state.units.filter(unit => !units.includes(unit)))
+	while (currentBounceTarget && chainUnits.length < bounces) {
+		chainUnits.push(currentBounceTarget)
+		const unchainedUnits = state.units.filter(unit => !chainUnits.includes(unit))
+		currentBounceTarget = getDistanceUnitOfTeamWithinRangeTo(false, currentBounceTarget, unit.team, maxDistance, unchainedUnits)
 	}
-	return units
+	return chainUnits
 }
 
 export function getNextBounceFrom(fromUnit: ChampionUnit, bounce: AttackBounce) {
@@ -207,7 +211,7 @@ export function getNextBounceFrom(fromUnit: ChampionUnit, bounce: AttackBounce) 
 		if (bounce.maxHexRangeFromOriginalTarget != null && allyUnit.hexDistanceTo(originalTarget) > bounce.maxHexRangeFromOriginalTarget) {
 			return undefined
 		}
-		return allyUnit.hexDistanceTo(fromUnit)
+		return allyUnit.coordDistanceSquaredTo(fromUnit)
 	})
 	if (target) {
 		bounce.hitUnits?.push(target)

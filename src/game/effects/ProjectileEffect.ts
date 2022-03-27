@@ -196,7 +196,7 @@ export class ProjectileEffect extends GameEffect {
 				if (this.targetDeathAction === 'continue') {
 					this.setTarget(this.target.activeHex)
 				} else {
-					const newTarget = getDistanceUnit(this.targetDeathAction === 'closest', this.source)
+					const newTarget = getDistanceUnit(this.targetDeathAction === 'farthest', this.source)
 					if (newTarget) {
 						this.setTarget(newTarget)
 					}

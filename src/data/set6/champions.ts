@@ -5,9 +5,9 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getMostDistanceHex, getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFrom, getDistanceHex, getBestArrayAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getHotspotHexes, getFarthestUnitOfTeamWithinRangeFrom, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -70,7 +70,7 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const durationMS = stunSeconds * 1000
-			const target = getDistanceUnit(false, champion)
+			const target = getDistanceUnit(true, champion)
 			champion.setTarget(target)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
@@ -119,7 +119,7 @@ export const championEffects = {
 
 	[ChampionKey.Caitlyn]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = getDistanceUnit(false, champion)
+			const target = getDistanceUnit(true, champion)
 			if (!target) {
 				console.log('No target', champion.name, champion.team)
 				return false
@@ -227,7 +227,6 @@ export const championEffects = {
 
 	[ChampionKey.Gnar]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = getFarthestUnitOfTeamWithinRangeFrom(champion, champion.opposingTeam(), state.units)
 			const boulderSpell = champion.data.spells[1]
 			if (!champion.castCount) {
 				const rangeReduction = 2 //NOTE hardcoded
@@ -238,8 +237,8 @@ export const championEffects = {
 				champion.health += bonusHealth
 				champion.healthMax += bonusHealth
 				champion.setBonusesFor(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
-				if (target) {
-					const jumpToHex = champion.projectHexFrom(target, false)
+				if (champion.target) {
+					const jumpToHex = champion.projectHexFrom(champion.target, false)
 					if (jumpToHex) {
 						champion.moving = true
 						champion.customMoveSpeed = 1000 //TODO travel time
@@ -247,12 +246,15 @@ export const championEffects = {
 					}
 				}
 			}
+			const fixedHexRange = champion.data.stats.range
+			const target = getDistanceUnitOfTeamWithinRangeTo(true, champion, champion.opposingTeam(), fixedHexRange)
 			if (!target) { //TODO
 				return true
 			}
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				missile: boulderSpell.missile,
+				fixedHexRange,
 				destroysOnCollision: false,
 			})
 		},
@@ -304,7 +306,7 @@ export const championEffects = {
 			const sourceID = ChampionKey.Malzahar
 			if (target.getBleed(sourceID)) {
 				const unafflictedEnemies = getInteractableUnitsOfTeam(target.team).filter(unit => !unit.getBleed(sourceID))
-				const newTarget = getBestAsMax(false, unafflictedEnemies, (unit) => unit.hexDistanceTo(target!))
+				const newTarget = getDistanceUnitFrom(false, target!, unafflictedEnemies)
 				if (newTarget) {
 					target = newTarget
 				}
@@ -326,7 +328,7 @@ export const championEffects = {
 				remainingIterations: iterationCount,
 				onDeath: (elapsedMS, oldTarget) => {
 					const spreadCount = champion.getSpellVariable(spell, 'SpreadTargets' as SpellKey)
-					getBestSortedAsMax(false, getInteractableUnitsOfTeam(oldTarget.team), (unit) => unit.hexDistanceTo(oldTarget) + (unit.getBleed(sourceID) ? MAX_HEX_COUNT : 0))
+					getBestSortedAsMax(false, getInteractableUnitsOfTeam(oldTarget.team), (unit) => unit.coordDistanceSquaredTo(oldTarget) + (unit.getBleed(sourceID) ? 1 : 0))
 						.slice(0, spreadCount)
 						.forEach(newTarget => {
 							newTarget.addBleedIfStrongerThan(sourceID, bleed)
@@ -447,7 +449,7 @@ export const championEffects = {
 
 	[ChampionKey.Poppy]: {
 		passive: (elapsedMS, spell, target, champion) => {
-			const mostDistantEnemy = getDistanceUnit(false, champion, champion.opposingTeam())
+			const mostDistantEnemy = getDistanceUnit(true, champion, champion.opposingTeam())
 			if (!mostDistantEnemy) { return false }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: mostDistantEnemy,
@@ -599,7 +601,7 @@ export const championEffects = {
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
-			const farthestDenseHex = getMostDistanceHex(false, champion, densestEnemyHexes)
+			const farthestDenseHex = getDistanceHex(true, champion, densestEnemyHexes)
 			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
 			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true)
 			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }

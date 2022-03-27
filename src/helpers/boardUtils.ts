@@ -23,24 +23,15 @@ export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit
 	console.error('No available hex', startHex, unitHexes)
 }
 
-export function getFarthestUnitOfTeamWithinRangeFrom(source: ChampionUnit, teamNumber: TeamNumber | null, units: ChampionUnit[], range?: number) {
-	const sourceHex = source.activeHex
-	const testRange = range ?? source.range()
-	return getBestRandomAsMax(true, units.filter(unit => (teamNumber == null || unit.team === teamNumber) && unit.isInteractable()), (unit) => {
-		const distance = unit.hexDistanceToHex(sourceHex)
-		return distance > testRange ? undefined : distance
-	})
-}
-
-export function getClosestUnitOfTeamWithinRangeTo(targetHex: HexCoord, teamNumber: TeamNumber | null, maxDistance: number | undefined, units?: ChampionUnit[]) {
+export function getDistanceUnitOfTeamWithinRangeTo(isMaximum: boolean, target: ChampionUnit | HexCoord, teamNumber: TeamNumber | null, maxHexDistance: number | undefined, units?: ChampionUnit[]) {
 	if (!units) {
 		units = getInteractableUnitsOfTeam(teamNumber)
 	} else {
-		units = units.filter(unit => unit.team === teamNumber && unit.isInteractable())
+		units = units.filter(unit => (teamNumber == null || unit.team === teamNumber) && unit.isInteractable())
 	}
-	return getBestRandomAsMax(false, units, (unit) => {
-		const distance = unit.hexDistanceToHex(targetHex)
-		return maxDistance != null && distance > maxDistance ? undefined : distance
+	return getBestRandomAsMax(isMaximum, units, (unit) => {
+		console.log(unit.name, unit.hexDistanceTo(target), maxHexDistance)
+		return maxHexDistance != null && unit.hexDistanceTo(target) > maxHexDistance ? undefined : unit.coordDistanceSquaredTo(target)
 	})
 }
 

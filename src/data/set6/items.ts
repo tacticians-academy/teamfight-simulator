@@ -7,8 +7,8 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit } from '#/helpers/abilityUtils'
-import { getClosestUnitOfTeamWithinRangeTo, getInverseHex, getClosestAttackableEnemies } from '#/helpers/boardUtils'
+import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFrom } from '#/helpers/abilityUtils'
+import { getInverseHex, getClosestAttackableEnemies, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -98,10 +98,10 @@ export const itemEffects = {
 
 	[ItemKey.FrozenHeart]: {
 		update: (elapsedMS, item, itemID, unit) => {
-			const [slowAS, hexRadius] = getVariables(item, 'ASSlow', 'HexRadius')
+			const [attackSpeedPercent, hexRadius] = getVariables(item, 'ASSlow', 'HexRadius')
 			const durationSeconds = 0.5 //NOTE hardcoded apparently??
 			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
-			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, slowAS))
+			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, attackSpeedPercent))
 		},
 	},
 
@@ -287,7 +287,7 @@ export const itemEffects = {
 				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === GRIEVOUS_BURN_ID))
 				let bestTarget: ChampionUnit | undefined
 				if (bestTargets.length) {
-					bestTarget = getBestAsMax(false, bestTargets, (unit) => unit.hexDistanceTo(holder))
+					bestTarget = getDistanceUnitFrom(false, holder, bestTargets)
 				} else {
 					bestTarget = getBestAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)!.remainingIterations)
 				}
@@ -320,7 +320,7 @@ export const itemEffects = {
 		apply: (item, unit) => {
 			const [banishSeconds] = getVariables(item, 'BanishDuration')
 			const targetHex = getInverseHex(unit.startHex)
-			const target = getClosestUnitOfTeamWithinRangeTo(targetHex, unit.opposingTeam(), undefined) //TODO not random
+			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, unit.opposingTeam(), undefined) //TODO not random
 			if (target) {
 				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
 			}
