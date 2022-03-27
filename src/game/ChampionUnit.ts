@@ -322,12 +322,27 @@ export class ChampionUnit {
 		}
 	}
 
+	addBleedIfStrongerThan(sourceID: string, bleed: BleedData) {
+		const oldBleed = this.getBleed(sourceID)
+		if (oldBleed) {
+			if (oldBleed.remainingIterations >= bleed.remainingIterations) {
+				return
+			}
+			this.bleeds.delete(oldBleed)
+		}
+		this.bleeds.add({...bleed})
+	}
+
+	getBleed(sourceID: string) {
+		return Array.from(this.bleeds).find(bleed => bleed.sourceID === sourceID)
+	}
+
 	updateBleeds(elapsedMS: DOMHighResTimeStamp) {
 		this.bleeds.forEach(bleed => {
 			if (elapsedMS >= bleed.activatesAtMS) {
 				bleed.activatesAtMS += bleed.repeatsEveryMS
 				bleed.remainingIterations -= 1
-				this.damage(elapsedMS, false, bleed.source, DamageSourceType.bonus, bleed.damageCalculation, false)
+				this.damage(elapsedMS, false, bleed.source, DamageSourceType.bonus, bleed.damageCalculation, false, bleed.damageModifier)
 				if (bleed.remainingIterations <= 0) {
 					this.bleeds.delete(bleed)
 				}
@@ -595,6 +610,13 @@ export class ChampionUnit {
 		this.health = 0
 		this.dead = true
 
+		this.bleeds.forEach(bleed => {
+			if (bleed.remainingIterations > 0) {
+				bleed.onDeath?.(elapsedMS, this)
+			}
+		})
+		this.bleeds.clear()
+
 		this.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 
 		const teamUnits = this.alliedUnits(false)
@@ -661,7 +683,7 @@ export class ChampionUnit {
 			rawDamage += damageModifier.increase
 		}
 		if (rawDamage <= 0) {
-			return
+			return console.warn('Negative damage', rawDamage)
 		}
 		rawDamage *= 1 + (damageModifier?.multiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
 		let defenseStat = damageType === DamageType.physical

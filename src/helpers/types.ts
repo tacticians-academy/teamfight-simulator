@@ -129,9 +129,11 @@ export interface BleedData {
 	sourceID: string
 	source: ChampionUnit | undefined
 	damageCalculation: SpellCalculation
+	damageModifier?: DamageModifier
 	activatesAtMS: DOMHighResTimeStamp
 	repeatsEveryMS: DOMHighResTimeStamp
 	remainingIterations: number
+	onDeath?: CollisionFn
 }
 
 export type BonusEntry = [label: BonusLabelKey, variables: BonusVariable[]]
