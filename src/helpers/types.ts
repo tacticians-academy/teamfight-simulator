@@ -5,7 +5,7 @@ import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/item
 import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import type { AttackEffectData } from '#/game/effects/GameEffect'
+import type { AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
 
 export type HexCoord = [col: number, row: number]
 
@@ -138,18 +138,6 @@ export interface BleedData {
 
 export type BonusEntry = [label: BonusLabelKey, variables: BonusVariable[]]
 
-export interface ShieldData {
-	id?: string
-	activatesAfterMS?: DOMHighResTimeStamp
-	isSpellShield?: boolean
-	amount: number
-	repeatAmount?: number
-	expiresAfterMS?: DOMHighResTimeStamp
-	repeatsEveryMS?: DOMHighResTimeStamp
-	bonusDamage?: SpellCalculation
-	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldData) => void
-}
-
 export interface ShieldEntry {
 	id?: string
 	source: ChampionUnit | undefined
@@ -161,7 +149,19 @@ export interface ShieldEntry {
 	expiresAtMS?: DOMHighResTimeStamp
 	repeatsEveryMS?: DOMHighResTimeStamp
 	bonusDamage?: SpellCalculation
-	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldData) => void
+	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldEntry) => void
+}
+
+export interface ShieldData {
+	id?: string
+	activatesAfterMS?: DOMHighResTimeStamp
+	isSpellShield?: boolean
+	amount: number
+	repeatAmount?: number
+	expiresAfterMS?: DOMHighResTimeStamp
+	repeatsEveryMS?: DOMHighResTimeStamp
+	bonusDamage?: SpellCalculation
+	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldEntry) => void
 }
 
 export type EffectResults = BonusVariable[] | void
@@ -183,7 +183,7 @@ export interface AugmentFns {
 export type AugmentEffects = {[key in string]?: AugmentFns}
 
 export interface ChampionFns {
-	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => boolean
+	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => GameEffect | boolean
 	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
 }
 export type ChampionEffects = {[key in string]?: ChampionFns}

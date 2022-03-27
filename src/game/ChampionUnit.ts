@@ -390,8 +390,8 @@ export class ChampionUnit {
 	updateShields(elapsedMS: DOMHighResTimeStamp) {
 		this.shields.forEach(shield => {
 			if (shield.activated !== false && shield.expiresAtMS != null && elapsedMS >= shield.expiresAtMS) {
-				shield.activated = false
 				shield.onRemoved?.(elapsedMS, shield)
+				shield.activated = false
 			}
 
 			if (shield.activated !== true) {
@@ -735,8 +735,8 @@ export class ChampionUnit {
 				const protectingDamage = Math.min(shield.amount, healthDamage)
 				if (protectingDamage >= shield.amount) {
 					shield.amount = 0
-					shield.activated = false
 					shield.onRemoved?.(elapsedMS, shield)
+					shield.activated = false
 				} else {
 					shield.amount -= protectingDamage
 				}
@@ -1129,7 +1129,7 @@ export class ChampionUnit {
 			const target = this.target
 			if (!target) {
 				console.error('ERR', 'No target for projectile', this.name, spell?.name)
-				return false
+				return undefined
 			}
 			data.target = data.fixedHexRange != null || data.missile?.tracksTarget === false ? target.activeHex : target
 		}
@@ -1157,7 +1157,7 @@ export class ChampionUnit {
 				opacity: 0.5,
 			})
 		}
-		return true
+		return projectile
 	}
 	queueHexEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
 		if (spell && !data.damageCalculation && data.targetTeam !== this.team) {
@@ -1176,7 +1176,7 @@ export class ChampionUnit {
 			this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = hexEffect.activatesAtMS
 		}
-		return true
+		return hexEffect
 	}
 
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
@@ -1193,7 +1193,7 @@ export class ChampionUnit {
 			this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = shapeEffect.activatesAtMS
 		}
-		return true
+		return shapeEffect
 	}
 	queueTargetEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: TargetEffectData) {
 		if (spell || data.damageSourceType === DamageSourceType.spell || data.damageSourceType === DamageSourceType.attack) {
@@ -1208,7 +1208,7 @@ export class ChampionUnit {
 		if (!data.sourceTargets) {
 			if (!this.target) {
 				console.log('ERR', 'No target', this.name, spell?.name)
-				return false
+				return undefined
 			}
 			data.sourceTargets = [[this, this.target]]
 		}
@@ -1219,7 +1219,7 @@ export class ChampionUnit {
 			this.manaLockUntilMS = targetEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
 			this.performActionUntilMS = targetEffect.activatesAtMS
 		}
-		return true
+		return targetEffect
 	}
 
 	angleTo(target: ChampionUnit | HexCoord) {
