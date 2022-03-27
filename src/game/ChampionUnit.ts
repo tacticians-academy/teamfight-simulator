@@ -277,7 +277,7 @@ export class ChampionUnit {
 					bounce,
 					onActivate: (elapsedMS, source) => {
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
-						if (source.data.passive && source.target && source.readyToCast()) {
+						if (source.data.passive && source.target && source.readyToCast(elapsedMS)) {
 							passiveFn?.(elapsedMS, source.data.passive, source.target, source)
 							source.postCast(elapsedMS, canReProcAttack)
 						}
@@ -302,7 +302,7 @@ export class ChampionUnit {
 					statusEffects,
 					bounce,
 					onCollision(elapsedMS, unit) {
-						if (source.data.passive && source.readyToCast()) {
+						if (source.data.passive && source.readyToCast(elapsedMS)) {
 							passiveFn?.(elapsedMS, source.data.passive, unit, source)
 							source.postCast(elapsedMS, canReProcAttack)
 						}
@@ -374,9 +374,7 @@ export class ChampionUnit {
 				if (stat === BonusKey.Health) {
 					this.gainHealth(elapsedMS, scaling.source, amount, false)
 				} else if (stat === BonusKey.Mana) {
-					if (this.manaLockUntilMS < elapsedMS) {
-						this.addMana(amount)
-					}
+					this.gainMana(elapsedMS, amount)
 				} else {
 					bonuses.push([stat, amount])
 				}
@@ -505,14 +503,14 @@ export class ChampionUnit {
 		return 1 - this.team as TeamNumber
 	}
 
-	readyToCast(): boolean {
-		return this.mana >= this.manaMax()
+	readyToCast(elapsedMS: DOMHighResTimeStamp): boolean {
+		return this.mana >= this.manaMax() && elapsedMS >= this.manaLockUntilMS
 	}
 	castAbility(elapsedMS: DOMHighResTimeStamp, initialCast: boolean) {
 		const spell = this.getCurrentSpell()
 		if (spell) {
-			const castFn = this.championEffects?.cast
-			if (castFn && !castFn(elapsedMS, spell, this)) {
+			const castResult = this.championEffects?.cast?.(elapsedMS, spell, this)
+			if (castResult === false || castResult == null) {
 				return false
 			}
 		}
@@ -597,7 +595,7 @@ export class ChampionUnit {
 		this.setMana(this.mana + amount)
 	}
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
-		if (elapsedMS < this.manaLockUntilMS) {
+		if (elapsedMS < this.manaLockUntilMS) { //TODO verify mana lock prevents mana gain
 			return
 		}
 		this.addMana(amount)
