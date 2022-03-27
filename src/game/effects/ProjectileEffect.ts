@@ -72,7 +72,7 @@ export class ProjectileEffect extends GameEffect {
 
 		this.coord = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile!
-		this.currentSpeed = this.missile.speedInitial! //TODO from .travelTime
+		this.currentSpeed = Math.min(10000, this.missile.speedInitial!) //TODO high speeds miss collisions, derive from .travelTime
 		this.target = data.target!
 		this.targetCoord = [0, 0]
 		this.setTarget(data.target!)
@@ -210,10 +210,8 @@ export class ProjectileEffect extends GameEffect {
 				}
 			}
 		}
-		const position = this.coord.value
-		position[0] += angleX * diffDistance
-		position[1] += angleY * diffDistance
 
+		const position = this.coord.value
 		if (this.destroysOnCollision != null) {
 			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
 				if (coordinateDistanceSquared(position, unit.coord) < this.collisionRadiusSquared) {
@@ -225,5 +223,8 @@ export class ProjectileEffect extends GameEffect {
 				}
 			}
 		}
+
+		position[0] += angleX * diffDistance
+		position[1] += angleY * diffDistance
 	}
 }
