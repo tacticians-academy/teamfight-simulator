@@ -331,6 +331,37 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Renata]: {
+		cast: (elapsedMS, spell, champion) => {
+			const targetTeam = champion.opposingTeam()
+			const fixedHexRange = champion.getSpellVariable(spell, 'SpellRange' as SpellKey)
+			const validUnits = getInteractableUnitsOfTeam(targetTeam).filter(unit => unit.hexDistanceTo(champion) <= fixedHexRange)
+			const bestHex = randomItem(getHotspotHexes(true, validUnits, targetTeam, 1)) //TODO experimentally determine
+			if (!bestHex) {
+				return false
+			}
+			const attackSpeedReducePercent = champion.getSpellVariable(spell, 'ASReduction' as SpellKey)
+			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+			const damageCalculation = champion.getSpellCalculation(spell, 'DamagePerSecond' as SpellKey)!
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				target: bestHex,
+				fixedHexRange,
+				destroysOnCollision: false,
+				onCollision: (elapsedMS, unit) => {
+					unit.setBonusesFor(ChampionKey.Renata, [BonusKey.AttackSpeed, -attackSpeedReducePercent, elapsedMS + durationSeconds * 1000])
+					unit.bleeds.add({
+						sourceID: Math.random().toString(),
+						source: champion,
+						damageCalculation,
+						activatesAtMS: elapsedMS,
+						repeatsEveryMS: 1000, //NOTE hardcoded
+						remainingIterations: durationSeconds,
+					})
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Senna]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.target) { return false }
