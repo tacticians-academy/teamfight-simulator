@@ -331,6 +331,22 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Quinn]: {
+		cast: (elapsedMS, spell, champion) => {
+			const highestASEnemy = getBestAsMax(true, getInteractableUnitsOfTeam(champion.opposingTeam()), (unit) => unit.attackSpeed())
+			const disarmSeconds = champion.getSpellVariable(spell, 'DisarmDuration' as SpellKey)
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				target: highestASEnemy,
+				hexEffect: {
+					hexDistanceFromSource: 1,
+					statusEffects: [
+						[StatusEffectType.disarm, { durationMS: disarmSeconds * 1000 }],
+					],
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Renata]: {
 		cast: (elapsedMS, spell, champion) => {
 			const targetTeam = champion.opposingTeam()
