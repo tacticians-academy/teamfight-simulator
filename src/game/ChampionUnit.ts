@@ -669,14 +669,14 @@ export class ChampionUnit {
 			: damageType === DamageType.magic
 				? this.magicResist()
 				: null
-		let reduction: number | undefined
+		let reduction = 0
 		if (damageType === DamageType.physical) {
-			reduction = this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction)
+			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction) ?? 0) + this.getBonuses(BonusKey.ArmorShred)
 		} else if (damageType === DamageType.magic) {
-			reduction = this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction)
+			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + this.getBonuses(BonusKey.MagicResistShred)
 		}
-		if (reduction != null && reduction > 0) {
-			defenseStat! *= reduction
+		if (reduction > 0) {
+			defenseStat! *= (1 - reduction)
 		}
 		if (source && (damageType === DamageType.physical || (damageType === DamageType.magic && source.canDamageCrit(sourceType, damageType)))) {
 			const critReduction = this.critReduction()
