@@ -118,9 +118,10 @@ export class GameEffect extends GameEffectChild {
 		}
 	}
 
-	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
+	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit): [wasSpellShielded: boolean, damage: number | undefined] {
 		const spellShield = this.damageCalculation && this.damageSourceType !== DamageSourceType.attack ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
+		let damage: number | undefined
 		if (this.damageCalculation != null) {
 			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.includes(this.hitID)
 			const damageModifier: DamageModifier = modifiesDamage && this.damageModifier
@@ -129,9 +130,9 @@ export class GameEffect extends GameEffectChild {
 			if (wasSpellShielded) {
 				damageModifier.increase! -= spellShield.amount
 			}
-			unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageModifier)
+			damage = unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageModifier)
 		}
-		return wasSpellShielded
+		return [wasSpellShielded, damage]
 	}
 
 	applyPost(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
@@ -147,14 +148,14 @@ export class GameEffect extends GameEffectChild {
 			return
 		}
 		const isFirstTarget = !this.collidedWith.length
-		const wasSpellShielded = this.applyDamage(elapsedMS, unit)
+		const [wasSpellShielded, damage] = this.applyDamage(elapsedMS, unit)
 
 		this.bonusCalculations.forEach(bonusCalculation => {
 			unit.damage(elapsedMS, false, this.source, DamageSourceType.bonus, bonusCalculation, true)
 		})
 		if (!wasSpellShielded) {
 			this.applyBonuses(elapsedMS, unit)
-			this.onCollision?.(elapsedMS, unit)
+			this.onCollision?.(elapsedMS, unit, damage)
 		}
 
 		if (isFirstTarget && this.damageCalculation) {

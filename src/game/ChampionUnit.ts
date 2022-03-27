@@ -770,6 +770,7 @@ export class ChampionUnit {
 		if (this.health <= 0) {
 			this.die(elapsedMS, source)
 		}
+		return healthDamage
 	}
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables, originalHealth: number, healthDamage: number) {

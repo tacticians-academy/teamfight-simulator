@@ -56,8 +56,8 @@ export class TargetEffect extends GameEffect {
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFirstApply: boolean) => {
-		const wasSpellShielded = this.applyDamage(elapsedMS, unit)
-		if (!wasSpellShielded && isFirstApply) {
+		const [wasSpellShielded, damage] = this.applyDamage(elapsedMS, unit)
+		if (wasSpellShielded && isFirstApply) {
 			this.applyBonuses(elapsedMS, unit)
 			this.applyPost(elapsedMS, unit)
 		}

@@ -69,7 +69,7 @@ export interface StatusEffect {
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>
 
-export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage?: number) => void
 
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',
