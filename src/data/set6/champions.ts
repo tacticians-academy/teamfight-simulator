@@ -26,8 +26,7 @@ export const championEffects = {
 			const orbsPerCast = champion.getSpellVariable(spell, 'SpiritFireStacks' as SpellKey)
 			const maxRange = champion.getSpellVariable(spell, 'HexRange' as SpellKey)
 			const orbCount = champion.castCount * orbsPerCast + 1
-			const orbOffsetRadians = orbCount % 2 === 0 ? radiansBetweenOrbs / 2 : 0
-			for (let castIndex = 0; castIndex < orbCount; castIndex += 1) {
+			getProjectileSpread(orbCount, radiansBetweenOrbs).forEach(changeRadians => {
 				champion.queueProjectileEffect(elapsedMS, spell, {
 					fixedHexRange: maxRange,
 					destroysOnCollision: false,
@@ -35,12 +34,34 @@ export const championEffects = {
 					damageModifier: {
 						multiplier: damageMultiplier,
 					},
-					changeRadians: orbOffsetRadians + radiansBetweenOrbs * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1),
+					changeRadians,
 					missile: missileSpell?.missile,
 					returnMissile: champion.getSpellFor('OrbReturn')?.missile ?? missileSpell?.missile,
 					targetDeathAction: 'continue',
 				})
-			}
+			})
+			return true
+		},
+	},
+
+	[ChampionKey.Ashe]: {
+		cast: (elapsedMS, spell, champion) => {
+			if (!champion.target) { return false }
+			const arrowCount = champion.getSpellVariable(spell, 'NumOfArrows' as SpellKey)
+			const attackSpeedPercent = champion.getSpellVariable(spell, 'ASReduction' as SpellKey)
+			const slowSeconds = champion.getSpellCalculationResult(spell, SpellKey.Duration)
+			const radiansBetweenOrbs = toRadians(10) //NOTE hardcoded
+			const fixedHexRange = champion.range() + 1
+			getProjectileSpread(arrowCount, radiansBetweenOrbs).forEach(changeRadians => {
+				champion.queueProjectileEffect(elapsedMS, spell, {
+					fixedHexRange,
+					destroysOnCollision: false,
+					changeRadians,
+					statusEffects: [
+						[StatusEffectType.attackSpeedSlow, { amount: attackSpeedPercent, durationMS: slowSeconds * 1000 }],
+					],
+				})
+			})
 			return true
 		},
 	},
@@ -723,7 +744,7 @@ export const championEffects = {
 							hexSource: unit,
 							hexDistanceFromSource: 1,
 							statusEffects: [
-								[StatusEffectType.attackSpeedSlow, { amount: slowProportion, durationMS: slowSeconds * 1000 }],
+								[StatusEffectType.attackSpeedSlow, { amount: slowProportion * 100, durationMS: slowSeconds * 1000 }],
 							],
 						})
 					}
@@ -745,3 +766,12 @@ export const championEffects = {
 	},
 
 } as ChampionEffects
+
+function getProjectileSpread(count: number, radiansBetween: number) {
+	const results: number[] = []
+	const offsetRadians = count % 2 === 0 ? radiansBetween / 2 : 0
+	for (let castIndex = 0; castIndex < count; castIndex += 1) {
+		results[castIndex] = offsetRadians + radiansBetween * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1)
+	}
+	return results
+}
