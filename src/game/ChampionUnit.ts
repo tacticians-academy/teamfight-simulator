@@ -921,6 +921,10 @@ export class ChampionUnit {
 		return spell?.variables[key]?.[this.starLevel]
 	}
 	getSpellVariable(spell: ChampionSpellData | undefined, key: SpellKey) {
+		if (spell?.calculations[key]) {
+			console.warn('Requested variable that has a calculation, using instead!', spell.name, key)
+			return this.getSpellCalculationResult(spell, key)
+		}
 		const value = this.getSpellVariableIfExists(spell, key)
 		if (value == null) {
 			console.log('ERR', this.name, spell?.name, key)
@@ -1203,7 +1207,10 @@ export class ChampionUnit {
 		if (data.damageCalculation && data.damageSourceType == null) {
 			data.damageSourceType = DamageSourceType.spell
 		}
-		if (!data.sourceTargets) {
+		if (data.targetsInHexRange != null && data.targetTeam == null) {
+			data.targetTeam = this.opposingTeam()
+		}
+		if (!data.sourceTargets && data.targetsInHexRange == null) {
 			if (!this.target) {
 				console.log('ERR', 'No target', this.name, spell?.name)
 				return undefined

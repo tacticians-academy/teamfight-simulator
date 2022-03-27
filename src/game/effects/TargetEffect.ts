@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
 import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 
-import { getNextBounceFrom } from '#/helpers/abilityUtils'
+import { getInteractableUnitsOfTeam, getNextBounceFrom, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 
 export interface TargetEffectData extends AttackEffectData {
@@ -17,6 +17,8 @@ export interface TargetEffectData extends AttackEffectData {
 	tickEveryMS?: DOMHighResTimeStamp
 	/** Array of affected units. */
 	sourceTargets?: [ChampionUnit, ChampionUnit][]
+	/** Distance around the source to target. */
+	targetsInHexRange?: number
 }
 
 export class TargetEffect extends GameEffect {
@@ -45,8 +47,14 @@ export class TargetEffect extends GameEffect {
 			}
 		}
 
-		this.currentTargets = new Set(data.sourceTargets!.map(sourceTarget => sourceTarget[1]))
-		this.sourceTargets = ref(new Set(data.sourceTargets))
+		if (data.targetsInHexRange != null) {
+			const targets = getInteractableUnitsOfTeam(data.targetTeam!).filter(unit => unit.hexDistanceTo(source) <= data.targetsInHexRange!)
+			this.currentTargets = new Set(targets)
+			this.sourceTargets = ref(new Set(targets.map(unit => [source, unit] as [ChampionUnit, ChampionUnit])))
+		} else {
+			this.currentTargets = new Set(data.sourceTargets!.map(sourceTarget => sourceTarget[1]))
+			this.sourceTargets = ref(new Set(data.sourceTargets))
+		}
 		this.bounce = data.bounce
 		if (this.bounce) {
 			this.bounce.hitUnits = Array.from(this.currentTargets)
