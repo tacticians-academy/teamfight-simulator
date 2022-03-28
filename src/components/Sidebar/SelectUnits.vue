@@ -14,10 +14,10 @@ function onDrag(event: DragEvent, name: string) {
 }
 
 const unitGroups = computed(() => {
-	const unitGroups: [string, ChampionData[]][] = [['Supported', []], ['Unimplemented', []], ['Spawns', []]]
+	const unitGroups: [string, ChampionData[]][] = [['Supported', []], ['Unimplemented', []]]
 	setData.champions.forEach(champion => {
 		if (champion.teamSize === 0 || champion.stats.hp == null) { return }
-		const groupIndex = champion.traits.length ? (setData.championEffects[champion.name] != null ? 0 : 1) : 2
+		const groupIndex = !champion.traits.length || setData.championEffects[champion.name] != null ? 0 : 1
 		unitGroups[groupIndex][1].push(champion)
 	})
 	unitGroups[0][1].sort((a, b) => a.name.localeCompare(b.name))
