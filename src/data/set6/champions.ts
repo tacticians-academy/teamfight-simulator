@@ -149,6 +149,32 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Brand]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = getDistanceUnit(false, champion, champion.opposingTeam())
+			if (!target) { return false }
+			const blazeSeconds = champion.getSpellVariable(spell, 'BlazeDuration' as SpellKey)
+			// const vip = champion.getSpellVariable(spell, 'VIPBonusReducedDamage' as SpellKey) //TODO VIP
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				target,
+				destroysOnCollision: true,
+				onCollision: (elapsedMS, target) => {
+					if (target.statusEffects.ablaze.active) {
+						target.statusEffects.ablaze.active = false
+						const bonusCalculation = champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey)
+						if (bonusCalculation) {
+							target.takeBonusDamage(elapsedMS, champion, bonusCalculation, false)
+						}
+						const secondProcStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+						target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, secondProcStunSeconds * 1000)
+					} else {
+						target.applyStatusEffect(elapsedMS, StatusEffectType.ablaze, blazeSeconds * 1000)
+					}
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Braum]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
