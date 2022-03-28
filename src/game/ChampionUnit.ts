@@ -949,9 +949,11 @@ export class ChampionUnit {
 		if (hex) {
 			this.moving = true
 			this.customMoveSpeed = customSpeed
-			this.onMovementComplete = onMovementComplete
+			this.onMovementComplete = (elapsedMS, unit) => {
+				unit.setTarget(isUnitTarget && target.team !== this.team && target.isInteractable() ? target : null)
+				onMovementComplete?.(elapsedMS, unit)
+			}
 			this.setActiveHex(hex)
-			this.setTarget(isUnitTarget && target.team !== this.team ? target : null)
 		}
 	}
 
