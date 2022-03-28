@@ -201,6 +201,19 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.ChoGath]: {
+		cast: (elapsedMS, spell, champion) => {
+			const hpOnKillProportion = champion.getSpellVariable(spell, 'BonusHealthOnKill' as SpellKey)
+			return champion.queueTargetEffect(elapsedMS, spell, {
+				onCollision: (elapsedMS, target) => {
+					if (target.dead) {
+						champion.increaseMaxHealthBy(champion.healthMax * hpOnKillProportion) //TODO allow setting base stacks
+					}
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Corki]: {
 		cast: (elapsedMS, spell, champion) => {
 			const hexRange = 1 //NOTE hardcoded
