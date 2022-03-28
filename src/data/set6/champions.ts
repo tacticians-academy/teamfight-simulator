@@ -9,11 +9,11 @@ import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFrom, getDistanceHex, getBestArrayAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo, getClosestHexAvailableTo } from '#/helpers/boardUtils'
+import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo, getClosestHexAvailableTo, getProjectedHexLineFrom } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BleedData, ChampionEffects } from '#/helpers/types'
+import type { BleedData, ChampionEffects, HexCoord } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
 
 export const championEffects = {
@@ -41,6 +41,64 @@ export const championEffects = {
 					returnMissile: champion.getSpellFor('OrbReturn')?.missile ?? missileSpell?.missile,
 					targetDeathAction: 'continue',
 				})
+			})
+			return true
+		},
+	},
+
+	[ChampionKey.Alistar]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return false }
+			const checkingUnits = state.units.filter(unit => unit !== champion && unit !== target)
+			let targetHex: HexCoord | undefined
+			const moveSpeed = 1000 //TODO experimentally determine
+			const knockupSeconds = champion.getSpellVariable(spell, 'KnockupDuration' as SpellKey)
+			champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target: champion,
+				targetTeam: target.team,
+				ignoresDestinationCollision: true,
+				idealDestination: () => {
+					let championHex: HexCoord | undefined
+					const hexLineThroughTarget = getProjectedHexLineFrom(champion, target, state.hexRowsCols)
+					const availableInLine = hexLineThroughTarget.filter(hex => !checkingUnits.some(unit => unit.isAt(hex)))
+					while (availableInLine.length) {
+						const hex = availableInLine.pop()
+						if (!championHex) {
+							championHex = hex
+						} else if (!targetHex) {
+							targetHex = hex
+						} else {
+							break
+						}
+					}
+					if (!championHex) {
+						championHex = target.activeHex
+					}
+					return championHex
+				},
+				moveSpeed,
+				onCollision: (elapsedMS, withUnit) => {
+					if (withUnit === target) {
+						champion.setTarget(null)
+						target.setTarget(null)
+						if (!targetHex) {
+							targetHex = getClosestHexAvailableTo(target.activeHex, checkingUnits)
+						}
+						if (targetHex) {
+							target.customMoveTo(targetHex, moveSpeed, (elapsedMS, target) => {
+								const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+								target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
+							})
+						}
+					}
+				},
+				hexEffect: {
+					hexDistanceFromSource: 2,
+					statusEffects: [
+						[StatusEffectType.stunned, { durationMS: knockupSeconds * 1000 }],
+					],
+				},
 			})
 			return true
 		},
@@ -612,7 +670,7 @@ export const championEffects = {
 
 	[ChampionKey.Singed]: {
 		cast: (elapsedMS, spell, champion) => {
-			const targetStunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const aoeStunSeconds = champion.getSpellVariable(spell, 'AoEStunDuration' as SpellKey)
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				moveSpeed: 1000, //TODO experimentally determine
@@ -855,7 +913,7 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 				if (target.dead) {
 					const newTarget = getBestAsMax(false, getInteractableUnitsOfTeam(target.team), (unit) => unit.health)
 					if (newTarget) {
-						champion.target = newTarget
+						champion.setTarget(newTarget)
 						return ireliaResetRecursive(spell, champion, moveSpeed, newTarget)
 					}
 				}
