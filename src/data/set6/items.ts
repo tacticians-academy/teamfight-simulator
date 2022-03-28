@@ -57,7 +57,7 @@ export const itemEffects = {
 				const [aoeDamage] = getVariables(item, `${holder.starLevel}StarAoEDamage`)
 				holder.getInteractableUnitsWithin(1, holder.opposingTeam()).forEach(unit => {
 					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
-					unit.damage(elapsedMS, false, holder, DamageSourceType.bonus, damageCalculation, true)
+					unit.takeBonusDamage(elapsedMS, holder, damageCalculation, true)
 				})
 			}
 		},
@@ -172,7 +172,7 @@ export const itemEffects = {
 			if (caster.team === holder.team) { return }
 			const [manaRatio] = getVariables(item, 'ManaRatio')
 			const damageCalculation = createDamageCalculation(item.name, manaRatio / 100 * caster.manaMax(), DamageType.magic)
-			caster.damage(elapsedMS, false, holder, DamageSourceType.bonus, damageCalculation, false)
+			caster.takeBonusDamage(elapsedMS, holder, damageCalculation, false)
 		},
 	},
 
@@ -273,7 +273,7 @@ export const itemEffects = {
 			const units = getChainFrom(target, totalUnits)
 			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)
 			units.forEach(unit => {
-				unit.damage(elapsedMS, false, holder, DamageSourceType.bonus, damageCalculation, true)
+				unit.takeBonusDamage(elapsedMS, holder, damageCalculation, true)
 				unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, shredDurationSeconds * 1000, mrShred / 100)
 			})
 		},

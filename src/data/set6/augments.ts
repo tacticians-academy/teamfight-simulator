@@ -209,7 +209,7 @@ export const augmentEffects = {
 			}
 			const [maxHPPercent] = getVariables(augment, 'MaxHPDamage')
 			const bonusCalculation = createDamageCalculation(AugmentGroupKey.Disintegrator, maxHPPercent, DamageType.magic, BonusKey.Health, true, 0.01)
-			target.damage(elapsedMS, false, holder, DamageSourceType.bonus, bonusCalculation, false)
+			target.takeBonusDamage(elapsedMS, holder, bonusCalculation, false)
 		},
 	},
 

@@ -155,7 +155,7 @@ export class GameEffect extends GameEffectChild {
 		const [wasSpellShielded, damage] = this.applyDamage(elapsedMS, unit)
 
 		this.bonusCalculations.forEach(bonusCalculation => {
-			unit.damage(elapsedMS, false, this.source, DamageSourceType.bonus, bonusCalculation, true)
+			unit.takeBonusDamage(elapsedMS, this.source, bonusCalculation, true) //TODO determine isAoE
 		})
 		if (!wasSpellShielded) {
 			this.applyBonuses(elapsedMS, unit)

@@ -702,6 +702,10 @@ export class ChampionUnit {
 		return false
 	}
 
+	takeBonusDamage(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit, damageCalculation: SpellCalculation, isAoE: boolean) {
+		this.damage(elapsedMS, false, source, DamageSourceType.bonus, damageCalculation, isAoE)
+	}
+
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
 		source?.items.forEach((item, index) => {
@@ -824,7 +828,7 @@ export class ChampionUnit {
 				if (sourceType === DamageSourceType.attack) {
 					source.shields.forEach(shield => {
 						if (shield.activated === true && shield.bonusDamage) {
-							this.damage(elapsedMS, false, source, DamageSourceType.bonus, shield.bonusDamage, false)
+							this.takeBonusDamage(elapsedMS, source, shield.bonusDamage, false)
 						}
 					})
 				}
