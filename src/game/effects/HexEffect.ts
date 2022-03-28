@@ -57,7 +57,7 @@ export class HexEffect extends GameEffect {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
 		if (wasSpellShielded == null) { return false }
 		if (this.taunts && this.source.isInteractable()) {
-			unit.target = this.source
+			unit.setTarget(this.source)
 		}
 		return true
 	}

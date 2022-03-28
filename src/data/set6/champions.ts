@@ -88,7 +88,7 @@ export const championEffects = {
 						if (!champion.checkInRangeOfTarget()) {
 							champion.setTarget(null)
 						}
-						champion.alliedUnits(false).forEach(unit => unit.target = affectedUnit) //TODO target if in range
+						champion.alliedUnits(false).forEach(unit => unit.setTarget(affectedUnit)) //TODO target if in range
 						champion.empoweredAutos.add({
 							amount: 1,
 							statusEffects: [
@@ -175,7 +175,7 @@ export const championEffects = {
 			}
 			const delaySeconds = champion.getSpellVariable(spell, 'FieldDelay' as SpellKey)
 			const fieldSeconds = champion.getSpellVariable(spell, 'FieldDuration' as SpellKey)
-			const allyASProportion = champion.getSpellVariable(spell, 'BonusAS' as SpellKey)
+			const allyASProportion = champion.getSpellCalculationResult(spell, 'BonusAS' as SpellKey)
 			const enemyASProportion = champion.getSpellVariable(spell, 'ASSlow' as SpellKey)
 			const allySeconds = champion.getSpellVariable(spell, 'BuffDuration' as SpellKey)
 			const enemySeconds = champion.getSpellVariable(spell, 'SlowDuration' as SpellKey)

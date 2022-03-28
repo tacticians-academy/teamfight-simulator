@@ -869,7 +869,7 @@ export class ChampionUnit {
 		return state.units.filter(unit => (includingSelf ? true : unit !== this) && !unit.dead && unit.team === this.team)
 	}
 
-	coordDistanceSquaredTo(target: ChampionUnit | HexCoord) {
+	coordDistanceSquaredTo(target: {coord: HexCoord} | HexCoord) {
 		return coordinateDistanceSquared(this.coord, 'coord' in target ? target.coord : getCoordFrom(target))
 	}
 	hexDistanceTo(target: ChampionUnit | HexCoord) {
