@@ -71,6 +71,7 @@ export class ChampionUnit {
 	wasSpawned = false
 
 	hitBy: string[] = []
+	basicAttackSourceIDs: string[] = []
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
 	attackStartAtMS: DOMHighResTimeStamp = 0
@@ -133,6 +134,7 @@ export class ChampionUnit {
 		this.bleeds.clear()
 		this.damageCallbacks.clear()
 		this.hitBy = []
+		this.basicAttackSourceIDs = []
 		this.empoweredAutos.clear()
 
 		Object.keys(this.statusEffects).forEach(effectType => {
@@ -276,6 +278,7 @@ export class ChampionUnit {
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
 			const damageSourceType = DamageSourceType.attack
+			const source = this
 			if (this.instantAttack) {
 				this.queueTargetEffect(elapsedMS, undefined, {
 					activatesAfterMS: windupMS,
@@ -285,7 +288,7 @@ export class ChampionUnit {
 					damageModifier,
 					statusEffects,
 					bounce,
-					onActivate: (elapsedMS, source) => {
+					onCollision: (elapsedMS, target) => {
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 						if (source.data.passive && source.target && source.readyToCast(elapsedMS)) {
 							passiveFn?.(elapsedMS, source.data.passive, source.target, source)
@@ -294,11 +297,11 @@ export class ChampionUnit {
 						statusEffects.forEach(([key, statusEffect]) => {
 							source.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
 						})
+						target.basicAttackSourceIDs.push(source.instanceID)
 					},
 				})
 				this.attackStartAtMS = elapsedMS
 			} else {
-				const source = this
 				this.queueProjectileEffect(elapsedMS, undefined, {
 					startsAfterMS: windupMS,
 					missile: {
@@ -311,12 +314,13 @@ export class ChampionUnit {
 					damageModifier,
 					statusEffects,
 					bounce,
-					onCollision(elapsedMS, unit) {
+					onCollision(elapsedMS, target) {
 						if (source.data.passive && source.readyToCast(elapsedMS)) {
-							passiveFn?.(elapsedMS, source.data.passive, unit, source)
+							passiveFn?.(elapsedMS, source.data.passive, target, source)
 							source.postCast(elapsedMS, canReProcAttack)
 						}
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
+						target.basicAttackSourceIDs.push(source.instanceID)
 					},
 				})
 			}
