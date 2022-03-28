@@ -4,10 +4,10 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
 import type { GameEffectData } from '#/game/effects/GameEffect'
 
-import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
+import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { CollisionFn, HexCoord } from '#/helpers/types'
 import { state } from '#/game/store'
-import { getClosestHexAvailableTo } from '#/helpers/boardUtils'
+import { coordinateDistanceSquared, getClosestHexAvailableTo } from '#/helpers/boardUtils'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 
 type CalculateDestinationFn = (target: ChampionUnit) => HexCoord | null | undefined
@@ -17,6 +17,8 @@ export interface MoveUnitEffectData extends GameEffectData {
 	target?: ChampionUnit
 	/** The speed the target moves to the destination at. Defaults to the target's move speed if undefined. */
 	moveSpeed: number | undefined
+	/** Ignore collision when setting a destination hex. */
+	ignoresDestinationCollision?: boolean
 	/** Calculate the ideal destination `HexCoord`. */
 	idealDestination: CalculateDestinationFn
 	/** Creates a `HexEffect` upon completion. */
@@ -28,6 +30,7 @@ export interface MoveUnitEffectData extends GameEffectData {
 export class MoveUnitEffect extends GameEffect {
 	target: ChampionUnit
 	moveSpeed: number | undefined
+	ignoresDestinationCollision: boolean
 	idealDestination: CalculateDestinationFn
 	hexEffect: HexEffectData | undefined
 	onDestination: CollisionFn | undefined
@@ -42,6 +45,7 @@ export class MoveUnitEffect extends GameEffect {
 
 		this.target = data.target!
 		this.moveSpeed = data.moveSpeed
+		this.ignoresDestinationCollision = data.ignoresDestinationCollision ?? false
 		this.idealDestination = data.idealDestination
 		this.hexEffect = data.hexEffect
 		this.onDestination = data.onDestination
@@ -55,9 +59,11 @@ export class MoveUnitEffect extends GameEffect {
 		}
 		const spellShield = this.target.consumeSpellShield()
 		if (spellShield == null) {
-			const idealHex = this.idealDestination(this.target)
-			if (idealHex) {
-				const bestHex = getClosestHexAvailableTo(idealHex, state.units)
+			let bestHex = this.idealDestination(this.target)
+			if (bestHex) {
+				if (!this.ignoresDestinationCollision) {
+					bestHex = getClosestHexAvailableTo(bestHex, state.units)
+				}
 				if (bestHex) {
 					this.target.customMoveTo(bestHex, 1000, this.apply)
 				}
@@ -80,6 +86,18 @@ export class MoveUnitEffect extends GameEffect {
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
 		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
 		if (updateResult != null) { return updateResult }
+		if (this.onCollision) {
+			const collisionRadius = (UNIT_SIZE_PROPORTION + UNIT_SIZE_PROPORTION) / 2
+			const collisionRadiusSquared = collisionRadius * collisionRadius
+			for (const unit of state.units) {
+				if (unit === this.target || unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID)) {
+					continue
+				}
+				if (coordinateDistanceSquared(unit.coord, this.target.coord) <= collisionRadiusSquared) {
+					this.onCollision(elapsedMS, unit)
+				}
+			}
+		}
 		return true
 	}
 }
