@@ -10,14 +10,14 @@ import { state } from '#/game/store'
 import { getClosestHexAvailableTo } from '#/helpers/boardUtils'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 
-type CalculateDestinationFn = (target: ChampionUnit) => HexCoord | null
+type CalculateDestinationFn = (target: ChampionUnit) => HexCoord | null | undefined
 
 export interface MoveUnitEffectData extends GameEffectData {
 	/** Unit to apply this effect to. */
 	target?: ChampionUnit
 	/** The speed the target moves to the destination at. Defaults to the target's move speed if undefined. */
 	moveSpeed: number | undefined
-	/** Calculate ideal destination `HexCoord`. */
+	/** Calculate the ideal destination `HexCoord`. */
 	idealDestination: CalculateDestinationFn
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData

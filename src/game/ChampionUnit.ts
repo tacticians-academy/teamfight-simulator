@@ -461,8 +461,9 @@ export class ChampionUnit {
 		if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
 			this.moving = false
 			this.customMoveSpeed = undefined
-			this.onMovementComplete?.(elapsedMS, this)
+			const onMovementComplete = this.onMovementComplete
 			this.onMovementComplete = undefined
+			onMovementComplete?.(elapsedMS, this)
 			this.coord[0] = targetX
 			this.coord[1] = targetY
 		} else {
