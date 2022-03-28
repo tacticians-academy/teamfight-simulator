@@ -1,7 +1,7 @@
 import { markRaw } from 'vue'
 
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionData, ChampionSpellData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
+import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
@@ -39,12 +39,17 @@ function stageIndex() {
 interface EmpoweredAuto {
 	id?: BonusLabelKey
 	amount: number
+	activatesAfterAmount?: number
 	expiresAtMS?: DOMHighResTimeStamp
 	bounce?: AttackBounce
 	damageCalculation?: SpellCalculation
+	bonusCalculation?: SpellCalculation
 	damageModifier?: DamageModifier
+	missile?: ChampionSpellMissileData
 	stackingDamageModifier?: DamageModifier
+	destroysOnCollision?: boolean
 	statusEffects?: StatusEffectData[]
+	onActivate?: CollisionFn
 }
 
 export class ChampionUnit {
@@ -248,23 +253,40 @@ export class ChampionUnit {
 		} else {
 			this.basicAttackCount += 1
 			const canReProcAttack = this.attackStartAtMS > 1
-			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, false, 1)
+			let damageCalculation: SpellCalculation | undefined
 			const passiveFn = this.championEffects?.passive
 			const damageModifier: DamageModifier = {}
 			const statusEffects: StatusEffectData[] = []
 			const bonusCalculations: SpellCalculation[] = []
 			let bounce: AttackBounce | undefined
+			let destroysOnCollision: boolean | undefined
 			let stackingDamageModifier: DamageModifier | undefined
+			let missile: ChampionSpellMissileData | undefined
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
 					this.empoweredAutos.delete(empower)
 					return
 				}
+				if (empower.activatesAfterAmount != null && empower.activatesAfterAmount > 0) {
+					return
+				}
+				if (empower.destroysOnCollision != null) {
+					destroysOnCollision = empower.destroysOnCollision
+				}
+				if (empower.missile != null) {
+					missile = empower.missile
+				}
 				if (empower.stackingDamageModifier != null) {
 					stackingDamageModifier = empower.stackingDamageModifier
 				}
+				if (empower.damageModifier) {
+					applyStackingModifier(damageModifier, empower.damageModifier)
+				}
+				if (empower.bonusCalculation) {
+					bonusCalculations.push(empower.bonusCalculation)
+				}
 				if (empower.damageCalculation) {
-					bonusCalculations.push(empower.damageCalculation)
+					damageCalculation = empower.damageCalculation
 				}
 				if (empower.statusEffects) {
 					statusEffects.push(...empower.statusEffects)
@@ -276,6 +298,10 @@ export class ChampionUnit {
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
 			const damageSourceType = DamageSourceType.attack
 			const source = this
+			if (damageCalculation == null) {
+				damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, false, 1)
+			}
+
 			if (this.instantAttack) {
 				this.queueTargetEffect(elapsedMS, undefined, {
 					activatesAfterMS: windupMS,
@@ -301,16 +327,17 @@ export class ChampionUnit {
 			} else {
 				this.queueProjectileEffect(elapsedMS, undefined, {
 					startsAfterMS: windupMS,
-					missile: {
+					missile: missile ?? {
 						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 					},
 					damageSourceType,
-					target: this.target,
 					damageCalculation: damageCalculation,
 					bonusCalculations,
 					damageModifier,
 					statusEffects,
 					bounce,
+					destroysOnCollision,
+					fixedHexRange: destroysOnCollision != null ? MAX_HEX_COUNT : undefined,
 					stackingDamageModifier,
 					onCollision(elapsedMS, target) {
 						if (source.data.passive && source.readyToCast(elapsedMS)) {
@@ -323,9 +350,14 @@ export class ChampionUnit {
 				})
 			}
 			this.empoweredAutos.forEach(empoweredAuto => {
+				if (empoweredAuto.activatesAfterAmount != null && empoweredAuto.activatesAfterAmount > 0) {
+					empoweredAuto.activatesAfterAmount -= 1
+					return
+				}
 				if (empoweredAuto.amount > 1) {
 					empoweredAuto.amount -= 1
 				} else {
+					empoweredAuto.onActivate?.(elapsedMS, this)
 					this.empoweredAutos.delete(empoweredAuto)
 				}
 			})
@@ -951,7 +983,15 @@ export class ChampionUnit {
 	}
 	getSpellFor(spellSuffix: string): ChampionSpellData | undefined {
 		const spellName = this.data.apiName + spellSuffix
-		return this.data.spells.find(spell => spell.name === spellName)
+		const spell = this.data.spells.find(spell => spell.name === spellName)
+		if (!spell) { console.warn('No missile for', spellSuffix) }
+		return spell
+	}
+	getMissileFor(spellSuffix: string): ChampionSpellMissileData | undefined {
+		const spellName = this.data.apiName + spellSuffix
+		const spell = this.data.missiles.find(spell => spell.name === spellName)
+		if (!spell) { console.warn('No missile for', spellSuffix) }
+		return spell?.missile
 	}
 
 	getSpellVariableIfExists(spell: ChampionSpellData | undefined, key: SpellKey) {
