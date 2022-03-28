@@ -394,6 +394,7 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Overpower]: {
 		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+			if (!holder.hasTrait(TraitKey.Striker)) { return }
 			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
 				return
 			}
