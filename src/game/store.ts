@@ -52,7 +52,7 @@ const setNumber = getSetNumber()
 export const state = reactive({
 	setNumber,
 	loadedSetNumber: null as SetNumber | null,
-	// loadedSetNumber: ref<SetNumber | null>(null),
+	elapsedSeconds: 0,
 	isRunning: false,
 	winningTeam: null as TeamNumber | null,
 	hexRowsCols,
@@ -404,6 +404,7 @@ const store = {
 	},
 
 	resetGame() {
+		state.elapsedSeconds = 0
 		resetUnitsAfterUpdating()
 	},
 }

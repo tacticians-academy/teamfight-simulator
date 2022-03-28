@@ -53,6 +53,9 @@ function onDrop(event: DragEvent) {
 			<ManageTeams />
 		</div>
 		<div v-else>
+			<div class="text-center">
+				⏱ {{ state.elapsedSeconds }}
+			</div>
 			<div v-if="state.winningTeam !== null" class="flex justify-center">
 				<div :class="state.winningTeam === 0 ? 'text-violet-500' : 'text-rose-500'">{{ getTeamName(state.winningTeam) }} team won!</div>
 			</div>

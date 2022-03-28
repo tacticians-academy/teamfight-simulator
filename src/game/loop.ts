@@ -30,6 +30,9 @@ export async function delayUntil(elapsedMS: DOMHighResTimeStamp, atSeconds: numb
 }
 
 function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
+	if (state.winningTeam != null) {
+		return
+	}
 	if (unanimated === true) {
 		runLoop(frameMS + GAME_TICK_MS, true)
 	} else {
@@ -72,6 +75,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		return
 	}
 	const elapsedMS = frameMS - startedAtMS
+	state.elapsedSeconds = Math.round(elapsedMS / 1000)
 
 	delays.forEach(delay => {
 		const [atMS, resolve] = delay
