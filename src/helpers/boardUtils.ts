@@ -1,8 +1,9 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { getBestRandomAsMax, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/helpers/constants'
-import type { HexCoord, TeamNumber } from '#/helpers/types'
+import { doesLineInterceptCircle } from '#/helpers/angles'
+import { getBestRandomAsMax, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/helpers/constants'
+import type { HexCoord, HexRowCol, TeamNumber } from '#/helpers/types'
 
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
@@ -93,6 +94,23 @@ export function getHexRing([col, row]: HexCoord, atDistance: number = 1): HexCoo
 		}
 	}
 	return validHexes
+}
+
+export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: ChampionUnit, hexRowsCols: HexRowCol[][]) {
+	const fromCoord = fromUnit.coord
+	const [projectedX, projectedY] = toUnit.coord
+	const dX = (projectedX - fromCoord[0]) * MAX_HEX_COUNT
+	const dY = (projectedY - fromCoord[1]) * MAX_HEX_COUNT
+	const results: [number, HexCoord][] = []
+	hexRowsCols.forEach((row, rowIndex) => {
+		row.forEach((col, colIndex) => {
+			if (doesLineInterceptCircle(col.coord, HEX_PROPORTION / 2, fromCoord, [dX, dY])) {
+				results.push([fromUnit.coordDistanceSquaredTo(col), [colIndex, rowIndex]])
+			}
+		})
+	})
+	results.sort((a, b) => a[0] - b[0])
+	return results.map(entry => entry[1])
 }
 
 export function getHotspotHexes(includingUnderTargetUnit: boolean, units: ChampionUnit[], team: TeamNumber | null, maxDistance: 1 | 2 | 3 | 4) {
