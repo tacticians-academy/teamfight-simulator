@@ -292,8 +292,7 @@ export const championEffects = {
 				const bonusHealth = champion.getSpellCalculationResult(spell, 'TransformHealth' as SpellKey)
 				const manaReduction = champion.getSpellVariable(spell, 'TransformManaReduc' as SpellKey)
 				const expiresAt = elapsedMS + transformSeconds * 1000
-				champion.health += bonusHealth
-				champion.healthMax += bonusHealth
+				champion.increaseMaxHealthBy(bonusHealth)
 				champion.setBonusesFor(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
 				if (champion.target) {
 					const jumpToHex = champion.projectHexFrom(champion.target, false)

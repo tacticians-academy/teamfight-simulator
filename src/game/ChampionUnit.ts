@@ -599,6 +599,11 @@ export class ChampionUnit {
 		return overheal > 0 ? overheal : 0
 	}
 
+	increaseMaxHealthBy(amount: number) { //TODO interaction with bonus health
+		this.health += amount
+		this.healthMax += amount
+	}
+
 	setMana(amount: number) {
 		this.mana = Math.min(this.manaMax(), amount)
 	}
