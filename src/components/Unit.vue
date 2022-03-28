@@ -26,6 +26,7 @@ const currentPosition = computed(() => props.unit.coord)
 const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 
 const statusEffectSymbols: Record<StatusEffectType, string> = {
+	[StatusEffectType.ablaze]: '🔥',
 	[StatusEffectType.aoeDamageReduction]: '💦',
 	[StatusEffectType.armorReduction]: '🛡',
 	[StatusEffectType.attackSpeedSlow]: '❄️',
@@ -108,7 +109,7 @@ function onInfo(event: Event) {
 		</div>
 		<div class="flex">
 			<template v-for="(effect, effectType) in unit.statusEffects" :key="effectType">
-				<div v-if="effect.active">{{ statusEffectSymbols[effectType] }}</div>
+				<div v-if="effect.active" class="status-effect">{{ statusEffectSymbols[effectType] }}</div>
 			</template>
 		</div>
 	</div>
@@ -179,5 +180,9 @@ function onInfo(event: Event) {
 	font-size: 1.5vw;
 	border-width: 0.4vw;
 	background-position-x: 75%;
+}
+
+.status-effect {
+	text-shadow: 0 1px 1px white;
 }
 </style>

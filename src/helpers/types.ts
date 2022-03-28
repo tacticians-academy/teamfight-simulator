@@ -44,6 +44,7 @@ export interface SynergyData {
 }
 
 export enum StatusEffectType {
+	ablaze = 'ablaze',
 	aoeDamageReduction = 'aoeDamageReduction',
 	armorReduction = 'armorReduction',
 	attackSpeedSlow = 'attackSpeedSlow',
@@ -56,6 +57,7 @@ export enum StatusEffectType {
 	stunned = 'stunned',
 }
 export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds, StatusEffectType.magicResistReduction, StatusEffectType.stunned]
+export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]
 
 export type StatusEffectData = [StatusEffectType, {
 	durationMS: number
