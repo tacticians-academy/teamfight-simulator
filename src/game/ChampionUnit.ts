@@ -20,7 +20,7 @@ import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
 import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
-import { getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
+import { applyStackingModifier, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
@@ -43,6 +43,7 @@ interface EmpoweredAuto {
 	bounce?: AttackBounce
 	damageCalculation?: SpellCalculation
 	damageModifier?: DamageModifier
+	stackingDamageModifier?: DamageModifier
 	statusEffects?: StatusEffectData[]
 }
 
@@ -249,23 +250,19 @@ export class ChampionUnit {
 			const canReProcAttack = this.attackStartAtMS > 1
 			const damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, false, 1)
 			const passiveFn = this.championEffects?.passive
-			const damageModifier: DamageModifier = {
-				increase: 0,
-				multiplier: 0,
-				critChance: 0,
-			}
+			const damageModifier: DamageModifier = {}
 			const statusEffects: StatusEffectData[] = []
 			const bonusCalculations: SpellCalculation[] = []
 			let bounce: AttackBounce | undefined
+			let stackingDamageModifier: DamageModifier | undefined
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
 					this.empoweredAutos.delete(empower)
 					return
 				}
-				Object.keys(damageModifier).forEach((modifier) => {
-					const modifierKey = modifier as keyof DamageModifier
-					damageModifier[modifierKey]! += empower.damageModifier?.[modifierKey] ?? 0
-				})
+				if (empower.stackingDamageModifier != null) {
+					stackingDamageModifier = empower.stackingDamageModifier
+				}
 				if (empower.damageCalculation) {
 					bonusCalculations.push(empower.damageCalculation)
 				}
@@ -314,6 +311,7 @@ export class ChampionUnit {
 					damageModifier,
 					statusEffects,
 					bounce,
+					stackingDamageModifier,
 					onCollision(elapsedMS, target) {
 						if (source.data.passive && source.readyToCast(elapsedMS)) {
 							passiveFn?.(elapsedMS, source.data.passive, target, source)

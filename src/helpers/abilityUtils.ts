@@ -10,7 +10,7 @@ import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo } from '#/
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT } from '#/helpers/constants'
 import { StatusEffectType } from '#/helpers/types'
-import type { HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
+import type { DamageModifier, HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
 import { getArrayValueCounts, randomItem } from '#/helpers/utils'
 
 export function getBestSortedAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
@@ -217,4 +217,30 @@ export function getNextBounceFrom(fromUnit: ChampionUnit, bounce: AttackBounce) 
 		bounce.hitUnits?.push(target)
 	}
 	return target
+}
+
+export function applyStackingModifier(targetModifier: DamageModifier, stackingModifier: DamageModifier) {
+	// Object.keys(stackingModifier).forEach(keyString => {
+	// 	const key = keyString as keyof DamageModifier
+	// 	const value = stackingModifier[key]
+	// 	if (value != null) {
+	// 		targetModifier[key] = (targetModifier[key] ?? 0) + value
+	// 	}
+	// })
+	// if (targetModifier.multiplier != null) {
+	// 	targetModifier.multiplier = Math.max(-1, Math.min(1, targetModifier.multiplier))
+	// }
+	if (stackingModifier.critChance != null) {
+		targetModifier.critChance = (targetModifier.critChance ?? 0) + stackingModifier.critChance
+	}
+	if (stackingModifier.increase != null) {
+		targetModifier.increase = (targetModifier.increase ?? 0) + stackingModifier.increase
+	}
+	if (stackingModifier.multiplier != null) {
+		if (targetModifier.multiplier == null) {
+			targetModifier.multiplier = stackingModifier.multiplier
+		} else {
+			targetModifier.multiplier += targetModifier.multiplier * Math.abs(stackingModifier.multiplier) //TODO experimentally determine multiplicative stacking
+		}
+	}
 }

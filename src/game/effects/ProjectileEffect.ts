@@ -10,10 +10,10 @@ import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 import { getCoordFrom } from '#/game/store'
 
-import { getDistanceUnit, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
+import { applyStackingModifier, getDistanceUnit, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
 import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
-import type { HexCoord} from '#/helpers/types'
+import type { DamageModifier, HexCoord} from '#/helpers/types'
 
 type TargetDeathAction = 'continue' | 'closest' | 'farthest'
 
@@ -24,6 +24,8 @@ export interface ProjectileEffectData extends AttackEffectData {
 	destroysOnCollision?: boolean
 	/** The fixed number of hexes this `Projectile` should travel, regardless of its target distance. */
 	fixedHexRange?: number
+	/** The damage modifier to stack per target hit. Requires `destroysOnCollision` to be false. */
+	stackingDamageModifier?: DamageModifier
 	/** Rotates the angle of the `Projectile`. Only works with `fixedHexRange`. */
 	changeRadians?: number
 	/** Only include if not passed with a `SpellCalculation`. */
@@ -52,6 +54,7 @@ export class ProjectileEffect extends GameEffect {
 	targetCoord: HexCoord
 	hexEffect: HexEffectData | undefined
 	destroysOnCollision: boolean | undefined
+	stackingDamageModifier: DamageModifier | undefined
 	targetDeathAction: TargetDeathAction | undefined
 	returnMissile: ChampionSpellMissileData | undefined
 	width: number
@@ -84,6 +87,7 @@ export class ProjectileEffect extends GameEffect {
 		this.setTarget(data.target!)
 		this.hexEffect = data.hexEffect
 		this.destroysOnCollision = data.destroysOnCollision
+		this.stackingDamageModifier = data.stackingDamageModifier
 		this.targetDeathAction = data.targetDeathAction
 		this.returnMissile = data.returnMissile
 		this.bounce = data.bounce
@@ -253,6 +257,12 @@ export class ProjectileEffect extends GameEffect {
 					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
 						if (this.destroysOnCollision) {
 							return this.checkIfDies(elapsedMS)
+						}
+						if (this.stackingDamageModifier) {
+							if (!this.damageModifier) {
+								this.damageModifier = {}
+							}
+							applyStackingModifier(this.damageModifier, this.stackingDamageModifier)
 						}
 					}
 				}
