@@ -173,7 +173,7 @@ export function getDistanceUnit(isMaximum: boolean, fromUnit: ChampionUnit, team
 		.filter(unit => unit !== fromUnit)
 	return getBestAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
-export function getDistanceUnitFrom(isMaximum: boolean, fromUnit: ChampionUnit, units: ChampionUnit[]) {
+export function getDistanceUnitFromUnits(isMaximum: boolean, fromUnit: ChampionUnit, units: ChampionUnit[]) {
 	return getBestAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
 

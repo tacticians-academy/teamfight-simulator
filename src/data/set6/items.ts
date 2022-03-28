@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFrom } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits } from '#/helpers/abilityUtils'
 import { getInverseHex, getClosestAttackableEnemies, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -287,7 +287,7 @@ export const itemEffects = {
 				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === GRIEVOUS_BURN_ID))
 				let bestTarget: ChampionUnit | undefined
 				if (bestTargets.length) {
-					bestTarget = getDistanceUnitFrom(false, holder, bestTargets)
+					bestTarget = getDistanceUnitFromUnits(false, holder, bestTargets)
 				} else {
 					bestTarget = getBestAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)!.remainingIterations)
 				}

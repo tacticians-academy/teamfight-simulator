@@ -7,7 +7,7 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFrom, getDistanceHex, getBestArrayAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getDistanceHex, getBestArrayAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo, getClosestHexAvailableTo, getProjectedHexLineFrom } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -414,7 +414,7 @@ export const championEffects = {
 			const sourceID = ChampionKey.Malzahar
 			if (target.getBleed(sourceID)) {
 				const unafflictedEnemies = getInteractableUnitsOfTeam(target.team).filter(unit => !unit.getBleed(sourceID))
-				const newTarget = getDistanceUnitFrom(false, target!, unafflictedEnemies)
+				const newTarget = getDistanceUnitFromUnits(false, target!, unafflictedEnemies)
 				if (newTarget) {
 					target = newTarget
 				}
