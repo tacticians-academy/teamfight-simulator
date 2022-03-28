@@ -556,6 +556,26 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Singed]: {
+		cast: (elapsedMS, spell, champion) => {
+			const targetStunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+			const aoeStunSeconds = champion.getSpellVariable(spell, 'AoEStunDuration' as SpellKey)
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				moveSpeed: 1000, //TODO experimentally determine
+				idealDestination: (target) => randomItem(getHotspotHexes(false, state.units.filter(unit => unit !== target), target.team, 2)),
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: targetStunSeconds * 1000 }],
+				],
+				hexEffect: {
+					hexDistanceFromSource: 1,
+					statusEffects: [
+						[StatusEffectType.stunned, { durationMS: aoeStunSeconds * 1000 }],
+					],
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Sivir]: {
 		cast: (elapsedMS, spell, champion) => {
 			const empowerSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
