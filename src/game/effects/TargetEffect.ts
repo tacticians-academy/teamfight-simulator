@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
 import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 
-import { getInteractableUnitsOfTeam, getNextBounceFrom, getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 
 export interface TargetEffectData extends AttackEffectData {
@@ -86,7 +86,6 @@ export class TargetEffect extends GameEffect {
 					this.activated = true
 				}
 			} else if (!this.activated) {
-				this.onActivate?.(elapsedMS, this.source)
 				isFirst = true
 				applies = true
 			} else {
