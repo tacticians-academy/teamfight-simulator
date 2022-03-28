@@ -1,5 +1,5 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionSpellData } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
@@ -11,9 +11,9 @@ import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableU
 import { toRadians } from '#/helpers/angles'
 import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo, getClosestHexAvailableTo, getProjectedHexLineFrom } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
+import { DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BleedData, ChampionEffects, HexCoord } from '#/helpers/types'
+import type { BleedData, ChampionEffects, DamageModifier, HexCoord } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
 
 export const championEffects = {
@@ -24,7 +24,7 @@ export const championEffects = {
 			const missileSpell = champion.getSpellFor('OrbMissile')
 			const degreesBetweenOrbs = champion.getSpellVariable(spell, 'AngleBetweenOrbs' as SpellKey)
 			const radiansBetweenOrbs = toRadians(degreesBetweenOrbs)
-			const damageMultiplier = champion.getSpellVariable(spell, 'MultiOrbDamage' as SpellKey) - 1
+			const multiOrbProportion = champion.getSpellVariable(spell, 'MultiOrbDamage' as SpellKey)
 			const orbsPerCast = champion.getSpellVariable(spell, 'SpiritFireStacks' as SpellKey)
 			const maxRange = champion.getSpellVariable(spell, 'HexRange' as SpellKey)
 			const orbCount = champion.castCount * orbsPerCast + 1
@@ -34,7 +34,7 @@ export const championEffects = {
 					destroysOnCollision: false,
 					modifiesOnMultiHit: true,
 					damageModifier: {
-						multiplier: damageMultiplier,
+						multiplier: multiOrbProportion - 1,
 					},
 					changeRadians,
 					missile: missileSpell?.missile,
@@ -235,7 +235,7 @@ export const championEffects = {
 			const startsAfterMS = delaySeconds * 1000
 			const expiresAfterMS = fieldSeconds * 1000
 			const shape = new ShapeEffectCircle(hotspotHex, HEX_MOVE_LEAGUEUNITS * (hexRadius + 0.2))
-			champion.queueShapeEffect(elapsedMS, spell, {
+			champion.queueShapeEffect(elapsedMS, spell, { //TODO projectile
 				targetTeam: champion.team,
 				shape,
 				startsAfterMS,
@@ -356,6 +356,59 @@ export const championEffects = {
 				hexDistanceFromSource: hexRadius,
 				bonuses: [champion.instanceID as ChampionKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationSeconds * 1000]],
 			})
+		},
+	},
+
+	[ChampionKey.Jhin]: {
+		cast: (elapsedMS, spell, champion) => {
+			const falloffProportion = champion.getSpellVariable(spell, 'DamageFalloff' as SpellKey)
+			const stackingDamageModifier: DamageModifier = {
+				multiplier: -falloffProportion,
+			}
+			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
+			const missile = champion.getMissileFor('RShotMis')
+			champion.empoweredAutos.add({
+				amount: 3,
+				damageCalculation,
+				destroysOnCollision: false,
+				missile,
+				stackingDamageModifier,
+			})
+			const fourShotCalculation: SpellCalculation | undefined = JSON.parse(JSON.stringify(damageCalculation))
+			fourShotCalculation?.parts.push({ //NOTE hardcoded
+				operator: 'product',
+				subparts: [
+					{
+						stat: BonusKey.MissingHealthPercent,
+						statFromTarget: true,
+						ratio: 1,
+					},
+					{
+						stat: BonusKey.AbilityPower,
+						ratio: 1,
+					},
+				],
+			})
+
+			champion.empoweredAutos.add({
+				activatesAfterAmount: 3,
+				amount: 1,
+				damageCalculation: fourShotCalculation,
+				destroysOnCollision: false,
+				damageModifier: {
+					//TODO guaranteed crit
+				},
+				missile: champion.getMissileFor('RShotMis4') ?? missile,
+				stackingDamageModifier,
+				onActivate: (elapsedMS, champion) => {
+					champion.manaLockUntilMS = elapsedMS + DEFAULT_MANA_LOCK_MS
+				},
+			})
+			if (spell.castTime != null) {
+				champion.performActionUntilMS = elapsedMS + spell.castTime //TODO lock in place, infinite range
+			}
+			champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
+			return true
 		},
 	},
 
