@@ -1,13 +1,15 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
+import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFrom, getDistanceHex, getBestArrayAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
+import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo, getClosestHexAvailableTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -253,6 +255,16 @@ export const championEffects = {
 				fixedHexRange,
 				destroysOnCollision: false,
 			})
+		},
+	},
+
+	[ChampionKey.Irelia]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return false }
+			const moveSpeed = 2000 //TODO experimentally determine
+			champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
+			return ireliaResetRecursive(spell, champion, moveSpeed, target)
 		},
 	},
 
@@ -803,4 +815,27 @@ function getProjectileSpread(count: number, radiansBetween: number) {
 		results[castIndex] = offsetRadians + radiansBetween * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1)
 	}
 	return results
+}
+
+function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, moveSpeed: number, target: ChampionUnit) {
+	champion.customMoveTo(target.activeHex, moveSpeed, (elapsedMS, champion) => {
+		if (target.isAttackable()) {
+			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
+			if (damageCalculation) {
+				target.damage(elapsedMS, true, champion, DamageSourceType.spell, damageCalculation, false)
+				if (target.dead) {
+					const newTarget = getBestAsMax(false, getInteractableUnitsOfTeam(target.team), (unit) => unit.health)
+					if (newTarget) {
+						champion.target = newTarget
+						return ireliaResetRecursive(spell, champion, moveSpeed, newTarget)
+					}
+				}
+			}
+		}
+		const bestHex = getClosestHexAvailableTo(champion.activeHex, state.units.filter(unit => unit !== champion))
+		champion.customMoveTo(bestHex ?? champion.activeHex, moveSpeed, (elapsedMS, champion) => {
+			champion.manaLockUntilMS = 0
+		})
+	})
+	return true
 }
