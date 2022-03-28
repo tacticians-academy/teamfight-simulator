@@ -256,6 +256,19 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.JarvanIV]: {
+		cast: (elapsedMS, spell, champion) => {
+			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
+			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+			const attackSpeedProportion = champion.getSpellVariable(spell, 'ASPercent' as SpellKey)
+			return champion.queueHexEffect(elapsedMS, spell, {
+				targetTeam: champion.team,
+				hexDistanceFromSource: hexRadius,
+				bonuses: [champion.instanceID as ChampionKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationSeconds * 1000]],
+			})
+		},
+	},
+
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
