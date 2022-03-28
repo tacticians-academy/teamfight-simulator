@@ -447,6 +447,29 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.KhaZix]: {
+		cast: (elapsedMS, spell, champion) => {
+			if (!champion.target) { return false }
+			const manaReave = champion.getSpellVariable(spell, SpellKey.ManaReave)
+			const jumpMS = champion.getSpellVariable(spell, 'MSBuff' as SpellKey)
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target: champion,
+				targetTeam: champion.team,
+				idealDestination: (champion) => {
+					const validUnits = getInteractableUnitsOfTeam(champion.opposingTeam()).filter(unit => unit !== champion.target)
+					const bestUnits = getBestArrayAsMax(false, validUnits, (unit) => unit.health)
+					return getBestRandomAsMax(true, bestUnits, (unit) => unit.coordDistanceSquaredTo(champion)) ?? champion.target
+				},
+				moveSpeed: jumpMS, //TODO fixed move time
+				onCollision: (elapsedMS, champion) => {
+					champion.queueProjectileEffect(elapsedMS, spell, {
+						bonuses: [SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReave]],
+					})
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Leona]: {
 		cast: (elapsedMS, spell, champion) => {
 			const shieldAmount = champion.getSpellCalculationResult(spell, 'Shielding' as SpellKey)
