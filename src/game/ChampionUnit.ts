@@ -93,6 +93,11 @@ export class ChampionUnit {
 	scalings = new Set<BonusScaling>()
 	shields: ShieldEntry[] = []
 	bleeds = new Set<BleedData>()
+	damageCallbacks = new Set<{
+		id: string,
+		expiresAtMS: DOMHighResTimeStamp
+		onDamage: CollisionFn
+	}>()
 
 	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
 
@@ -126,6 +131,7 @@ export class ChampionUnit {
 		this.championEffects = setData.championEffects[this.name as ChampionKey]
 		this.pendingBonuses.clear()
 		this.bleeds.clear()
+		this.damageCallbacks.clear()
 		this.hitBy = []
 		this.empoweredAutos.clear()
 
@@ -753,6 +759,14 @@ export class ChampionUnit {
 		this.health -= healthDamage
 		const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 		this.gainMana(elapsedMS, manaGain)
+
+		this.damageCallbacks.forEach(damageData => {
+			if (elapsedMS >= damageData.expiresAtMS) {
+				this.damageCallbacks.delete(damageData)
+			} else {
+				damageData.onDamage(elapsedMS, this, healthDamage)
+			}
+		})
 
 		// `source` effects
 
