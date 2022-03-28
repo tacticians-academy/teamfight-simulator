@@ -726,6 +726,23 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Syndra]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = getDistanceUnit(false, champion, champion.opposingTeam())
+			if (!target) { return false }
+			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			// const aoeStunSeconds = champion.getSpellVariable(spell, 'VIPDebutantBonus' as SpellKey) //TODO VIP
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target,
+				moveSpeed: 1000, //TODO experimentally determine
+				idealDestination: (target) => getDistanceUnit(true, champion, target.team)?.activeHex,
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: targetStunSeconds * 1000 }],
+				],
+			})
+		},
+	},
+
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
