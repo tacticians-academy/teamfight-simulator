@@ -45,6 +45,7 @@ interface EmpoweredAuto {
 	damageCalculation?: SpellCalculation
 	bonusCalculation?: SpellCalculation
 	damageModifier?: DamageModifier
+	bonuses?: BonusEntry
 	missile?: ChampionSpellMissileData
 	stackingDamageModifier?: DamageModifier
 	destroysOnCollision?: boolean
@@ -261,6 +262,7 @@ export class ChampionUnit {
 			let bounce: AttackBounce | undefined
 			let destroysOnCollision: boolean | undefined
 			let stackingDamageModifier: DamageModifier | undefined
+			let bonuses: BonusEntry | undefined
 			let missile: ChampionSpellMissileData | undefined
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
@@ -271,12 +273,19 @@ export class ChampionUnit {
 					return
 				}
 				if (empower.destroysOnCollision != null) {
+					if (destroysOnCollision != null) { console.warn('empoweredAutos multiple destroysOnCollision not supported') }
 					destroysOnCollision = empower.destroysOnCollision
 				}
+				if (empower.bonuses != null) {
+					if (bonuses) { console.warn('empoweredAutos multiple bonuses not supported') }
+					bonuses = empower.bonuses
+				}
 				if (empower.missile != null) {
+					if (missile) { console.warn('empoweredAutos multiple missile not supported') }
 					missile = empower.missile
 				}
 				if (empower.stackingDamageModifier != null) {
+					if (stackingDamageModifier) { console.warn('empoweredAutos multiple stackingDamageModifier not supported') }
 					stackingDamageModifier = empower.stackingDamageModifier
 				}
 				if (empower.damageModifier) {
@@ -286,6 +295,7 @@ export class ChampionUnit {
 					bonusCalculations.push(empower.bonusCalculation)
 				}
 				if (empower.damageCalculation) {
+					if (damageCalculation) { console.warn('empoweredAutos multiple damageCalculation not supported') }
 					damageCalculation = empower.damageCalculation
 				}
 				if (empower.statusEffects) {
@@ -310,6 +320,7 @@ export class ChampionUnit {
 					bonusCalculations,
 					damageModifier,
 					statusEffects,
+					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
 					bounce,
 					onCollision: (elapsedMS, target) => {
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
@@ -339,6 +350,7 @@ export class ChampionUnit {
 					destroysOnCollision,
 					fixedHexRange: destroysOnCollision != null ? MAX_HEX_COUNT : undefined,
 					stackingDamageModifier,
+					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
 					onCollision(elapsedMS, target) {
 						if (source.data.passive && source.readyToCast(elapsedMS)) {
 							passiveFn?.(elapsedMS, source.data.passive, target, source)
