@@ -338,7 +338,6 @@ export const championEffects = {
 				sourceTargets: [[champion, target]],
 				onActivate: (elapsedMS, champion) => {
 					const id = champion.instanceID
-					console.log(elapsedMS, id)
 					target.damageCallbacks.forEach(damageCallback => {
 						if (damageCallback.id !== id) {
 							target.damageCallbacks.delete(damageCallback)
@@ -348,7 +347,6 @@ export const championEffects = {
 						id,
 						expiresAtMS: elapsedMS + durationSeconds * 1000,
 						onDamage: (elapsedMS, target, damage) => {
-							console.log(elapsedMS, damage, healingProportion, target.damageCallbacks.size)
 							champion.gainHealth(elapsedMS, champion, damage! * healingProportion, true)
 						},
 					})
@@ -391,6 +389,32 @@ export const championEffects = {
 					champion.setBonusesFor(SpellKey.DamageReduction, [BonusKey.DamageReduction, damageReduction / 100, elapsedMS + durationSeconds * 1000])
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Leona]: {
+		cast: (elapsedMS, spell, champion) => {
+			const shieldAmount = champion.getSpellCalculationResult(spell, 'Shielding' as SpellKey)
+			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+			const bonusStats = champion.getSpellVariable(spell, 'BonusStats' as SpellKey)
+			// const vip = champion.getSpellVariable(spell, 'T1DebutantBonus' as SpellKey) //TODO VIP
+			const expiresAfterMS = durationSeconds * 1000
+			champion.queueHexEffect(elapsedMS, spell, {
+				targetTeam: champion.team,
+				hexDistanceFromSource: 2, //NOTE hardcoded
+				opacity: 0.5,
+				onActivate: (elapsedMS, champion) => {
+					champion.queueShield(elapsedMS, champion, {
+						amount: shieldAmount,
+						expiresAfterMS,
+					})
+					champion.manaLockUntilMS = elapsedMS + expiresAfterMS
+				},
+				onCollision: (elapsedMS, unit) => {
+					unit.setBonusesFor(champion.instanceID as ChampionKey, [BonusKey.Armor, bonusStats, elapsedMS + expiresAfterMS], [BonusKey.MagicResist, bonusStats, elapsedMS + expiresAfterMS])
+				},
+			})
+			return true
 		},
 	},
 
