@@ -27,26 +27,25 @@ export function createDamageCalculation(variable: string, value: number, damageT
 
 export function solveSpellCalculationFrom(source: ChampionUnit | undefined, target: ChampionUnit | undefined, calculation: SpellCalculation): [value: number, damageType: DamageType | undefined] {
 	let damageType = calculation.damageType
-	const total = calculation.parts.reduce((acc, part) => {
-		const multiplyParts = part.operator === 'product'
-		return acc + part.subparts.reduce((subAcc, subpart) => {
+	const total = calculation.parts.reduce((partsAccumulator, part) => {
+		const doesMultiplySubparts = part.operator === 'product'
+		return partsAccumulator + part.subparts.reduce((subpartsAccumulator, subpart) => {
 			let value = subpart.starValues?.[source?.starLevel ?? 1] ?? 1
 			if (subpart.stat != null) {
-				if (subpart.stat === BonusKey.AttackDamage) {
-					damageType = DamageType.physical
-				}
-				if (subpart.stat === BonusKey.AttackDamage) {
-					damageType = DamageType.physical
-				} else if (!damageType && subpart.stat === BonusKey.AbilityPower) {
-					damageType = DamageType.magic
+				if (damageType !== DamageType.true) {
+					if (subpart.stat === BonusKey.AttackDamage) {
+						damageType = DamageType.physical
+					} else if (!damageType && subpart.stat === BonusKey.AbilityPower) {
+						damageType = DamageType.magic
+					}
 				}
 				value *= (subpart.statFromTarget === true ? target : source)!.getStat(subpart.stat as BonusKey) * subpart.ratio!
 			}
 			if (subpart.max != null) {
 				value = Math.min(subpart.max, value)
 			}
-			return multiplyParts ? (subAcc * value) : (subAcc + value)
-		}, multiplyParts ? 1 : 0)
+			return doesMultiplySubparts ? (subpartsAccumulator * value) : (subpartsAccumulator + value)
+		}, doesMultiplySubparts ? 1 : 0)
 	}, 0)
 	return [calculation.asPercent === true ? total * 100 : total, damageType]
 }
