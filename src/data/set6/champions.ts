@@ -82,9 +82,7 @@ export const championEffects = {
 					champion.performActionUntilMS = 0
 					const adjacentHex = affectedUnit.projectHexFrom(champion, false)
 					if (adjacentHex) {
-						affectedUnit.moving = true
-						affectedUnit.customMoveSpeed = spell.missile?.speedInitial
-						affectedUnit.setActiveHex(adjacentHex) //TODO travel time
+						affectedUnit.customMoveTo(adjacentHex, spell.missile?.speedInitial) //TODO travel time
 						if (!champion.checkInRangeOfTarget()) {
 							champion.setTarget(null)
 						}
@@ -240,9 +238,7 @@ export const championEffects = {
 				if (champion.target) {
 					const jumpToHex = champion.projectHexFrom(champion.target, false)
 					if (jumpToHex) {
-						champion.moving = true
-						champion.customMoveSpeed = 1000 //TODO travel time
-						champion.setActiveHex(jumpToHex)
+						champion.customMoveTo(jumpToHex, 1000) //TODO travel time
 					}
 				}
 			}
@@ -609,9 +605,7 @@ export const championEffects = {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO calculate
 				onActivate: (elapsedMS, champion) => {
-					champion.moving = true
-					champion.setActiveHex(projectedHex ?? champion.activeHex)
-					champion.customMoveSpeed = 2000
+					champion.customMoveTo(projectedHex ?? champion.activeHex, 2000) //TODO experimentally determine
 					champion.empoweredAutos.add({
 						amount: 3, //NOTE hardcoded
 						damageModifier: {

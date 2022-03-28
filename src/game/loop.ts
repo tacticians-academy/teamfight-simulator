@@ -127,7 +127,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	}
 
 	for (const unit of state.units) {
-		if (!unit.isInteractable() || unit.range() <= 0) {
+		if (!unit.isInteractable()) {
 			continue
 		}
 		unit.updateTarget()
@@ -150,7 +150,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		}
 	}
 
-	([state.hexEffects, state.projectileEffects, state.shapeEffects, state.targetEffects] as Set<GameEffect>[]).forEach(effects => {
+	([state.hexEffects, state.moveUnitEffects, state.projectileEffects, state.shapeEffects, state.targetEffects] as Set<GameEffect>[]).forEach(effects => {
 		effects.forEach(effect => {
 			if (effect.update(elapsedMS, diffMS, state.units) === false) {
 				effects.delete(effect)

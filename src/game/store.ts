@@ -12,6 +12,7 @@ import { importAugmentEffects, importChampionEffects, importItemEffects, importT
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { HexEffect } from '#/game/effects/HexEffect'
+import type { MoveUnitEffect } from '#/game/effects/MoveUnitEffect'
 import type { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ShapeEffect } from '#/game/effects/ShapeEffect'
 import type { TargetEffect } from '#/game/effects/TargetEffect'
@@ -58,6 +59,7 @@ export const state = reactive({
 	dragUnit: null as ChampionUnit | null,
 	units: [] as ChampionUnit[],
 	hexEffects: new Set<HexEffect>(),
+	moveUnitEffects: new Set<MoveUnitEffect>(),
 	projectileEffects: new Set<ProjectileEffect>(),
 	shapeEffects: new Set<ShapeEffect>(),
 	targetEffects: new Set<TargetEffect>(),
@@ -207,6 +209,7 @@ function resetUnitsAfterUpdating() {
 		return !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator)
 	})
 	state.hexEffects.clear()
+	state.moveUnitEffects.clear()
 	state.projectileEffects.clear()
 	state.shapeEffects.clear()
 	state.targetEffects.clear()

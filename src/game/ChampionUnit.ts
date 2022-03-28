@@ -10,6 +10,8 @@ import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 import { HexEffect } from '#/game/effects/HexEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
+import { MoveUnitEffect } from '#/game/effects/MoveUnitEffect'
+import type { MoveUnitEffectData } from '#/game/effects/MoveUnitEffect'
 import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
 import type { ProjectileEffectData } from '#/game/effects/ProjectileEffect'
 import { ShapeEffect, ShapeEffectVisualRectangle } from '#/game/effects/ShapeEffect'
@@ -25,7 +27,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
-import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageModifier, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, CollisionFn, DamageModifier, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -74,6 +76,7 @@ export class ChampionUnit {
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moving = false
 	customMoveSpeed: number | undefined
+	onMovementComplete?: CollisionFn
 	performActionUntilMS: DOMHighResTimeStamp = 0
 	manaLockUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
@@ -143,6 +146,7 @@ export class ChampionUnit {
 		this.moving = false
 		this.attackStartAtMS = 0
 		this.customMoveSpeed = undefined
+		this.onMovementComplete = undefined
 		this.performActionUntilMS = 0
 		this.manaLockUntilMS = 0
 		this.basicAttackCount = 0
@@ -457,6 +461,8 @@ export class ChampionUnit {
 		if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
 			this.moving = false
 			this.customMoveSpeed = undefined
+			this.onMovementComplete?.(elapsedMS, this)
+			this.onMovementComplete = undefined
 			this.coord[0] = targetX
 			this.coord[1] = targetY
 		} else {
@@ -546,9 +552,7 @@ export class ChampionUnit {
 		const [col, row] = this.startHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		const jumpHex = getClosestHexAvailableTo(targetHex, state.units)
-		this.customMoveSpeed = 1500 // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
-		this.moving = true
-		this.setActiveHex(jumpHex ?? this.startHex)
+		this.customMoveTo(jumpHex ?? this.startHex, 1500) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
 		this.applyStatusEffect(0, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
@@ -669,7 +673,7 @@ export class ChampionUnit {
 
 		if (damageType === DamageType.heal) {
 			this.gainHealth(elapsedMS, source, rawDamage, true)
-			return
+			return undefined
 		}
 		if (sourceType === DamageSourceType.attack) {
 			const dodgeChance = this.dodgeChance() - source!.dodgePrevention()
@@ -681,7 +685,8 @@ export class ChampionUnit {
 			rawDamage += damageModifier.increase
 		}
 		if (rawDamage <= 0) {
-			return console.warn('Negative damage', rawDamage)
+			console.warn('Negative damage', rawDamage)
+			return undefined
 		}
 		rawDamage *= 1 + (damageModifier?.multiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
 		let defenseStat = damageType === DamageType.physical
@@ -864,6 +869,13 @@ export class ChampionUnit {
 	}
 	isIn(hexes: Iterable<HexCoord>) {
 		return containsHex(this.activeHex, hexes)
+	}
+
+	customMoveTo(hex: HexCoord, customSpeed: number | undefined, onMovementComplete?: CollisionFn) {
+		this.moving = true
+		this.customMoveSpeed = customSpeed
+		this.onMovementComplete = onMovementComplete
+		this.setActiveHex(hex)
 	}
 
 	setActiveHex(hex: HexCoord) {
@@ -1110,11 +1122,9 @@ export class ChampionUnit {
 		}
 		if (spell) {
 			if (!data.damageCalculation && data.targetTeam !== this.team) {
-				const damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
-				if (data.hexEffect) {
-					data.hexEffect.damageCalculation = damageCalculation
-				} else {
-					data.damageCalculation = damageCalculation
+				const damageObject = data.hexEffect ? data.hexEffect : data
+				if (!damageObject.damageCalculation) {
+					damageObject.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
 				}
 			}
 			if (!data.damageSourceType) {
@@ -1177,7 +1187,37 @@ export class ChampionUnit {
 		}
 		return hexEffect
 	}
-
+	queueMoveUnitEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: MoveUnitEffectData) {
+		if (spell && data.targetTeam !== this.team) {
+			const damageObject = data.hexEffect ? data.hexEffect : data
+			if (!damageObject.damageCalculation) {
+				damageObject.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
+			}
+		}
+		if (data.damageCalculation && !data.damageSourceType) {
+			data.damageSourceType = DamageSourceType.spell
+		}
+		if (!data.target) {
+			if (!this.target) {
+				console.log('ERR', 'No target', this.name, spell?.name)
+				return undefined
+			}
+			data.target = this.target
+		}
+		if (data.hexEffect) {
+			if (data.hexEffect.hexDistanceFromSource != null && !data.hexEffect.hexSource) {
+				data.hexEffect.hexSource = data.target
+			}
+		}
+		const effect = new MoveUnitEffect(this, elapsedMS, spell, data)
+		state.moveUnitEffects.add(effect)
+		if (spell) {
+			this.attackStartAtMS = effect.activatesAtMS
+			this.manaLockUntilMS = effect.activatesAtMS + DEFAULT_MANA_LOCK_MS
+			this.performActionUntilMS = effect.activatesAtMS
+		}
+		return effect
+	}
 	queueShapeEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ShapeEffectData) {
 		if (spell && !data.damageCalculation && data.targetTeam !== this.team) {
 			data.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)
