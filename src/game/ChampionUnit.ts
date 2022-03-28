@@ -592,8 +592,7 @@ export class ChampionUnit {
 	jumpToBackline() {
 		const [col, row] = this.startHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		const jumpHex = getClosestHexAvailableTo(targetHex, state.units)
-		this.customMoveTo(jumpHex ?? this.startHex, 1500) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
+		this.customMoveTo(targetHex, true, 1500) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
 		this.applyStatusEffect(0, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
@@ -929,17 +928,25 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	customMoveTo(hex: HexCoord, customSpeed: number | undefined, onMovementComplete?: CollisionFn) {
-		this.moving = true
-		this.customMoveSpeed = customSpeed
-		this.onMovementComplete = onMovementComplete
-		this.setActiveHex(hex)
+	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, onMovementComplete?: CollisionFn) {
+		const isUnitTarget = 'activeHex' in target
+		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
+		if (checkHexAvailable) {
+			hex = getClosestHexAvailableTo(hex, state.units)
+		}
+		if (hex) {
+			this.moving = true
+			this.customMoveSpeed = customSpeed
+			this.onMovementComplete = onMovementComplete
+			this.setActiveHex(hex)
+			this.setTarget(isUnitTarget && target.team !== this.team ? target : null)
+		}
 	}
 
-	setActiveHex(hex: HexCoord) {
+	setActiveHex([col, row]: HexCoord) {
 		this.movesBeforeDroppingTarget -= 1
-		this.activeHex[0] = hex[0]
-		this.activeHex[1] = hex[1]
+		this.activeHex[0] = col
+		this.activeHex[1] = row
 	}
 	reposition(hex: HexCoord) {
 		if (state.isRunning) {
@@ -1263,7 +1270,7 @@ export class ChampionUnit {
 		return hexEffect
 	}
 	queueMoveUnitEffect(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: MoveUnitEffectData) {
-		if (spell && data.targetTeam !== this.team) {
+		if (spell && data.target !== this && data.targetTeam !== this.team) {
 			const damageObject = data.hexEffect ? data.hexEffect : data
 			if (!damageObject.damageCalculation) {
 				damageObject.damageCalculation = this.getSpellCalculation(spell, SpellKey.Damage, true)

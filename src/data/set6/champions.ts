@@ -68,13 +68,8 @@ export const championEffects = {
 				moveSpeed,
 				onCollision: (elapsedMS, withUnit) => {
 					if (withUnit === target) {
-						champion.setTarget(null)
-						target.setTarget(null)
-						if (!targetHex) {
-							targetHex = getClosestHexAvailableTo(target.activeHex, checkingUnits)
-						}
 						if (targetHex) {
-							target.customMoveTo(targetHex, moveSpeed, (elapsedMS, target) => {
+							target.customMoveTo(targetHex ?? target, true, moveSpeed, (elapsedMS, target) => {
 								const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 								target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
 							})
@@ -130,7 +125,7 @@ export const championEffects = {
 					champion.performActionUntilMS = 0
 					const adjacentHex = affectedUnit.projectHexFrom(champion, false)
 					if (adjacentHex) {
-						affectedUnit.customMoveTo(adjacentHex, spell.missile?.speedInitial) //TODO travel time
+						affectedUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial) //TODO travel time
 						if (!champion.checkInRangeOfTarget()) {
 							champion.setTarget(null)
 						}
@@ -319,7 +314,7 @@ export const championEffects = {
 				if (champion.target) {
 					const jumpToHex = champion.projectHexFrom(champion.target, false)
 					if (jumpToHex) {
-						champion.customMoveTo(jumpToHex, 1000) //TODO travel time
+						champion.customMoveTo(jumpToHex, false, 1000) //TODO travel time
 					}
 				}
 			}
@@ -871,7 +866,7 @@ export const championEffects = {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO calculate
 				onActivate: (elapsedMS, champion) => {
-					champion.customMoveTo(projectedHex ?? champion.activeHex, 2000) //TODO experimentally determine
+					champion.customMoveTo(projectedHex ?? champion, false, 2000) //TODO experimentally determine
 					champion.empoweredAutos.add({
 						amount: 3, //NOTE hardcoded
 						damageModifier: {
@@ -1035,7 +1030,7 @@ function getProjectileSpread(count: number, radiansBetween: number) {
 }
 
 function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, moveSpeed: number, target: ChampionUnit) {
-	champion.customMoveTo(target.activeHex, moveSpeed, (elapsedMS, champion) => {
+	champion.customMoveTo(target, false, moveSpeed, (elapsedMS, champion) => {
 		if (target.isAttackable()) {
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
 			if (damageCalculation) {
@@ -1043,14 +1038,12 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 				if (target.dead) {
 					const newTarget = getBestAsMax(false, getInteractableUnitsOfTeam(target.team), (unit) => unit.health)
 					if (newTarget) {
-						champion.setTarget(newTarget)
 						return ireliaResetRecursive(spell, champion, moveSpeed, newTarget)
 					}
 				}
 			}
 		}
-		const bestHex = getClosestHexAvailableTo(champion.activeHex, state.units.filter(unit => unit !== champion))
-		champion.customMoveTo(bestHex ?? champion.activeHex, moveSpeed, (elapsedMS, champion) => {
+		champion.customMoveTo(target, true, moveSpeed, (elapsedMS, champion) => {
 			champion.manaLockUntilMS = 0
 		})
 	})

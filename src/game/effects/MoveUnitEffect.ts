@@ -10,7 +10,7 @@ import { state } from '#/game/store'
 import { coordinateDistanceSquared, getClosestHexAvailableTo } from '#/helpers/boardUtils'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 
-type CalculateDestinationFn = (target: ChampionUnit) => HexCoord | null | undefined
+type CalculateDestinationFn = (target: ChampionUnit) => ChampionUnit | HexCoord | null | undefined
 
 export interface MoveUnitEffectData extends GameEffectData {
 	/** Unit to apply this effect to. */
@@ -59,14 +59,9 @@ export class MoveUnitEffect extends GameEffect {
 		}
 		const spellShield = this.target.consumeSpellShield()
 		if (spellShield == null) {
-			let bestHex = this.idealDestination(this.target)
-			if (bestHex) {
-				if (!this.ignoresDestinationCollision) {
-					bestHex = getClosestHexAvailableTo(bestHex, state.units)
-				}
-				if (bestHex) {
-					this.target.customMoveTo(bestHex, 1000, this.apply)
-				}
+			const destination = this.idealDestination(this.target)
+			if (destination) {
+				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, 1000, this.apply)
 			}
 		}
 	}
