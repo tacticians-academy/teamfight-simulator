@@ -258,6 +258,35 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Illaoi]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return false }
+			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+			const healingProportion = champion.getSpellVariable(spell, 'PercentHealing' as SpellKey)
+			return champion.queueTargetEffect(elapsedMS, spell, {
+				sourceTargets: [[champion, target]],
+				onActivate: (elapsedMS, champion) => {
+					const id = champion.instanceID
+					console.log(elapsedMS, id)
+					target.damageCallbacks.forEach(damageCallback => {
+						if (damageCallback.id !== id) {
+							target.damageCallbacks.delete(damageCallback)
+						}
+					})
+					target.damageCallbacks.add({
+						id,
+						expiresAtMS: elapsedMS + durationSeconds * 1000,
+						onDamage: (elapsedMS, target, damage) => {
+							console.log(elapsedMS, damage, healingProportion, target.damageCallbacks.size)
+							champion.gainHealth(elapsedMS, champion, damage! * healingProportion, true)
+						},
+					})
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Irelia]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
