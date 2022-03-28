@@ -779,6 +779,32 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Talon]: {
+		passive: (elapsedMS, spell, target, source) => {
+			if (!target) { return true }
+			const bleedSeconds = source.getSpellVariable(spell, 'BleedDuration' as SpellKey)
+			// const vip = source.getSpellVariable(spell, 'VIPBleedDurationBonus' as SpellKey) //TODO VIP
+			const repeatsEveryMS = 1000 //TODO experimentally determine
+			const iterationsCount = bleedSeconds * 1000 / repeatsEveryMS
+			const sourceID = source.instanceID
+			const basicAttacksOnTarget = target.basicAttackSourceIDs.filter(basicAttackSourceID => basicAttackSourceID === sourceID).length
+			if (basicAttacksOnTarget % 3 === 0) { //NOTE hardcoded
+				target.bleeds.add({
+					sourceID,
+					source,
+					damageCalculation: source.getSpellCalculation(spell, SpellKey.Damage)!,
+					damageModifier: {
+						multiplier: -(1 - 1 / iterationsCount),
+					},
+					activatesAtMS: elapsedMS,
+					repeatsEveryMS,
+					remainingIterations: iterationsCount,
+				})
+			}
+			return true
+		},
+	},
+
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
