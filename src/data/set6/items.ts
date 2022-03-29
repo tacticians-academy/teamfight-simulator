@@ -103,13 +103,14 @@ export const baseItemEffects = {
 	},
 
 	[ItemKey.GiantSlayer]: {
-		modifyDamageByHolder: (item, target, holder, { isOriginalSource, sourceType, rawDamage }) => {
-			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
-				return rawDamage
+		modifyDamageByHolder: (item, target, holder, damage) => {
+			if (damage.isOriginalSource && (damage.sourceType === DamageSourceType.attack || damage.sourceType === DamageSourceType.spell)) {
+				const [thresholdHP, smallBonusPct, largeBonusPct] = getVariables(item, 'HPThreshold', 'SmallBonusPct', 'LargeBonusPct')
+				const bonusPercent = target.healthMax >= thresholdHP ? largeBonusPct : smallBonusPct
+				if (bonusPercent > 0) {
+					damage.rawDamage *= 1 + bonusPercent / 100
+				}
 			}
-			const [thresholdHP, smallBonusPct, largeBonusPct] = getVariables(item, 'HPThreshold', 'SmallBonusPct', 'LargeBonusPct')
-			const bonusPercent = target.healthMax >= thresholdHP ? largeBonusPct : smallBonusPct
-			return bonusPercent <= 0 ? rawDamage : rawDamage * (1 + bonusPercent / 100)
 		},
 	},
 

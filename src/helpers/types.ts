@@ -205,7 +205,7 @@ interface ItemFns {
 	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, holder: ChampionUnit, damage: DamageResult) => void
-	modifyDamageByHolder?: (item: ItemData, target: ChampionUnit, holder: ChampionUnit, damage: DamageResult) => number
+	modifyDamageByHolder?: (item: ItemData, target: ChampionUnit, holder: ChampionUnit, damage: DamageResult) => void
 	basicAttack?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, target: ChampionUnit, holder: ChampionUnit, canReProc: boolean) => void
 	damageTaken?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, holder: ChampionUnit, source: ChampionUnit | undefined, damage: DamageResult) => void
 	castWithinHexRange?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, caster: ChampionUnit, holder: ChampionUnit) => void
@@ -228,7 +228,7 @@ interface TraitFns {
 	enemyDeath?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, dead: ChampionUnit, traitUnits: ChampionUnit[]) => void
 	basicAttack?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, canReProc: boolean) => void
 	damageDealtByHolder?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, damage: DamageResult) => void
-	modifyDamageByHolder?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, damage: DamageResult) => number
+	modifyDamageByHolder?: (activeEffect: TraitEffectData, target: ChampionUnit, source: ChampionUnit, damage: DamageResult) => void
 	hpThreshold?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }

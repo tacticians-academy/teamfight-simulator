@@ -238,7 +238,7 @@ export const baseTraitEffects = {
 			if (damage.isOriginalSource) {
 				const [percentBonusDamagePerHex] = getVariables(activeEffect, 'PercentDamageIncrease')
 				const hexDistance = source.hexDistanceTo(target)
-				return damage.rawDamage * (1 + percentBonusDamagePerHex / 100 * hexDistance)
+				damage.rawDamage *= (1 + percentBonusDamagePerHex / 100 * hexDistance)
 			}
 		},
 	},

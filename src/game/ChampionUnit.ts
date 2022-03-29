@@ -698,7 +698,7 @@ export class ChampionUnit {
 		}
 	}
 
-	canDamageCrit(sourceType: DamageSourceType, damageType: DamageType) {
+	canDamageCrit({ sourceType, damageType }: DamageResult) {
 		if (sourceType === DamageSourceType.spell) {
 			if (damageType === DamageType.magic || damageType === DamageType.true) {
 				return this.hasActive(TraitKey.Assassin) || this.hasItem(ItemKey.JeweledGauntlet) || getters.activeAugmentEffectsByTeam.value[this.team].some(([augment]) => augment.groupID === AugmentGroupKey.JeweledLotus)
@@ -714,12 +714,12 @@ export class ChampionUnit {
 	}
 
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier): DamageResult | undefined {
-		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
-		const damageResult: DamageResult = {
+		const [calculatedDamage, calculatedDamageType] = solveSpellCalculationFrom(source, this, damageCalculation)
+		const damage: DamageResult = {
 			isOriginalSource,
 			sourceType,
-			damageType,
-			rawDamage,
+			damageType: calculatedDamageType,
+			rawDamage: calculatedDamage,
 			healthDamage: 0,
 			didCrit: false,
 		}
@@ -727,62 +727,62 @@ export class ChampionUnit {
 		source?.items.forEach((item, index) => {
 			const modifyDamageFn = setData.itemEffects[item.name]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(item, this, source, damageResult)
+				modifyDamageFn(item, this, source, damage)
 			}
 		})
 		source?.activeSynergies.forEach(({ key, activeEffect }) => {
 			const modifyDamageFn = setData.traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(activeEffect!, this, source, damageResult)
+				modifyDamageFn(activeEffect!, this, source, damage)
 			}
 		})
 
-		if (damageType === DamageType.heal) {
-			this.gainHealth(elapsedMS, source, rawDamage, true)
+		if (damage.damageType === DamageType.heal) {
+			this.gainHealth(elapsedMS, source, damage.rawDamage, true)
 			return undefined
 		}
 		if (sourceType === DamageSourceType.attack) {
 			const dodgeChance = this.dodgeChance() - source!.dodgePrevention()
 			if (dodgeChance > 0) {
-				rawDamage *= 1 - dodgeChance
+				damage.rawDamage *= 1 - dodgeChance
 			}
 		}
 		if (damageModifier?.increase != null) {
-			rawDamage += damageModifier.increase
+			damage.rawDamage += damageModifier.increase
 		}
-		if (rawDamage <= 0) {
-			console.warn('Negative damage', rawDamage)
+		if (damage.rawDamage <= 0) {
+			console.warn('Negative damage', damage.rawDamage)
 			return undefined
 		}
-		rawDamage *= 1 + (damageModifier?.multiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
-		let defenseStat = damageType === DamageType.physical
+		damage.rawDamage *= 1 + (damageModifier?.multiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
+		let defenseStat = damage.damageType === DamageType.physical
 			? this.armor()
-			: damageType === DamageType.magic
+			: damage.damageType === DamageType.magic
 				? this.magicResist()
 				: null
 		let reduction = 0
-		if (damageType === DamageType.physical) {
+		if (damage.damageType === DamageType.physical) {
 			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction) ?? 0) + this.getBonuses(BonusKey.ArmorShred)
-		} else if (damageType === DamageType.magic) {
+		} else if (damage.damageType === DamageType.magic) {
 			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + this.getBonuses(BonusKey.MagicResistShred)
 		}
 		if (reduction > 0) {
 			defenseStat! *= (1 - reduction)
 		}
 		let didCrit = false
-		if (source && (damageType === DamageType.physical || (damageType === DamageType.magic && source.canDamageCrit(sourceType, damageType)))) {
+		if (source && (damage.damageType !== DamageType.magic || source.canDamageCrit(damage))) {
 			didCrit = source.critChance(damageModifier) > Math.random()
 			if (didCrit) {
 				const critReduction = this.critReduction()
 				if (critReduction < 1) {
-					const critDamage = rawDamage * source.critMultiplier(damageModifier)
-					rawDamage += critDamage * (1 - critReduction)
+					const critDamage = damage.rawDamage * source.critMultiplier(damageModifier)
+					damage.rawDamage += critDamage * (1 - critReduction)
 				}
 			}
 		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
-		let takingDamage = rawDamage * defenseMultiplier
-		if (damageType !== DamageType.true) {
+		let takingDamage = damage.rawDamage * defenseMultiplier
+		if (damage.damageType !== DamageType.true) {
 			const damageReduction = this.getBonuses(BonusKey.DamageReduction)
 			if (damageReduction > 0) {
 				if (damageReduction >= 1) {
@@ -820,33 +820,32 @@ export class ChampionUnit {
 
 		const originalHealth = this.health
 		this.health -= healthDamage
-		const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
+		const manaGain = Math.min(42.5, damage.rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 		this.gainMana(elapsedMS, manaGain)
-		damageResult.rawDamage = rawDamage
-		damageResult.healthDamage = healthDamage
-		damageResult.didCrit = didCrit
+		damage.healthDamage = healthDamage
+		damage.didCrit = didCrit
 
 		this.damageCallbacks.forEach(damageData => {
 			if (elapsedMS >= damageData.expiresAtMS) {
 				this.damageCallbacks.delete(damageData)
 			} else {
-				damageData.onDamage(elapsedMS, this, damageResult)
+				damageData.onDamage(elapsedMS, this, damage)
 			}
 		})
 
 		// `source` effects
 
-		if (source && damageType) {
-			const sourceVamp = source.getVamp(damageType, sourceType)
+		if (source) {
+			const sourceVamp = source.getVamp(damage)
 			if (sourceVamp > 0) {
 				source.gainHealth(elapsedMS, source, takingDamage * sourceVamp / 100, true)
 			}
 
 			if (isOriginalSource) {
-				source.items.forEach((item, index) => setData.itemEffects[item.name]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, this, source, damageResult))
-				source.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, this, source, damageResult))
+				source.items.forEach((item, index) => setData.itemEffects[item.name]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, this, source, damage))
+				source.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, this, source, damage))
 				getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
-					effects.damageDealtByHolder?.(augment, elapsedMS, this, source, damageResult)
+					effects.damageDealtByHolder?.(augment, elapsedMS, this, source, damage)
 				})
 				if (sourceType === DamageSourceType.attack) {
 					source.shields.forEach(shield => {
@@ -864,7 +863,7 @@ export class ChampionUnit {
 			const uniqueID = uniqueIdentifier(index, item)
 			const effects = setData.itemEffects[item.name]
 			if (effects) {
-				effects.damageTaken?.(elapsedMS, item, uniqueID, this, source, damageResult)
+				effects.damageTaken?.(elapsedMS, item, uniqueID, this, source, damage)
 				const hpThresholdFn = effects.hpThreshold
 				if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects, originalHealth, healthDamage)) {
 					hpThresholdFn(elapsedMS, item, uniqueID, this)
@@ -881,7 +880,7 @@ export class ChampionUnit {
 			}
 		})
 		getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
-			effects.damageTakenByHolder?.(augment, elapsedMS, this, source, damageResult)
+			effects.damageTakenByHolder?.(augment, elapsedMS, this, source, damage)
 
 			const hpThresholdFn = effects.hpThreshold
 			if (hpThresholdFn && this.checkHPThreshold(augment.name, augment.effects, originalHealth, healthDamage)) {
@@ -894,7 +893,7 @@ export class ChampionUnit {
 		if (this.health <= 0) {
 			this.die(elapsedMS, source)
 		}
-		return damageResult
+		return damage
 	}
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables, originalHealth: number, healthDamage: number) {
@@ -1167,10 +1166,10 @@ export class ChampionUnit {
 		return this.getBonuses(BonusKey.AttackAccuracy) / 100
 	}
 
-	getVamp(damageType: DamageType, damageSource: DamageSourceType) {
+	getVamp({ damageType, sourceType }: DamageResult) {
 		const vampBonuses = [BonusKey.VampOmni]
-		if (damageSource !== DamageSourceType.bonus) {
-			if (damageType === DamageType.physical) {
+		if (sourceType !== DamageSourceType.bonus) {
+			if (damageType === DamageType.physical || (damageType === DamageType.true && sourceType === DamageSourceType.attack)) {
 				vampBonuses.push(BonusKey.VampPhysical)
 			}
 			if (damageType === DamageType.magic || damageType === DamageType.true) {
