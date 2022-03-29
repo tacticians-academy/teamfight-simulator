@@ -7,7 +7,7 @@ import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getHexRing, getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
@@ -165,6 +165,15 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.Galio]: {
+		passive: (elapsedMS, spell, target, champion, damage) => {
+			if (damage && damage.didCrit) {
+				champion.queueHexEffect(elapsedMS, undefined, {
+					hexes: getHexRing(target.activeHex),
+					damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
+					opacity: 0.5,
+				})
+			}
+		},
 		cast: (elapsedMS, spell, champion) => {
 			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
 			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
