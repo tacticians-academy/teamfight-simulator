@@ -5,7 +5,7 @@ import { state } from '#/game/store'
 import { checkCooldown, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { DamageSourceType } from '#/helpers/types'
+import { DamageSourceType, StatusEffectType } from '#/helpers/types'
 import type { AugmentEffects } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
@@ -44,6 +44,15 @@ export const augmentEffects = {
 		apply: (augment, team, units) => {
 			const [manaRestore] = getVariables(augment, BonusKey.ManaRestore)
 			units.forEach(unit => unit.addBonuses(AugmentGroupKey.BlueBattery, [BonusKey.ManaRestore, manaRestore]))
+		},
+	},
+
+	[AugmentGroupKey.ConcussiveBlows]: {
+		damageDealtByHolder: (augment, elapsedMS, target, source, { didCrit }) => {
+			if (didCrit && source.hasTrait(TraitKey.Striker) && checkCooldown(elapsedMS, source, augment, augment.groupID + target.instanceID, true, 'StunCD')) {
+				const [stunSeconds] = getVariables(augment, 'StunDuration')
+				target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
+			}
 		},
 	},
 
