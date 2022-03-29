@@ -724,18 +724,17 @@ export class ChampionUnit {
 			didCrit: false,
 		}
 
-		source?.items.forEach((item, index) => {
-			const modifyDamageFn = setData.itemEffects[item.name]?.modifyDamageByHolder
-			if (modifyDamageFn) {
-				modifyDamageFn(item, this, source, damage)
-			}
-		})
-		source?.activeSynergies.forEach(({ key, activeEffect }) => {
-			const modifyDamageFn = setData.traitEffects[key]?.modifyDamageByHolder
-			if (modifyDamageFn) {
-				modifyDamageFn(activeEffect!, this, source, damage)
-			}
-		})
+		if (source) {
+			getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
+				effects.modifyDamageByHolder?.(augment, this, source, damage)
+			})
+			source.items.forEach((item, index) => {
+				setData.itemEffects[item.name]?.modifyDamageByHolder?.(item, this, source, damage)
+			})
+			source.activeSynergies.forEach(({ key, activeEffect }) => {
+				setData.traitEffects[key]?.modifyDamageByHolder?.(activeEffect!, this, source, damage)
+			})
+		}
 
 		if (damage.damageType === DamageType.heal) {
 			this.gainHealth(elapsedMS, source, damage.rawDamage, true)

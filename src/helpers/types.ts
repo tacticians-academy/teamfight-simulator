@@ -176,6 +176,7 @@ export type EffectResults = BonusVariable[] | void
 
 export interface AugmentFns {
 	modifyAttacks?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => AttackEffectData
+	modifyDamageByHolder?: (augment: AugmentData, target: ChampionUnit, holder: ChampionUnit, damage: DamageResult) => void
 	delayed?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, team: TeamNumber, units: ChampionUnit[]) => void
 	teamWideTrait?: TraitKey
 	startOfFight?: (augment: AugmentData, team: TeamNumber, units: ChampionUnit[]) => void

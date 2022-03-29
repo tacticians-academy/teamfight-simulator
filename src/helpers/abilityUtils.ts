@@ -122,7 +122,7 @@ export function resetChecks() {
 	Object.keys(thresholdCheck).forEach(key => delete thresholdCheck[key])
 }
 
-export function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, entity: ItemAugmentCompatible, cooldownID: string, instantlyApplies: boolean, cooldownKey: string = 'ICD') {
+export function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, entity: ItemAugmentCompatible, cooldownID: string, appliesOnFirstInstance: boolean, cooldownKey: string = 'ICD') {
 	const checkKey = unit.instanceID + cooldownID
 	const activatedAtMS = activatedCheck[checkKey]
 	const [cooldownSeconds] = getVariables(entity, cooldownKey)
@@ -133,7 +133,7 @@ export function checkCooldown(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit
 		return false
 	}
 	activatedCheck[checkKey] = elapsedMS
-	return instantlyApplies ? true : activatedAtMS != null
+	return appliesOnFirstInstance || activatedAtMS != null
 }
 
 export function getUnitsOfTeam(team: TeamNumber | null) {
