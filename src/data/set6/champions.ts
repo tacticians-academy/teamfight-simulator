@@ -213,7 +213,7 @@ export const baseChampionEffects = {
 						id,
 						expiresAtMS: elapsedMS + durationSeconds * 1000,
 						onDamage: (elapsedMS, target, damage) => {
-							champion.gainHealth(elapsedMS, champion, damage! * healingProportion, true)
+							champion.gainHealth(elapsedMS, champion, damage!.healthDamage * healingProportion, true)
 						},
 					})
 				},
@@ -438,12 +438,13 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.Poppy]: {
-		passive: (elapsedMS, spell, target, champion) => {
+		passiveOnCast: true,
+		passive: (elapsedMS, spell, target, champion, damage) => {
 			const mostDistantEnemy = getDistanceUnit(true, champion, champion.opposingTeam())
 			if (!mostDistantEnemy) { return false }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: mostDistantEnemy,
-				returnMissile: spell.missile,
+				returnMissile: spell!.missile,
 				onCollision: (elapsedMS, affectedUnit) => {
 					if (affectedUnit === champion) {
 						const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
@@ -553,8 +554,7 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.Talon]: {
-		passive: (elapsedMS, spell, target, source) => {
-			if (!target) { return true }
+		passive: (elapsedMS, spell, target, source, damage) => {
 			const bleedSeconds = source.getSpellVariable(spell, 'BleedDuration' as SpellKey)
 			// const vip = source.getSpellVariable(spell, 'VIPBleedDurationBonus' as SpellKey) //TODO VIP
 			const repeatsEveryMS = 1000 //TODO experimentally determine
@@ -646,8 +646,7 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.Warwick]: {
-		passive: (elapsedMS, spell, target, source) => {
-			if (!target) { return true }
+		passive: (elapsedMS, spell, target, source, damage) => {
 			const heal = source.getSpellCalculationResult(spell, SpellKey.HealAmount)
 			const percentHealthDamage = source.getSpellCalculationResult(spell, SpellKey.PercentHealth) / 100
 			const damageCalculation = createDamageCalculation(SpellKey.PercentHealth, percentHealthDamage, DamageType.magic, BonusKey.CurrentHealth, true, 1)

@@ -7,7 +7,7 @@ import { getters } from '#/game/store'
 
 import { solveSpellCalculationFrom } from '#/helpers/calculate'
 import { DamageSourceType } from '#/helpers/types'
-import type { BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
+import type { BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: number, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => undefined
@@ -122,10 +122,10 @@ export class GameEffect extends GameEffectChild {
 		}
 	}
 
-	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit): [wasSpellShielded: boolean, damage: number | undefined] {
-		const spellShield = this.damageCalculation && this.damageSourceType !== DamageSourceType.attack ? unit.consumeSpellShield() : undefined
+	applyDamage(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit): [wasSpellShielded: boolean, damage: DamageResult | undefined] {
+		const spellShield = this.damageCalculation && this.damageSourceType === DamageSourceType.spell ? unit.consumeSpellShield() : undefined
 		const wasSpellShielded = !!spellShield
-		let damage: number | undefined
+		let damage: DamageResult | undefined
 		if (this.damageCalculation != null) {
 			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.includes(this.hitID)
 			const damageModifier: DamageModifier = modifiesDamage && this.damageModifier

@@ -32,6 +32,12 @@ export interface DamageModifier {
 	critChance?: number
 }
 
+export interface DamageResult {
+	rawDamage: number
+	healthDamage: number
+	didCrit: boolean
+}
+
 export interface SynergyData {
 	key: TraitKey
 	trait: TraitData
@@ -68,7 +74,7 @@ export interface StatusEffect {
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>
 
-export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage?: number) => void
+export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage?: DamageResult) => void
 
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',
@@ -183,7 +189,8 @@ export type AugmentEffects = {[key in string]?: AugmentFns}
 
 export interface ChampionFns {
 	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => GameEffect | boolean
-	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit | undefined, source: ChampionUnit) => void
+	passiveCasts?: boolean
+	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, target: ChampionUnit, source: ChampionUnit, damage: DamageResult | undefined) => void
 }
 export type ChampionEffects = {[key in string]?: ChampionFns}
 

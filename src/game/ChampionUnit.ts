@@ -23,7 +23,7 @@ import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation,
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
-import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, CollisionFn, DamageModifier, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, CollisionFn, DamageModifier, DamageResult, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -318,10 +318,10 @@ export class ChampionUnit {
 					statusEffects,
 					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
 					bounce,
-					onCollision: (elapsedMS, target) => {
+					onCollision: (elapsedMS, target, damage) => {
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
-						if (source.data.passive && source.target && source.readyToCast(elapsedMS)) {
-							passiveFn?.(elapsedMS, source.data.passive, source.target, source)
+						if (passiveFn && source.target && (source.championEffects?.passiveCasts !== true || source.readyToCast(elapsedMS))) {
+							passiveFn(elapsedMS, source.data.passive ?? source.getCurrentSpell(), source.target, source, damage)
 							source.postCast(elapsedMS, canReProcAttack)
 						}
 						statusEffects.forEach(([key, statusEffect]) => {
@@ -347,9 +347,9 @@ export class ChampionUnit {
 					fixedHexRange: destroysOnCollision != null ? MAX_HEX_COUNT : undefined,
 					stackingDamageModifier,
 					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
-					onCollision(elapsedMS, target) {
-						if (source.data.passive && source.readyToCast(elapsedMS)) {
-							passiveFn?.(elapsedMS, source.data.passive, target, source)
+					onCollision(elapsedMS, target, damage) {
+						if (passiveFn && (source.championEffects?.passiveCasts !== true || source.readyToCast(elapsedMS))) {
+							passiveFn(elapsedMS, source.data.passive ?? source.getCurrentSpell(), target, source, damage)
 							source.postCast(elapsedMS, canReProcAttack)
 						}
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
@@ -713,7 +713,7 @@ export class ChampionUnit {
 		this.damage(elapsedMS, false, source, DamageSourceType.bonus, damageCalculation, isAoE)
 	}
 
-	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier) {
+	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier): DamageResult | undefined {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
 		source?.items.forEach((item, index) => {
 			const modifyDamageFn = setData.itemEffects[item.name]?.modifyDamageByHolder
@@ -760,11 +760,15 @@ export class ChampionUnit {
 		if (reduction > 0) {
 			defenseStat! *= (1 - reduction)
 		}
+		let didCrit = false
 		if (source && (damageType === DamageType.physical || (damageType === DamageType.magic && source.canDamageCrit(sourceType, damageType)))) {
-			const critReduction = this.critReduction()
-			if (critReduction < 1) {
-				const critDamage = rawDamage * source.critChance(damageModifier) * source.critMultiplier(damageModifier)
-				rawDamage += critDamage * (1 - critReduction)
+			didCrit = source.critChance(damageModifier) > Math.random()
+			if (didCrit) {
+				const critReduction = this.critReduction()
+				if (critReduction < 1) {
+					const critDamage = rawDamage * source.critMultiplier(damageModifier)
+					rawDamage += critDamage * (1 - critReduction)
+				}
 			}
 		}
 		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
@@ -809,12 +813,17 @@ export class ChampionUnit {
 		this.health -= healthDamage
 		const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 		this.gainMana(elapsedMS, manaGain)
+		const damageResult: DamageResult = {
+			rawDamage,
+			healthDamage,
+			didCrit,
+		}
 
 		this.damageCallbacks.forEach(damageData => {
 			if (elapsedMS >= damageData.expiresAtMS) {
 				this.damageCallbacks.delete(damageData)
 			} else {
-				damageData.onDamage(elapsedMS, this, healthDamage)
+				damageData.onDamage(elapsedMS, this, damageResult)
 			}
 		})
 
@@ -876,7 +885,7 @@ export class ChampionUnit {
 		if (this.health <= 0) {
 			this.die(elapsedMS, source)
 		}
-		return healthDamage
+		return damageResult
 	}
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables, originalHealth: number, healthDamage: number) {
