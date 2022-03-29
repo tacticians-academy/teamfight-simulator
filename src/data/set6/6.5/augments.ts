@@ -2,7 +2,7 @@ import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-aca
 
 import { state } from '#/game/store'
 
-import { getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { checkCooldown, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType } from '#/helpers/types'
@@ -91,6 +91,19 @@ export const augmentEffects = {
 			units
 				.filter(unit => units.filter(u => u.name === unit.name).length === 2)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.DoubleTrouble, [BonusKey.AttackDamage, bonusStats], [BonusKey.AbilityPower, bonusStats], [BonusKey.Armor, bonusStats], [BonusKey.MagicResist, bonusStats]))
+		},
+	},
+
+	[AugmentGroupKey.Electrocharge]: {
+		damageTakenByHolder: (augment, elapsedMS, holder, source, { didCrit }) => {
+			if (didCrit && checkCooldown(elapsedMS, holder, augment, augment.name, true)) {
+				const [damage] = getVariables(augment, 'Damage')
+				holder.queueHexEffect(elapsedMS, undefined, {
+					hexDistanceFromSource: 2, //TODO experimentally determine
+					damageCalculation: createDamageCalculation(augment.groupID, damage, DamageType.magic, undefined),
+					opacity: 0.5,
+				})
+			}
 		},
 	},
 
