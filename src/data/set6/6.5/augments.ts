@@ -75,7 +75,7 @@ export const augmentEffects = {
 	},
 
 	[AugmentGroupKey.Disintegrator]: {
-		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType }) => {
 			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
 				return
 			}
@@ -138,7 +138,7 @@ export const augmentEffects = {
 	},
 
 	[AugmentGroupKey.LudensEcho]: {
-		onFirstEffectTargetHit: (augment, elapsedMS, target, source, damageType) => {
+		onFirstEffectTargetHit: (augment, elapsedMS, target, source, { damageType }) => {
 			if (damageType !== DamageType.magic) { return }
 
 			const [magicDamage] = getVariables(augment, 'MagicDamage')
@@ -176,7 +176,7 @@ export const augmentEffects = {
 	},
 
 	[AugmentGroupKey.Overpower]: {
-		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType }) => {
 			if (!holder.hasTrait(TraitKey.Striker)) { return }
 			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
 				return

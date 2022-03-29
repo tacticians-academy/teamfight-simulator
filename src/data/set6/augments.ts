@@ -85,12 +85,12 @@ export const baseAugmentEffects = {
 	},
 
 	[AugmentGroupKey.CelestialBlessing]: {
-		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType, healthDamage }) => {
 			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
 				return
 			}
 			const [omnivamp, maxShield] = getVariables(augment, 'Omnivamp', 'MaxShield')
-			const heal = takingDamage * omnivamp / 100
+			const heal = healthDamage * omnivamp / 100
 			const overheal = holder.gainHealth(elapsedMS, holder, heal, true)
 			if (overheal > 0) {
 				const id = augment.name
@@ -121,7 +121,7 @@ export const baseAugmentEffects = {
 	},
 
 	[AugmentGroupKey.Cutthroat]: {
-		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (augment, elapsedMS, target, holder, damage) => {
 			if (!holder.hasTrait(TraitKey.Assassin)) { return }
 			if (holder.basicAttackCount === 1) {
 				const [manaReductionPercent] = getVariables(augment, 'ManaReavePercent')
@@ -150,7 +150,7 @@ export const baseAugmentEffects = {
 	},
 
 	[AugmentGroupKey.EnGarde]: {
-		damageDealtByHolder: (augment, elapsedMS, isOriginalSource, target, holder, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (augment, elapsedMS, target, holder, damage) => {
 			if (!holder.hasTrait(TraitKey.Challenger)) { return }
 			if (!target.hitBy.includes(holder.instanceID)) {
 				const [disarmSeconds] = getVariables(augment, 'DisarmDuration')

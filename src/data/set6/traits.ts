@@ -144,7 +144,7 @@ export const baseTraitEffects = {
 				}
 			}
 		},
-		damageDealtByHolder: (activeEffect, elapsedMS, isOriginalSource, target, source, sourceType, rawDamage, takingDamage, damageType) => {
+		damageDealtByHolder: (activeEffect, elapsedMS, target, source, { isOriginalSource, rawDamage }) => {
 			if (state.mutantType === MutantType.Voidborne) {
 				const [executeThreshold] = getVariables(activeEffect, 'MutantVoidborneExecuteThreshold')
 				if (target.healthProportion() <= executeThreshold / 100) {
@@ -234,11 +234,11 @@ export const baseTraitEffects = {
 	},
 
 	[TraitKey.Sniper]: {
-		modifyDamageByHolder: (activeEffect, isOriginalSource, target, source, sourceType, rawDamage, damageType) => { //TODO modify damage
-			if (isOriginalSource) {
+		modifyDamageByHolder: (activeEffect, target, source, damage) => {
+			if (damage.isOriginalSource) {
 				const [percentBonusDamagePerHex] = getVariables(activeEffect, 'PercentDamageIncrease')
 				const hexDistance = source.hexDistanceTo(target)
-				return rawDamage * (1 + percentBonusDamagePerHex / 100 * hexDistance)
+				return damage.rawDamage * (1 + percentBonusDamagePerHex / 100 * hexDistance)
 			}
 		},
 	},

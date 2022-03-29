@@ -715,16 +715,25 @@ export class ChampionUnit {
 
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier): DamageResult | undefined {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
+		const damageResult: DamageResult = {
+			isOriginalSource,
+			sourceType,
+			damageType,
+			rawDamage,
+			healthDamage: 0,
+			didCrit: false,
+		}
+
 		source?.items.forEach((item, index) => {
 			const modifyDamageFn = setData.itemEffects[item.name]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(item, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
+				rawDamage = modifyDamageFn(item, this, source, damageResult)
 			}
 		})
 		source?.activeSynergies.forEach(({ key, activeEffect }) => {
 			const modifyDamageFn = setData.traitEffects[key]?.modifyDamageByHolder
 			if (modifyDamageFn) {
-				rawDamage = modifyDamageFn(activeEffect!, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
+				rawDamage = modifyDamageFn(activeEffect!, this, source, damageResult)
 			}
 		})
 
@@ -813,11 +822,9 @@ export class ChampionUnit {
 		this.health -= healthDamage
 		const manaGain = Math.min(42.5, rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 		this.gainMana(elapsedMS, manaGain)
-		const damageResult: DamageResult = {
-			rawDamage,
-			healthDamage,
-			didCrit,
-		}
+		damageResult.rawDamage = rawDamage
+		damageResult.healthDamage = healthDamage
+		damageResult.didCrit = didCrit
 
 		this.damageCallbacks.forEach(damageData => {
 			if (elapsedMS >= damageData.expiresAtMS) {
@@ -836,10 +843,10 @@ export class ChampionUnit {
 			}
 
 			if (isOriginalSource) {
-				source.items.forEach((item, index) => setData.itemEffects[item.name]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
-				source.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+				source.items.forEach((item, index) => setData.itemEffects[item.name]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, this, source, damageResult))
+				source.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, this, source, damageResult))
 				getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
-					effects.damageDealtByHolder?.(augment, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+					effects.damageDealtByHolder?.(augment, elapsedMS, this, source, damageResult)
 				})
 				if (sourceType === DamageSourceType.attack) {
 					source.shields.forEach(shield => {
@@ -851,13 +858,13 @@ export class ChampionUnit {
 			}
 		}
 
-		// `this` effects
+		// `target` effects
 
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
 			const effects = setData.itemEffects[item.name]
 			if (effects) {
-				effects.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
+				effects.damageTaken?.(elapsedMS, item, uniqueID, this, source, damageResult)
 				const hpThresholdFn = effects.hpThreshold
 				if (hpThresholdFn && this.checkHPThreshold(uniqueID, item.effects, originalHealth, healthDamage)) {
 					hpThresholdFn(elapsedMS, item, uniqueID, this)
@@ -874,6 +881,8 @@ export class ChampionUnit {
 			}
 		})
 		getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
+			effects.damageTakenByHolder?.(augment, elapsedMS, this, source, damageResult)
+
 			const hpThresholdFn = effects.hpThreshold
 			if (hpThresholdFn && this.checkHPThreshold(augment.name, augment.effects, originalHealth, healthDamage)) {
 				hpThresholdFn(augment, elapsedMS, this)

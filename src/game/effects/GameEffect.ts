@@ -162,9 +162,8 @@ export class GameEffect extends GameEffectChild {
 			this.onCollision?.(elapsedMS, unit, damage)
 		}
 
-		if (isFirstTarget && this.damageCalculation) {
-			const [rawDamage, damageType] = solveSpellCalculationFrom(this.source, unit, this.damageCalculation)
-			getters.activeAugmentEffectsByTeam.value[this.source.team].forEach(([augment, effects]) => effects.onFirstEffectTargetHit?.(augment, elapsedMS, unit, this.source, damageType))
+		if (isFirstTarget && damage && this.damageCalculation) {
+			getters.activeAugmentEffectsByTeam.value[this.source.team].forEach(([augment, effects]) => effects.onFirstEffectTargetHit?.(augment, elapsedMS, unit, this.source, damage))
 		}
 		this.applyPost(elapsedMS, unit)
 		return wasSpellShielded
