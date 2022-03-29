@@ -265,6 +265,16 @@ export const augmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.TrueJustice]: {
+		modifyDamageByHolder: (augment, target, source, damage) => {
+			if (!source.hasTrait(TraitKey.Enforcer)) { return }
+			const [thresholdPercent] = getVariables(augment, 'HealthThreshold')
+			if (target.healthProportion() < thresholdPercent / 100) {
+				damage.damageType = DamageType.true
+			}
+		},
+	},
+
 	[AugmentGroupKey.ChallengerUnity]: {
 		teamWideTrait: TraitKey.Challenger,
 	},
