@@ -164,6 +164,30 @@ export const baseChampionEffects = {
 		},
 	},
 
+	[ChampionKey.Galio]: {
+		cast: (elapsedMS, spell, champion) => {
+			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
+			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target: champion,
+				idealDestination: (champion) => randomItem(getHotspotHexes(true, state.units, champion.opposingTeam(), Math.min(4, hexRadius) as any)),
+				hexEffect: {
+					hexDistanceFromSource: hexRadius,
+					statusEffects: [
+						[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
+					],
+				},
+				moveSpeed: 2000, //TODO experimentally determine
+				onActivate: (elapsedMS, champion) => {
+					champion.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, 5000) //TODO time
+				},
+				onDestination: (elapsedMS, champion) => {
+					champion.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, 0)
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Gangplank]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {})
