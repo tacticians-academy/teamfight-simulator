@@ -10,7 +10,7 @@ import { toRadians } from '#/helpers/angles'
 import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom } from '#/helpers/boardUtils'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { ChampionEffects, HexCoord } from '#/helpers/types'
+import type { ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
 import { baseChampionEffects } from '../champions'
@@ -361,6 +361,55 @@ export const championEffects = {
 					})
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Vi]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target || !champion.wasInRangeOfTarget) { return false }
+			const castVariation = champion.castCount % 3
+			const moveMissile = champion.getMissileWithSuffix('EFx')
+			const moveSpeed = moveMissile?.speedInitial
+			const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
+			const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
+			const shield: ShieldData = {
+				id: ChampionKey.Vi,
+				amount: shieldAmount,
+				expiresAfterMS: shieldSeconds * 1000,
+			}
+			if (castVariation < 2) {
+				champion.queueShapeEffect(elapsedMS, spell, {
+					shape: new ShapeEffectCone(champion, false, target, HEX_MOVE_LEAGUEUNITS * 3, toRadians(60)), //TODO experimentally determine
+					onActivate: (elapsedMS, champion) => {
+						champion.queueShield(elapsedMS, champion, shield)
+					},
+				})
+				if (castVariation === 1) {
+					champion.queueMoveUnitEffect(elapsedMS, spell, {
+						target: champion,
+						idealDestination: () => champion.projectHexFrom(target, true),
+						moveSpeed,
+					})
+				}
+			} else {
+				const hexRadius = champion.getSpellVariable(spell, 'AoEHexRadius' as SpellKey)
+				const thirdCastSpell = champion.getSpellWithSuffix('_Spell_ThirdCast')
+				champion.queueMoveUnitEffect(elapsedMS, thirdCastSpell, {
+					target,
+					movesWithTarget: true,
+					idealDestination: () => champion.projectHexFrom(target, true),
+					moveSpeed,
+					hexEffect: {
+						hexDistanceFromSource: hexRadius,
+						damageCalculation: champion.getSpellCalculation(spell, 'DamageFinal' as SpellKey),
+					},
+					onActivate: (elapsedMS, champion) => {
+						champion.queueShield(elapsedMS, champion, shield)
+					},
+				})
+			}
+			return true
 		},
 	},
 
