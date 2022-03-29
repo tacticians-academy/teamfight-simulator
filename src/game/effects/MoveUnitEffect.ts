@@ -15,6 +15,8 @@ type CalculateDestinationFn = (target: ChampionUnit) => ChampionUnit | HexCoord 
 export interface MoveUnitEffectData extends GameEffectData {
 	/** Unit to apply this effect to. */
 	target?: ChampionUnit
+	/** If the source should move with the target. */
+	movesWithTarget?: boolean
 	/** The speed the target moves to the destination at. Defaults to the target's move speed if undefined. */
 	moveSpeed: number | undefined
 	/** Ignore collision when setting a destination hex. */
@@ -29,6 +31,7 @@ export interface MoveUnitEffectData extends GameEffectData {
 
 export class MoveUnitEffect extends GameEffect {
 	target: ChampionUnit
+	movesWithTarget: boolean
 	moveSpeed: number | undefined
 	ignoresDestinationCollision: boolean
 	idealDestination: CalculateDestinationFn
@@ -44,6 +47,7 @@ export class MoveUnitEffect extends GameEffect {
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 
 		this.target = data.target!
+		this.movesWithTarget = data.movesWithTarget ?? false
 		this.moveSpeed = data.moveSpeed
 		this.ignoresDestinationCollision = data.ignoresDestinationCollision ?? false
 		this.idealDestination = data.idealDestination
@@ -61,7 +65,10 @@ export class MoveUnitEffect extends GameEffect {
 		if (spellShield == null) {
 			const destination = this.idealDestination(this.target)
 			if (destination) {
-				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, 1000, this.apply)
+				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, this.moveSpeed ?? this.target.moveSpeed(), this.apply)
+				if (this.movesWithTarget) {
+					this.source.customMoveTo(destination, true, this.moveSpeed ?? this.source.moveSpeed())
+				}
 			}
 		}
 	}
