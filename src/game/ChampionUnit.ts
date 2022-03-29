@@ -1192,16 +1192,20 @@ export class ChampionUnit {
 				}
 			})
 		}
+		if (data.id != null) {
+			this.shields = this.shields.filter(shield => shield.id !== data.id)
+		}
 		const delaysActivation = data.activatesAfterMS != null
+		const activatesAtMS = elapsedMS + (data.activatesAfterMS ?? 0)
 		this.shields.push({
 			id: data.id,
 			source: source,
 			activated: !delaysActivation,
-			activatesAtMS: delaysActivation ? elapsedMS + data.activatesAfterMS! : undefined,
+			activatesAtMS: delaysActivation ? activatesAtMS : undefined,
 			isSpellShield: data.isSpellShield,
 			amount: data.amount,
 			repeatAmount: data.repeatAmount,
-			expiresAtMS: data.expiresAfterMS != null ? elapsedMS + data.expiresAfterMS : undefined,
+			expiresAtMS: data.expiresAfterMS != null ? activatesAtMS + data.expiresAfterMS : undefined,
 			repeatsEveryMS: data.repeatsEveryMS,
 			bonusDamage: data.bonusDamage,
 			onRemoved: data.onRemoved,
