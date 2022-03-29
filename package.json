@@ -2,16 +2,14 @@
 	"name": "teamfight-simulator",
 	"version": "0.1.0",
 	"license": "ISC",
-	"type": "module",
 	"engines": {
 		"node": ">=16",
 		"pnpm": ">=6"
 	},
 	"scripts": {
 		"dev": "vite",
-		"build": "vue-tsc --noEmit && vite build",
-		"lint": "vue-tsc --noEmit",
-		"prepare": "husky install",
+		"lint": "eslint './src/**/*.{ts,vue}' && vue-tsc --noEmit",
+		"build": "vite build",
 		"preview": "vite preview"
 	},
 	"dependencies": {
@@ -29,11 +27,11 @@
 		"autoprefixer": "^10.4.4",
 		"eslint": "^8.12.0",
 		"eslint-plugin-vue": "^8.5.0",
-		"husky": "^7.0.4",
 		"node-fetch": "^3.2.3",
 		"postcss": "^8.4.12",
 		"typescript": "^4.6.3",
 		"vite": "^2.8.6",
+		"vite-plugin-checker": "^0.4.4",
 		"vite-tsconfig-paths": "^3.4.1",
 		"vue-tsc": "^0.33.9"
 	},
