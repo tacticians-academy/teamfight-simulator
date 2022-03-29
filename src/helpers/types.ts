@@ -1,8 +1,5 @@
+import type { AugmentGroupKey, ChampionKey, ItemKey, TraitKey } from '@tacticians-academy/academy-library'
 import type { AugmentData, BonusKey, ChampionSpellData, DamageType, ItemData, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
-import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
-import type { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { AttackEffectData, GameEffect } from '#/game/effects/GameEffect'

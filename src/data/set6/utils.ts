@@ -1,5 +1,4 @@
-import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
+import { AugmentGroupKey, ChampionKey } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'

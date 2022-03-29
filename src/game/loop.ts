@@ -1,5 +1,5 @@
 import { BonusKey } from '@tacticians-academy/academy-library'
-import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
+import type { ItemKey } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { GameEffect } from '#/game/effects/GameEffect'
@@ -111,7 +111,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 		unit.updateShields(elapsedMS)
 		unit.updateStatusEffects(elapsedMS)
 		unit.items.forEach((item, index) => {
-			setData.itemEffects[item.id as ItemKey]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
+			setData.itemEffects[item.name]?.update?.(elapsedMS, item, uniqueIdentifier(index, item), unit)
 		})
 		for (const pendingBonus of unit.pendingBonuses) {
 			const [startsAtMS, pendingKey, bonuses] = pendingBonus

@@ -4,13 +4,12 @@ import '#/assets/main.postcss'
 import Board from '#/components/Board.vue'
 import Sidebar from '#/components/Sidebar/Sidebar.vue'
 
+import { SET_NUMBERS } from '@tacticians-academy/academy-library'
 import type { SetNumber } from '@tacticians-academy/academy-library'
 
 import { saveSetNumber } from '#/helpers/storage'
 
 import { state, setSetNumber } from '#/game/store'
-
-const availableSets: SetNumber[] = [1, 6]
 
 function onSetNumber(set: SetNumber) {
 	setSetNumber(set)
@@ -27,7 +26,7 @@ function onSetNumber(set: SetNumber) {
 			<div class="flex justify-center items-center space-x-2">
 				<span class="text-secondary uppercase font-light">set</span>
 				<button
-					v-for="set in availableSets" :key="set"
+					v-for="set in SET_NUMBERS" :key="set"
 					class="w-8 h-8 rounded-lg font-bold" :class="state.setNumber === set ? 'bg-gray-400 text-white' : 'text-secondary border-2 border-gray-300'"
 					:disabled="state.isRunning || state.loadedSetNumber == null"
 					@click="onSetNumber(set)"

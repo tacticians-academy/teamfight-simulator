@@ -1,7 +1,5 @@
-import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { ChampionKey, ItemKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
@@ -14,14 +12,14 @@ import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, HexCoord, ItemEffects } from '#/helpers/types'
 
-export const itemEffects = {
+export const baseItemEffects = {
 
 	[ItemKey.ArchangelsStaff]: {
 		innate: (item, unit) => {
 			const [intervalAmount, intervalSeconds] = getVariables(item, 'APPerInterval', 'IntervalSeconds')
 			unit.scalings.add({
 				source: unit,
-				sourceID: item.id,
+				sourceID: item.name as ItemKey,
 				activatedAtMS: 0,
 				stats: [BonusKey.AbilityPower],
 				intervalAmount,
@@ -66,7 +64,7 @@ export const itemEffects = {
 	[ItemKey.ChaliceOfPower]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const [bonusAP] = getVariables(item, 'BonusAP')
-			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AbilityPower, bonusAP]))
+			adjacentUnits.forEach(unit => unit.addBonuses(item.name as ItemKey, [BonusKey.AbilityPower, bonusAP]))
 		},
 	},
 
@@ -82,17 +80,6 @@ export const itemEffects = {
 					},
 				})
 			}
-		},
-	},
-
-	[ItemKey.EdgeOfNight]: {
-		disableDefaultVariables: [BonusKey.AttackSpeed, BonusKey.DamageReduction],
-		hpThreshold: (elapsedMS, item, itemID, unit) => {
-			const [attackSpeed, stealthSeconds] = getVariables(item, BonusKey.AttackSpeed, 'StealthDuration')
-			const stealthMS = stealthSeconds * 1000
-			unit.clearNegativeEffects()
-			unit.applyStatusEffect(elapsedMS, StatusEffectType.stealth, stealthMS)
-			unit.queueBonus(elapsedMS, stealthMS, ItemKey.EdgeOfNight, [BonusKey.AttackSpeed, attackSpeed])
 		},
 	},
 
@@ -312,7 +299,7 @@ export const itemEffects = {
 	[ItemKey.ZekesHerald]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
 			const [bonusAS] = getVariables(item, BonusKey.AttackSpeed)
-			adjacentUnits.forEach(unit => unit.addBonuses(item.id as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
+			adjacentUnits.forEach(unit => unit.addBonuses(item.name as ItemKey, [BonusKey.AttackSpeed, bonusAS]))
 		},
 	},
 

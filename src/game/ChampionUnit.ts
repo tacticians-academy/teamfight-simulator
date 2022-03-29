@@ -1,11 +1,7 @@
 import { markRaw } from 'vue'
 
-import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { AugmentGroupKey, ChampionKey, ItemKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
-import { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { HexEffect } from '#/game/effects/HexEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
@@ -111,7 +107,7 @@ export class ChampionUnit {
 
 	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
-		const stats = setData.champions.find(unit => unit.name === name) ?? setData.champions[0]
+		const stats = setData.champions.find(unit => unit.name === name) ?? setData.champions.find(unit => unit.apiName === 'TFT_TrainingDummy') ?? setData.champions[0]
 		this.isStarLocked = stats.isSpawn && name !== ChampionKey.TrainingDummy
 		this.data = markRaw(stats)
 		this.name = name
@@ -373,7 +369,7 @@ export class ChampionUnit {
 					this.empoweredAutos.delete(empoweredAuto)
 				}
 			})
-			this.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
+			this.items.forEach((item, index) => setData.itemEffects[item.name]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
 	}
@@ -580,7 +576,7 @@ export class ChampionUnit {
 		state.units.forEach(unit => {
 			if (unit === this) { return }
 			unit.items.forEach((item, index) => {
-				const effectFn = setData.itemEffects[item.id as ItemKey]?.castWithinHexRange
+				const effectFn = setData.itemEffects[item.name]?.castWithinHexRange
 				if (effectFn) {
 					const hexRange = item.effects['HexRange']
 					if (hexRange == null) {
@@ -676,7 +672,7 @@ export class ChampionUnit {
 		})
 		this.bleeds.clear()
 
-		this.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
+		this.items.forEach((item, index) => setData.itemEffects[item.name]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 
 		const teamUnits = this.alliedUnits(false)
 		if (teamUnits.length) {
@@ -720,7 +716,7 @@ export class ChampionUnit {
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier) {
 		let [rawDamage, damageType] = solveSpellCalculationFrom(source, this, damageCalculation)
 		source?.items.forEach((item, index) => {
-			const modifyDamageFn = setData.itemEffects[item.id as ItemKey]?.modifyDamageByHolder
+			const modifyDamageFn = setData.itemEffects[item.name]?.modifyDamageByHolder
 			if (modifyDamageFn) {
 				rawDamage = modifyDamageFn(item, isOriginalSource, this, source, sourceType, rawDamage, damageType!)
 			}
@@ -831,7 +827,7 @@ export class ChampionUnit {
 			}
 
 			if (isOriginalSource) {
-				source.items.forEach((item, index) => setData.itemEffects[item.id as ItemKey]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
+				source.items.forEach((item, index) => setData.itemEffects[item.name]?.damageDealtByHolder?.(item, uniqueIdentifier(index, item), elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 				source.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.damageDealtByHolder?.(activeEffect!, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!))
 				getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
 					effects.damageDealtByHolder?.(augment, elapsedMS, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
@@ -850,7 +846,7 @@ export class ChampionUnit {
 
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
-			const effects = setData.itemEffects[item.id as ItemKey]
+			const effects = setData.itemEffects[item.name]
 			if (effects) {
 				effects.damageTaken?.(elapsedMS, item, uniqueID, isOriginalSource, this, source, sourceType, rawDamage, takingDamage, damageType!)
 				const hpThresholdFn = effects.hpThreshold
@@ -1087,7 +1083,7 @@ export class ChampionUnit {
 		return !!this.bonuses.find(bonus => bonus[0] === name)
 	}
 	hasItem(key: ItemKey) {
-		return !!this.items.find(item => item.id === key)
+		return !!this.items.find(item => item.name === key)
 	}
 	hasTrait(key: TraitKey) {
 		return !!this.traits.find(trait => trait.name === key) || getters.activeAugmentEffectsByTeam.value[this.team].some(([_, effects]) => effects.teamWideTrait === key)

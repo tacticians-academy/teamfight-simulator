@@ -1,11 +1,9 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ItemData, SpellCalculation } from '@tacticians-academy/academy-library'
-import type { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import type { ItemKey, TraitKey, ItemData, SpellCalculation } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 
-import type { BonusEntry, BonusVariable, SynergyData } from '#/helpers/types'
+import type { BonusEntry, BonusLabelKey, BonusVariable, SynergyData } from '#/helpers/types'
 import { setData } from '#/game/store'
 
 export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, statFromTarget?: boolean, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
@@ -135,7 +133,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
 	const bonuses: BonusEntry[] = []
 	items.forEach(item => {
-		const disableDefaultVariables = setData.itemEffects[item.id as ItemKey]?.disableDefaultVariables
+		const disableDefaultVariables = setData.itemEffects[item.name]?.disableDefaultVariables
 		const bonusVariables: BonusVariable[] = []
 		for (const effectKey in item.effects) {
 			if (disableDefaultVariables != null && (disableDefaultVariables === true || disableDefaultVariables.includes(effectKey as BonusKey))) {
@@ -147,13 +145,13 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
 			}
 		}
 
-		const itemFn = setData.itemEffects[item.id as ItemKey]?.innate
+		const itemFn = setData.itemEffects[item.name]?.innate
 		if (itemFn != null) {
 			const variables = itemFn(item, unit) ?? []
 			bonusVariables.push(...variables)
 		}
 		if (bonusVariables.length) {
-			bonuses.push([item.id, bonusVariables])
+			bonuses.push([item.name as ItemKey, bonusVariables])
 		}
 	})
 	return bonuses

@@ -1,12 +1,8 @@
 import { computed, reactive, ref, shallowReactive, watch, watchEffect } from 'vue'
 
-import { removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
-import type { AugmentData, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
+import { ChampionKey, ItemKey, TraitKey, removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
+import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
 import { importAugments, importChampions, importItems, importTraits } from '@tacticians-academy/academy-library/dist/imports'
-import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
-import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
-import { ItemKey } from '@tacticians-academy/academy-library/dist/set6/items'
-import { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
 
 import { importAugmentEffects, importChampionEffects, importItemEffects, importTraitEffects } from '#/data/imports'
 
@@ -222,7 +218,7 @@ function resetUnitsAfterUpdating() {
 
 	state.units.forEach(unit => {
 		unit.items.forEach((item, index) => {
-			const itemEffect = setData.itemEffects[item.id as ItemKey]
+			const itemEffect = setData.itemEffects[item.name]
 			if (itemEffect) {
 				itemEffect.apply?.(item, unit)
 				if (itemEffect.adjacentHexBuff) {
@@ -297,7 +293,7 @@ const store = {
 			console.log('Unique item per champion', item.name)
 			return false
 		}
-		if (item.id === ItemKey.BlueBuff && champion.manaMax() <= 0) {
+		if (item.name === ItemKey.BlueBuff && champion.manaMax() <= 0) {
 			console.log('Manaless champions cannot hold', item.name)
 			return false
 		}
@@ -461,7 +457,7 @@ function loadUnits() {
 		})
 		.map(storageChampion => {
 			const championItems = storageChampion.items
-				.map(itemKey => setData.currentItems.find(item => item.id === itemKey))
+				.map(itemKey => setData.currentItems.find(item => item.name === itemKey))
 				.filter((item): item is ItemData => !!item)
 			const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
 			champion.items = championItems

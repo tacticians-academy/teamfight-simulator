@@ -1,6 +1,7 @@
+import { SET_DATA } from '@tacticians-academy/academy-library'
 import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library'
 
-const DEFAULT_SET: SetNumber = 6
+const DEFAULT_SET: SetNumber = 6.5
 
 import { state } from '#/game/store'
 
@@ -17,9 +18,9 @@ export const enum StorageKey {
 export function getSetNumber(): SetNumber {
 	const value = window.localStorage.getItem('TFTSIM_set')
 	if (value != null) {
-		const int = parseInt(value, 10)
-		if (!isNaN(int)) {
-			return int as SetNumber
+		const float = parseFloat(value) as SetNumber
+		if (SET_DATA[float] != null) {
+			return float
 		}
 	}
 	return DEFAULT_SET

@@ -1,6 +1,5 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionSpellData, ChampionSpellMissileData, EffectVariables } from '@tacticians-academy/academy-library'
-import type { TraitKey } from '@tacticians-academy/academy-library/dist/set6/traits'
+import type { AugmentData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, TraitKey } from '@tacticians-academy/academy-library'
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { AttackBounce } from '#/game/effects/GameEffect'
@@ -186,6 +185,33 @@ export function modifyMissile(spell: ChampionSpellData, data: ChampionSpellMissi
 		}
 	})
 	return missile
+}
+
+export function getProjectileSpread(count: number, radiansBetween: number) {
+	const results: number[] = []
+	const offsetRadians = count % 2 === 0 ? radiansBetween / 2 : 0
+	for (let castIndex = 0; castIndex < count; castIndex += 1) {
+		results[castIndex] = offsetRadians + radiansBetween * Math.ceil(castIndex / 2) * (castIndex % 2 === 0 ? 1 : -1)
+	}
+	return results
+}
+
+export function spawnClones(cloneCount: number, augment: AugmentData, units: ChampionUnit[], valueFn: (unit: ChampionUnit) => number) {
+	const bestUnit = getBestAsMax(true, units, valueFn)
+	if (bestUnit) {
+		const [cloneHealth] = getVariables(augment, 'CloneHealth')
+		for (let index = 0; index < cloneCount; index += 1) {
+			const clone = spawnUnit(bestUnit, bestUnit.name, bestUnit.starLevel)
+			clone.health = cloneHealth
+			clone.healthMax = cloneHealth
+			clone.traits = [] //TODO verify what bonuses apply to clones
+			clone.activeSynergies = []
+			clone.bonuses = []
+			clone.scalings.clear()
+			clone.shields = []
+			clone.pendingBonuses.clear()
+		}
+	}
 }
 
 // Bounces

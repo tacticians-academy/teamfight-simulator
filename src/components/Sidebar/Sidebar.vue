@@ -69,6 +69,7 @@ function onDrop(event: DragEvent) {
 <style lang="postcss">
 .sidebar {
 	width: v-bind(SIDEBAR_UNITS);
+	overflow: hidden;
 }
 
 .sidebar-icons-group {

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import type { AugmentData } from '@tacticians-academy/academy-library'
-import type { AugmentGroupKey } from '@tacticians-academy/academy-library/dist/set6/augments'
+import type { AugmentData, AugmentGroupKey } from '@tacticians-academy/academy-library'
 
 import { useStore, setAugmentFor, setData } from '#/game/store'
 

@@ -1,47 +1,61 @@
-export async function importAugmentEffects(setNumber: number) {
-	type AugmentEffects = typeof import('./set6/augments.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
-	if (setNumber === 1) {
+import type { SetNumber } from '@tacticians-academy/academy-library'
+
+export async function importAugmentEffects(set: SetNumber) {
+	type AugmentEffects = typeof import('./set6/6.0/augments.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	if (set === 1) {
 		return {} as AugmentEffects
 	}
-	if (setNumber === 6) {
-		return await import('./set6/augments.js')
+	if (set === 6) {
+		return await import('./set6/6.0/augments.js')
 	}
-	throw 'Unsupported set:' + setNumber
+	if (set === 6.5) {
+		return await import('./set6/6.5/augments.js')
+	}
+	throw 'Unsupported set:' + set
 }
 
-export async function importChampionEffects(setNumber: number) {
-	type ChampionEffects = typeof import('./set6/champions.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
-	if (setNumber === 1) {
+export async function importChampionEffects(set: SetNumber) {
+	type ChampionEffects = typeof import('./set6/6.0/champions.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	if (set === 1) {
 		return {} as ChampionEffects
 	}
-	if (setNumber === 6) {
-		return await import('./set6/champions.js')
+	if (set === 6) {
+		return await import('./set6/6.0/champions.js')
 	}
-	throw 'Unsupported set:' + setNumber
+	if (set === 6.5) {
+		return await import('./set6/6.5/champions.js')
+	}
+	throw 'Unsupported set:' + set
 }
 
-export async function importItemEffects(setNumber: number) {
-	type ItemEffects = typeof import('./set6/items.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+export async function importItemEffects(set: SetNumber) {
+	type ItemEffects = typeof import('./set6/6.0/items.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
 	try {
-		if (setNumber === 1) {
+		if (set === 1) {
 			return {} as ItemEffects
 		}
-		if (setNumber === 6) {
-			return await import('../data/set6/items.js')
+		if (set === 6) {
+			return await import('./set6/6.0/items.js')
+		}
+		if (set === 6.5) {
+			return await import('./set6/6.5/items.js')
 		}
 	} catch (error) {
 		console.log(error)
 	}
-	throw 'Unsupported set:' + setNumber
+	throw 'Unsupported set:' + set
 }
 
-export async function importTraitEffects(setNumber: number) {
-	type TraitEffects = typeof import('./set6/traits.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
-	if (setNumber === 1) {
+export async function importTraitEffects(set: SetNumber) {
+	type TraitEffects = typeof import('./set6/6.0/traits.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	if (set === 1) {
 		return {} as TraitEffects
 	}
-	if (setNumber === 6) {
-		return await import('./set6/traits.js')
+	if (set === 6) {
+		return await import('./set6/6.0/traits.js')
 	}
-	throw 'Unsupported set:' + setNumber
+	if (set === 6.5) {
+		return await import('./set6/6.5/traits.js')
+	}
+	throw 'Unsupported set:' + set
 }
