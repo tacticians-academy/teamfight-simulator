@@ -940,7 +940,7 @@ export class ChampionUnit {
 		const isUnitTarget = 'activeHex' in target
 		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
 		if (checkHexAvailable) {
-			hex = getClosestHexAvailableTo(hex, state.units)
+			hex = getClosestHexAvailableTo(hex, state.units.filter(unit => unit !== target))
 		}
 		if (hex) {
 			this.moving = true
