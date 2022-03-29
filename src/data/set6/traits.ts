@@ -7,9 +7,9 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getFrontBehindHexes, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { DamageSourceType, MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
+import { MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber, TraitEffects } from '#/helpers/types'
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine

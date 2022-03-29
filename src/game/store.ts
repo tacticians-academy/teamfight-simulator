@@ -457,7 +457,7 @@ function loadUnits() {
 		})
 		.map(storageChampion => {
 			const championItems = storageChampion.items
-				.map(itemKey => setData.currentItems.find(item => item.name === itemKey))
+				.map(id => setData.currentItems.find(item => item.id === id))
 				.filter((item): item is ItemData => !!item)
 			const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
 			champion.items = championItems

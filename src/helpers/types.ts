@@ -17,7 +17,7 @@ export interface StorageChampion {
 	name: string
 	hex: HexCoord
 	starLevel: StarLevel
-	items: ItemKey[]
+	items: number[]
 }
 
 export type UnitLevelStats = [number, number?, number?]

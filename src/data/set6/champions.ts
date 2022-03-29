@@ -1,18 +1,17 @@
 import { BonusKey, ChampionKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/academy-library'
+import type { SpellCalculation } from '@tacticians-academy/academy-library'
 
-import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getDistanceHex, getBestArrayAsMax, getBestRandomAsMax } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getHotspotHexes, getSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo, getClosestHexAvailableTo, getProjectedHexLineFrom } from '#/helpers/boardUtils'
+import { getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
-import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BleedData, ChampionEffects, DamageModifier, HexCoord } from '#/helpers/types'
+import { SpellKey, StatusEffectType } from '#/helpers/types'
+import type { BleedData, ChampionEffects, DamageModifier } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
 
 export const baseChampionEffects = {
