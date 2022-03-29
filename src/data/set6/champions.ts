@@ -204,7 +204,7 @@ export const baseChampionEffects = {
 				multiplier: -falloffProportion,
 			}
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
-			const missile = champion.getMissileFor('RShotMis')
+			const missile = champion.getMissileWithSuffix('RShotMis')
 			champion.empoweredAutos.add({
 				amount: 3,
 				damageCalculation,
@@ -236,7 +236,7 @@ export const baseChampionEffects = {
 				damageModifier: {
 					//TODO guaranteed crit
 				},
-				missile: champion.getMissileFor('RShotMis4') ?? missile,
+				missile: champion.getMissileWithSuffix('RShotMis4') ?? missile,
 				stackingDamageModifier,
 				onActivate: (elapsedMS, champion) => {
 					champion.manaLockUntilMS = elapsedMS + DEFAULT_MANA_LOCK_MS

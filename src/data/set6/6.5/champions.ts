@@ -2,7 +2,7 @@ import { BonusKey, ChampionKey } from '@tacticians-academy/academy-library'
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import { ShapeEffectCircle } from '#/game/effects/ShapeEffect'
+import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
 import { getBestArrayAsMax, getBestAsMax, getBestRandomAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
@@ -22,7 +22,7 @@ export const championEffects = {
 	[ChampionKey.Ahri]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.wasInRangeOfTarget) { return false }
-			const missileSpell = champion.getSpellFor('OrbMissile')
+			const missileSpell = champion.getSpellWithSuffix('OrbMissile')
 			const degreesBetweenOrbs = champion.getSpellVariable(spell, 'AngleBetweenOrbs' as SpellKey)
 			const radiansBetweenOrbs = toRadians(degreesBetweenOrbs)
 			const multiOrbProportion = champion.getSpellVariable(spell, 'MultiOrbDamage' as SpellKey)
@@ -39,7 +39,7 @@ export const championEffects = {
 					},
 					changeRadians,
 					missile: missileSpell?.missile,
-					returnMissile: champion.getSpellFor('OrbReturn')?.missile ?? missileSpell?.missile,
+					returnMissile: champion.getSpellWithSuffix('OrbReturn')?.missile ?? missileSpell?.missile,
 					targetDeathAction: 'continue',
 				})
 			})

@@ -1002,16 +1002,16 @@ export class ChampionUnit {
 	getCurrentSpell(): ChampionSpellData | undefined {
 		return this.data.spells[this.transformIndex]
 	}
-	getSpellFor(spellSuffix: string): ChampionSpellData | undefined {
+	getSpellWithSuffix(spellSuffix: string): ChampionSpellData | undefined {
 		const spellName = this.data.apiName + spellSuffix
-		const spell = this.data.spells.find(spell => spell.name === spellName)
-		if (!spell) { console.warn('No missile for', spellSuffix) }
+		const spell = this.data.spells.find(spell => spell.name === spellName) ?? this.data.missiles.find(spell => spell.name === spellName)
+		if (!spell) { console.warn('No spell for', spellName, this.data.spells.map(spell => spell.name)) }
 		return spell
 	}
-	getMissileFor(spellSuffix: string): ChampionSpellMissileData | undefined {
+	getMissileWithSuffix(spellSuffix: string): ChampionSpellMissileData | undefined {
 		const spellName = this.data.apiName + spellSuffix
 		const spell = this.data.missiles.find(spell => spell.name === spellName)
-		if (!spell) { console.warn('No missile for', spellSuffix) }
+		if (!spell) { console.warn('No missile for', spellName, this.data.missiles.map(spell => spell.name)) }
 		return spell?.missile
 	}
 
