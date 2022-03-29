@@ -82,7 +82,7 @@ export const baseChampionEffects = {
 			const target = champion.target
 			if (!target) { return false }
 			return champion.queueShapeEffect(elapsedMS, spell, {
-				shape: new ShapeEffectCone(champion, target, HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
+				shape: new ShapeEffectCone(champion, true, target, HEX_MOVE_LEAGUEUNITS * 2, toRadians(66)),
 			})
 		},
 	},
@@ -502,7 +502,7 @@ export const baseChampionEffects = {
 			if (!target) { return false } //TODO detaches from caster to reach?
 			const arcRadians = toRadians(45) //TODO experimentally determine
 			return champion.queueShapeEffect(elapsedMS, spell, {
-				shape: new ShapeEffectCone(champion, target, HEX_MOVE_LEAGUEUNITS * 2, arcRadians),
+				shape: new ShapeEffectCone(champion, false, target, HEX_MOVE_LEAGUEUNITS * 2, arcRadians),
 				onCollision: (elapsedMS, unit) => {
 					const heal = champion.getSpellCalculationResult(spell, 'Healing' as SpellKey)
 					champion.gainHealth(elapsedMS, champion, heal, true)

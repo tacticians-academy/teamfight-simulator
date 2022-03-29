@@ -60,8 +60,8 @@ export class ShapeEffectCone implements ShapeEffectShape {
 	radius: number
 	arcRadians: number
 
-	constructor(source: ChampionUnit, direction: number | ChampionUnit, radius: number, arcRadians: number) {
-		this.coord = source.coord
+	constructor(source: ChampionUnit, attachedToSource: boolean, direction: number | ChampionUnit, radius: number, arcRadians: number) {
+		this.coord = attachedToSource ? source.coord : [...source.coord]
 		this.direction = typeof direction === 'number' ? direction : source.angleTo(direction)
 		this.radius = radius
 		this.arcRadians = arcRadians
