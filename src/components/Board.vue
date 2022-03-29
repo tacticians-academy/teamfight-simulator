@@ -18,6 +18,8 @@ const hexContainer = ref<HTMLElement | null>(null)
 
 const { getters, state, dropUnit } = useStore()
 
+const showingSocialite = computed(() => !state.isRunning && Math.floor(state.setNumber) === 6)
+
 function onDrop(event: DragEvent, row: number, col: number) {
 	const championName = getDragNameOf('unit', event)
 	if (championName == null) {
@@ -31,11 +33,8 @@ const hexForMenu = ref<HexCoord | null>(null)
 const coordForMenu = computed(() => hexForMenu.value && getCoordFrom(hexForMenu.value))
 const sourceHexForMenu = computed(() => hexForMenu.value && getMirrorHex(hexForMenu.value))
 
-function onHexMenu(event: Event, hex: HexCoord) {
-	event.preventDefault()
-	if (!state.isRunning) {
-		hexForMenu.value = hex
-	}
+function onHexMenu(hex: HexCoord) {
+	hexForMenu.value = showingSocialite.value ? hex : null
 }
 
 function setSocialite(socialiteIndex: number) {
@@ -78,13 +77,13 @@ onMounted(() => {
 				<div
 					v-for="(col, colIndex) in row" :key="colIndex"
 					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
-					:style="{ boxShadow: !state.isRunning && getters.socialitesByTeam.value[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
+					:style="{ boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
 					@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
-					@contextmenu="onHexMenu($event, [colIndex, rowIndex])"
+					@contextmenu.prevent="onHexMenu([colIndex, rowIndex])"
 				/>
 			</div>
 		</div>
-		<div :key="state.loadedSetNumber ?? undefined" class="absolute inset-0 pointer-events-none">
+		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
 				<Unit v-if="unit.hasCollision()" :unit="unit" />
 			</template>
@@ -109,7 +108,7 @@ onMounted(() => {
 				</template>
 			</transition-group>
 			<div
-				v-if="coordForMenu && !state.isRunning && state.setNumber === 6"
+				v-if="coordForMenu && showingSocialite"
 				class="hex hex-overlay  pointer-events-auto absolute bg-tertiary text-primary  flex flex-col justify-center space-y-1"
 				:style="{ left: `${coordForMenu[0] * 100}%`, top: `${coordForMenu[1] * 100}%` }"
 				@click="onClearHexMenu" @contextmenu="onClearHexMenu"

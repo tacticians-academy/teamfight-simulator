@@ -47,7 +47,7 @@ export const setData = shallowReactive({
 const setNumber = getSetNumber()
 export const state = reactive({
 	setNumber,
-	loadedSetNumber: null as SetNumber | null,
+	isLoading: true,
 	elapsedSeconds: 0,
 	isRunning: false,
 	winningTeam: null as TeamNumber | null,
@@ -68,17 +68,22 @@ export const state = reactive({
 setSetNumber(setNumber)
 
 export async function setSetNumber(set: SetNumber) {
+	state.isLoading = true
 	const { activeAugments, emptyImplementationAugments } = await importAugments(set)
-	state.loadedSetNumber = null
-	state.setNumber = set
+	const { augmentEffects } = await importAugmentEffects(set)
+	const { championEffects } = await importChampionEffects(set)
+	const { itemEffects } = await importItemEffects(set)
+	const { traitEffects } = await importTraitEffects(set)
+
+	const { champions } = await importChampions(set)
+	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
+	const { traits } = await importTraits(set)
+
 	state.augmentsByTeam = loadTeamAugments(set, activeAugments)
 	state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
 	state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
 	state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
 
-	const { champions } = await importChampions(set)
-	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
-	const { traits } = await importTraits(set)
 	setData.activeAugments = activeAugments ?? []
 	setData.emptyImplementationAugments = emptyImplementationAugments ?? []
 	setData.champions = champions ?? []
@@ -87,17 +92,13 @@ export async function setSetNumber(set: SetNumber) {
 	setData.componentItems = componentItems ?? []
 	setData.spatulaItems = spatulaItems ?? []
 	setData.traits = traits ?? []
-
-	const promises = [
-		importAugmentEffects(set).then(data => setData.augmentEffects = data.augmentEffects ?? {}),
-		importChampionEffects(set).then(data => setData.championEffects = data.championEffects ?? {}),
-		importItemEffects(set).then(data => setData.itemEffects = data.itemEffects ?? {}),
-		importTraitEffects(set).then(data => setData.traitEffects = data.traitEffects ?? {}),
-	]
-	Promise.all(promises).then(() => {
-		state.loadedSetNumber = set
-		loadUnits()
-	})
+	setData.augmentEffects = augmentEffects ?? {}
+	setData.championEffects = championEffects ?? {}
+	setData.itemEffects = itemEffects ?? {}
+	setData.traitEffects = traitEffects ?? {}
+	state.setNumber = set
+	loadUnits()
+	state.isLoading = false
 }
 
 // Getters

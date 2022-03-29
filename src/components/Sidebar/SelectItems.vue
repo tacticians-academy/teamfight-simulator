@@ -32,7 +32,7 @@ function onDrag(event: DragEvent, name: string) {
 	<div class="sidebar-icons-container">
 		<div
 			v-for="item in group" :key="item.name"
-			class="sidebar-icon  group" :style="{ backgroundImage: state.loadedSetNumber ? `url(${getIconURLFor(state, item)})` : undefined }"
+			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
 			:draggable="!state.isRunning" @dragstart="onDrag($event, item.name)"
 		>
 			<div class="sidebar-icon-name  group-hover-visible">{{ item.name }}</div>

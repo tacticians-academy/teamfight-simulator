@@ -29,7 +29,7 @@ function onReset() {
 					<option v-for="stageNumber in 9" :key="stageNumber">{{ stageNumber }}</option>
 				</select>
 			</div>
-			<div v-if="state.setNumber === 6">
+			<div v-if="Math.floor(state.setNumber) === 6">
 				<label for="select-mutant" class="mr-1">Mutants:</label>
 				<select id="select-mutant" v-model="state.mutantType" class="w-full">
 					<option v-for="type in MutantType" :key="type">{{ type }}</option>
