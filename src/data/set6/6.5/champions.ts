@@ -240,7 +240,7 @@ export const championEffects = {
 				amount: shieldAmount,
 				expiresAfterMS,
 				onRemoved: (elapsedMS, shield) => {
-					if (shield.amount > 0) {
+					if (shield.amount != null && shield.amount > 0) {
 						if (effect) {
 							const stunMS = champion.getSpellVariable(spell, SpellKey.StunDuration) * 1000
 							effect.currentTargets.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunMS))
@@ -338,7 +338,7 @@ export const championEffects = {
 					const lowestHPAlly = getBestAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
 						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing' as SpellKey)
-						lowestHPAlly.gainHealth(elapsedMS, champion, damage!.healthDamage * percentHealing / 100, true)
+						lowestHPAlly.gainHealth(elapsedMS, champion, damage!.takingDamage * percentHealing / 100, true)
 					}
 				},
 			})

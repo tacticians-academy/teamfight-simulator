@@ -37,7 +37,7 @@ export interface DamageResult {
 	sourceType: DamageSourceType
 	damageType: DamageType | undefined
 	rawDamage: number
-	healthDamage: number
+	takingDamage: number
 	didCrit: boolean
 }
 
@@ -151,8 +151,9 @@ export interface ShieldEntry {
 	source: ChampionUnit | undefined
 	activated?: boolean
 	activatesAtMS?: DOMHighResTimeStamp
-	isSpellShield?: boolean
-	amount: number
+	type?: 'spellShield' | 'barrier'
+	amount?: number
+	damageReduction?: number
 	repeatAmount?: number
 	expiresAtMS?: DOMHighResTimeStamp
 	repeatsEveryMS?: DOMHighResTimeStamp
@@ -163,8 +164,10 @@ export interface ShieldEntry {
 export interface ShieldData {
 	id?: string
 	activatesAfterMS?: DOMHighResTimeStamp
-	isSpellShield?: boolean
-	amount: number
+	isBarrier?: boolean
+	type?: 'spellShield' | 'barrier'
+	amount?: number
+	damageReduction?: number
 	repeatAmount?: number
 	expiresAfterMS?: DOMHighResTimeStamp
 	repeatsEveryMS?: DOMHighResTimeStamp

@@ -5,7 +5,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor } from '#/helpers/abilityUtils'
 import { getInverseHex, getClosestAttackableEnemies, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -33,7 +33,7 @@ export const baseItemEffects = {
 			const [damageCap] = getVariables(item, 'DamageCap')
 			adjacentUnits.push(holder)
 			adjacentUnits.forEach(unit => unit.queueShield(0, holder, {
-				isSpellShield: true,
+				type: 'spellShield',
 				amount: damageCap,
 			}))
 		},
@@ -51,7 +51,7 @@ export const baseItemEffects = {
 
 	[ItemKey.BrambleVest]: {
 		damageTaken: (elapsedMS, item, itemID, holder, source, { isOriginalSource, sourceType }) => {
-			if (isOriginalSource && sourceType === DamageSourceType.attack && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+			if (isOriginalSource && sourceType === DamageSourceType.attack && checkCooldownFor(elapsedMS, holder, item, itemID, true)) {
 				const [aoeDamage] = getVariables(item, `${holder.starLevel}StarAoEDamage`)
 				holder.getInteractableUnitsWithin(1, holder.opposingTeam()).forEach(unit => {
 					const damageCalculation = createDamageCalculation(item.name, aoeDamage, DamageType.magic)
@@ -70,7 +70,7 @@ export const baseItemEffects = {
 
 	[ItemKey.DragonsClaw]: {
 		damageTaken: (elapsedMS, item, itemID, holder, source, { isOriginalSource, sourceType, damageType }) => {
-			if (source && isOriginalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldown(elapsedMS, holder, item, itemID, true)) {
+			if (source && isOriginalSource && sourceType === DamageSourceType.spell && damageType !== DamageType.physical && checkCooldownFor(elapsedMS, holder, item, itemID, true)) {
 				holder.queueProjectileEffect(elapsedMS, undefined, {
 					target: source,
 					damageCalculation: createDamageCalculation(item.name, 0.18, DamageType.magic, BonusKey.Health, true, 1),
@@ -122,10 +122,10 @@ export const baseItemEffects = {
 	},
 
 	[ItemKey.HandOfJustice]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { sourceType, healthDamage }) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { sourceType, takingDamage }) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 				const [baseHeal, increaseEffect] = getVariables(item, 'BaseHeal', 'AdditionalHeal')
-				holder.gainHealth(elapsedMS, holder, healthDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
+				holder.gainHealth(elapsedMS, holder, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
 			}
 		},
 		innate: (item, unit) => {
@@ -138,12 +138,12 @@ export const baseItemEffects = {
 	},
 
 	[ItemKey.HextechGunblade]: {
-		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { damageType, healthDamage }) => {
+		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { damageType, takingDamage }) => {
 			if (damageType !== DamageType.physical) {
 				const [hextechHeal] = getVariables(item, BonusKey.VampSpell)
 				const lowestHPAlly = getBestAsMax(false, holder.alliedUnits(true), (unit) => unit.health)
 				if (lowestHPAlly) {
-					lowestHPAlly.gainHealth(elapsedMS, holder, healthDamage * hextechHeal / 100, true)
+					lowestHPAlly.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}
 			}
 		},
@@ -196,8 +196,7 @@ export const baseItemEffects = {
 		innate: (item, holder) => {
 			const [shieldSeconds] = getVariables(item, 'SpellShieldDuration')
 			holder.queueShield(0, holder, {
-				amount: 0,
-				isSpellShield: true,
+				type: 'spellShield',
 				expiresAfterMS: shieldSeconds * 1000,
 			})
 		},
@@ -205,7 +204,7 @@ export const baseItemEffects = {
 
 	[ItemKey.Redemption]: {
 		update: (elapsedMS, item, itemID, holder) => {
-			if (checkCooldown(elapsedMS, holder, item, itemID, true, 'HealTickRate')) {
+			if (checkCooldownFor(elapsedMS, holder, item, itemID, true, 'HealTickRate')) {
 				const [aoeDamageReduction, missingHPHeal, maxHeal, hexDistanceFromSource, healTickSeconds] = getVariables(item, 'AoEDamageReduction', 'MissingHPHeal', 'MaxHeal', 'HexRadius', 'HealTickRate')
 				const tickMS = healTickSeconds * 1000
 				holder.queueHexEffect(elapsedMS, undefined, {
@@ -269,7 +268,7 @@ export const baseItemEffects = {
 
 	[ItemKey.SunfireCape]: {
 		update: (elapsedMS, item, itemID, holder) => {
-			if (checkCooldown(elapsedMS, holder, item, itemID, true)) {
+			if (checkCooldownFor(elapsedMS, holder, item, itemID, true)) {
 				const [hexRange] = getVariables(item, 'HexRange')
 				const units = holder.getInteractableUnitsWithin(hexRange, holder.opposingTeam())
 				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === GRIEVOUS_BURN_ID))

@@ -131,7 +131,7 @@ export class GameEffect extends GameEffectChild {
 			const damageModifier: DamageModifier = modifiesDamage && this.damageModifier
 				? this.damageModifier
 				: { increase: 0 }
-			if (wasSpellShielded) {
+			if (wasSpellShielded && spellShield.amount != null) {
 				damageModifier.increase! -= spellShield.amount
 			}
 			damage = unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageModifier)

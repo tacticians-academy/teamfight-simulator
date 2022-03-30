@@ -2,7 +2,7 @@ import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-aca
 
 import { state } from '#/game/store'
 
-import { checkCooldown, getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { checkCooldown, checkCooldownFor, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, StatusEffectType } from '#/helpers/types'
@@ -49,7 +49,7 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.ConcussiveBlows]: {
 		damageDealtByHolder: (augment, elapsedMS, target, source, { didCrit }) => {
-			if (didCrit && source.hasTrait(TraitKey.Striker) && checkCooldown(elapsedMS, source, augment, augment.groupID + target.instanceID, true, 'StunCD')) {
+			if (didCrit && source.hasTrait(TraitKey.Striker) && checkCooldownFor(elapsedMS, source, augment, augment.groupID + target.instanceID, true, 'StunCD')) {
 				const [stunSeconds] = getVariables(augment, 'StunDuration')
 				target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
 			}
@@ -105,7 +105,7 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Electrocharge]: {
 		damageTakenByHolder: (augment, elapsedMS, holder, source, { didCrit }) => {
-			if (didCrit && checkCooldown(elapsedMS, holder, augment, augment.name, true)) {
+			if (didCrit && checkCooldownFor(elapsedMS, holder, augment, augment.name, true)) {
 				const [damage] = getVariables(augment, 'Damage')
 				holder.queueHexEffect(elapsedMS, undefined, {
 					hexDistanceFromSource: 2, //TODO experimentally determine
@@ -289,8 +289,7 @@ export const augmentEffects = {
 		apply: (augment, team, units) => {
 			const [durationSeconds] = getVariables(augment, 'Duration')
 			units.forEach(unit => unit.queueShield(0, unit, {
-				amount: 0,
-				isSpellShield: true,
+				type: 'spellShield',
 				expiresAfterMS: durationSeconds * 1000,
 			}))
 		},

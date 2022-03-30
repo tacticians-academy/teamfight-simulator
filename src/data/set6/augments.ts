@@ -8,7 +8,7 @@ import type { AttackBounce } from '#/game/effects/GameEffect'
 import { delayUntil } from '#/game/loop'
 import { getters, state } from '#/game/store'
 
-import { applyGrievousBurn, checkCooldown, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, checkCooldownFor, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines, getFrontBehindHexes } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -18,7 +18,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.ArdentCenser]: {
 		onHealShield: (augment, elapsedMS, amount, target, source) => {
-			if (source.hasTrait(TraitKey.Enchanter) && checkCooldown(elapsedMS, target, augment, augment.name, true, 'CD')) {
+			if (source.hasTrait(TraitKey.Enchanter) && checkCooldownFor(elapsedMS, target, augment, augment.name, true, 'CD')) {
 				const [attackSpeed] = getVariables(augment, BonusKey.AttackSpeed)
 				target.addBonuses(AugmentGroupKey.ArdentCenser, [BonusKey.AttackSpeed, attackSpeed])
 			}
@@ -85,18 +85,18 @@ export const baseAugmentEffects = {
 	},
 
 	[AugmentGroupKey.CelestialBlessing]: {
-		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType, healthDamage }) => {
+		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType, takingDamage }) => {
 			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
 				return
 			}
 			const [omnivamp, maxShield] = getVariables(augment, 'Omnivamp', 'MaxShield')
-			const heal = healthDamage * omnivamp / 100
+			const heal = takingDamage * omnivamp / 100
 			const overheal = holder.gainHealth(elapsedMS, holder, heal, true)
 			if (overheal > 0) {
 				const id = augment.name
 				const shield = holder.shields.find(shield => shield.id === id)
 				if (shield) {
-					shield.amount = Math.min(maxShield, shield.amount + overheal)
+					shield.amount = Math.min(maxShield, (shield.amount ?? 0) + overheal)
 					shield.activated = true
 				} else {
 					holder.queueShield(0, holder, {

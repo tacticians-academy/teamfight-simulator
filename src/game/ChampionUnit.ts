@@ -16,7 +16,7 @@ import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
 import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
-import { applyStackingModifier, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
+import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
@@ -720,7 +720,7 @@ export class ChampionUnit {
 			sourceType,
 			damageType: calculatedDamageType,
 			rawDamage: calculatedDamage,
-			healthDamage: 0,
+			takingDamage: 0,
 			didCrit: false,
 		}
 
@@ -779,49 +779,57 @@ export class ChampionUnit {
 				}
 			}
 		}
-		const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
-		let takingDamage = damage.rawDamage * defenseMultiplier
-		if (damage.damageType !== DamageType.true) {
-			const damageReduction = this.getBonuses(BonusKey.DamageReduction)
+
+		damage.takingDamage = damage.rawDamage
+
+		if (this.statusEffects.invulnerable.active) {
+			damage.takingDamage = 0
+		} else if (damage.damageType !== DamageType.true) {
+			const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
+			damage.takingDamage *= defenseMultiplier
+
+			const shieldDamageReduction = this.shields
+				.filter(shield => shield.activated === true && shield.damageReduction != null)
+				.reduce((accumulator, shield) => accumulator + shield.damageReduction!, 0)
+			const damageReduction = Math.min(1, shieldDamageReduction + this.getBonuses(BonusKey.DamageReduction))
 			if (damageReduction > 0) {
-				if (damageReduction >= 1) {
-					console.log('ERR', 'damageReduction must be between 0–1.')
-				} else {
-					takingDamage *= 1 - damageReduction
-				}
+				damage.takingDamage *= 1 - damageReduction
 			}
 			if (isAOE) {
 				const aoeDamageReduction = this.getStatusEffect(elapsedMS, StatusEffectType.aoeDamageReduction)
 				if (aoeDamageReduction != null) {
-					takingDamage *= 1 - aoeDamageReduction / 100
+					damage.takingDamage *= 1 - aoeDamageReduction / 100
 				}
 			}
 		}
-		if (this.statusEffects.invulnerable.active) {
-			takingDamage = 0
+
+		let healthDamage = damage.takingDamage
+		if (healthDamage > 0) {
+			this.shields
+				.filter(shield => shield.activated === true && shield.type !== 'spellShield')
+				.forEach(shield => {
+					if (shield.amount == null) { return }
+					if (healthDamage <= 0) { //TODO prevent negative shielding
+						return
+					}
+					const protectingDamage = Math.min(shield.amount, healthDamage)
+					if (protectingDamage >= shield.amount) {
+						shield.amount = 0
+						shield.onRemoved?.(elapsedMS, shield)
+						shield.activated = false
+					} else {
+						shield.amount -= protectingDamage
+					}
+					healthDamage -= protectingDamage
+				})
 		}
-		let healthDamage = takingDamage
-		this.shields
-			.filter(shield => shield.activated === true && shield.isSpellShield !== true)
-			.forEach(shield => {
-				const protectingDamage = Math.min(shield.amount, healthDamage)
-				if (protectingDamage >= shield.amount) {
-					shield.amount = 0
-					shield.onRemoved?.(elapsedMS, shield)
-					shield.activated = false
-				} else {
-					shield.amount -= protectingDamage
-				}
-				healthDamage -= protectingDamage
-			})
 
 		// Update health
 
 		const originalHealth = this.health
 		this.health -= healthDamage
-		const manaGain = Math.min(42.5, damage.rawDamage * 0.01 + takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
+		const manaGain = Math.min(42.5, damage.rawDamage * 0.01 + damage.takingDamage * 0.07) //TODO verify https://leagueoflegends.fandom.com/wiki/Mana_(Teamfight_Tactics)#Mechanic
 		this.gainMana(elapsedMS, manaGain)
-		damage.healthDamage = healthDamage
 		damage.didCrit = didCrit
 
 		this.damageCallbacks.forEach(damageData => {
@@ -837,7 +845,7 @@ export class ChampionUnit {
 		if (source) {
 			const sourceVamp = source.getVamp(damage)
 			if (sourceVamp > 0) {
-				source.gainHealth(elapsedMS, source, takingDamage * sourceVamp / 100, true)
+				source.gainHealth(elapsedMS, source, damage.takingDamage * sourceVamp / 100, true)
 			}
 
 			if (isOriginalSource) {
@@ -846,17 +854,20 @@ export class ChampionUnit {
 				getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
 					effects.damageDealtByHolder?.(augment, elapsedMS, this, source, damage)
 				})
-				if (sourceType === DamageSourceType.attack) {
-					source.shields.forEach(shield => {
-						if (shield.activated === true && shield.bonusDamage) {
-							this.takeBonusDamage(elapsedMS, source, shield.bonusDamage, false)
-						}
-					})
-				}
 			}
 		}
 
 		// `target` effects
+
+		if (source) {
+			if (sourceType === DamageSourceType.attack) {
+				this.shields.forEach(shield => {
+					if (shield.activated === true && shield.bonusDamage && checkCooldown(elapsedMS, source, 1, 'BARRIER', true)) {
+						source.takeBonusDamage(elapsedMS, this, shield.bonusDamage, false)
+					}
+				})
+			}
+		}
 
 		this.items.forEach((item, index) => {
 			const uniqueID = uniqueIdentifier(index, item)
@@ -922,10 +933,10 @@ export class ChampionUnit {
 
 	consumeSpellShield() {
 		const availableSpellShields = this.shields
-			.filter(shield => shield.activated === true && shield.isSpellShield === true)
-			.sort((a, b) => a.amount - b.amount)
+			.filter(shield => shield.activated === true && shield.type === 'spellShield')
+			.sort((a, b) => (a.amount ?? 0) - (b.amount ?? 0))
 		const shield = availableSpellShields.length ? availableSpellShields[0] : undefined
-		if (shield != null && shield.amount > 0) {
+		if (shield?.amount != null && shield.amount > 0) {
 			shield.activated = false
 		}
 		return shield
@@ -1201,10 +1212,10 @@ export class ChampionUnit {
 		this.pendingBonuses.add([elapsedMS + startsAfterMS, bonusLabel, variables])
 	}
 	queueShield(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, data: ShieldData) {
-		if (source) {
+		if (source && data.amount != null) {
 			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => {
 				if (effects.onHealShield) {
-					effects.onHealShield(augment, elapsedMS, data.amount, this, source)
+					effects.onHealShield(augment, elapsedMS, data.amount ?? 0, this, source)
 				}
 			})
 		}
@@ -1218,8 +1229,9 @@ export class ChampionUnit {
 			source: source,
 			activated: !delaysActivation,
 			activatesAtMS: delaysActivation ? activatesAtMS : undefined,
-			isSpellShield: data.isSpellShield,
+			type: data.type,
 			amount: data.amount,
+			damageReduction: data.damageReduction,
 			repeatAmount: data.repeatAmount,
 			expiresAtMS: data.expiresAfterMS != null ? activatesAtMS + data.expiresAfterMS : undefined,
 			repeatsEveryMS: data.repeatsEveryMS,

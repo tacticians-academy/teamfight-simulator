@@ -225,7 +225,7 @@ export const baseChampionEffects = {
 						id,
 						expiresAtMS: elapsedMS + durationSeconds * 1000,
 						onDamage: (elapsedMS, target, damage) => {
-							champion.gainHealth(elapsedMS, champion, damage!.healthDamage * healingProportion, true)
+							champion.gainHealth(elapsedMS, champion, damage!.takingDamage * healingProportion, true)
 						},
 					})
 				},
@@ -642,7 +642,7 @@ export const baseChampionEffects = {
 					champion.queueHexEffect(elapsedMS, spell, {
 						hexDistanceFromSource,
 					})
-					if (shield.amount > 0) {
+					if (shield.amount != null && shield.amount > 0) {
 						champion.queueHexEffect(elapsedMS, undefined, {
 							hexDistanceFromSource,
 							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
