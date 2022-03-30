@@ -152,7 +152,7 @@ export const baseAugmentEffects = {
 	[AugmentGroupKey.EnGarde]: {
 		damageDealtByHolder: (augment, elapsedMS, target, holder, damage) => {
 			if (!holder.hasTrait(TraitKey.Challenger)) { return }
-			if (!target.hitBy.includes(holder.instanceID)) {
+			if (!target.hitBy.has(holder.instanceID)) {
 				const [disarmSeconds] = getVariables(augment, 'DisarmDuration')
 				target.applyStatusEffect(elapsedMS, StatusEffectType.disarm, disarmSeconds * 1000)
 			}

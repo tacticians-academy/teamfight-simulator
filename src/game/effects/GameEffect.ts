@@ -127,7 +127,7 @@ export class GameEffect extends GameEffectChild {
 		const wasSpellShielded = !!spellShield
 		let damage: DamageResult | undefined
 		if (this.damageCalculation != null) {
-			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.includes(this.hitID)
+			const modifiesDamage = !this.modifiesOnMultiHit || unit.hitBy.has(this.hitID)
 			const damageModifier: DamageModifier = modifiesDamage && this.damageModifier
 				? this.damageModifier
 				: { increase: 0 }
@@ -141,10 +141,8 @@ export class GameEffect extends GameEffectChild {
 
 	applyPost(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
 		this.collidedWith.push(unit.instanceID)
-		unit.hitBy.push(this.hitID)
-		if (!unit.hitBy.includes(this.source.instanceID)) {
-			unit.hitBy.push(this.source.instanceID)
-		}
+		unit.hitBy.add(this.hitID)
+		unit.hitBy.add(this.source.instanceID)
 	}
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {

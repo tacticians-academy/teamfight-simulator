@@ -73,7 +73,7 @@ export class ChampionUnit {
 	instantAttack: boolean
 	wasSpawned = false
 
-	hitBy: string[] = []
+	hitBy = new Set<string>()
 	basicAttackSourceIDs: string[] = []
 	statusEffects = {} as Record<StatusEffectType, StatusEffect>
 
@@ -136,7 +136,7 @@ export class ChampionUnit {
 		this.pendingBonuses.clear()
 		this.bleeds.clear()
 		this.damageCallbacks.clear()
-		this.hitBy = []
+		this.hitBy.clear()
 		this.basicAttackSourceIDs = []
 		this.empoweredAutos.clear()
 
