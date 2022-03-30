@@ -76,7 +76,7 @@ export function getVariables({name, effects, variables}: ItemAugmentCompatible, 
 	}
 	return keys.map(key => {
 		const value = effects![key]
-		if (value === undefined) { console.log('ERR', name, key, effects) }
+		if (value === undefined && key !== 'SyndicateIncrease') { console.log('ERR', name ?? 'augment', key, effects) }
 		return value ?? 0
 	})
 }
