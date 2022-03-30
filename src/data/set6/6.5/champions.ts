@@ -270,6 +270,17 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.RekSai]: {
+		cast: (elapsedMS, spell, champion) => {
+			return champion.queueProjectileEffect(elapsedMS, spell, {
+				onCollision: (elapsedMS, target) => {
+					const healAmount = champion.getSpellCalculationResult(spell, (target.hitBy.has(champion.instanceID) ? 'HealBonus' : 'Heal') as SpellKey)
+					champion.gainHealth(elapsedMS, champion, healAmount, true)
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Renata]: {
 		cast: (elapsedMS, spell, champion) => {
 			const targetTeam = champion.opposingTeam()
