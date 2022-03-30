@@ -9,6 +9,7 @@ import { getters, state } from '#/game/store'
 import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
+import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
 import { MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber, TraitEffects } from '#/helpers/types'
 
@@ -117,7 +118,7 @@ export const baseTraitEffects = {
 			let innovation = innovations.find(unit => unit.name === innovationName)
 			state.units = state.units.filter(unit => unit.team !== teamNumber || !INNOVATION_NAMES.includes(unit.name as ChampionKey) || unit === innovation)
 			if (!innovation || innovation.name !== innovationName) {
-				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [6, 0] : [1, 1], state.units)
+				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [BOARD_COL_COUNT - 1, 0] : [0, BOARD_ROW_COUNT -1], state.units)
 				if (innovationHex != null) {
 					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
 					innovation.genericReset()
