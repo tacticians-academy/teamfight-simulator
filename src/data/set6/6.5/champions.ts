@@ -214,7 +214,7 @@ export const championEffects = {
 					return getBestRandomAsMax(true, bestUnits, (unit) => unit.coordDistanceSquaredTo(champion)) ?? champion.target
 				},
 				moveSpeed: jumpMS, //TODO fixed move time
-				onCollision: (elapsedMS, champion) => {
+				onDestination: (elapsedMS, champion) => { //TODO verify
 					champion.queueProjectileEffect(elapsedMS, spell, {
 						bonuses: [SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReave]],
 					})
