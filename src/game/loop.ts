@@ -1,5 +1,4 @@
 import { BonusKey } from '@tacticians-academy/academy-library'
-import type { ItemKey } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { GameEffect } from '#/game/effects/GameEffect'
@@ -14,6 +13,7 @@ const GAME_TICK_MS = 1000 / 30
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
 let previousFrameMS: DOMHighResTimeStamp = 0
+let unanimatedStackSize = 0
 
 const MOVE_LOCKOUT_JUMPERS_MS = 500
 const MOVE_LOCKOUT_MELEE_MS = 1000
@@ -31,10 +31,19 @@ export async function delayUntil(elapsedMS: DOMHighResTimeStamp, atSeconds: numb
 
 function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (state.winningTeam != null) {
+		cancelLoop()
 		return
 	}
 	if (unanimated === true) {
-		runLoop(frameMS + GAME_TICK_MS, true)
+		if (unanimatedStackSize > 1000) {
+			unanimatedStackSize = 0
+			window.setTimeout(() => {
+				runLoop(frameMS + GAME_TICK_MS, true)
+			})
+		} else {
+			unanimatedStackSize += 1
+			runLoop(frameMS + GAME_TICK_MS, true)
+		}
 	} else {
 		frameID = window.requestAnimationFrame(runLoop)
 	}
@@ -42,6 +51,7 @@ function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 	if (previousFrameMS === 0) {
 		delays.clear()
+		unanimatedStackSize = 0
 		previousFrameMS = frameMS
 		startedAtMS = frameMS
 		didBacklineJump = false
@@ -167,7 +177,6 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 }
 
 export function cancelLoop() {
-	startedAtMS = 0
 	previousFrameMS = 0
 	if (frameID !== null) {
 		window.cancelAnimationFrame(frameID)
