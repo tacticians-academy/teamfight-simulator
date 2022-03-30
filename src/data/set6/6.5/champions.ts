@@ -5,7 +5,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getBestArrayAsMax, getBestAsMax, getBestRandomAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
+import { getBestArrayAsMax, getBestRandomAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom } from '#/helpers/boardUtils'
 import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
@@ -335,7 +335,7 @@ export const championEffects = {
 				hasBackingVisual: true,
 				onCollision: (elapsedMS, unit, damage) => {
 					if (damage == null) { return }
-					const lowestHPAlly = getBestAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
+					const lowestHPAlly = getBestRandomAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
 						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing' as SpellKey)
 						lowestHPAlly.gainHealth(elapsedMS, champion, damage!.takingDamage * percentHealing / 100, true)
@@ -449,7 +449,7 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 			if (damageCalculation) {
 				target.damage(elapsedMS, true, champion, DamageSourceType.spell, damageCalculation, false)
 				if (target.dead) {
-					const newTarget = getBestAsMax(false, getInteractableUnitsOfTeam(target.team), (unit) => unit.health)
+					const newTarget = getBestRandomAsMax(false, getInteractableUnitsOfTeam(target.team), (unit) => unit.health)
 					if (newTarget) {
 						return ireliaResetRecursive(spell, champion, moveSpeed, newTarget)
 					}

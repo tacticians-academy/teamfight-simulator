@@ -24,7 +24,7 @@ export function getBestSortedAsMax<T>(isMaximum: boolean, entries: T[], valueFn:
 		.map(data => data[1])
 }
 
-export function getBestAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
+export function getBestUniqueAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
 	let bestValue: number | null
 	let bestResult: T | undefined
 	entries.forEach(entry => {
@@ -54,8 +54,8 @@ export function getBestArrayAsMax<T>(isMaximum: boolean, entries: T[], valueFn: 
 	return bestResults
 }
 
-export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | null {
-	return randomItem(getBestArrayAsMax(isMaximum, entries, valueFn))
+export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
+	return randomItem(getBestArrayAsMax(isMaximum, entries, valueFn)) ?? undefined
 }
 
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
@@ -167,16 +167,16 @@ export function getRowOfMostAttackable(team: TeamNumber | null) {
 }
 
 export function getDistanceHex(isMaximum: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
-	return getBestAsMax(isMaximum, hexes, (hex) => fromUnit.coordDistanceSquaredTo(hex))
+	return getBestUniqueAsMax(isMaximum, hexes, (hex) => fromUnit.coordDistanceSquaredTo(hex))
 }
 
 export function getDistanceUnit(isMaximum: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
 	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 		.filter(unit => unit !== fromUnit)
-	return getBestAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
+	return getBestUniqueAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
 export function getDistanceUnitFromUnits(isMaximum: boolean, fromUnit: ChampionUnit, units: ChampionUnit[]) {
-	return getBestAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
+	return getBestUniqueAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
 
 export function modifyMissile(spell: ChampionSpellData, data: ChampionSpellMissileData) {
@@ -200,7 +200,7 @@ export function getProjectileSpread(count: number, radiansBetween: number) {
 }
 
 export function spawnClones(cloneCount: number, augment: AugmentData, units: ChampionUnit[], valueFn: (unit: ChampionUnit) => number) {
-	const bestUnit = getBestAsMax(true, units, valueFn)
+	const bestUnit = getBestUniqueAsMax(true, units, valueFn)
 	if (bestUnit) {
 		const [cloneHealth] = getVariables(augment, 'CloneHealth')
 		for (let index = 0; index < cloneCount; index += 1) {
@@ -221,7 +221,7 @@ export function spawnClones(cloneCount: number, augment: AugmentData, units: Cha
 
 export function getChainFrom(unit: ChampionUnit, bounces: number, maxDistance?: number) {
 	const chainUnits: ChampionUnit[] = []
-	let currentBounceTarget: ChampionUnit | null = unit
+	let currentBounceTarget: ChampionUnit | undefined = unit
 	while (currentBounceTarget && chainUnits.length < bounces) {
 		chainUnits.push(currentBounceTarget)
 		const unchainedUnits = state.units.filter(unit => !chainUnits.includes(unit))

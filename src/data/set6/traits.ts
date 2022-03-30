@@ -6,7 +6,7 @@ import { getSocialiteHexesFor, INNOVATION_NAMES } from '#/data/set6/utils'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getBestAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getBestRandomAsMax, getBestUniqueAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
@@ -86,14 +86,14 @@ export const baseTraitEffects = {
 			const [detainCount] = getVariables(activeEffect, 'DetainCount')
 			let stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
 			if (detainCount >= 1) {
-				const bestUnit = getBestAsMax(true, stunnableUnits, (unit) => unit.healthMax)
+				const bestUnit = getBestRandomAsMax(true, stunnableUnits, (unit) => unit.healthMax)
 				if (bestUnit) {
 					applyEnforcerDetain(activeEffect, bestUnit)
 				}
 			}
 			if (detainCount >= 2) { //NOTE option for user to target
 				stunnableUnits = stunnableUnits.filter(unit => !unit.statusEffects.stunned.active)
-				const bestUnit = getBestAsMax(true, stunnableUnits, (unit) => {
+				const bestUnit = getBestUniqueAsMax(true, stunnableUnits, (unit) => {
 					const attackDPS = unit.attackDamage() * unit.attackSpeed()
 					const starCostItems = (unit.data.cost ?? 1) * unit.starMultiplier + Math.pow(unit.items.length, 2)
 					const magicDPSScore = (unit.abilityPower() - 90) / 10
@@ -118,7 +118,7 @@ export const baseTraitEffects = {
 			let innovation = innovations.find(unit => unit.name === innovationName)
 			state.units = state.units.filter(unit => unit.team !== teamNumber || !INNOVATION_NAMES.includes(unit.name as ChampionKey) || unit === innovation)
 			if (!innovation || innovation.name !== innovationName) {
-				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [BOARD_COL_COUNT - 1, 0] : [0, BOARD_ROW_COUNT -1], state.units)
+				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [BOARD_COL_COUNT - 1, 0] : [0, BOARD_ROW_COUNT - 1], state.units)
 				if (innovationHex != null) {
 					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
 					innovation.genericReset()
@@ -274,7 +274,7 @@ export const baseTraitEffects = {
 			const [armor, mr, omnivamp, syndicateIncrease, traitLevel] = getVariables(activeEffect, BonusKey.Armor, BonusKey.MagicResist, 'PercentOmnivamp', 'SyndicateIncrease', 'TraitLevel')
 			const syndicateMultiplier = syndicateIncrease + 1
 			if (traitLevel === 1) {
-				const lowestHPSyndicate = getBestAsMax(false, units, (unit) => unit.health)
+				const lowestHPSyndicate = getBestRandomAsMax(false, units, (unit) => unit.health) //TODO should be stable
 				if (lowestHPSyndicate) {
 					units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate))
 					units = [lowestHPSyndicate]

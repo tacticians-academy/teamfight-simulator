@@ -16,7 +16,7 @@ import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
 import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
-import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestAsMax, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
+import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
@@ -1394,7 +1394,7 @@ export class ChampionUnit {
 	}
 
 	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {
-		const bestHex = getBestAsMax(pastTarget, getHexRing(targetHex, 1), (hex) => this.coordDistanceSquaredTo(hex))
+		const bestHex = getBestRandomAsMax(pastTarget, getHexRing(targetHex, 1), (hex) => this.coordDistanceSquaredTo(hex))
 		return bestHex && isSameHex(bestHex, this.activeHex) ? bestHex : getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
 	}
 	projectHexFrom(target: ChampionUnit, pastTarget: boolean) {

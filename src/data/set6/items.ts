@@ -5,7 +5,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { applyGrievousBurn, getChainFrom, checkCooldown, getBestAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getChainFrom, getBestRandomAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor } from '#/helpers/abilityUtils'
 import { getInverseHex, getClosestAttackableEnemies, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -141,7 +141,7 @@ export const baseItemEffects = {
 		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { damageType, takingDamage }) => {
 			if (damageType !== DamageType.physical) {
 				const [hextechHeal] = getVariables(item, BonusKey.VampSpell)
-				const lowestHPAlly = getBestAsMax(false, holder.alliedUnits(true), (unit) => unit.health)
+				const lowestHPAlly = getBestRandomAsMax(false, holder.alliedUnits(true), (unit) => unit.health)
 				if (lowestHPAlly) {
 					lowestHPAlly.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}
@@ -276,7 +276,7 @@ export const baseItemEffects = {
 				if (bestTargets.length) {
 					bestTarget = getDistanceUnitFromUnits(false, holder, bestTargets)
 				} else {
-					bestTarget = getBestAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)!.remainingIterations)
+					bestTarget = getBestRandomAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)!.remainingIterations)
 				}
 				if (bestTarget) {
 					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified

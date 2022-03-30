@@ -5,7 +5,7 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable, getBestAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable, getBestRandomAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHexRing, getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -471,7 +471,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Quinn]: {
 		cast: (elapsedMS, spell, champion) => {
-			const highestASEnemy = getBestAsMax(true, getInteractableUnitsOfTeam(champion.opposingTeam()), (unit) => unit.attackSpeed())
+			const highestASEnemy = getBestRandomAsMax(true, getInteractableUnitsOfTeam(champion.opposingTeam()), (unit) => unit.attackSpeed())
 			const disarmSeconds = champion.getSpellVariable(spell, 'DisarmDuration' as SpellKey)
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: highestASEnemy,
