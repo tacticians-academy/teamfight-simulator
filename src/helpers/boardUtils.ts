@@ -113,6 +113,19 @@ export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: Champion
 	return results.map(entry => entry[1])
 }
 
+export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: ChampionUnit, radiansChange: number, atDistance: number, hexRowsCols: HexRowCol[][]) {
+	const angle = target.angleTo(fromUnit) + radiansChange
+	const [sourceX, sourceY] = fromUnit.coord
+	const deltaX = Math.cos(angle) * atDistance
+	const deltaY = Math.sin(angle) * atDistance
+	console.log(sourceX, sourceY, deltaX, deltaY)
+	const idealCoord: HexCoord = [sourceX + deltaX, sourceY + deltaY]
+	const allHexRowsCols = hexRowsCols.flatMap(row => row.map(col => col))
+	const bestHexRowCol = getBestRandomAsMax(false, allHexRowsCols, (hexRowCol) => coordinateDistanceSquared(hexRowCol.coord, idealCoord))
+	// console.log(JSON.stringify(fromUnit.activeHex), JSON.stringify(bestHexRowCol?.hex))
+	return bestHexRowCol?.hex
+}
+
 export function getHotspotHexes(includingUnderTargetUnit: boolean, units: ChampionUnit[], team: TeamNumber | null, maxDistance: 1 | 2 | 3 | 4) {
 	const densityBoard = buildBoard(false)
 	let results: HexCoord[] = []

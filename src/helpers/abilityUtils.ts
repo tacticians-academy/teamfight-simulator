@@ -3,9 +3,9 @@ import type { AugmentData, ChampionSpellData, ChampionSpellMissileData, EffectVa
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { AttackBounce } from '#/game/effects/GameEffect'
-import { state } from '#/game/store'
+import { getCoordFrom, state } from '#/game/store'
 
-import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
+import { coordinateDistanceSquared, getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT } from '#/helpers/constants'
 import { StatusEffectType } from '#/helpers/types'
@@ -56,6 +56,13 @@ export function getBestArrayAsMax<T>(isMaximum: boolean, entries: T[], valueFn: 
 
 export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
 	return randomItem(getBestArrayAsMax(isMaximum, entries, valueFn)) ?? undefined
+}
+
+export function getBestHexWithinRangeTo(target: ChampionUnit, maxHexRange: number, possibleHexes: HexCoord[]): HexCoord | undefined {
+	return getBestRandomAsMax(true, possibleHexes, (hex) => {
+		const outOfRange = target.hexDistanceTo(hex) > maxHexRange
+		return coordinateDistanceSquared(target.coord, getCoordFrom(hex)) * (outOfRange ? -1 : 1)
+	})
 }
 
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
