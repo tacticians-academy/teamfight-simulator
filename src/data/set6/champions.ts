@@ -20,7 +20,7 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const durationMS = stunSeconds * 1000
-			const target = getDistanceUnit(true, champion)
+			const target = getDistanceUnit(true, champion) //TODO Blitz pulls Blitz
 			champion.setTarget(target)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
@@ -29,10 +29,13 @@ export const baseChampionEffects = {
 					[StatusEffectType.stunned, { durationMS }],
 				],
 				onCollision: (elapsedMS, affectedUnit) => {
+					if (affectedUnit === champion) { return }
 					champion.performActionUntilMS = 0
 					const adjacentHex = affectedUnit.projectHexFrom(champion, false)
 					if (adjacentHex) {
-						affectedUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial) //TODO travel time
+						affectedUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, (elapsedMS, affectedUnit) => { //TODO travel time
+							affectedUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, durationMS)
+						})
 						if (!champion.checkInRangeOfTarget()) {
 							champion.setTarget(null)
 						}
@@ -46,7 +49,7 @@ export const baseChampionEffects = {
 					}
 				},
 			})
-			// champion.performActionUntilMS = elapsedMS + durationMS
+			champion.performActionUntilMS = elapsedMS + durationMS
 			return true
 		},
 	},
@@ -455,12 +458,11 @@ export const baseChampionEffects = {
 				target: mostDistantEnemy,
 				returnMissile: spell!.missile,
 				onCollision: (elapsedMS, affectedUnit) => {
-					if (affectedUnit === champion) {
-						const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
-						champion.queueShield(elapsedMS, champion, {
-							amount: shieldAmount,
-						})
-					}
+					if (affectedUnit !== champion) { return }
+					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
+					champion.queueShield(elapsedMS, champion, {
+						amount: shieldAmount,
+					})
 				},
 			})
 		},
