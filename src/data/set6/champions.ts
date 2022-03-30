@@ -9,7 +9,7 @@ import { getDistanceUnit, getRowOfMostAttackable, getBestRandomAsMax, getInterac
 import { toRadians } from '#/helpers/angles'
 import { getHexRing, getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
+import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BleedData, ChampionEffects, DamageModifier } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
@@ -389,6 +389,32 @@ export const baseChampionEffects = {
 			}
 			target.addBleedIfStrongerThan(sourceID, bleed)
 			target.setBonusesFor(ChampionKey.Malzahar, [BonusKey.MagicResistShred, mrShredProportion, elapsedMS + durationMS])
+			return true
+		},
+	},
+
+	[ChampionKey.MalzaharVoidling]: {
+		cast: (elapsedMS, spell, champion) => {
+			delayUntil(elapsedMS, spell.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
+				const shieldSeconds = champion.getSpellVariable(spell, 'DamageReducedDuration' as SpellKey)
+				const damageReductionProportion = champion.getSpellVariable(spell, 'DamageReducedPercent' as SpellKey)
+				const shieldDamageCalculation = champion.getSpellCalculation(spell, 'DamageAmount' as SpellKey)
+
+				const shielding = [champion]
+				const enemies = getUnitsOfTeam(champion.opposingTeam())
+				const mostTargetedAlly = getBestRandomAsMax(true, champion.alliedUnits(false), (unit) => enemies.filter(enemy => enemy.target === unit).length)
+				if (mostTargetedAlly) { shielding.push(mostTargetedAlly) }
+
+				shielding.forEach(unit => {
+					unit.queueShield(elapsedMS, champion, {
+						id: champion.name,
+						type: 'barrier',
+						damageReduction: damageReductionProportion,
+						expiresAfterMS: shieldSeconds * 1000,
+						bonusDamage: shieldDamageCalculation,
+					})
+				})
+			})
 			return true
 		},
 	},
