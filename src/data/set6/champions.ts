@@ -450,7 +450,7 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.Poppy]: {
-		passiveOnCast: true,
+		passiveCasts: true,
 		passive: (elapsedMS, spell, target, champion, damage) => {
 			const mostDistantEnemy = getDistanceUnit(true, champion, champion.opposingTeam())
 			if (!mostDistantEnemy) { return false }
@@ -461,6 +461,7 @@ export const baseChampionEffects = {
 					if (affectedUnit !== champion) { return }
 					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
 					champion.queueShield(elapsedMS, champion, {
+						id: ChampionKey.Poppy,
 						amount: shieldAmount,
 					})
 				},
