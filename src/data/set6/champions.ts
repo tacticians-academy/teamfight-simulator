@@ -419,6 +419,22 @@ export const baseChampionEffects = {
 		},
 	},
 
+	[ChampionKey.Tibbers]: {
+		passiveCasts: true,
+		passive: (elapsedMS, spell, target, champion, damage) => {
+			delayUntil(elapsedMS, spell?.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
+				const buffSeconds = champion.getSpellCalculationResult(spell, 'BuffDuration' as SpellKey)
+				const bonusADProportion = champion.getSpellVariable(spell, 'PercentAD' as SpellKey)
+				const allyADAP = champion.getSpellVariable(spell, 'AllyADAPBuff' as SpellKey)
+				const expiresAtMS = elapsedMS + buffSeconds * 1000
+				champion.setBonusesFor(ChampionKey.Tibbers, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
+				champion
+					.alliedUnits(false)
+					.forEach(unit => unit.setBonusesFor(ChampionKey.Tibbers, [BonusKey.AttackDamage, allyADAP, expiresAtMS], [BonusKey.AbilityPower, allyADAP, expiresAtMS]))
+			})
+		},
+	},
+
 	[ChampionKey.MissFortune]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.target) { return false }
