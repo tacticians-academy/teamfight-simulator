@@ -20,13 +20,13 @@ const { getters, state, dropUnit } = useStore()
 
 const showingSocialite = computed(() => !state.isRunning && Math.floor(state.setNumber) === 6)
 
-function onDrop(event: DragEvent, row: number, col: number) {
+function onDrop(event: DragEvent, hex: HexCoord) {
 	const championName = getDragNameOf('unit', event)
 	if (championName == null) {
 		return
 	}
 	event.preventDefault()
-	dropUnit(event, championName, [col, row])
+	dropUnit(event, championName, hex)
 }
 
 const hexForMenu = ref<HexCoord | null>(null)
@@ -75,11 +75,11 @@ onMounted(() => {
 		<div ref="hexContainer" class="overflow-x-hidden aspect-square">
 			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
 				<div
-					v-for="(col, colIndex) in row" :key="colIndex"
+					v-for="colRow in row" :key="colRow.hex[1]"
 					class="hex" :class="rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 'team-a' : 'team-b'"
-					:style="{ boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength([colIndex, rowIndex]) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength([colIndex, rowIndex])}vw blue` : undefined }"
-					@dragover="onDragOver" @drop="onDrop($event, rowIndex, colIndex)"
-					@contextmenu.prevent="onHexMenu([colIndex, rowIndex])"
+					:style="{ boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < BOARD_ROW_PER_SIDE_COUNT ? 0 : 1] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined }"
+					@dragover="onDragOver" @drop="onDrop($event, colRow.hex)"
+					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</div>
 		</div>

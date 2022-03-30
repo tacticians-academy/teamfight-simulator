@@ -10,6 +10,7 @@ export type StarLevel = 1 | 2 | 3 | 4
 export type TeamNumber = 0 | 1
 
 export interface HexRowCol {
+	hex: HexCoord
 	coord: HexCoord
 }
 

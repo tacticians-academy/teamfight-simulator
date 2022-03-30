@@ -8,8 +8,8 @@ import type { HexCoord, HexRowCol, TeamNumber } from '#/helpers/types'
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
 
-export function buildBoard(fillObjects: boolean | 0): any[][] {
-	return [...Array(BOARD_ROW_COUNT)].map(row => [...Array(BOARD_COL_COUNT)].map(col => (fillObjects === 0 ? 0 : (fillObjects ? {} : []))))
+export function buildBoard(fillObjects: boolean): any[][] {
+	return [...Array(BOARD_ROW_COUNT)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex] } : 0)))
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
@@ -102,10 +102,10 @@ export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: Champion
 	const dX = (projectedX - fromCoord[0]) * MAX_HEX_COUNT
 	const dY = (projectedY - fromCoord[1]) * MAX_HEX_COUNT
 	const results: [number, HexCoord][] = []
-	hexRowsCols.forEach((row, rowIndex) => {
-		row.forEach((col, colIndex) => {
-			if (doesLineInterceptCircle(col.coord, HEX_PROPORTION / 2, fromCoord, [dX, dY])) {
-				results.push([fromUnit.coordDistanceSquaredTo(col), [colIndex, rowIndex]])
+	hexRowsCols.forEach(row => {
+		row.forEach(colRow => {
+			if (doesLineInterceptCircle(colRow.coord, HEX_PROPORTION / 2, fromCoord, [dX, dY])) {
+				results.push([fromUnit.coordDistanceSquaredTo(colRow), colRow.hex])
 			}
 		})
 	})
@@ -114,7 +114,7 @@ export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: Champion
 }
 
 export function getHotspotHexes(includingUnderTargetUnit: boolean, units: ChampionUnit[], team: TeamNumber | null, maxDistance: 1 | 2 | 3 | 4) {
-	const densityBoard = buildBoard(0)
+	const densityBoard = buildBoard(false)
 	let results: HexCoord[] = []
 	let densestHexValue = 0
 	for (const unit of units) {
