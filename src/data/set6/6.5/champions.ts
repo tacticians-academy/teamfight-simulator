@@ -310,6 +310,22 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Sejuani]: {
+		passiveCasts: true,
+		passive: (elapsedMS, spell, target, champion, damage) => { //TODO verify if basic attack physical damage is applied
+			const statsSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+			const statsAmount = champion.getSpellVariable(spell, 'DefensiveStats' as SpellKey)
+			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
+			target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
+			if (damageCalculation) {
+				target.damage(elapsedMS, false, champion, DamageSourceType.spell, damageCalculation, false)
+			}
+			const expiresAtMS = elapsedMS + statsSeconds * 1000
+			champion.addBonuses(ChampionKey.Sejuani, [BonusKey.Armor, statsAmount, expiresAtMS], [BonusKey.MagicResist, statsAmount, expiresAtMS])
+		},
+	},
+
 	[ChampionKey.Senna]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.target) { return false }
