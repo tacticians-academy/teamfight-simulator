@@ -5,10 +5,10 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getBestArrayAsMax, getBestRandomAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getBestArrayAsMax, getBestHexWithinRangeTo, getBestRandomAsMax, getBestSortedAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom } from '#/helpers/boardUtils'
-import { HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
+import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing } from '#/helpers/boardUtils'
+import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
@@ -218,6 +218,39 @@ export const championEffects = {
 					champion.queueProjectileEffect(elapsedMS, spell, {
 						bonuses: [SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReave]],
 					})
+				},
+			})
+		},
+	},
+
+	[ChampionKey.Lucian]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return false }
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target: champion,
+				idealDestination: (champion) => {
+					const hexMoveDistance = 2 //NOTE hardcoded
+					const dashHexes = getHexRing(champion.activeHex, hexMoveDistance)
+					return getBestHexWithinRangeTo(target, champion.range(), dashHexes)
+				},
+				moveSpeed: 1500, //TODO experimentally determine
+				onDestination: (elapsedMS, champion) => {
+					const otherValidTargets = getAttackableUnitsOfTeam(champion.opposingTeam()).filter(unit => unit !== target)
+					const priorityTargets = getBestSortedAsMax(false, otherValidTargets, (unit) => unit.coordDistanceSquaredTo(champion))
+					priorityTargets.unshift(target)
+					const shotCount = champion.getSpellVariable(spell, 'NumShots' as SpellKey)
+					const missile = champion.getMissileWithSuffix('PassiveShot2')
+					priorityTargets
+						.slice(0, shotCount)
+						.forEach((unit, targetIndex) => {
+							champion.queueProjectileEffect(elapsedMS, spell, {
+								startsAfterMS: targetIndex * DEFAULT_CAST_SECONDS * 1000,
+								target: unit,
+								missile,
+								destroysOnCollision: true, //TODO verify
+							})
+						})
 				},
 			})
 		},
