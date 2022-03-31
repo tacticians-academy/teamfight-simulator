@@ -797,7 +797,7 @@ export class ChampionUnit {
 		}
 		let didCrit = false
 		if (source && (damage.damageType !== DamageType.magic || source.canDamageCrit(damage))) {
-			didCrit = source.critChance(damageModifier) > Math.random()
+			didCrit = damageModifier?.alwaysCrits ?? source.critChance(damageModifier) > Math.random()
 			if (didCrit) {
 				const critReduction = this.critReduction()
 				if (critReduction < 1) {

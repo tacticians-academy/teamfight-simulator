@@ -270,7 +270,7 @@ export const baseChampionEffects = {
 				damageCalculation: fourShotCalculation,
 				destroysOnCollision: false,
 				damageModifier: {
-					//TODO guaranteed crit
+					alwaysCrits: true,
 				},
 				missile: champion.getMissileWithSuffix('RShotMis4') ?? missile,
 				stackingDamageModifier,
@@ -638,7 +638,7 @@ export const baseChampionEffects = {
 			if (!target) { return false }
 			delayUntil(elapsedMS, spell.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
 				const spellShield = target.consumeSpellShield()
-				const ignoresCC = spellShield != null || target.statusEffects.ccImmune.active
+				const ignoresCC = spellShield != null || target.isUnstoppable()
 				const bellySeconds = champion.getSpellVariable(spell, 'BellyDuration' as SpellKey)
 				const damageCalculation = ignoresCC ? champion.getSpellCalculation(spell, 'ReducedDamageToCC' as SpellKey) : champion.getSpellCalculation(spell, SpellKey.Damage)
 				if (damageCalculation) {
