@@ -147,6 +147,20 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Draven]: {
+		innate: (spell, champion) => {
+			const armorPenPercent = champion.getSpellVariable(spell, 'ArmorPenPercent' as SpellKey)
+			// const vip = champion.getSpellVariable(spell, 'PassiveArmorPenPercent' as SpellKey) //TODO VIP
+			return [
+				[BonusKey.ArmorShred, armorPenPercent / 100],
+			]
+		},
+		cast: (elapsedMS, spell, champion) => {
+			addDravenAxe(elapsedMS, spell, champion)
+			return true
+		},
+	},
+
 	[ChampionKey.Gnar]: {
 		cast: (elapsedMS, spell, champion) => {
 			const boulderSpell = champion.data.spells[1]
@@ -494,4 +508,31 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 		})
 	})
 	return true
+}
+
+function addDravenAxe(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) {
+	const id = ChampionKey.Draven
+	const existingAxe = Array.from(champion.empoweredAutos).find(empoweredAuto => empoweredAuto.id === id)
+	const returnMissile = champion.getSpellWithSuffix('SpinningReturn')?.missile
+	const durationSeconds = champion.getSpellVariable(spell, 'BuffDuration' as SpellKey)
+	const expiresAtMS = elapsedMS + durationSeconds * 1000
+	if (existingAxe) {
+		if (existingAxe.amount < 2) { //NOTE hardcoded
+			existingAxe.amount += 1
+		}
+		existingAxe.expiresAtMS = expiresAtMS //TODO the axes should technically expire individually
+	} else {
+		champion.empoweredAutos.add({
+			id,
+			amount: 1,
+			expiresAtMS,
+			returnMissile, //TODO fixed 2s travel time
+			onCollision: (elapsedMS, effect, withUnit) => {
+				if (withUnit === champion && effect.intersects(champion)) {
+					console.log('AXE')
+					addDravenAxe(elapsedMS, spell, champion)
+				}
+			},
+		})
+	}
 }
