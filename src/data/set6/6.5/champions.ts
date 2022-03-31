@@ -14,6 +14,7 @@ import type { ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
 import { baseChampionEffects } from '../champions'
+import { delayUntil } from '#/game/loop'
 
 export const championEffects = {
 
@@ -483,6 +484,68 @@ export const championEffects = {
 					},
 				})
 			}
+			return true
+		},
+	},
+
+	[ChampionKey.Zeri]: {
+		customAuto: (elapsedMS, spell, target, champion, empoweredAuto, windupMS) => {
+			if (empoweredAuto.damageCalculation != null || empoweredAuto.destroysOnCollision != null || empoweredAuto.stackingDamageModifier != null || empoweredAuto.missile != null) {
+				console.log('ERR empoweredAuto cannot modify', empoweredAuto)
+			}
+			const bulletCount = champion.getSpellVariable(spell, 'NumBullets' as SpellKey)
+			const missile = champion.getMissileWithSuffix('QMis')
+			const fixedHexRange = champion.range()
+			const radiansBetween = Math.PI / 128 //TODO experimentally determine
+			const isEmpowered = champion.statusEffects.empowered.active
+
+			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
+			const bonusCalculations = empoweredAuto.bonusCalculations ?? []
+			const onHitBonus = champion.getSpellCalculation(spell, 'BonusOnHit' as SpellKey)
+			if (onHitBonus) { bonusCalculations.push(onHitBonus) }
+
+			getProjectileSpread(bulletCount, radiansBetween).forEach((changeRadians, bulletIndex) => {
+				champion.queueProjectileEffect(elapsedMS, undefined, {
+					target: target.activeHex,
+					startsAfterMS: windupMS,
+					damageSourceType: DamageSourceType.attack,
+					missile,
+					destroysOnCollision: !isEmpowered,
+					changeRadians,
+					fixedHexRange,
+					damageCalculation,
+					bonusCalculations,
+					damageModifier: empoweredAuto.damageModifier,
+					statusEffects: empoweredAuto.statusEffects,
+					bounce: empoweredAuto.bounce,
+					bonuses: empoweredAuto.bonuses,
+					opacity: 1 / 3,
+					onActivate: (elapsedMS, champion) => {
+						if (bulletIndex === 0) {
+							champion.queueMoveUnitEffect(elapsedMS, undefined, {
+								target: champion,
+								idealDestination: () => getDistanceHex(true, target, getSurroundingWithin(champion.activeHex, 2, false)), //TODO experimentally determine
+								moveSpeed: 2000, //TODO experimentally determine
+								keepsTarget: true,
+							})
+						}
+					},
+					onCollision(elapsedMS, effect, withUnit, damage) {
+						if (bulletIndex === 0) {
+							champion.completeAutoAttack(elapsedMS, effect, withUnit, damage, empoweredAuto)
+						}
+					},
+				})
+			})
+		},
+		cast: (elapsedMS, spell, champion) => {
+			const castSeconds = 1 //TODO experimentally determine
+			delayUntil(elapsedMS, castSeconds).then(elapsedMS => {
+				const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
+				// const vip = champion.getSpellVariable(spell, 'VIPTotalDuration' as SpellKey) //TODO VIP
+				champion.applyStatusEffect(elapsedMS, StatusEffectType.empowered, durationSeconds * 1000)
+			})
+			champion.performActionUntilMS = elapsedMS + castSeconds * 1000
 			return true
 		},
 	},
