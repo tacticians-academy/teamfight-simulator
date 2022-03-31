@@ -31,6 +31,7 @@ export interface DamageModifier {
 	increase?: number
 	multiplier?: number
 	critChance?: number
+	ignoresInvulnerability?: boolean
 }
 
 export interface DamageResult {

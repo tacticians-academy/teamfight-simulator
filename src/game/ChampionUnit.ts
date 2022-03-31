@@ -794,7 +794,7 @@ export class ChampionUnit {
 
 		damage.takingDamage = damage.rawDamage
 
-		if (this.statusEffects.invulnerable.active) {
+		if (this.statusEffects.invulnerable.active && damageModifier?.ignoresInvulnerability !== true) {
 			damage.takingDamage = 0
 		} else if (damage.damageType !== DamageType.true) {
 			const defenseMultiplier = defenseStat != null ? 100 / (100 + defenseStat) : 1
