@@ -7,7 +7,7 @@ import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getBestRandomAsMax, getBestUniqueAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
-import { getClosestHexAvailableTo, getMirrorHex, isSameHex } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getMirrorHex, isInBackLines, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
 import { MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
@@ -113,6 +113,9 @@ export const baseTraitEffects = {
 	},
 
 	[TraitKey.Innovator]: {
+		shouldKeepSpawn: (spawnedUnit) => {
+			return INNOVATION_NAMES.includes(spawnedUnit.name as ChampionKey)
+		},
 		onceForTeam: (activeEffect, teamNumber, units) => {
 			const [starLevelMultiplier, starLevel] = getVariables(activeEffect, 'InnovatorStarLevelMultiplier', 'InnovationStarLevel')
 			const innovationName = INNOVATION_NAMES[starLevel - 1]
@@ -296,6 +299,12 @@ export const baseTraitEffects = {
 				bonuses.push([BonusKey.VampOmni, omnivamp * syndicateMultiplier])
 			}
 			units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate, ...bonuses))
+		},
+	},
+
+	[TraitKey.Transformer]: {
+		solo: (unit, activeEffect) => {
+			unit.transformIndex = isInBackLines(unit) ? 1 : 0
 		},
 	},
 

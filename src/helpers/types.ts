@@ -247,6 +247,7 @@ type TraitEffectFn = (unit: ChampionUnit, activeEffect: TraitEffectData) => Effe
 interface TraitFns {
 	teamEffect?: boolean | number | BonusKey[]
 	disableDefaultVariables?: true | BonusKey[]
+	shouldKeepSpawn?: (spawnedUnit: ChampionUnit) => boolean
 	solo?: TraitEffectFn
 	team?: TraitEffectFn
 	applyForOthers?: (activeEffect: TraitEffectData, unit: ChampionUnit) => void

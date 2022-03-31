@@ -68,7 +68,7 @@ export function getBestHexWithinRangeTo(target: ChampionUnit, maxHexRange: numbe
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
 	const hex = fromUnit.activeHex
 	const spawn = new ChampionUnit(name, getClosestHexAvailableTo(hex, state.units) ?? hex, starLevel)
-	spawn.wasSpawned = true
+	spawn.wasSpawnedDuringFight = true
 	spawn.genericReset()
 	spawn.team = fromUnit.team
 	state.units.push(spawn)
@@ -174,7 +174,7 @@ export function getRowOfMostAttackable(team: TeamNumber | null) {
 }
 
 export function getDistanceHex(isMaximum: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
-	return getBestUniqueAsMax(isMaximum, hexes, (hex) => fromUnit.coordDistanceSquaredTo(hex))
+	return getBestRandomAsMax(isMaximum, hexes, (hex) => fromUnit.coordDistanceSquaredTo(hex))
 }
 
 export function getDistanceUnit(isMaximum: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {

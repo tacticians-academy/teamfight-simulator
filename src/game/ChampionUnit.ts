@@ -5,7 +5,7 @@ import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectV
 
 import { HexEffect } from '#/game/effects/HexEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
-import type { AttackBounce, AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
+import type { AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
 import { MoveUnitEffect } from '#/game/effects/MoveUnitEffect'
 import type { MoveUnitEffectData } from '#/game/effects/MoveUnitEffect'
 import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
@@ -18,12 +18,12 @@ import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
 import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
-import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
+import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
-import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -54,7 +54,7 @@ export class ChampionUnit {
 	isStarLocked: boolean
 	fixedAS: number | undefined
 	instantAttack: boolean
-	wasSpawned = false
+	wasSpawnedDuringFight = false
 
 	hitBy = new Set<string>()
 	basicAttackSourceIDs: string[] = []
@@ -145,12 +145,7 @@ export class ChampionUnit {
 		this.manaLockUntilMS = 0
 		this.basicAttackCount = 0
 		this.castCount = 0
-		if (this.hasTrait(TraitKey.Transformer)) {
-			const col = this.activeHex[1]
-			this.transformIndex = isInBackLines(this) ? 1 : 0
-		} else {
-			this.transformIndex = 0
-		}
+		this.transformIndex = 0
 
 		this.scalings.clear()
 		this.shields = []

@@ -202,8 +202,13 @@ function resetUnitsAfterUpdating() {
 	resetChecks()
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units = state.units.filter(unit => {
-		if (unit.wasSpawned) { return false }
-		return !unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy || synergiesByTeam[unit.team].some(teamSynergy => teamSynergy.activeEffect && teamSynergy.key === TraitKey.Innovator)
+		if (unit.wasSpawnedDuringFight) {
+			return false
+		}
+		if (!unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy) {
+			return true
+		}
+		return synergiesByTeam[unit.team].some(({ activeEffect, key }) => activeEffect && setData.traitEffects[key]?.shouldKeepSpawn?.(unit))
 	})
 	state.hexEffects.clear()
 	state.moveUnitEffects.clear()

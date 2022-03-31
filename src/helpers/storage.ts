@@ -88,7 +88,7 @@ export function clearBoardStorage(set: SetNumber) {
 
 export function saveUnits(set: SetNumber) {
 	const output: StorageChampion[] = state.units
-		.filter(unit => !unit.wasSpawned)
+		.filter(unit => !unit.wasSpawnedDuringFight)
 		.map(unit => ({
 			name: unit.name,
 			hex: unit.startHex,
