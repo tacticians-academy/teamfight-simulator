@@ -129,11 +129,11 @@ export const baseItemEffects = {
 			}
 		},
 		innate: (item, unit) => {
-			const variables: BonusVariable[] = []
 			const [increaseEffect] = getVariables(item, 'AdditionalADAP')
 			const increase = increaseEffect / 2 //TODO averaged increaseEffect
-			variables.push([BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase])
-			return variables
+			return [
+				[BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase],
+			]
 		},
 	},
 
@@ -340,8 +340,10 @@ function applyTitansResolve(item: ItemData, itemID: any, unit: ChampionUnit) {
 	const [stackAD, stackAP, maxStacks, resistsAtCap] = getVariables(item, 'StackingAD', 'StackingAP', 'StackCap', 'BonusResistsAtStackCap')
 	const bonuses = unit.getBonusesFrom(itemID)
 	if (bonuses.length < maxStacks) {
-		const variables: BonusVariable[] = []
-		variables.push([BonusKey.AttackDamage, stackAD], [BonusKey.AbilityPower, stackAP])
+		const variables: BonusVariable[] = [
+			[BonusKey.AttackDamage, stackAD],
+			[BonusKey.AbilityPower, stackAP],
+		]
 		if (bonuses.length === maxStacks - 1) {
 			variables.push([BonusKey.Armor, resistsAtCap], [BonusKey.MagicResist, resistsAtCap])
 		}

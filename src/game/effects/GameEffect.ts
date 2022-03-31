@@ -9,9 +9,9 @@ import { DamageSourceType } from '#/helpers/types'
 import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
-	apply: (elapsedMS: number, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => undefined
-	intersects: (unit: ChampionUnit) => boolean = () => false
-	update: (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => boolean | undefined = () => false
+	apply: (elapsedMS: number, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => { throw 'ERR empty GameEffectChild apply' }
+	intersects: (unit: ChampionUnit) => boolean = () => { throw 'ERR empty GameEffectChild intersects' }
+	update: (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => boolean | undefined = () => { throw 'ERR empty GameEffectChild update' }
 	start: () => void = () => {}
 }
 
@@ -173,7 +173,6 @@ export class GameEffect extends GameEffectChild {
 			}
 			return unit.isInteractable() && this.intersects(unit)
 		})
-		// console.log(targetingUnits.map(u => u.name)) //SAMPLE
 		targetingUnits.forEach(unit => this.apply(elapsedMS, unit, false))
 	}
 

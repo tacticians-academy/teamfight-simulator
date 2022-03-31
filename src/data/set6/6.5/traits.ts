@@ -45,14 +45,15 @@ export const traitEffects = {
 
 	[TraitKey.Rivals]: {
 		solo: (unit, activeEffect) => {
-			const variables: BonusVariable[] = []
 			if (unit.name === ChampionKey.Vi) {
 				const [manaReduction] = getVariables(activeEffect, 'ViManaReduction')
-				variables.push([BonusKey.ManaReduction, manaReduction])
-			} else if (unit.name !== ChampionKey.Jinx) {
+				return [
+					[BonusKey.ManaReduction, manaReduction],
+				]
+			}
+			if (unit.name !== ChampionKey.Jinx) {
 				console.log('ERR', TraitKey.Rivals, unit.name)
 			}
-			return variables
 		},
 		enemyDeath: (activeEffect, elapsedMS, dead, [unit]) => {
 			if (unit.name === ChampionKey.Jinx) {
@@ -69,17 +70,17 @@ export const traitEffects = {
 
 	[TraitKey.YordleLord]: {
 		solo: (unit, activeEffect) => {
-			const variables: BonusVariable[] = []
 			const yordleEffectVariables = getters.synergiesByTeam.value[unit.team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Yordle)?.activeEffect?.variables
 			if (yordleEffectVariables) {
+				const variables: BonusVariable[] = []
 				for (const key in yordleEffectVariables) {
 					const yordleValue = yordleEffectVariables[key]
 					if (yordleValue != null) {
 						variables.push([key, yordleValue])
 					}
 				}
+				return variables
 			}
-			return variables
 		},
 	},
 

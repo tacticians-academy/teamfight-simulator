@@ -63,7 +63,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			unit.shields.forEach(shield => {
 				shield.activated = shield.activatesAtMS == null
 				const healShieldBoost = shield.source?.getBonuses(BonusKey.HealShieldBoost)
-				if (shield.amount && healShieldBoost != null) {
+				if (shield.amount != null && healShieldBoost != null) {
 					shield.amount *= (1 + healShieldBoost)
 				}
 				if (shield.repeatsEveryMS != null) {

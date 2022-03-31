@@ -66,18 +66,20 @@ export const baseTraitEffects = {
 
 	[TraitKey.Clockwork]: {
 		team: (unit, activeEffect) => {
-			const variables: BonusVariable[] = []
 			const [bonusPerAugment, bonusAS] = getVariables(activeEffect, 'BonusPerAugment', 'ASBonus')
-			variables.push([BonusKey.AttackSpeed, bonusAS * 100], [BonusKey.AttackSpeed, getters.augmentCount.value * bonusPerAugment * 100])
-			return variables
+			return [
+				[BonusKey.AttackSpeed, bonusAS * 100],
+				[BonusKey.AttackSpeed, getters.augmentCount.value * bonusPerAugment * 100],
+			]
 		},
 	},
 
 	[TraitKey.Colossus]: {
 		innate: (unit, innateEffect) => {
 			const [bonusHealth] = getVariables(innateEffect, `Bonus${BonusKey.Health}Tooltip`)
-			const variables: BonusVariable[] = [[BonusKey.Health, bonusHealth]]
-			return variables
+			return [
+				[BonusKey.Health, bonusHealth],
+			]
 		},
 	},
 
@@ -160,11 +162,15 @@ export const baseTraitEffects = {
 			}
 		},
 		solo: (unit, activeEffect) => {
-			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.AdrenalineRush) {
-				variables.push([BonusKey.AttackDamage, getMutantBonusFor(activeEffect, MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)])
+				return [
+					[BonusKey.AttackDamage, getMutantBonusFor(activeEffect, MutantType.AdrenalineRush, MutantBonus.AdrenalineAD)],
+				]
 			} else if (state.mutantType === MutantType.SynapticWeb) {
-				variables.push([BonusKey.AbilityPower, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticAP)], [BonusKey.ManaReduction, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticManaCost)])
+				return [
+					[BonusKey.AbilityPower, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticAP)],
+					[BonusKey.ManaReduction, getMutantBonusFor(activeEffect, MutantType.SynapticWeb, MutantBonus.SynapticManaCost)],
+				]
 			} else if (state.mutantType === MutantType.Metamorphosis) {
 				const [intervalSeconds, amountARMR, amountADAP] = getVariables(activeEffect, 'MutantMetamorphosisGrowthRate', 'MutantMetamorphosisArmorMR', 'MutantMetamorphosisADAP')
 				unit.scalings.add({
@@ -186,18 +192,20 @@ export const baseTraitEffects = {
 			} else if (state.mutantType === MutantType.Cybernetic) {
 				if (unit.items.length) {
 					const [cyberHP, cyberAD] = getVariables(activeEffect, 'MutantCyberHP', 'MutantCyberAD')
-					variables.push([BonusKey.Health, cyberHP], [BonusKey.AttackDamage, cyberAD])
+					return [
+						[BonusKey.Health, cyberHP],
+						[BonusKey.AttackDamage, cyberAD],
+					]
 				}
 			}
-			return variables
 		},
 		team: (unit, activeEffect) => {
-			const variables: BonusVariable[] = []
 			if (state.mutantType === MutantType.BioLeeching) {
 				const [omnivamp] = getVariables(activeEffect, 'MutantBioLeechingOmnivamp')
-				variables.push([BonusKey.VampOmni, omnivamp])
+				return [
+					[BonusKey.VampOmni, omnivamp],
+				]
 			}
-			return variables
 		},
 		allyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
 			if (state.mutantType === MutantType.VoraciousAppetite) {
