@@ -19,7 +19,7 @@ export const augmentEffects = {
 		modifyDamageByHolder: (augment, target, source, damage) => {
 			if (damage.sourceType === DamageSourceType.spell) {
 				const [mrShredPercent] = getVariables(augment, 'MagicPen')
-				damage[BonusKey.ArmorShred] += mrShredPercent / 100
+				damage[BonusKey.MagicResistShred] += mrShredPercent / 100
 			}
 		},
 		damageDealtByHolder: (augment, elapsedMS, target, source, { isOriginalSource, sourceType }) => {

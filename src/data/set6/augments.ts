@@ -402,6 +402,21 @@ export const baseAugmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.Weakspot]: {
+		modifyDamageByHolder: (augment, target, source, damage) => {
+			if (damage.sourceType === DamageSourceType.attack) { //TODO if isOriginalSource?
+				const [armorShredPercent] = getVariables(augment, 'ArmorPenPercent')
+				damage[BonusKey.ArmorShred] += armorShredPercent / 100
+			}
+		},
+		damageDealtByHolder: (augment, elapsedMS, target, source, { isOriginalSource, sourceType }) => {
+			if (isOriginalSource && sourceType === DamageSourceType.attack) {
+				const [durationSeconds, healReductionPercent] = getVariables(augment, SpellKey.Duration, 'HealReductionPercent')
+				target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, healReductionPercent / 100)
+			}
+		},
+	},
+
 	[AugmentGroupKey.WoodlandCharm]: {
 		startOfFight: (augment, team, units) => {
 			spawnClones(1, augment, units, (unit) => unit.healthMax)
