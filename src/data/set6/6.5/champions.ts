@@ -67,7 +67,7 @@ export const championEffects = {
 					return championHex ?? target.activeHex
 				},
 				moveSpeed,
-				onCollision: (elapsedMS, withUnit) => {
+				onCollision: (elapsedMS, effect, withUnit) => {
 					if (withUnit === target) {
 						if (targetHex) {
 							target.customMoveTo(targetHex ?? target, true, moveSpeed, (elapsedMS, target) => {
@@ -119,17 +119,17 @@ export const championEffects = {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				destroysOnCollision: true,
-				onCollision: (elapsedMS, target) => {
-					if (target.statusEffects.ablaze.active) {
-						target.statusEffects.ablaze.active = false
+				onCollision: (elapsedMS, effect, withUnit) => {
+					if (withUnit.statusEffects.ablaze.active) {
+						withUnit.statusEffects.ablaze.active = false
 						const bonusCalculation = champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey)
 						if (bonusCalculation) {
-							target.takeBonusDamage(elapsedMS, champion, bonusCalculation, false)
+							withUnit.takeBonusDamage(elapsedMS, champion, bonusCalculation, false)
 						}
 						const secondProcStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-						target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, secondProcStunSeconds * 1000)
+						withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, secondProcStunSeconds * 1000)
 					} else {
-						target.applyStatusEffect(elapsedMS, StatusEffectType.ablaze, blazeSeconds * 1000)
+						withUnit.applyStatusEffect(elapsedMS, StatusEffectType.ablaze, blazeSeconds * 1000)
 					}
 				},
 			})
@@ -306,8 +306,8 @@ export const championEffects = {
 	[ChampionKey.RekSai]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
-				onCollision: (elapsedMS, target) => {
-					const healAmount = champion.getSpellCalculationResult(spell, (target.hitBy.has(champion.instanceID) ? 'HealBonus' : 'Heal') as SpellKey)
+				onCollision: (elapsedMS, effect, withUnit) => {
+					const healAmount = champion.getSpellCalculationResult(spell, (withUnit.hitBy.has(champion.instanceID) ? 'HealBonus' : 'Heal') as SpellKey)
 					champion.gainHealth(elapsedMS, champion, healAmount, true)
 				},
 			})
@@ -328,9 +328,9 @@ export const championEffects = {
 				target: bestHex,
 				fixedHexRange,
 				destroysOnCollision: false,
-				onCollision: (elapsedMS, unit) => {
-					unit.setBonusesFor(ChampionKey.Renata, [BonusKey.AttackSpeed, -attackSpeedReducePercent, elapsedMS + durationSeconds * 1000])
-					unit.bleeds.add({
+				onCollision: (elapsedMS, effect, withUnit) => {
+					withUnit.setBonusesFor(ChampionKey.Renata, [BonusKey.AttackSpeed, -attackSpeedReducePercent, elapsedMS + durationSeconds * 1000])
+					withUnit.bleeds.add({
 						sourceID: Math.random().toString(),
 						source: champion,
 						damageCalculation,
@@ -366,7 +366,7 @@ export const championEffects = {
 				destroysOnCollision: false,
 				fixedHexRange: MAX_HEX_COUNT,
 				hasBackingVisual: true,
-				onCollision: (elapsedMS, unit, damage) => {
+				onCollision: (elapsedMS, effect, withUnit, damage) => {
 					if (damage == null) { return }
 					const lowestHPAlly = getBestRandomAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {

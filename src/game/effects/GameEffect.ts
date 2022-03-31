@@ -5,9 +5,8 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { getters } from '#/game/store'
 
-import { solveSpellCalculationFrom } from '#/helpers/calculate'
 import { DamageSourceType } from '#/helpers/types'
-import type { BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
+import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: number, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => undefined
@@ -38,7 +37,7 @@ export interface GameEffectData {
 	/** `StatusEffects` to apply to any affected units. */
 	statusEffects?: StatusEffectData[]
 	/** Callback once the effect begins. */
-	onActivate?: CollisionFn
+	onActivate?: ActivateFn
 	/** Callback for each unit the `GameEffect` applies to. */
 	onCollision?: CollisionFn
 	/** The effect's rendered visual opacity. Defaults to 1. */
@@ -84,7 +83,7 @@ export class GameEffect extends GameEffectChild {
 
 	collidedWith: string[] = []
 
-	onActivate: CollisionFn | undefined
+	onActivate: ActivateFn | undefined
 	onCollision: CollisionFn | undefined
 
 	constructor(source: ChampionUnit, spell: ChampionSpellData | undefined, data: GameEffectData) {
@@ -157,7 +156,7 @@ export class GameEffect extends GameEffectChild {
 		})
 		if (!wasSpellShielded) {
 			this.applyBonuses(elapsedMS, unit)
-			this.onCollision?.(elapsedMS, unit, damage)
+			this.onCollision?.(elapsedMS, this, unit, damage)
 		}
 
 		if (isFirstTarget && damage && this.damageCalculation) {

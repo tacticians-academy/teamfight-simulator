@@ -5,9 +5,9 @@ import { GameEffect } from '#/game/effects/GameEffect'
 import type { GameEffectData } from '#/game/effects/GameEffect'
 
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
-import type { CollisionFn, HexCoord } from '#/helpers/types'
+import type { ActivateFn, HexCoord } from '#/helpers/types'
 import { state } from '#/game/store'
-import { coordinateDistanceSquared, getClosestHexAvailableTo } from '#/helpers/boardUtils'
+import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 
 type CalculateDestinationFn = (target: ChampionUnit) => ChampionUnit | HexCoord | null | undefined
@@ -26,7 +26,7 @@ export interface MoveUnitEffectData extends GameEffectData {
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData
 	/** Called when the target reaches the destination `HexCoord`. */
-	onDestination?: CollisionFn
+	onDestination?: ActivateFn
 }
 
 export class MoveUnitEffect extends GameEffect {
@@ -36,7 +36,7 @@ export class MoveUnitEffect extends GameEffect {
 	ignoresDestinationCollision: boolean
 	idealDestination: CalculateDestinationFn
 	hexEffect: HexEffectData | undefined
-	onDestination: CollisionFn | undefined
+	onDestination: ActivateFn | undefined
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: MoveUnitEffectData) {
 		super(source, spell, data)
@@ -96,7 +96,7 @@ export class MoveUnitEffect extends GameEffect {
 					continue
 				}
 				if (coordinateDistanceSquared(unit.coord, this.target.coord) <= collisionRadiusSquared) {
-					this.onCollision(elapsedMS, unit)
+					this.onCollision(elapsedMS, this, unit)
 				}
 			}
 		}

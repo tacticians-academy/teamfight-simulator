@@ -78,7 +78,9 @@ export interface StatusEffect {
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>
 
-export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage?: DamageResult) => void
+export type ActivateFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage?: DamageResult) => void
+export type DamageFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage: DamageResult) => void
 
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',
@@ -142,7 +144,7 @@ export interface BleedData {
 	activatesAtMS: DOMHighResTimeStamp
 	repeatsEveryMS: DOMHighResTimeStamp
 	remainingIterations: number
-	onDeath?: CollisionFn
+	onDeath?: ActivateFn
 }
 
 export type BonusEntry = [label: BonusLabelKey, variables: BonusVariable[]]

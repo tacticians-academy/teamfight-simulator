@@ -19,11 +19,11 @@ import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isInBackLines, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
-import { calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
+import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
-import type { BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, CollisionFn, DamageModifier, DamageResult, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, CollisionFn, DamageFn, DamageModifier, DamageResult, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
@@ -43,10 +43,12 @@ interface EmpoweredAuto {
 	damageModifier?: DamageModifier
 	bonuses?: BonusEntry
 	missile?: ChampionSpellMissileData
+	returnMissile?: ChampionSpellMissileData
 	stackingDamageModifier?: DamageModifier
 	destroysOnCollision?: boolean
 	statusEffects?: StatusEffectData[]
-	onActivate?: CollisionFn
+	onActivate?: ActivateFn
+	onCollision?: CollisionFn
 }
 
 export class ChampionUnit {
@@ -80,7 +82,7 @@ export class ChampionUnit {
 	attackStartAtMS: DOMHighResTimeStamp = 0
 	moving = false
 	customMoveSpeed: number | undefined
-	onMovementComplete?: CollisionFn
+	onMovementComplete?: ActivateFn
 	performActionUntilMS: DOMHighResTimeStamp = 0
 	manaLockUntilMS: DOMHighResTimeStamp = 0
 	items: ItemData[] = []
@@ -100,7 +102,7 @@ export class ChampionUnit {
 	damageCallbacks = new Set<{
 		id: string,
 		expiresAtMS: DOMHighResTimeStamp
-		onDamage: CollisionFn
+		onDamage: DamageFn
 	}>()
 
 	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
@@ -261,6 +263,8 @@ export class ChampionUnit {
 			let stackingDamageModifier: DamageModifier | undefined
 			let bonuses: BonusEntry | undefined
 			let missile: ChampionSpellMissileData | undefined
+			let returnMissile: ChampionSpellMissileData | undefined
+			let onCollision: CollisionFn | undefined
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
 					this.empoweredAutos.delete(empower)
@@ -301,6 +305,14 @@ export class ChampionUnit {
 				if (empower.bounce) {
 					bounce = Object.assign({}, empower.bounce)
 				}
+				if (empower.returnMissile) {
+					if (returnMissile) { console.warn('empoweredAutos multiple returnMissile not supported') }
+					returnMissile = empower.returnMissile
+				}
+				if (empower.onCollision) {
+					if (onCollision) { console.warn('empoweredAutos multiple onCollision not supported') }
+					onCollision = empower.onCollision
+				}
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
 			const damageSourceType = DamageSourceType.attack
@@ -319,7 +331,7 @@ export class ChampionUnit {
 					statusEffects,
 					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
 					bounce,
-					onCollision: (elapsedMS, target, damage) => {
+					onCollision: (elapsedMS, effect, target, damage) => {
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 						if (passiveFn && source.target && (source.championEffects?.passiveCasts !== true || source.readyToCast(elapsedMS))) {
 							passiveFn(elapsedMS, source.data.passive ?? source.getCurrentSpell(), source.target, source, damage)
@@ -348,13 +360,15 @@ export class ChampionUnit {
 					fixedHexRange: destroysOnCollision != null ? MAX_HEX_COUNT : undefined,
 					stackingDamageModifier,
 					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
-					onCollision(elapsedMS, target, damage) {
+					returnMissile,
+					onCollision(elapsedMS, effect, target, damage) {
 						if (passiveFn && (source.championEffects?.passiveCasts !== true || source.readyToCast(elapsedMS))) {
 							passiveFn(elapsedMS, source.data.passive ?? source.getCurrentSpell(), target, source, damage)
 							source.postCast(elapsedMS, canReProcAttack)
 						}
 						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
 						target.basicAttackSourceIDs.push(source.instanceID)
+						onCollision?.(elapsedMS, effect, target, damage)
 					},
 				})
 			}
@@ -964,7 +978,7 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, onMovementComplete?: CollisionFn) {
+	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, onMovementComplete?: ActivateFn) {
 		const isUnitTarget = 'activeHex' in target
 		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
 		if (checkHexAvailable) {
