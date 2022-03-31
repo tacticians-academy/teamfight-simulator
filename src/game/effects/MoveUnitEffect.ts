@@ -27,6 +27,8 @@ export interface MoveUnitEffectData extends GameEffectData {
 	idealDestination: CalculateDestinationFn
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData
+	/** Increases the collision size for checking `onCollision`. */
+	collisionSizeMultiplier?: number
 	/** Called when the `target` reaches the destination `HexCoord`. */
 	onDestination?: ActivateFn
 }
@@ -39,6 +41,7 @@ export class MoveUnitEffect extends GameEffect {
 	ignoresDestinationCollision: boolean
 	idealDestination: CalculateDestinationFn
 	hexEffect: HexEffectData | undefined
+	collisionSizeMultiplier: number | undefined
 	onDestination: ActivateFn | undefined
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: MoveUnitEffectData) {
@@ -47,7 +50,7 @@ export class MoveUnitEffect extends GameEffect {
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
 		this.activatesAfterMS = spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
-		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
+		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : 60 * 1000)
 
 		this.target = data.target!
 		this.movesWithTarget = data.movesWithTarget ?? false
@@ -56,6 +59,7 @@ export class MoveUnitEffect extends GameEffect {
 		this.ignoresDestinationCollision = data.ignoresDestinationCollision ?? false
 		this.idealDestination = data.idealDestination
 		this.hexEffect = data.hexEffect
+		this.collisionSizeMultiplier = data.collisionSizeMultiplier
 		this.onDestination = data.onDestination
 
 		this.postInit()
@@ -84,8 +88,9 @@ export class MoveUnitEffect extends GameEffect {
 			if (this.hexEffect) {
 				this.source.queueHexEffect(elapsedMS, undefined, this.hexEffect)
 			}
-			this.onDestination?.(elapsedMS, unit)
 		}
+		this.expiresAtMS = elapsedMS
+		this.onDestination?.(elapsedMS, unit)
 		return true
 	}
 
@@ -93,13 +98,14 @@ export class MoveUnitEffect extends GameEffect {
 		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
 		if (updateResult != null) { return updateResult }
 		if (this.onCollision) {
-			const collisionRadius = (UNIT_SIZE_PROPORTION + UNIT_SIZE_PROPORTION) / 2
+			const collisionRadius = (UNIT_SIZE_PROPORTION * (this.collisionSizeMultiplier != null ? this.collisionSizeMultiplier : 1) + UNIT_SIZE_PROPORTION) / 2
 			const collisionRadiusSquared = collisionRadius * collisionRadius
 			for (const unit of state.units) {
 				if (unit === this.target || unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID)) {
 					continue
 				}
 				if (coordinateDistanceSquared(unit.coord, this.target.coord) <= collisionRadiusSquared) {
+					this.collidedWith.push(unit.instanceID)
 					this.onCollision(elapsedMS, this, unit)
 				}
 			}
