@@ -632,6 +632,59 @@ export const baseChampionEffects = {
 		},
 	},
 
+	[ChampionKey.TahmKench]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = champion.target
+			if (!target) { return false }
+			delayUntil(elapsedMS, spell.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
+				const spellShield = target.consumeSpellShield()
+				const ignoresCC = spellShield != null || target.statusEffects.ccImmune.active
+				const bellySeconds = champion.getSpellVariable(spell, 'BellyDuration' as SpellKey)
+				const damageCalculation = ignoresCC ? champion.getSpellCalculation(spell, 'ReducedDamageToCC' as SpellKey) : champion.getSpellCalculation(spell, SpellKey.Damage)
+				if (damageCalculation) {
+					if (!ignoresCC) {
+						target.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, bellySeconds * 1000)
+						target.collides = false
+					}
+					const sourceID = ChampionKey.TahmKench
+					const tickSeconds = champion.getSpellVariable(spell, 'TickRate' as SpellKey)
+					const tickCount = bellySeconds / tickSeconds
+					target.addBleedIfStrongerThan(sourceID, {
+						sourceID,
+						source: champion,
+						damageCalculation,
+						damageModifier: {
+							multiplier: -(1 - 1 / tickCount),
+							increase: spellShield?.amount != null ? -spellShield.amount : undefined,
+							ignoresInvulnerability: true,
+						},
+						activatesAtMS: elapsedMS,
+						repeatsEveryMS: tickSeconds * 1000,
+						remainingIterations: tickCount,
+					})
+					delayUntil(elapsedMS, bellySeconds).then(elapsedMS => {
+						target.collides = true
+						if (!target.dead) {
+							const farthestEnemy = getDistanceUnit(true, champion, champion.opposingTeam())
+							const impactStunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+							champion.queueMoveUnitEffect(elapsedMS, undefined, {
+								target,
+								targetTeam: target.team,
+								idealDestination: () => (farthestEnemy ? champion.projectHexFrom(farthestEnemy, false, 1) : champion.activeHex),
+								moveSpeed: 2000, //TODO experimentally determine
+								collisionSizeMultiplier: 2,
+								onCollision: (elapsedMS, effect, withUnit) => {
+									withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, impactStunSeconds * 1000)
+								},
+							})
+						}
+					})
+				}
+			})
+			return true
+		},
+	},
+
 	[ChampionKey.Twitch]: {
 		cast: (elapsedMS, spell, champion) => {
 			const grievousWoundsProportion = champion.getSpellVariable(spell, 'GWStrength' as SpellKey)
