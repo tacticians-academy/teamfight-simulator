@@ -24,7 +24,7 @@ export interface GameEffectData {
 	targetTeam?: TeamNumber
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
-	/** Bonus `SpellCalculation` to apply to any affected units (ignores `damageModifier`). */
+	/** Bonus `SpellCalculation` to apply to the first unit hit (ignores `damageModifier`). */
 	bonusCalculations?: SpellCalculation[]
 	/** If the `damageModifier` should only apply if the spell has hit the target multiple times. */
 	modifiesOnMultiHit?: boolean
@@ -151,9 +151,12 @@ export class GameEffect extends GameEffectChild {
 		const isFirstTarget = !this.collidedWith.length
 		const [wasSpellShielded, damage] = this.applyDamage(elapsedMS, unit)
 
-		this.bonusCalculations.forEach(bonusCalculation => {
-			unit.takeBonusDamage(elapsedMS, this.source, bonusCalculation, true) //TODO determine isAoE
-		})
+		if (isFirstTarget) {
+			for (const bonusCalculation of this.bonusCalculations) {
+				if (unit.dead) { break }
+				unit.takeBonusDamage(elapsedMS, this.source, bonusCalculation, true) //TODO determine isAoE
+			}
+		}
 		if (!wasSpellShielded) {
 			this.applyBonuses(elapsedMS, unit)
 			this.onCollision?.(elapsedMS, this, unit, damage)
