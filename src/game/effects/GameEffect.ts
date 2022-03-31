@@ -145,9 +145,6 @@ export class GameEffect extends GameEffectChild {
 	}
 
 	applySuper(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
-		if (this.collidedWith.includes(unit.instanceID)) {
-			return
-		}
 		const isFirstTarget = !this.collidedWith.length
 		const [wasSpellShielded, damage] = this.applyDamage(elapsedMS, unit)
 
@@ -171,12 +168,15 @@ export class GameEffect extends GameEffectChild {
 
 	checkCollision(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const targetingUnits = units.filter(unit => {
-			if (this.targetTeam != null && unit.team !== this.targetTeam) {
+			if (this.targetTeam != null && unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID)) {
 				return false
 			}
 			return unit.isInteractable() && this.intersects(unit)
 		})
-		targetingUnits.forEach(unit => this.apply(elapsedMS, unit, false))
+		targetingUnits.forEach(unit => {
+			this.collidedWith.push(unit.instanceID)
+			this.apply(elapsedMS, unit, false)
+		})
 	}
 
 	updateSuper(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) {

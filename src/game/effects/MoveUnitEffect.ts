@@ -48,7 +48,7 @@ export class MoveUnitEffect extends GameEffect {
 		super(source, spell, data)
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
-		this.activatesAfterMS = spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
+		this.activatesAfterMS = 0
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : 60 * 1000)
 
@@ -83,7 +83,6 @@ export class MoveUnitEffect extends GameEffect {
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		if (wasSpellShielded == null) { return false }
 		if (!wasSpellShielded) {
 			if (this.hexEffect) {
 				this.source.queueHexEffect(elapsedMS, undefined, this.hexEffect)

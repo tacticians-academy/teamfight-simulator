@@ -31,7 +31,6 @@ export function getDistanceUnitOfTeamWithinRangeTo(isMaximum: boolean, target: C
 		units = units.filter(unit => (teamNumber == null || unit.team === teamNumber) && unit.isInteractable())
 	}
 	return getBestRandomAsMax(isMaximum, units, (unit) => {
-		console.log(unit.name, unit.hexDistanceTo(target), maxHexDistance)
 		return maxHexDistance != null && unit.hexDistanceTo(target) > maxHexDistance ? undefined : unit.coordDistanceSquaredTo(target)
 	})
 }

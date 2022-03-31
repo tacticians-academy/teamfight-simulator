@@ -125,7 +125,6 @@ export class ProjectileEffect extends GameEffect {
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		if (wasSpellShielded == null) { return }
 		if (!wasSpellShielded && isFinalTarget) {
 			if (this.hexEffect) {
 				this.source.queueHexEffect(elapsedMS, undefined, this.hexEffect)

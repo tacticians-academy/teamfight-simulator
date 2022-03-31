@@ -39,7 +39,6 @@ export class ShapeEffect extends GameEffect {
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		if (wasSpellShielded == null) { return false }
 		return true
 	}
 
