@@ -68,13 +68,13 @@ export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusE
 export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]
 
 export type StatusEffectData = [StatusEffectType, {
-	durationMS: number
+	durationMS: DOMHighResTimeStamp
 	amount?: number
 }]
 
 export interface StatusEffect {
 	active: boolean
-	expiresAtMS: number
+	expiresAtMS: DOMHighResTimeStamp
 	amount: number
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>

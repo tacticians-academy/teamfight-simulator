@@ -9,7 +9,7 @@ import { DamageSourceType } from '#/helpers/types'
 import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/helpers/types'
 
 export class GameEffectChild {
-	apply: (elapsedMS: number, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => { throw 'ERR empty GameEffectChild apply' }
+	apply: (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => { throw 'ERR empty GameEffectChild apply' }
 	intersects: (unit: ChampionUnit) => boolean = () => { throw 'ERR empty GameEffectChild intersects' }
 	update: (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => boolean | undefined = () => { throw 'ERR empty GameEffectChild update' }
 	start: () => void = () => {}
