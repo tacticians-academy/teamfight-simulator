@@ -15,9 +15,11 @@ type CalculateDestinationFn = (target: ChampionUnit) => ChampionUnit | HexCoord 
 export interface MoveUnitEffectData extends GameEffectData {
 	/** Unit to apply this effect to. */
 	target?: ChampionUnit
-	/** If the source should move with the target. */
+	/** If the source should move with the `target`. */
 	movesWithTarget?: boolean
-	/** The speed the target moves to the destination at. Defaults to the target's move speed if undefined. */
+	/** If the `target` should be not be updated after moving. */
+	keepsTarget?: boolean
+	/** The speed the `target` moves to the destination at. Defaults to the `target`'s move speed if undefined. */
 	moveSpeed: number | undefined
 	/** Ignore collision when setting a destination hex. */
 	ignoresDestinationCollision?: boolean
@@ -25,13 +27,14 @@ export interface MoveUnitEffectData extends GameEffectData {
 	idealDestination: CalculateDestinationFn
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData
-	/** Called when the target reaches the destination `HexCoord`. */
+	/** Called when the `target` reaches the destination `HexCoord`. */
 	onDestination?: ActivateFn
 }
 
 export class MoveUnitEffect extends GameEffect {
 	target: ChampionUnit
 	movesWithTarget: boolean
+	keepsTarget: boolean
 	moveSpeed: number | undefined
 	ignoresDestinationCollision: boolean
 	idealDestination: CalculateDestinationFn
@@ -48,6 +51,7 @@ export class MoveUnitEffect extends GameEffect {
 
 		this.target = data.target!
 		this.movesWithTarget = data.movesWithTarget ?? false
+		this.keepsTarget = data.keepsTarget ?? false
 		this.moveSpeed = data.moveSpeed
 		this.ignoresDestinationCollision = data.ignoresDestinationCollision ?? false
 		this.idealDestination = data.idealDestination
@@ -65,9 +69,9 @@ export class MoveUnitEffect extends GameEffect {
 		if (spellShield == null) {
 			const destination = this.idealDestination(this.target)
 			if (destination) {
-				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, this.moveSpeed ?? this.target.moveSpeed(), this.apply)
+				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, this.moveSpeed ?? this.target.moveSpeed(), this.keepsTarget, this.apply)
 				if (this.movesWithTarget) {
-					this.source.customMoveTo(destination, true, this.moveSpeed ?? this.source.moveSpeed())
+					this.source.customMoveTo(destination, true, this.moveSpeed ?? this.source.moveSpeed(), this.keepsTarget)
 				}
 			}
 		}

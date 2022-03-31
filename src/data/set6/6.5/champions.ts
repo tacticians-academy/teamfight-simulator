@@ -7,7 +7,7 @@ import { state } from '#/game/store'
 
 import { getAttackableUnitsOfTeam, getBestArrayAsMax, getBestHexWithinRangeTo, getBestRandomAsMax, getBestSortedAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing } from '#/helpers/boardUtils'
+import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing, getSurroundingWithin } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
@@ -70,7 +70,7 @@ export const championEffects = {
 				onCollision: (elapsedMS, effect, withUnit) => {
 					if (withUnit === target) {
 						if (targetHex) {
-							target.customMoveTo(targetHex ?? target, true, moveSpeed, (elapsedMS, target) => {
+							target.customMoveTo(targetHex ?? target, true, moveSpeed, false, (elapsedMS, target) => {
 								const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 								target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
 							})
@@ -175,7 +175,7 @@ export const championEffects = {
 				if (champion.target) {
 					const jumpToHex = champion.projectHexFrom(champion.target, false, 1)
 					if (jumpToHex) {
-						champion.customMoveTo(jumpToHex, false, 1000) //TODO travel time
+						champion.customMoveTo(jumpToHex, false, 1000, false) //TODO travel time
 					}
 				}
 			}
@@ -426,7 +426,7 @@ export const championEffects = {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO calculate
 				onActivate: (elapsedMS, champion) => {
-					champion.customMoveTo(projectedHex ?? champion, false, 2000) //TODO experimentally determine
+					champion.customMoveTo(projectedHex ?? champion, false, 2000, false) //TODO experimentally determine
 					champion.empoweredAutos.add({
 						amount: 3, //NOTE hardcoded
 						damageModifier: {
@@ -490,7 +490,7 @@ export const championEffects = {
 } as ChampionEffects
 
 function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, moveSpeed: number, target: ChampionUnit) {
-	champion.customMoveTo(target, false, moveSpeed, (elapsedMS, champion) => {
+	champion.customMoveTo(target, false, moveSpeed, false, (elapsedMS, champion) => {
 		if (target.isAttackable()) {
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
 			if (damageCalculation) {
@@ -503,7 +503,7 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 				}
 			}
 		}
-		champion.customMoveTo(target, true, moveSpeed, (elapsedMS, champion) => {
+		champion.customMoveTo(target, true, moveSpeed, false, (elapsedMS, champion) => {
 			champion.manaLockUntilMS = 0
 		})
 	})

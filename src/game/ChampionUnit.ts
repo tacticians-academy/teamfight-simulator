@@ -612,7 +612,7 @@ export class ChampionUnit {
 	jumpToBackline() {
 		const [col, row] = this.startHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		this.customMoveTo(targetHex, true, 1500) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
+		this.customMoveTo(targetHex, true, 1500, false) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
 		this.applyStatusEffect(0, StatusEffectType.stealth, BACKLINE_JUMP_MS)
 	}
 
@@ -975,7 +975,7 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, onMovementComplete?: ActivateFn) {
+	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, keepsTarget: boolean, onMovementComplete?: ActivateFn) {
 		const isUnitTarget = 'activeHex' in target
 		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
 		if (checkHexAvailable) {
@@ -985,7 +985,9 @@ export class ChampionUnit {
 			this.moving = true
 			this.customMoveSpeed = customSpeed
 			this.onMovementComplete = (elapsedMS, unit) => {
-				unit.setTarget(isUnitTarget && target.team !== this.team && target.isInteractable() ? target : null)
+				if (!keepsTarget) {
+					unit.setTarget(isUnitTarget && target.team !== this.team && target.isInteractable() ? target : null)
+				}
 				onMovementComplete?.(elapsedMS, unit)
 			}
 			this.setActiveHex(hex)

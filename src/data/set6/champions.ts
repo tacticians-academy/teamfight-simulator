@@ -33,7 +33,7 @@ export const baseChampionEffects = {
 					champion.performActionUntilMS = 0
 					const adjacentHex = withUnit.projectHexFrom(champion, false, 1)
 					if (adjacentHex) {
-						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, (elapsedMS, withUnit) => { //TODO travel time
+						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, false, (elapsedMS, withUnit) => { //TODO travel time
 							withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, durationMS)
 						})
 						if (!champion.checkInRangeOfTarget()) {
