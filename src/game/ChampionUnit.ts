@@ -42,6 +42,7 @@ export class ChampionUnit {
 
 	activeHex: HexCoord
 	coord: HexCoord
+	collides = true
 	dead = false
 	resurrecting = false
 	target: ChampionUnit | null = null // eslint-disable-line no-use-before-define
@@ -131,7 +132,9 @@ export class ChampionUnit {
 		})
 
 		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
+		this.collides = true
 		this.dead = false
+		this.resurrecting = false
 		this.target = null
 		this.setActiveHex(this.startHex)
 		const coord = this.getCoord()
@@ -615,16 +618,16 @@ export class ChampionUnit {
 	}
 
 	canPerformAction(elapsedMS: DOMHighResTimeStamp) {
-		return !this.moving && this.data.stats.range > 0 && !this.statusEffects.stunned.active && this.performActionUntilMS < elapsedMS
+		return this.collides && !this.moving && this.data.stats.range > 0 && !this.statusEffects.stunned.active && this.performActionUntilMS < elapsedMS
 	}
 	isAttackable() {
 		return this.isInteractable() && !this.statusEffects.stealth.active && !this.statusEffects.banished.active
 	}
 	isInteractable() {
-		return !this.dead && !this.statusEffects.banished.active
+		return this.collides && !this.dead && !this.statusEffects.banished.active
 	}
 	hasCollision() {
-		return !this.dead || this.resurrecting
+		return this.collides && (!this.dead || this.resurrecting)
 	}
 
 	gainHealth(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined, amount: number, isAffectedByGrievousWounds: boolean) {
