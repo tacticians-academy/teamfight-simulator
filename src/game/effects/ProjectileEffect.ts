@@ -138,6 +138,9 @@ export class ProjectileEffect extends GameEffect {
 					} else {
 						this.damageModifier = this.bounce?.damageModifier
 					}
+					if (this.bounce.damageCalculation) {
+						this.damageCalculation = this.bounce.damageCalculation
+					}
 					this.bounce.bouncesRemaining -= 1
 					this.setTarget(bounceTarget)
 					return false
