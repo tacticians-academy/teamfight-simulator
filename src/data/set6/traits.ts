@@ -305,7 +305,13 @@ export const baseTraitEffects = {
 
 	[TraitKey.Transformer]: {
 		solo: (unit, activeEffect) => {
-			unit.transformIndex = isInBackLines(unit) ? 1 : 0
+			const isRanged = isInBackLines(unit)
+			unit.transformIndex = isRanged ? 1 : 0
+			if (isRanged) {
+				return [
+					[BonusKey.HexRangeIncrease, 3],
+				]
+			}
 		},
 	},
 

@@ -5,7 +5,7 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable, getBestRandomAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable, getBestRandomAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getHexRing, getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
@@ -230,6 +230,98 @@ export const baseChampionEffects = {
 					})
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Jayce]: {
+		innate: (spell, champion) => {
+			champion.attackMissile = champion.transformIndex === 0 ? undefined : champion.getMissileWithSuffix('RangedAttack')
+		},
+		cast: (elapsedMS, spell, champion) => {
+			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
+			if (spell.variables['RangedASBoost'] != null) {
+				const attackSpeedDuration = champion.getSpellVariable(spell, 'RangedASDuration' as SpellKey)
+				const attackSpeedProportion = champion.getSpellCalculationResult(spell, 'RangedASBoost' as SpellKey)
+				const durationMS = attackSpeedDuration * 1000
+				champion.queueHexEffect(elapsedMS, spell, {
+					targetTeam: champion.team,
+					hexes: getHexRow(champion.activeHex[1]),
+					expiresAfterMS: durationMS, //TODO verify
+					onCollision: (elapsedMS, effect, withUnit) => {
+						withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, attackSpeedProportion, elapsedMS + durationMS])
+					},
+				})
+				champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
+				const missile = champion.getMissileWithSuffix('ShockBlastMis')
+				champion.empoweredAutos.add({ //TODO verify these are attacks and not custom spell casts
+					amount: 2,
+					missile,
+					hexEffect: {
+						hexDistanceFromSource: 1,
+						damageCalculation,
+					},
+				})
+				champion.empoweredAutos.add({
+					activatesAfterAmount: 2,
+					amount: 1,
+					missile,
+					hexEffect: {
+						hexDistanceFromSource: 2,
+						damageCalculation,
+					},
+					onActivate: (elapsedMS, champion) => {
+						champion.manaLockUntilMS = elapsedMS + DEFAULT_MANA_LOCK_MS
+					},
+				})
+			} else {
+				const target = champion.target
+				if (!target || !champion.wasInRangeOfTarget) { return false } //TODO verify
+
+				const hexes = getBestSortedAsMax(false, getHexRing(champion.activeHex, 1), (hex) => target.coordDistanceSquaredTo(hex))
+					.slice(0, 3)
+				champion.queueHexEffect(elapsedMS, spell, {
+					hexes,
+					onActivate: (elapsedMS, champion) => {
+						const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
+						const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
+						const expiresAfterMS = shieldSeconds * 1000
+						champion.applyStatusEffect(elapsedMS, StatusEffectType.unstoppable, expiresAfterMS)
+						champion.queueShield(elapsedMS, champion, {
+							id: champion.instanceID,
+							amount: shieldAmount,
+							expiresAfterMS,
+						})
+
+						champion.queueHexEffect(elapsedMS, spell, {
+							hexes,
+							onActivate: (elapsedMS, champion) => {
+								const shredProportion = champion.getSpellVariable(spell, 'MeleeShred' as SpellKey)
+								const shredSeconds = champion.getSpellVariable(spell, 'MeleeShredDuration' as SpellKey)
+								const shredExpiresAtMS = elapsedMS + shredSeconds * 1000
+								champion.queueMoveUnitEffect(elapsedMS, undefined, {
+									target: champion,
+									idealDestination: () => target.activeHex,
+									ignoresDestinationCollision: true,
+									moveSpeed: 1000, //TODO experimentally determine
+									hexEffect: {
+										damageCalculation,
+										expiresAfterMS: 50, //TODO
+										hexSource: target,
+										hexDistanceFromSource: 2,
+										bonuses: [spell.name as SpellKey, [BonusKey.ArmorShred, shredProportion, shredExpiresAtMS], [BonusKey.MagicResistShred, shredProportion, shredExpiresAtMS]],
+									},
+									onDestination: (elapsedMS, champion) => {
+										if (!target.dead) { //TODO check if open
+											champion.customMoveTo(champion.activeHex, true, undefined, true) //TODO experimentally determine
+										}
+									},
+								})
+							},
+						})
+					},
+				})
+			}
+			return true
 		},
 	},
 
