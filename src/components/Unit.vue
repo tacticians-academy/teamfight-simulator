@@ -38,7 +38,8 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.invulnerable]: '🕊',
 	[StatusEffectType.magicResistReduction]: '🧞',
 	[StatusEffectType.stealth]: '👻',
-	[StatusEffectType.stunned]: '⛓',
+	[StatusEffectType.stunned]: '🔗', // ⛓
+	[StatusEffectType.unstoppable]: '🗝', // 🔓
 }
 
 function onDragStart(event: DragEvent, type: DraggableType, name: string) {

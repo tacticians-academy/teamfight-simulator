@@ -67,6 +67,7 @@ export enum StatusEffectType {
 	magicResistReduction = 'magicResistReduction',
 	stealth = 'stealth',
 	stunned = 'stunned',
+	unstoppable = 'unstoppable',
 }
 export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds, StatusEffectType.magicResistReduction, StatusEffectType.stunned]
 export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]

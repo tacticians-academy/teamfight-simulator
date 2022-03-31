@@ -540,6 +540,9 @@ export class ChampionUnit {
 		return undefined
 	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number = 1) {
+		if (effectType === StatusEffectType.stunned && this.isUnstoppable()) {
+			return
+		}
 		if (this.statusEffects.ccImmune.active && CC_STATUS_EFFECTS.includes(effectType)) {
 			return
 		}
@@ -615,6 +618,10 @@ export class ChampionUnit {
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
 		this.customMoveTo(targetHex, true, 1500, false) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
 		this.applyStatusEffect(0, StatusEffectType.stealth, BACKLINE_JUMP_MS)
+	}
+
+	isUnstoppable() {
+		return this.statusEffects.ccImmune.active || this.statusEffects.unstoppable.active
 	}
 
 	canPerformAction(elapsedMS: DOMHighResTimeStamp) {
@@ -1344,6 +1351,9 @@ export class ChampionUnit {
 				return undefined
 			}
 			data.target = this.target
+		}
+		if (data.target !== this && data.target.isUnstoppable()) {
+			return undefined //TODO handle failure case
 		}
 		if (data.hexEffect) {
 			if (data.hexEffect.hexDistanceFromSource != null && !data.hexEffect.hexSource) {

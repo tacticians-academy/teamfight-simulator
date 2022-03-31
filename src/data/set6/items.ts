@@ -307,7 +307,7 @@ export const baseItemEffects = {
 		apply: (item, unit) => {
 			const [banishSeconds] = getVariables(item, 'BanishDuration')
 			const targetHex = getInverseHex(unit.startHex)
-			const units = getUnitsOfTeam(unit.opposingTeam()).filter(unit => !unit.statusEffects.ccImmune.active)
+			const units = getUnitsOfTeam(unit.opposingTeam()).filter(unit => !unit.isUnstoppable())
 			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, unit.opposingTeam(), undefined, units) //TODO not random
 			if (target) {
 				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
