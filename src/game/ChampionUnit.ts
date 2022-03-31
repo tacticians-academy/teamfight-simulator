@@ -742,7 +742,7 @@ export class ChampionUnit {
 			return undefined
 		}
 		if (sourceType === DamageSourceType.attack) {
-			const dodgeChance = this.dodgeChance() - source!.dodgePrevention()
+			const dodgeChance = this.dodgeChance() - (source?.dodgePrevention() ?? 0)
 			if (dodgeChance > 0) {
 				damage.rawDamage *= 1 - dodgeChance
 			}
@@ -762,9 +762,9 @@ export class ChampionUnit {
 				: null
 		let reduction = 0
 		if (damage.damageType === DamageType.physical) {
-			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction) ?? 0) + this.getBonuses(BonusKey.ArmorShred)
+			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction) ?? 0) + (source?.getBonuses(BonusKey.ArmorShred) ?? 0)
 		} else if (damage.damageType === DamageType.magic) {
-			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + this.getBonuses(BonusKey.MagicResistShred)
+			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + (source?.getBonuses(BonusKey.MagicResistShred) ?? 0)
 		}
 		if (reduction > 0) {
 			defenseStat! *= (1 - reduction)
