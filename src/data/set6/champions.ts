@@ -710,6 +710,39 @@ export const baseChampionEffects = {
 		},
 	},
 
+	[ChampionKey.Zac]: {
+		cast: (elapsedMS, spell, champion) => {
+			const validUnits = getInteractableUnitsOfTeam(champion.opposingTeam())
+				.filter(unit => unit.hexDistanceTo(champion) <= 3) //NOTE hardcoded
+			const targets = getBestSortedAsMax(true, validUnits, (unit) => unit.coordDistanceSquaredTo(champion))
+				.slice(0, 2)
+			if (!targets.length) { return false }
+			champion.queueProjectileEffect(elapsedMS, spell, { //TODO line visual style
+				target: targets[0],
+				onCollision: (elapsedMS, effect, withUnit) => {
+					champion.queueProjectileEffect(elapsedMS, spell, {
+						target: targets[1] ?? targets[0],
+						onCollision: (elapsedMS, effect, withUnit) => {
+							targets.forEach(target => {
+								champion.queueMoveUnitEffect(elapsedMS, undefined, {
+									target,
+									idealDestination: (target) => champion.projectHexFrom(target, false, 2),
+									moveSpeed: 600, //TODO fixed time
+									onDestination: (elapsedMS, unit) => {
+										champion.performActionUntilMS = 0
+									},
+								})
+							})
+						},
+					})
+					champion.performActionUntilMS = elapsedMS + 1000
+				},
+			})
+			champion.performActionUntilMS = elapsedMS + 1000
+			return true
+		},
+	},
+
 	[ChampionKey.Ziggs]: {
 		cast: (elapsedMS, spell, champion) => {
 			const targetHex = champion.target?.activeHex
