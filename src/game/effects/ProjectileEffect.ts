@@ -57,12 +57,12 @@ export class ProjectileEffect extends GameEffect {
 	stackingDamageModifier: DamageModifier | undefined
 	targetDeathAction: TargetDeathAction | undefined
 	returnMissile: ChampionSpellMissileData | undefined
-	width: number
 	isReturning = false
 	bounce: AttackBounce | undefined
 	delayAfterReachingTargetMS: DOMHighResTimeStamp | undefined
 
-	collisionRadiusSquared: number
+	width = 0
+	collisionRadiusSquared = 0
 
 	traveledDistance = 0
 	maxDistance: number | undefined
@@ -104,11 +104,14 @@ export class ProjectileEffect extends GameEffect {
 			this.targetCoord = [this.coord.value[0] + deltaX * this.maxDistance, this.coord.value[1] + deltaY * this.maxDistance]
 		}
 
+		this.updateWidth()
+		this.postInit()
+	}
+
+	updateWidth() {
 		this.width = (this.missile.width ?? 10) * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
 		const collisionRadius = (this.width + UNIT_SIZE_PROPORTION) / 2
 		this.collisionRadiusSquared = collisionRadius * collisionRadius
-
-		this.postInit()
 	}
 
 	getDelta(targetCoord?: HexCoord, changeRadians?: number) {
@@ -151,6 +154,8 @@ export class ProjectileEffect extends GameEffect {
 				this.maxDistance = undefined
 				this.setTarget(this.source)
 				this.missile = this.returnMissile
+				this.updateWidth()
+				this.opacity = 0.5
 				this.currentSpeed = this.missile.speedInitial!
 				this.instanceID += returnIDSuffix
 				this.hitID += returnIDSuffix //TODO if damage is unique to outward direction
@@ -180,6 +185,10 @@ export class ProjectileEffect extends GameEffect {
 		if (this.delayAfterReachingTargetMS != null && this.expiresAtMS != null && isUnit(this.target)) {
 			this.onCollision?.(elapsedMS, this.target)
 		}
+	}
+
+	intersects = (unit: ChampionUnit) => {
+		return coordinateDistanceSquared(this.coord.value, unit.coord) < this.collisionRadiusSquared
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
@@ -250,10 +259,9 @@ export class ProjectileEffect extends GameEffect {
 			}
 		}
 
-		const position = this.coord.value
 		if (this.destroysOnCollision != null) {
 			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
-				if (coordinateDistanceSquared(position, unit.coord) < this.collisionRadiusSquared) {
+				if (this.intersects(unit)) {
 					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
 						if (this.destroysOnCollision) {
 							return this.checkIfDies(elapsedMS)
@@ -269,6 +277,7 @@ export class ProjectileEffect extends GameEffect {
 			}
 		}
 
+		const position = this.coord.value
 		position[0] += angleX * diffDistance
 		position[1] += angleY * diffDistance
 	}

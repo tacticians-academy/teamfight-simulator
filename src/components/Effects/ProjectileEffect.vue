@@ -7,17 +7,13 @@ const props = defineProps<{
 	effect: ProjectileEffect
 }>()
 
-const sizeUnits = `${props.effect.width * 100}%`
-
 const coord = props.effect.coord // eslint-disable-line vue/no-setup-props-destructure
-
-const maxOpacity = props.effect.opacity ?? 1
 </script>
 
 <template>
 <div
 	class="projectile hex-overlay" :class="effect.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
-	:style="{ left: `${coord[0] * 100}%`, top: `${coord[1] * 100}%`, width: sizeUnits, height: sizeUnits, opacity: maxOpacity }"
+	:style="{ left: `${coord[0] * 100}%`, top: `${coord[1] * 100}%`, width: `${effect.width * 100}%`, height: `${effect.width * 100}%`, opacity: effect.opacity ?? 1 }"
 />
 </template>
 
