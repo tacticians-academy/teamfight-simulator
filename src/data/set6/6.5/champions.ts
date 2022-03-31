@@ -490,8 +490,8 @@ export const championEffects = {
 
 	[ChampionKey.Zeri]: {
 		customAuto: (elapsedMS, spell, target, champion, empoweredAuto, windupMS) => {
-			if (empoweredAuto.damageCalculation != null || empoweredAuto.destroysOnCollision != null || empoweredAuto.stackingDamageModifier != null || empoweredAuto.missile != null) {
-				console.log('ERR empoweredAuto cannot modify', empoweredAuto)
+			if (empoweredAuto.damageCalculation != null || empoweredAuto.destroysOnCollision != null || empoweredAuto.stackingDamageModifier != null || empoweredAuto.missile != null || empoweredAuto.hexEffect != null) {
+				console.warn('empoweredAuto cannot modify', empoweredAuto)
 			}
 			const bulletCount = champion.getSpellVariable(spell, 'NumBullets' as SpellKey)
 			const missile = champion.getMissileWithSuffix('QMis')

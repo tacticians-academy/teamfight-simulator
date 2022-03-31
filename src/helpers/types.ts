@@ -3,6 +3,7 @@ import type { AugmentData, BonusKey, ChampionSpellData, DamageType, ItemData, Sp
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import type { AttackBounce, AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
+import type { HexEffectData } from '#/game/effects/HexEffect'
 
 export type HexCoord = [col: number, row: number]
 
@@ -199,6 +200,7 @@ export interface EmpoweredAuto {
 	stackingDamageModifier?: DamageModifier
 	destroysOnCollision?: boolean
 	statusEffects?: StatusEffectData[]
+	hexEffect?: HexEffectData
 	onActivate?: ActivateFn
 	onCollision?: CollisionFn
 }

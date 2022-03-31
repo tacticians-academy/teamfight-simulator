@@ -285,6 +285,10 @@ export class ChampionUnit {
 					if (empoweredAuto.damageCalculation) { console.warn('empoweredAutos multiple damageCalculation not supported') }
 					empoweredAuto.damageCalculation = empower.damageCalculation
 				}
+				if (empower.hexEffect) {
+					if (empoweredAuto.hexEffect) { console.warn('empoweredAutos multiple hexEffect not supported') }
+					empoweredAuto.hexEffect = empower.hexEffect
+				}
 				if (empower.statusEffects) {
 					empoweredAuto.statusEffects!.push(...empower.statusEffects)
 				}
@@ -351,6 +355,7 @@ export class ChampionUnit {
 						stackingDamageModifier: empoweredAuto.stackingDamageModifier,
 						bonuses: empoweredAuto.bonuses,
 						returnMissile: empoweredAuto.returnMissile,
+						hexEffect: empoweredAuto.hexEffect,
 						onCollision: (elapsedMS, effect, target, damage) => {
 							if (passiveFn && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
 								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), target, this, damage)
