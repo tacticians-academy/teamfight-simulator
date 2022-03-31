@@ -729,6 +729,8 @@ export class ChampionUnit {
 			rawDamage: calculatedDamage,
 			takingDamage: 0,
 			didCrit: false,
+			[BonusKey.ArmorShred]: source?.getBonuses(BonusKey.ArmorShred) ?? 0,
+			[BonusKey.MagicResistShred]: source?.getBonuses(BonusKey.MagicResistShred) ?? 0,
 		}
 
 		if (source) {
@@ -768,9 +770,9 @@ export class ChampionUnit {
 				: null
 		let reduction = 0
 		if (damage.damageType === DamageType.physical) {
-			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction) ?? 0) + (source?.getBonuses(BonusKey.ArmorShred) ?? 0)
+			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.armorReduction) ?? 0) + damage[BonusKey.ArmorShred]
 		} else if (damage.damageType === DamageType.magic) {
-			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + (source?.getBonuses(BonusKey.MagicResistShred) ?? 0)
+			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + damage[BonusKey.MagicResistShred]
 		}
 		if (reduction > 0) {
 			defenseStat! *= (1 - reduction)

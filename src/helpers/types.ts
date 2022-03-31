@@ -40,6 +40,8 @@ export interface DamageResult {
 	rawDamage: number
 	takingDamage: number
 	didCrit: boolean
+	[BonusKey.ArmorShred]: number
+	[BonusKey.MagicResistShred]: number
 }
 
 export interface SynergyData {
