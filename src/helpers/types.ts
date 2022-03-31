@@ -1,8 +1,8 @@
-import type { AugmentGroupKey, ChampionKey, ItemKey, TraitKey } from '@tacticians-academy/academy-library'
+import type { AugmentGroupKey, ChampionKey, ChampionSpellMissileData, ItemKey, TraitKey } from '@tacticians-academy/academy-library'
 import type { AugmentData, BonusKey, ChampionSpellData, DamageType, ItemData, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import type { AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
+import type { AttackBounce, AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
 
 export type HexCoord = [col: number, row: number]
 
@@ -179,6 +179,25 @@ export interface ShieldData {
 	onRemoved?: (elapsedMS: DOMHighResTimeStamp, shield: ShieldEntry) => void
 }
 
+export interface EmpoweredAuto {
+	id?: BonusLabelKey
+	amount: number
+	activatesAfterAmount?: number
+	expiresAtMS?: DOMHighResTimeStamp
+	bounce?: AttackBounce
+	damageCalculation?: SpellCalculation
+	bonusCalculations?: SpellCalculation[]
+	damageModifier?: DamageModifier
+	bonuses?: [BonusLabelKey, ...BonusVariable[]]
+	missile?: ChampionSpellMissileData
+	returnMissile?: ChampionSpellMissileData
+	stackingDamageModifier?: DamageModifier
+	destroysOnCollision?: boolean
+	statusEffects?: StatusEffectData[]
+	onActivate?: ActivateFn
+	onCollision?: CollisionFn
+}
+
 export type EffectResults = BonusVariable[] | void
 
 export interface AugmentFns {
@@ -202,6 +221,7 @@ export type AugmentEffects = {[key in string]?: AugmentFns}
 export interface ChampionFns {
 	innate?: (spell: ChampionSpellData | undefined, champion: ChampionUnit) => EffectResults
 	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => GameEffect | boolean
+	customAuto?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, target: ChampionUnit, source: ChampionUnit, empoweredAuto: EmpoweredAuto, windupMS: DOMHighResTimeStamp) => void
 	passiveCasts?: boolean
 	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, target: ChampionUnit, source: ChampionUnit, damage: DamageResult | undefined) => void
 }

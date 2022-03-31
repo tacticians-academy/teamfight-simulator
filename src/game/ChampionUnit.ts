@@ -5,7 +5,7 @@ import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectV
 
 import { HexEffect } from '#/game/effects/HexEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
-import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
+import type { AttackBounce, AttackEffectData, GameEffect } from '#/game/effects/GameEffect'
 import { MoveUnitEffect } from '#/game/effects/MoveUnitEffect'
 import type { MoveUnitEffectData } from '#/game/effects/MoveUnitEffect'
 import { ProjectileEffect } from '#/game/effects/ProjectileEffect'
@@ -23,32 +23,13 @@ import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
-import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, CollisionFn, DamageFn, DamageModifier, DamageResult, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
+import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StarLevel, StatusEffect, StatusEffectData, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
 
 function stageIndex() {
 	return Math.min(Math.max(2, state.stageNumber), 5) - 2
-}
-
-interface EmpoweredAuto {
-	id?: BonusLabelKey
-	amount: number
-	activatesAfterAmount?: number
-	expiresAtMS?: DOMHighResTimeStamp
-	bounce?: AttackBounce
-	damageCalculation?: SpellCalculation
-	bonusCalculation?: SpellCalculation
-	damageModifier?: DamageModifier
-	bonuses?: BonusEntry
-	missile?: ChampionSpellMissileData
-	returnMissile?: ChampionSpellMissileData
-	stackingDamageModifier?: DamageModifier
-	destroysOnCollision?: boolean
-	statusEffects?: StatusEffectData[]
-	onActivate?: ActivateFn
-	onCollision?: CollisionFn
 }
 
 export class ChampionUnit {
@@ -253,18 +234,25 @@ export class ChampionUnit {
 		} else {
 			this.basicAttackCount += 1
 			const canReProcAttack = this.attackStartAtMS > 1
-			let damageCalculation: SpellCalculation | undefined
 			const passiveFn = this.championEffects?.passive
-			const damageModifier: DamageModifier = {}
-			const statusEffects: StatusEffectData[] = []
-			const bonusCalculations: SpellCalculation[] = []
-			let bounce: AttackBounce | undefined
-			let destroysOnCollision: boolean | undefined
-			let stackingDamageModifier: DamageModifier | undefined
-			let bonuses: BonusEntry | undefined
-			let missile: ChampionSpellMissileData | undefined
-			let returnMissile: ChampionSpellMissileData | undefined
-			let onCollision: CollisionFn | undefined
+			const empoweredAuto: EmpoweredAuto = {
+				amount: 1,
+				damageModifier: {},
+				bonusCalculations: [],
+				statusEffects: [],
+				bounce: {bouncesRemaining: 0},
+				// expiresAtMS?: DOMHighResTimeStamp
+				// bounce?: AttackBounce
+				// damageCalculation?: SpellCalculation
+				// bonusCalculation?: SpellCalculation
+				// bonuses?: BonusEntry
+				// missile?: ChampionSpellMissileData
+				// returnMissile?: ChampionSpellMissileData
+				// stackingDamageModifier?: DamageModifier
+				// destroysOnCollision?: boolean
+				// onActivate?: ActivateFn
+				// onCollision?: CollisionFn
+			}
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
 					this.empoweredAutos.delete(empower)
@@ -274,103 +262,106 @@ export class ChampionUnit {
 					return
 				}
 				if (empower.destroysOnCollision != null) {
-					if (destroysOnCollision != null) { console.warn('empoweredAutos multiple destroysOnCollision not supported') }
-					destroysOnCollision = empower.destroysOnCollision
+					if (empoweredAuto.destroysOnCollision != null) { console.warn('empoweredAutos multiple destroysOnCollision not supported') }
+					empoweredAuto.destroysOnCollision = empower.destroysOnCollision
 				}
 				if (empower.bonuses != null) {
-					if (bonuses) { console.warn('empoweredAutos multiple bonuses not supported') }
-					bonuses = empower.bonuses
+					if (empoweredAuto.bonuses) { console.warn('empoweredAutos multiple bonuses not supported') }
+					empoweredAuto.bonuses = empower.bonuses
 				}
 				if (empower.missile != null) {
-					if (missile) { console.warn('empoweredAutos multiple missile not supported') }
-					missile = empower.missile
+					if (empoweredAuto.missile) { console.warn('empoweredAutos multiple missile not supported') }
+					empoweredAuto.missile = empower.missile
 				}
 				if (empower.stackingDamageModifier != null) {
-					if (stackingDamageModifier) { console.warn('empoweredAutos multiple stackingDamageModifier not supported') }
-					stackingDamageModifier = empower.stackingDamageModifier
+					if (empoweredAuto.stackingDamageModifier) { console.warn('empoweredAutos multiple stackingDamageModifier not supported') }
+					empoweredAuto.stackingDamageModifier = empower.stackingDamageModifier
 				}
 				if (empower.damageModifier) {
-					applyStackingModifier(damageModifier, empower.damageModifier)
+					applyStackingModifier(empoweredAuto.damageModifier!, empower.damageModifier)
 				}
-				if (empower.bonusCalculation) {
-					bonusCalculations.push(empower.bonusCalculation)
+				if (empower.bonusCalculations) {
+					empoweredAuto.bonusCalculations!.push(...empower.bonusCalculations)
 				}
 				if (empower.damageCalculation) {
-					if (damageCalculation) { console.warn('empoweredAutos multiple damageCalculation not supported') }
-					damageCalculation = empower.damageCalculation
+					if (empoweredAuto.damageCalculation) { console.warn('empoweredAutos multiple damageCalculation not supported') }
+					empoweredAuto.damageCalculation = empower.damageCalculation
 				}
 				if (empower.statusEffects) {
-					statusEffects.push(...empower.statusEffects)
+					empoweredAuto.statusEffects!.push(...empower.statusEffects)
 				}
 				if (empower.bounce) {
-					bounce = Object.assign({}, empower.bounce)
+					empoweredAuto.bounce = Object.assign(empoweredAuto.bounce, empower.bounce)
 				}
 				if (empower.returnMissile) {
-					if (returnMissile) { console.warn('empoweredAutos multiple returnMissile not supported') }
-					returnMissile = empower.returnMissile
+					if (empoweredAuto.returnMissile) { console.warn('empoweredAutos multiple returnMissile not supported') }
+					empoweredAuto.returnMissile = empower.returnMissile
 				}
 				if (empower.onCollision) {
-					if (onCollision) { console.warn('empoweredAutos multiple onCollision not supported') }
-					onCollision = empower.onCollision
+					if (empoweredAuto.onCollision) { console.warn('empoweredAutos multiple onCollision not supported') }
+					empoweredAuto.onCollision = empower.onCollision
 				}
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
 			const damageSourceType = DamageSourceType.attack
-			const source = this
-			if (damageCalculation == null) {
-				damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, false, 1)
+			if (!Object.keys(empoweredAuto.damageModifier!).length) {
+				empoweredAuto.damageModifier = undefined
+			}
+			if (empoweredAuto.bounce!.bouncesRemaining <= 0) {
+				empoweredAuto.bounce = undefined
 			}
 
-			if (this.instantAttack) {
-				this.queueTargetEffect(elapsedMS, undefined, {
-					activatesAfterMS: windupMS,
-					damageSourceType,
-					damageCalculation,
-					bonusCalculations,
-					damageModifier,
-					statusEffects,
-					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
-					bounce,
-					onCollision: (elapsedMS, effect, target, damage) => {
-						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
-						if (passiveFn && source.target && (source.championEffects?.passiveCasts !== true || source.readyToCast(elapsedMS))) {
-							passiveFn(elapsedMS, source.data.passive ?? source.getCurrentSpell(), source.target, source, damage)
-							source.postCast(elapsedMS, canReProcAttack)
-						}
-						statusEffects.forEach(([key, statusEffect]) => {
-							source.target?.applyStatusEffect(elapsedMS, key, statusEffect.durationMS, statusEffect.amount)
-						})
-						target.basicAttackSourceIDs.push(source.instanceID)
-					},
-				})
-				this.attackStartAtMS = elapsedMS
+			if (this.championEffects?.customAuto) {
+				this.championEffects?.customAuto(elapsedMS, this.getCurrentSpell(), this.target!, this, empoweredAuto, windupMS)
 			} else {
-				this.queueProjectileEffect(elapsedMS, undefined, {
-					startsAfterMS: windupMS,
-					missile: missile ?? {
-						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
-					},
-					damageSourceType,
-					damageCalculation: damageCalculation,
-					bonusCalculations,
-					damageModifier,
-					statusEffects,
-					bounce,
-					destroysOnCollision,
-					fixedHexRange: destroysOnCollision != null ? MAX_HEX_COUNT : undefined,
-					stackingDamageModifier,
-					bonuses: bonuses ? [bonuses[0], ...bonuses[1]] : undefined,
-					returnMissile,
-					onCollision(elapsedMS, effect, target, damage) {
-						if (passiveFn && (source.championEffects?.passiveCasts !== true || source.readyToCast(elapsedMS))) {
-							passiveFn(elapsedMS, source.data.passive ?? source.getCurrentSpell(), target, source, damage)
-							source.postCast(elapsedMS, canReProcAttack)
-						}
-						source.gainMana(elapsedMS, 10 + source.getBonuses(BonusKey.ManaRestorePerAttack))
-						target.basicAttackSourceIDs.push(source.instanceID)
-						onCollision?.(elapsedMS, effect, target, damage)
-					},
-				})
+				if (empoweredAuto.damageCalculation == null) {
+					empoweredAuto.damageCalculation = createDamageCalculation(BonusKey.AttackDamage, 1, undefined, BonusKey.AttackDamage, false, 1)
+				}
+				if (this.instantAttack) {
+					this.queueTargetEffect(elapsedMS, undefined, {
+						activatesAfterMS: windupMS,
+						damageSourceType,
+						damageCalculation: empoweredAuto.damageCalculation,
+						bonusCalculations: empoweredAuto.bonusCalculations,
+						damageModifier: empoweredAuto.damageModifier,
+						statusEffects: empoweredAuto.statusEffects,
+						bonuses: empoweredAuto.bonuses,
+						bounce: empoweredAuto.bounce,
+						onCollision: (elapsedMS, effect, target, damage) => {
+							if (passiveFn && this.target && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
+								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), this.target, this, damage)
+								this.postCast(elapsedMS, canReProcAttack)
+							}
+							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto)
+						},
+					})
+					this.attackStartAtMS = elapsedMS
+				} else {
+					this.queueProjectileEffect(elapsedMS, undefined, {
+						startsAfterMS: windupMS,
+						missile: empoweredAuto.missile ?? {
+							speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
+						},
+						damageSourceType,
+						damageCalculation: empoweredAuto.damageCalculation,
+						bonusCalculations: empoweredAuto.bonusCalculations,
+						damageModifier: empoweredAuto.damageModifier,
+						statusEffects: empoweredAuto.statusEffects,
+						bounce: empoweredAuto.bounce,
+						destroysOnCollision: empoweredAuto.destroysOnCollision,
+						fixedHexRange: empoweredAuto.destroysOnCollision != null ? MAX_HEX_COUNT : undefined,
+						stackingDamageModifier: empoweredAuto.stackingDamageModifier,
+						bonuses: empoweredAuto.bonuses,
+						returnMissile: empoweredAuto.returnMissile,
+						onCollision: (elapsedMS, effect, target, damage) => {
+							if (passiveFn && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
+								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), target, this, damage)
+								this.postCast(elapsedMS, canReProcAttack)
+							}
+							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto)
+						},
+					})
+				}
 			}
 			this.empoweredAutos.forEach(empoweredAuto => {
 				if (empoweredAuto.activatesAfterAmount != null && empoweredAuto.activatesAfterAmount > 0) {
@@ -387,6 +378,12 @@ export class ChampionUnit {
 			this.items.forEach((item, index) => setData.itemEffects[item.name]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
 			this.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.basicAttack?.(activeEffect!, this.target!, this, canReProcAttack))
 		}
+	}
+
+	completeAutoAttack(elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage: DamageResult | undefined, empoweredAuto: EmpoweredAuto) {
+		this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
+		withUnit.basicAttackSourceIDs.push(this.instanceID)
+		empoweredAuto.onCollision?.(elapsedMS, effect, withUnit, damage)
 	}
 
 	addBleedIfStrongerThan(sourceID: string, bleed: BleedData) {
