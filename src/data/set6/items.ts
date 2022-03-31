@@ -5,7 +5,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { applyGrievousBurn, getChainFrom, getBestRandomAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getChainFrom, getBestRandomAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getInverseHex, getClosestAttackableEnemies, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -307,7 +307,8 @@ export const baseItemEffects = {
 		apply: (item, unit) => {
 			const [banishSeconds] = getVariables(item, 'BanishDuration')
 			const targetHex = getInverseHex(unit.startHex)
-			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, unit.opposingTeam(), undefined) //TODO not random
+			const units = getUnitsOfTeam(unit.opposingTeam()).filter(unit => !unit.statusEffects.ccImmune.active)
+			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, unit.opposingTeam(), undefined, units) //TODO not random
 			if (target) {
 				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
 			}

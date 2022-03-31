@@ -31,6 +31,7 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.armorReduction]: '🛡',
 	[StatusEffectType.attackSpeedSlow]: '❄️',
 	[StatusEffectType.banished]: '🕴',
+	[StatusEffectType.ccImmune]: '🪨', // 💉 🐢
 	[StatusEffectType.disarm]: '🤺',
 	[StatusEffectType.empowered]: '🔋',
 	[StatusEffectType.grievousWounds]: '❤️‍🔥', // 💔

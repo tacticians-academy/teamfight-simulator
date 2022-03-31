@@ -77,6 +77,7 @@ export const baseTraitEffects = {
 	[TraitKey.Colossus]: {
 		innate: (unit, innateEffect) => {
 			const [bonusHealth] = getVariables(innateEffect, `Bonus${BonusKey.Health}Tooltip`)
+			unit.applyStatusEffect(0, StatusEffectType.ccImmune, 60 * 1000)
 			return [
 				[BonusKey.Health, bonusHealth],
 			]

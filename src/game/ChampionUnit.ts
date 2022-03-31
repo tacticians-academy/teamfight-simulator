@@ -22,7 +22,7 @@ import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHe
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
-import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS } from '#/helpers/types'
+import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS, CC_STATUS_EFFECTS } from '#/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
@@ -537,6 +537,9 @@ export class ChampionUnit {
 		return undefined
 	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number = 1) {
+		if (this.statusEffects.ccImmune.active && CC_STATUS_EFFECTS.includes(effectType)) {
+			return
+		}
 		const expireAtMS = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
 		if (!statusEffect.active || expireAtMS > statusEffect.expiresAtMS) {
