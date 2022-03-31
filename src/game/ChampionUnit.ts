@@ -177,7 +177,8 @@ export class ChampionUnit {
 		this.activeSynergies = teamSynergies.filter(({ key, activeEffect }) => !!activeEffect && this.hasTrait(key))
 		const synergyTraitBonuses = calculateSynergyBonuses(this, teamSynergies, unitTraitKeys)
 		const itemBonuses = calculateItemBonuses(this, this.items)
-		this.bonuses = [...synergyTraitBonuses, ...itemBonuses]
+		const championBonuses = calculateChampionBonuses(this)
+		this.bonuses = [...synergyTraitBonuses, ...itemBonuses, ...championBonuses]
 	}
 	resetPost() {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))

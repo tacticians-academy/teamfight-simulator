@@ -197,6 +197,7 @@ export interface AugmentFns {
 export type AugmentEffects = {[key in string]?: AugmentFns}
 
 export interface ChampionFns {
+	innate?: (spell: ChampionSpellData | undefined, champion: ChampionUnit) => EffectResults
 	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => GameEffect | boolean
 	passiveCasts?: boolean
 	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, target: ChampionUnit, source: ChampionUnit, damage: DamageResult | undefined) => void
