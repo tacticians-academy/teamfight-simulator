@@ -55,6 +55,7 @@ export class ChampionUnit {
 	isStarLocked: boolean
 	fixedAS: number | undefined
 	instantAttack: boolean
+	attackMissile: ChampionSpellMissileData | undefined
 	wasSpawnedDuringFight = false
 
 	hitBy = new Set<string>()
@@ -96,11 +97,11 @@ export class ChampionUnit {
 		this.data = markRaw(stats)
 		this.name = name
 		this.starLevel = starLevel
-		this.instantAttack = this.data.stats.range <= 1
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
 		this.coord = this.getCoord()
 		this.reposition(hex)
+		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 0 //TODO investigate
 
 		for (const effectType in StatusEffectType) {
 			this.statusEffects[effectType as StatusEffectType] = {
@@ -149,6 +150,7 @@ export class ChampionUnit {
 		this.basicAttackCount = 0
 		this.castCount = 0
 		this.transformIndex = 0
+		this.attackMissile = undefined
 
 		this.scalings.clear()
 		this.shields = []
@@ -341,7 +343,7 @@ export class ChampionUnit {
 				} else {
 					this.queueProjectileEffect(elapsedMS, undefined, {
 						startsAfterMS: windupMS,
-						missile: empoweredAuto.missile ?? {
+						missile: empoweredAuto.missile ?? this.attackMissile ?? {
 							speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
 						},
 						damageSourceType,
