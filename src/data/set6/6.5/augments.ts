@@ -2,10 +2,10 @@ import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-aca
 
 import { state } from '#/game/store'
 
-import { checkCooldown, checkCooldownFor, getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { checkCooldownFor, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { DamageSourceType, StatusEffectType } from '#/helpers/types'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { AugmentEffects } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
@@ -14,6 +14,21 @@ import { baseAugmentEffects } from '../augments'
 export const augmentEffects = {
 
 	...baseAugmentEffects,
+
+	[AugmentGroupKey.ArcaneNullifier]: {
+		modifyDamageByHolder: (augment, target, source, damage) => {
+			if (damage.sourceType === DamageSourceType.spell) {
+				const [mrShredPercent] = getVariables(augment, 'MagicPen')
+				damage[BonusKey.ArmorShred] += mrShredPercent / 100
+			}
+		},
+		damageDealtByHolder: (augment, elapsedMS, target, source, { isOriginalSource, sourceType }) => {
+			if (isOriginalSource && sourceType === DamageSourceType.spell) { //TODO works on AD abilities?
+				const [durationSeconds, healReductionPercent] = getVariables(augment, SpellKey.Duration, 'HealingReduction')
+				target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, healReductionPercent / 100)
+			}
+		},
+	},
 
 	[AugmentGroupKey.ArchangelsEmbrace]: {
 		cast: (augment, elapsedMS, unit) => {
