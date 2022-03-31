@@ -1408,11 +1408,17 @@ export class ChampionUnit {
 		return getAngleBetween(this.coord, coord)
 	}
 
-	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean) {
-		const bestHex = getBestRandomAsMax(pastTarget, getHexRing(targetHex, 1), (hex) => this.coordDistanceSquaredTo(hex))
+	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean, distance: number) {
+		if (!pastTarget) {
+			const maxHexDistanceToTarget = this.hexDistanceTo(targetHex) - 1
+			if (distance > maxHexDistanceToTarget) {
+				distance = maxHexDistanceToTarget
+			}
+		}
+		const bestHex = getBestRandomAsMax(pastTarget, getHexRing(targetHex, distance), (hex) => this.coordDistanceSquaredTo(hex))
 		return bestHex && isSameHex(bestHex, this.activeHex) ? bestHex : getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
 	}
-	projectHexFrom(target: ChampionUnit, pastTarget: boolean) {
-		return this.projectHexFromHex(target.activeHex, pastTarget)
+	projectHexFrom(target: ChampionUnit, pastTarget: boolean, distance: number) {
+		return this.projectHexFromHex(target.activeHex, pastTarget, distance)
 	}
 }

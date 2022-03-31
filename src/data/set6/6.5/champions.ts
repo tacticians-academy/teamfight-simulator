@@ -173,7 +173,7 @@ export const championEffects = {
 				champion.increaseMaxHealthBy(bonusHealth)
 				champion.setBonusesFor(ChampionKey.Gnar, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
 				if (champion.target) {
-					const jumpToHex = champion.projectHexFrom(champion.target, false)
+					const jumpToHex = champion.projectHexFrom(champion.target, false, 1)
 					if (jumpToHex) {
 						champion.customMoveTo(jumpToHex, false, 1000) //TODO travel time
 					}
@@ -420,7 +420,7 @@ export const championEffects = {
 			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
 			const farthestDenseHex = getDistanceHex(true, champion, densestEnemyHexes)
 			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
-			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true)
+			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true, 1)
 			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
@@ -462,7 +462,7 @@ export const championEffects = {
 				if (castVariation === 1) {
 					champion.queueMoveUnitEffect(elapsedMS, spell, {
 						target: champion,
-						idealDestination: () => champion.projectHexFrom(target, true),
+						idealDestination: () => champion.projectHexFrom(target, true, 1),
 						moveSpeed,
 					})
 				}
@@ -472,7 +472,7 @@ export const championEffects = {
 				champion.queueMoveUnitEffect(elapsedMS, thirdCastSpell, {
 					target,
 					movesWithTarget: true,
-					idealDestination: () => champion.projectHexFrom(target, true),
+					idealDestination: () => champion.projectHexFrom(target, true, 1),
 					moveSpeed,
 					hexEffect: {
 						hexDistanceFromSource: hexRadius,

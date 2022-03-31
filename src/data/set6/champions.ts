@@ -31,7 +31,7 @@ export const baseChampionEffects = {
 				onCollision: (elapsedMS, effect, withUnit) => {
 					if (withUnit === champion) { return }
 					champion.performActionUntilMS = 0
-					const adjacentHex = withUnit.projectHexFrom(champion, false)
+					const adjacentHex = withUnit.projectHexFrom(champion, false, 1)
 					if (adjacentHex) {
 						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, (elapsedMS, withUnit) => { //TODO travel time
 							withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, durationMS)
