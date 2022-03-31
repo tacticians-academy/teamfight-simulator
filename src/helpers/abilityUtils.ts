@@ -163,6 +163,10 @@ export function getInteractableUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team) && unit.isInteractable())
 }
 
+export function getHexRow(row: number) {
+	return state.hexRowsCols[row].map(rowCol => rowCol.hex)
+}
+
 export function getRowOfMostAttackable(team: TeamNumber | null) {
 	const units = getAttackableUnitsOfTeam(team)
 	const unitRows = units.map(unit => unit.activeHex[1])
@@ -170,7 +174,7 @@ export function getRowOfMostAttackable(team: TeamNumber | null) {
 	const maxUnitsInRowCount = unitsPerRow.reduce((previous, current) => Math.max(previous, current[1]), 0)
 	const randomRowTarget = randomItem(unitsPerRow.filter(row => row[1] === maxUnitsInRowCount))
 	const row = randomRowTarget ? parseInt(randomRowTarget[0], 10) : 0
-	return [...Array(BOARD_COL_COUNT).keys()].map((col): HexCoord => [col, row])
+	return getHexRow(row)
 }
 
 export function getDistanceHex(isMaximum: boolean, fromUnit: ChampionUnit, hexes: HexCoord[]) {
