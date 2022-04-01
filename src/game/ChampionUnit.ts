@@ -331,6 +331,7 @@ export class ChampionUnit {
 						bonuses: empoweredAuto.bonuses,
 						bounce: empoweredAuto.bounce,
 						onCollision: (elapsedMS, effect, target, damage) => {
+							if (effect.collidedWith.length) { return }
 							if (passiveFn && this.target && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
 								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), this.target, this, damage)
 								this.postCast(elapsedMS, canReProcAttack)
@@ -358,6 +359,7 @@ export class ChampionUnit {
 						returnMissile: empoweredAuto.returnMissile,
 						hexEffect: empoweredAuto.hexEffect,
 						onCollision: (elapsedMS, effect, target, damage) => {
+							if (effect.collidedWith.length) { return }
 							if (passiveFn && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
 								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), target, this, damage)
 								this.postCast(elapsedMS, canReProcAttack)
