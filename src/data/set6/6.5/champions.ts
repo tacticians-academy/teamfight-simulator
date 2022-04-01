@@ -10,7 +10,7 @@ import { toRadians } from '#/helpers/angles'
 import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing, getSurroundingWithin } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
+import type { BonusLabelKey, ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
 import { randomItem } from '#/helpers/utils'
 
 import { baseChampionEffects } from '../champions'
@@ -390,6 +390,47 @@ export const championEffects = {
 					}
 				},
 			})
+		},
+	},
+
+	[ChampionKey.Silco]: {
+		cast: (elapsedMS, spell, champion) => {
+			const bonusLabelKey = spell.name as BonusLabelKey
+			const numTargets = champion.getSpellVariable(spell, 'NumTargets' as SpellKey)
+			const validTargets = champion.alliedUnits(true).filter(unit => !unit.getBonusesFrom(bonusLabelKey).length)
+			const lowestHPAllies = getBestSortedAsMax(false, validTargets, (unit) => unit.health) //TODO can self-target?
+				.slice(0, numTargets)
+			if (!lowestHPAllies.length) {
+				return false
+			}
+			const durationMS = champion.getSpellVariable(spell, SpellKey.Duration) * 1000
+			const maxHealthProportion = champion.getSpellVariable(spell, 'MaxHealth' as SpellKey)
+			const missile = champion.getMissileWithSuffix('R_Mis')
+			lowestHPAllies.forEach(target => {
+				champion.queueProjectileEffect(elapsedMS, spell, {
+					target,
+					targetTeam: champion.team,
+					missile,
+					onCollision: (elapsedMS, effect, withUnit) => {
+						const attackSpeedProportion = champion.getSpellVariable(spell, SpellKey.AttackSpeed)
+						withUnit.setBonusesFor(bonusLabelKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationMS])
+						target.applyStatusEffect(elapsedMS, StatusEffectType.ccImmune, durationMS)
+						const healthIncrease = target.healthMax * maxHealthProportion
+						target.healthMax += healthIncrease
+						target.health += healthIncrease
+
+						target.queueHexEffect(elapsedMS, undefined, {
+							startsAfterMS: durationMS,
+							hexDistanceFromSource: 2 * (champion.starLevel === 3 ? 2 : 1),
+							damageCalculation: champion.getSpellCalculation(spell, SpellKey.Damage),
+							onActivate: (elapsedMS, target) => {
+								target.die(elapsedMS, undefined)
+							},
+						})
+					},
+				})
+			})
+			return true
 		},
 	},
 
