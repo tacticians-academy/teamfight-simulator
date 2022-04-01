@@ -190,6 +190,7 @@ export interface EmpoweredAuto {
 	id?: BonusLabelKey
 	amount: number
 	activatesAfterAmount?: number
+	nthAuto?: number
 	expiresAtMS?: DOMHighResTimeStamp
 	bounce?: AttackBounce
 	damageCalculation?: SpellCalculation

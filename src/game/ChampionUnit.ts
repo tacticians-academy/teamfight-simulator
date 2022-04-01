@@ -208,8 +208,8 @@ export class ChampionUnit {
 		}
 	}
 
-	isNthBasicAttack(n: number) {
-		return this.basicAttackCount % n === 1
+	isNthBasicAttack(n: number, remainder: number = 1) {
+		return this.basicAttackCount % n === remainder
 	}
 
 	updateAttack(elapsedMS: DOMHighResTimeStamp) {
@@ -252,6 +252,9 @@ export class ChampionUnit {
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
 					this.empoweredAutos.delete(empower)
+					return
+				}
+				if (empower.nthAuto != null && !this.isNthBasicAttack(empower.nthAuto, 0)) {
 					return
 				}
 				if (empower.activatesAfterAmount != null && empower.activatesAfterAmount > 0) {
@@ -364,16 +367,19 @@ export class ChampionUnit {
 					})
 				}
 			}
-			this.empoweredAutos.forEach(empoweredAuto => {
-				if (empoweredAuto.activatesAfterAmount != null && empoweredAuto.activatesAfterAmount > 0) {
-					empoweredAuto.activatesAfterAmount -= 1
+			this.empoweredAutos.forEach(empower => {
+				if (empower.nthAuto != null && !this.isNthBasicAttack(empower.nthAuto, 0)) {
 					return
 				}
-				if (empoweredAuto.amount > 1) {
-					empoweredAuto.amount -= 1
+				if (empower.activatesAfterAmount != null && empower.activatesAfterAmount > 0) {
+					empower.activatesAfterAmount -= 1
+					return
+				}
+				if (empower.amount > 1) {
+					empower.amount -= 1
 				} else {
-					empoweredAuto.onActivate?.(elapsedMS, this)
-					this.empoweredAutos.delete(empoweredAuto)
+					empower.onActivate?.(elapsedMS, this)
+					this.empoweredAutos.delete(empower)
 				}
 			})
 			this.items.forEach((item, index) => setData.itemEffects[item.name]?.basicAttack?.(elapsedMS, item, uniqueIdentifier(index, item), this.target!, this, canReProcAttack))
