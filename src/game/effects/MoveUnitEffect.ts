@@ -73,9 +73,10 @@ export class MoveUnitEffect extends GameEffect {
 		if (spellShield == null) {
 			const destination = this.idealDestination(this.target)
 			if (destination) {
-				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, this.moveSpeed ?? this.target.moveSpeed(), this.keepsTarget, this.apply)
+				const moveSpeed = this.moveSpeed ?? this.target.moveSpeed()
+				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, moveSpeed, this.keepsTarget, this.apply)
 				if (this.movesWithTarget) {
-					this.source.customMoveTo(destination, true, this.moveSpeed ?? this.source.moveSpeed(), this.keepsTarget)
+					this.source.customMoveTo(destination, true, moveSpeed, this.keepsTarget)
 				}
 			}
 		}

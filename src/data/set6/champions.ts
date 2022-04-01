@@ -7,7 +7,7 @@ import { state } from '#/game/store'
 
 import { getDistanceUnit, getRowOfMostAttackable, getBestRandomAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getHexRing, getHotspotHexes, getSurroundingWithin } from '#/helpers/boardUtils'
+import { containsHex, getHexRing, getHotspotHexes, getOccupiedHexes, getSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
@@ -511,7 +511,6 @@ export const baseChampionEffects = {
 			return true
 		},
 	},
-
 	[ChampionKey.Tibbers]: {
 		passiveCasts: true,
 		passive: (elapsedMS, spell, target, champion, damage) => {
@@ -525,6 +524,54 @@ export const baseChampionEffects = {
 				champion
 					.alliedUnits(false)
 					.forEach(unit => unit.setBonusesFor(bonusKey, [BonusKey.AttackDamage, allyADAP, expiresAtMS], [BonusKey.AbilityPower, allyADAP, expiresAtMS]))
+			})
+		},
+	},
+	[ChampionKey.HexTechDragon]: {
+		innate: (spell, champion) => {
+			const damageCalculation = champion.getSpellCalculation(spell, 'BonusLightningDamage' as SpellKey)
+			const chainCount = champion.getSpellVariable(spell, 'NumEnemies' as SpellKey)
+			champion.statusEffects.ccImmune.active = true
+			champion.statusEffects.ccImmune.expiresAtMS = Number.MAX_SAFE_INTEGER
+			champion.empoweredAutos.add({
+				amount: 999999,
+				nthAuto: 3, //NOTE hardcoded
+				bounce: {
+					bouncesRemaining: chainCount, //TODO applies to first target as bonus
+					damageCalculation,
+				},
+				missile: champion.data.spells[1]?.missile,
+			})
+		},
+		cast: (elapsedMS, spell, champion) => {
+			const fearHexRange = champion.getSpellVariable(spell, 'FearHexRange' as SpellKey)
+			const fearSeconds = champion.getSpellVariable(spell, 'FearDuration' as SpellKey)
+			return champion.queueHexEffect(elapsedMS, spell, {
+				targetTeam: champion.opposingTeam(),
+				hexDistanceFromSource: Math.min(4, fearHexRange), //TODO support 5 hex range
+				onCollision: (elapsedMS, effect, withUnit) => {
+					const occupiedHexes = getOccupiedHexes(state.units.filter(unit => unit !== withUnit))
+					champion.queueMoveUnitEffect(elapsedMS, undefined, {
+						target: withUnit,
+						idealDestination: (target) => getBestRandomAsMax(true, getSurroundingWithin(target.activeHex, 1, true), (hex) => (containsHex(hex, occupiedHexes) ? undefined : champion.coordDistanceSquaredTo(hex))),
+						ignoresDestinationCollision: true,
+						moveSpeed: HEX_MOVE_LEAGUEUNITS / 2, //TODO fixed fearSeconds duration
+					})
+					withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, fearSeconds * 1000)
+				},
+				onActivate: (elapsedMS, champion) => {
+					const energizedSeconds = champion.getSpellVariable(spell, 'EnergizedDuration' as SpellKey)
+					const expiresAtMS = elapsedMS + energizedSeconds * 1000
+					champion.alliedUnits(true).forEach(alliedUnit => {
+						alliedUnit.empoweredAutos.add({
+							amount: 99,
+							expiresAtMS,
+							damageModifier: {
+								alwaysCrits: true,
+							},
+						})
+					})
+				},
 			})
 		},
 	},
