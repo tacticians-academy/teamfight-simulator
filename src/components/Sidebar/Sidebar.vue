@@ -16,13 +16,13 @@ import { getDragName, getDragType, onDragOver } from '#/helpers/dragDrop'
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
-	return state.isRunning || (!state.isLoading && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
+	return state.didStart || (!state.isLoading && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
 })
 
 function onFight() {
-	state.isRunning = !state.isRunning
+	state.didStart = !state.didStart
 	state.winningTeam = null
-	if (state.isRunning) {
+	if (state.didStart) {
 		runLoop(true)
 	} else {
 		cancelLoop()
@@ -49,7 +49,7 @@ function onDrop(event: DragEvent) {
 <template>
 <div class="sidebar  bg-secondary  flex flex-col">
 	<div class="flex-grow overflow-y-scroll" @dragover="onDragOver" @drop="onDrop">
-		<div v-if="!state.isRunning" class="flex flex-col">
+		<div v-if="!state.didStart" class="flex flex-col">
 			<ManageTeams />
 		</div>
 		<div v-else>
@@ -62,7 +62,7 @@ function onDrop(event: DragEvent) {
 			<SelectPlayers />
 		</div>
 	</div>
-	<button :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.isRunning ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
+	<button :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.didStart ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
 </div>
 </template>
 

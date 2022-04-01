@@ -22,7 +22,7 @@ function onReset() {
 <template>
 <div class="p-1">
 	<form @submit.prevent>
-		<fieldset :disabled="state.isRunning">
+		<fieldset :disabled="state.didStart">
 			<div>
 				<label for="select-stage" class="mr-1">Stage:</label>
 				<select id="select-stage" v-model="state.stageNumber">
@@ -36,7 +36,7 @@ function onReset() {
 				</select>
 			</div>
 			<SelectPlayersAugments v-if="state.setNumber >= 6" />
-			<div v-if="!state.isRunning && state.units.length">
+			<div v-if="!state.didStart && state.units.length">
 				<button class="px-3 h-8 mt-1 mb-2 bg-quaternary rounded-full" @click="onReset">Reset board...</button>
 			</div>
 		</fieldset>

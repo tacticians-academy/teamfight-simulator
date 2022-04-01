@@ -25,7 +25,7 @@ function onDrag(event: DragEvent, name: string) {
 <template>
 <div
 	v-for="[title, group] in itemGroups" :key="title"
-	:draggable="!state.isRunning"
+	:draggable="!state.didStart"
 	class="sidebar-icons-group"
 >
 	<div class="font-semibold">{{ title }}</div>
@@ -33,7 +33,7 @@ function onDrag(event: DragEvent, name: string) {
 		<div
 			v-for="item in group" :key="item.name"
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
-			:draggable="!state.isRunning" @dragstart="onDrag($event, item.name)"
+			:draggable="!state.didStart" @dragstart="onDrag($event, item.name)"
 		>
 			<div class="sidebar-icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>

@@ -41,7 +41,7 @@ const augmentGroups = computed(() => {
 			<button
 				v-for="(augment, augmentIndex) in augments" :key="augmentIndex"
 				class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
-				:disabled="state.isRunning"
+				:disabled="state.didStart"
 				@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
 			>
 				<span v-if="augment" class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>

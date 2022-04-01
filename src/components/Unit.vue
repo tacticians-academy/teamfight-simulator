@@ -79,7 +79,7 @@ function onInfo(event: Event) {
 <div
 	class="unit hex-overlay  z-20  group" :class="!unit.isInteractable() ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
-	:draggable="!state.isRunning" @dragstart="onDragStart($event, 'unit', unit.name)"
+	:draggable="!state.didStart" @dragstart="onDragStart($event, 'unit', unit.name)"
 	@dragover="onDragOver" @drop="onDrop" @contextmenu="onInfo"
 >
 	<div class="overlay bars">
@@ -104,8 +104,8 @@ function onInfo(event: Event) {
 		<div class="flex">
 			<div
 				v-for="item in unit.items" :key="item.name"
-				class="w-1/3" :class="state.isRunning ? 'pointer-events-none' : null"
-				:draggable="!state.isRunning" @dragstart="onDragStart($event, 'item', item.name)"
+				class="w-1/3" :class="state.didStart ? 'pointer-events-none' : null"
+				:draggable="!state.didStart" @dragstart="onDragStart($event, 'item', item.name)"
 			>
 				<img :src="getIconURLFor(state, item)" :alt="item.name">
 			</div>
@@ -121,7 +121,7 @@ function onInfo(event: Event) {
 		<span class="group-hover-visible">{{ unit.name }}</span>
 	</div>
 	<div class="overlay stars">
-		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.isRunning" @click="onStar(starLevel)">
+		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>

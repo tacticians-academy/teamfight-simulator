@@ -49,7 +49,7 @@ export const state = reactive({
 	setNumber,
 	isLoading: true,
 	elapsedSeconds: 0,
-	isRunning: false,
+	didStart: false,
 	winningTeam: null as TeamNumber | null,
 	hexRowsCols,
 	dragUnit: null as ChampionUnit | null,

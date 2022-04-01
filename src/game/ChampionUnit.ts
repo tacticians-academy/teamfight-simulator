@@ -1016,7 +1016,7 @@ export class ChampionUnit {
 		this.activeHex[1] = row
 	}
 	reposition(hex: HexCoord) {
-		if (state.isRunning) {
+		if (state.didStart) {
 			return
 		}
 		this.startHex = hex

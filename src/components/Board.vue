@@ -18,7 +18,7 @@ const hexContainer = ref<HTMLElement | null>(null)
 
 const { getters, state, dropUnit } = useStore()
 
-const showingSocialite = computed(() => !state.isRunning && Math.floor(state.setNumber) === 6)
+const showingSocialite = computed(() => !state.didStart && Math.floor(state.setNumber) === 6)
 
 function onDrop(event: DragEvent, hex: HexCoord) {
 	const championName = getDragNameOf('unit', event)

@@ -34,7 +34,7 @@ const unitGroups = computed(() => {
 			<div
 				v-for="unit in group" :key="unit.name"
 				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
-				:draggable="!state.isRunning" @dragstart="onDrag($event, unit.name)"
+				:draggable="!state.didStart" @dragstart="onDrag($event, unit.name)"
 			>
 				<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
 			</div>
