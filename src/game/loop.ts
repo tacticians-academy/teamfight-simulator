@@ -8,15 +8,15 @@ import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
 import type { TeamNumber } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
-const GAME_TICK_MS = 1000 / 30
+const GAME_TICK_MS = 1000 / 30 // Confirmed
 
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
-let previousFrameMS: DOMHighResTimeStamp = 0
+let elapsedMS: DOMHighResTimeStamp = 0
 let unanimatedStackSize = 0
 
-const MOVE_LOCKOUT_JUMPERS_MS = 500
-const MOVE_LOCKOUT_MELEE_MS = 1000
+const MOVE_LOCKOUT_JUMPERS_MS = 500 //TODO experimentally determine
+const MOVE_LOCKOUT_MELEE_MS = 1000 //TODO experimentally determine
 
 let didBacklineJump = false
 let didMeleeMove = false
@@ -29,62 +29,69 @@ export async function delayUntil(elapsedMS: DOMHighResTimeStamp, atSeconds: numb
 	})
 }
 
-function requestNextFrame(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
-	if (state.winningTeam != null) {
-		cancelLoop()
-		return
-	}
-	if (unanimated === true) {
-		if (unanimatedStackSize > 1000) {
-			unanimatedStackSize = 0
-			window.setTimeout(() => {
-				runLoop(frameMS + GAME_TICK_MS, true)
-			})
-		} else {
-			unanimatedStackSize += 1
-			runLoop(frameMS + GAME_TICK_MS, true)
-		}
+export function runLoop(animated: boolean) {
+	const frameMS = performance.now()
+	initGame(frameMS)
+	if (animated === true) {
+		frameRequestCallback(frameMS)
 	} else {
-		frameID = window.requestAnimationFrame(runLoop)
+		while (state.winningTeam == null) {
+			playNextFrame()
+		}
 	}
 }
-export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
-	if (previousFrameMS === 0) {
-		delays.clear()
-		unanimatedStackSize = 0
-		previousFrameMS = frameMS
-		startedAtMS = frameMS
-		didBacklineJump = false
-		didMeleeMove = false
-		const backlineJumpers = state.units.filter(unit => unit.jumpsToBackline())
-		backlineJumpers.forEach(unit => unit.activeHex = [-1, -1])
-		backlineJumpers.forEach(unit => unit.jumpToBackline())
-		state.units.forEach(unit => {
-			unit.shields.forEach(shield => {
-				shield.activated = shield.activatesAtMS == null
-				const healShieldBoost = shield.source?.getBonuses(BonusKey.HealShieldBoost)
-				if (shield.amount != null && healShieldBoost != null) {
-					shield.amount *= (1 + healShieldBoost)
-				}
-				if (shield.repeatsEveryMS != null) {
-					shield.repeatAmount = shield.amount
-				}
-			})
-		})
-		const unitsByTeam: [ChampionUnit[], ChampionUnit[]] = [[], []]
-		state.units.forEach(unit => unitsByTeam[unit.team].push(unit))
-		unitsByTeam.forEach((units, team) => {
-			getters.activeAugmentEffectsByTeam.value[team].forEach(([augment, effects]) => effects.startOfFight?.(augment, team as TeamNumber, units))
-		})
-		requestNextFrame(frameMS, unanimated)
-		return
+
+export function cancelLoop() {
+	startedAtMS = 0
+	if (frameID !== null) {
+		window.cancelAnimationFrame(frameID)
+		frameID = null
 	}
-	const diffMS = frameMS - previousFrameMS
-	if (diffMS < GAME_TICK_MS - 1) {
-		requestNextFrame(frameMS, unanimated)
-		return
+}
+
+function frameRequestCallback(frameMS: DOMHighResTimeStamp) {
+	const sinceUpdateMS = frameMS - (startedAtMS + elapsedMS)
+	if (sinceUpdateMS > GAME_TICK_MS * 0.75) {
+		playNextFrame()
 	}
-	const elapsedMS = frameMS - startedAtMS
+	if (state.winningTeam != null) {
+		cancelLoop()
+	} else {
+		frameID = window.requestAnimationFrame(frameRequestCallback)
+	}
+}
+
+function initGame(frameMS: DOMHighResTimeStamp) {
+	delays.clear()
+	unanimatedStackSize = 0
+	startedAtMS = frameMS
+	elapsedMS = 0
+	didBacklineJump = false
+	didMeleeMove = false
+	const backlineJumpers = state.units.filter(unit => unit.jumpsToBackline())
+	backlineJumpers.forEach(unit => unit.activeHex = [-1, -1])
+	backlineJumpers.forEach(unit => unit.jumpToBackline())
+	state.units.forEach(unit => {
+		unit.shields.forEach(shield => {
+			shield.activated = shield.activatesAtMS == null
+			const healShieldBoost = shield.source?.getBonuses(BonusKey.HealShieldBoost)
+			if (shield.amount != null && healShieldBoost != null) {
+				shield.amount *= (1 + healShieldBoost)
+			}
+			if (shield.repeatsEveryMS != null) {
+				shield.repeatAmount = shield.amount
+			}
+		})
+	})
+	const unitsByTeam: [ChampionUnit[], ChampionUnit[]] = [[], []]
+	state.units.forEach(unit => unitsByTeam[unit.team].push(unit))
+	unitsByTeam.forEach((units, team) => {
+		getters.activeAugmentEffectsByTeam.value[team].forEach(([augment, effects]) => effects.startOfFight?.(augment, team as TeamNumber, units))
+	})
+}
+
+function playNextFrame() {
+	elapsedMS += GAME_TICK_MS
 	state.elapsedSeconds = Math.round(elapsedMS / 1000)
 
 	delays.forEach(delay => {
@@ -158,7 +165,7 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 			}
 		}
 		if (didBacklineJump || unit.jumpsToBackline()) {
-			if (unit.updateMove(elapsedMS, diffMS)) {
+			if (unit.updateMove(elapsedMS, GAME_TICK_MS)) {
 				continue
 			}
 		}
@@ -166,20 +173,9 @@ export function runLoop(frameMS: DOMHighResTimeStamp, unanimated?: boolean) {
 
 	([state.hexEffects, state.moveUnitEffects, state.projectileEffects, state.shapeEffects, state.targetEffects] as Set<GameEffect>[]).forEach(effects => {
 		effects.forEach(effect => {
-			if (effect.update(elapsedMS, diffMS, state.units) === false) {
+			if (effect.update(elapsedMS, GAME_TICK_MS, state.units) === false) {
 				effects.delete(effect)
 			}
 		})
 	})
-
-	previousFrameMS = frameMS
-	requestNextFrame(frameMS, unanimated)
-}
-
-export function cancelLoop() {
-	previousFrameMS = 0
-	if (frameID !== null) {
-		window.cancelAnimationFrame(frameID)
-		frameID = null
-	}
 }

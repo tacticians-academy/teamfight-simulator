@@ -23,7 +23,7 @@ function onFight() {
 	state.isRunning = !state.isRunning
 	state.winningTeam = null
 	if (state.isRunning) {
-		runLoop(performance.now(), false)
+		runLoop(true)
 	} else {
 		cancelLoop()
 		resetGame()
