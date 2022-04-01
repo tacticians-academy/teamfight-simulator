@@ -549,6 +549,12 @@ export class ChampionUnit {
 		if (this.statusEffects.ccImmune.active && CC_STATUS_EFFECTS.includes(effectType)) {
 			return
 		}
+		if (effectType === StatusEffectType.unstoppable) {
+			this.statusEffects.stunned.active = false
+		} else if (effectType === StatusEffectType.ccImmune) {
+			CC_STATUS_EFFECTS.forEach(statusEffect => this.statusEffects[statusEffect].active = false)
+		}
+
 		const expireAtMS = elapsedMS + durationMS
 		const statusEffect = this.statusEffects[effectType]
 		if (!statusEffect.active || expireAtMS > statusEffect.expiresAtMS) {
