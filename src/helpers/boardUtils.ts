@@ -56,6 +56,12 @@ export function getMirrorHex(hex: HexCoord): HexCoord {
 	return hex[1] >= BOARD_ROW_PER_SIDE_COUNT ? getInverseHex(hex) : hex
 }
 
+export function getOccupiedHexes(units: ChampionUnit[]) {
+	return units
+		.filter(unit => unit.hasCollision())
+		.map(unit => unit.activeHex)
+}
+
 const surroundings = [
 	[[1, 0], [0, 1], [-1, 1]],
 	[[2, 0], [1, 1], [1, 2], [0, 2], [-1, 2], [-2, 1]],

@@ -18,7 +18,7 @@ import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
 import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, getStageScalingIndex, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
-import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
+import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getOccupiedHexes, getSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -502,10 +502,7 @@ export class ChampionUnit {
 		if (!this.target) {
 			return undefined
 		}
-		const occupiedHexes: HexCoord[] = state.units
-			.filter(unit => unit.hasCollision())
-			.map(unit => unit.activeHex)
-		return recursivePathTo(this.activeHex, this.target.activeHex, occupiedHexes, [this.target.activeHex], [this.target.activeHex])
+		return recursivePathTo(this.activeHex, this.target.activeHex, getOccupiedHexes(state.units), [this.target.activeHex], [this.target.activeHex])
 	}
 	updateMove(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp) {
 		if (!this.moving) {
