@@ -11,7 +11,7 @@ import { getHexRing, getHotspotHexes, getSurroundingWithin } from '#/helpers/boa
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BleedData, ChampionEffects, DamageModifier } from '#/helpers/types'
+import type { BleedData, BonusLabelKey, ChampionEffects, DamageModifier } from '#/helpers/types'
 import { randomItem, shuffle } from '#/helpers/utils'
 
 export const baseChampionEffects = {
@@ -129,7 +129,7 @@ export const baseChampionEffects = {
 			const startsAfterMS = delaySeconds * 1000
 			const expiresAfterMS = fieldSeconds * 1000
 			const shape = new ShapeEffectCircle(hotspotHex, HEX_MOVE_LEAGUEUNITS * (hexRadius + 0.2))
-			const bonusKey = spell.name as SpellKey
+			const bonusLabelKey = spell.name as BonusLabelKey
 			champion.queueShapeEffect(elapsedMS, spell, { //TODO projectile
 				targetTeam: champion.team,
 				shape,
@@ -137,7 +137,7 @@ export const baseChampionEffects = {
 				expiresAfterMS,
 				opacity: 0.5,
 				onCollision: (elapsedMS, effect, withUnit) => {
-					withUnit.setBonusesFor(bonusKey, [BonusKey.AttackSpeed, allyASProportion * 100, elapsedMS + allySeconds * 1000])
+					withUnit.setBonusesFor(bonusLabelKey, [BonusKey.AttackSpeed, allyASProportion * 100, elapsedMS + allySeconds * 1000])
 				},
 			})
 			return champion.queueShapeEffect(elapsedMS, spell, {
@@ -146,7 +146,7 @@ export const baseChampionEffects = {
 				expiresAfterMS,
 				opacity: 0.5,
 				onCollision: (elapsedMS, effect, withUnit) => {
-					withUnit.setBonusesFor(bonusKey, [BonusKey.AttackSpeed, -enemyASProportion * 100, elapsedMS + enemySeconds * 1000])
+					withUnit.setBonusesFor(bonusLabelKey, [BonusKey.AttackSpeed, -enemyASProportion * 100, elapsedMS + enemySeconds * 1000])
 				},
 			})
 		},
@@ -427,8 +427,8 @@ export const baseChampionEffects = {
 			alliesByLowestHP
 				.slice(0, allyCount)
 				.forEach(unit => {
-					const bonusKey = spell.name as SpellKey
-					if (!unit.getBonusesFrom(bonusKey).length) {
+					const bonusLabelKey = spell.name as BonusLabelKey
+					if (!unit.getBonusesFrom(bonusLabelKey).length) {
 						champion.queueHexEffect(elapsedMS, spell, {
 							hexSource: unit,
 							hexDistanceFromSource: 1,
@@ -437,7 +437,7 @@ export const baseChampionEffects = {
 							],
 						})
 					}
-					unit.addBonuses(bonusKey)
+					unit.addBonuses(bonusLabelKey)
 					unit.gainHealth(elapsedMS, champion, healAmount, true)
 				})
 			return true

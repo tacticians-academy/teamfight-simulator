@@ -327,7 +327,7 @@ export const baseItemEffects = {
 		deathOfHolder: (elapsedMS, item, itemID, unit) => {
 			const voidling = spawnUnit(unit, ChampionKey.VoidSpawn, 1)
 			voidling.queueHexEffect(elapsedMS, undefined, {
-				startsAfterMS: 500,
+				startsAfterMS: 500, //TODO experimentally determine
 				hexDistanceFromSource: 1,
 				opacity: 0.5,
 				taunts: true,
