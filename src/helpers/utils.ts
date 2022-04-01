@@ -23,6 +23,56 @@ export function getArrayValueCounts<T extends string | number | symbol>(array: T
 	return Object.entries(result)
 }
 
+// Get best
+
+export function getBestSortedAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
+	const results: [number, T][] = []
+	entries.forEach(entry => {
+		const value = valueFn(entry)
+		if (value == null) { return }
+		results.push([value, entry])
+	})
+	return results
+		.sort((a, b) => (b[0] - a[0]) * (isMaximum ? 1 : -1))
+		.map(data => data[1])
+}
+
+export function getBestUniqueAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
+	let bestValue: number | null
+	let bestResult: T | undefined
+	entries.forEach(entry => {
+		const value = valueFn(entry)
+		if (value == null) { return }
+		if (bestValue == null || (isMaximum ? value > bestValue : value < bestValue)) {
+			bestValue = value
+			bestResult = entry
+		}
+	})
+	return bestResult
+}
+
+export function getBestArrayAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
+	let bestValue: number | null
+	let bestResults: T[] = []
+	entries.forEach(entry => {
+		const value = valueFn(entry)
+		if (value == null) { return }
+		if (bestValue == null || (isMaximum ? value > bestValue : value < bestValue)) {
+			bestValue = value
+			bestResults = [entry]
+		} else if (value === bestValue) {
+			bestResults.push(entry)
+		}
+	})
+	return bestResults
+}
+
+export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
+	return randomItem(getBestArrayAsMax(isMaximum, entries, valueFn)) ?? undefined
+}
+
+// Random
+
 export function randomSign() {
 	return Math.random() < 0.5 ? -1 : 1
 }

@@ -6,12 +6,13 @@ import { getSocialiteHexesFor, INNOVATION_NAMES } from '#/data/set6/utils'
 import { ChampionUnit } from '#/game/ChampionUnit'
 import { getters, state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getBestRandomAsMax, getBestUniqueAsMax, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getUnitsOfTeam, getVariables } from '#/helpers/abilityUtils'
 import { getClosestHexAvailableTo, getMirrorHex, isInBackLines, isSameHex } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT } from '#/helpers/constants'
 import { MutantBonus, MutantType, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber, TraitEffects } from '#/helpers/types'
+import { getBestRandomAsMax, getBestUniqueAsMax } from '#/helpers/utils'
 
 const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
 

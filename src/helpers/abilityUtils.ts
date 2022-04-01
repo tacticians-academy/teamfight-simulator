@@ -3,67 +3,13 @@ import type { AugmentData, ChampionSpellData, ChampionSpellMissileData, EffectVa
 
 import { ChampionUnit } from '#/game/ChampionUnit'
 import type { AttackBounce } from '#/game/effects/GameEffect'
-import { getCoordFrom, state } from '#/game/store'
+import { state } from '#/game/store'
 
-import { coordinateDistanceSquared, getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
-import { BOARD_COL_COUNT } from '#/helpers/constants'
 import { StatusEffectType } from '#/helpers/types'
 import type { DamageModifier, HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
-import { getArrayValueCounts, randomItem } from '#/helpers/utils'
-
-export function getBestSortedAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
-	const results: [number, T][] = []
-	entries.forEach(entry => {
-		const value = valueFn(entry)
-		if (value == null) { return }
-		results.push([value, entry])
-	})
-	return results
-		.sort((a, b) => (b[0] - a[0]) * (isMaximum ? 1 : -1))
-		.map(data => data[1])
-}
-
-export function getBestUniqueAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
-	let bestValue: number | null
-	let bestResult: T | undefined
-	entries.forEach(entry => {
-		const value = valueFn(entry)
-		if (value == null) { return }
-		if (bestValue == null || (isMaximum ? value > bestValue : value < bestValue)) {
-			bestValue = value
-			bestResult = entry
-		}
-	})
-	return bestResult
-}
-
-export function getBestArrayAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T[] {
-	let bestValue: number | null
-	let bestResults: T[] = []
-	entries.forEach(entry => {
-		const value = valueFn(entry)
-		if (value == null) { return }
-		if (bestValue == null || (isMaximum ? value > bestValue : value < bestValue)) {
-			bestValue = value
-			bestResults = [entry]
-		} else if (value === bestValue) {
-			bestResults.push(entry)
-		}
-	})
-	return bestResults
-}
-
-export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn: (entry: T) => number | undefined): T | undefined {
-	return randomItem(getBestArrayAsMax(isMaximum, entries, valueFn)) ?? undefined
-}
-
-export function getBestHexWithinRangeTo(target: ChampionUnit, maxHexRange: number, possibleHexes: HexCoord[]): HexCoord | undefined {
-	return getBestRandomAsMax(true, possibleHexes, (hex) => {
-		const outOfRange = target.hexDistanceTo(hex) > maxHexRange
-		return coordinateDistanceSquared(target.coord, getCoordFrom(hex)) * (outOfRange ? -1 : 1)
-	})
-}
+import { getArrayValueCounts, getBestRandomAsMax, getBestUniqueAsMax, randomItem } from '#/helpers/utils'
 
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
 	const hex = fromUnit.activeHex
@@ -162,7 +108,6 @@ export function checkCooldownFor(elapsedMS: DOMHighResTimeStamp, unit: ChampionU
 export function getUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team))
 }
-
 export function getAliveUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => !unit.dead && (team == null || unit.team === team))
 }
@@ -199,7 +144,7 @@ export function getDistanceHex(isMaximum: boolean, fromUnit: ChampionUnit, hexes
 }
 
 export function getDistanceUnit(isMaximum: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
-	const units = getInteractableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
+	const units = getAttackableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 		.filter(unit => unit !== fromUnit)
 	return getBestUniqueAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
@@ -252,8 +197,8 @@ export function getChainFrom(unit: ChampionUnit, bounces: number, maxDistance?: 
 	let currentBounceTarget: ChampionUnit | undefined = unit
 	while (currentBounceTarget && chainUnits.length < bounces) {
 		chainUnits.push(currentBounceTarget)
-		const unchainedUnits = state.units.filter(unit => !chainUnits.includes(unit))
-		currentBounceTarget = getDistanceUnitOfTeamWithinRangeTo(false, currentBounceTarget, unit.team, maxDistance, unchainedUnits)
+		const unchainedUnits = getInteractableUnitsOfTeam(unit.team).filter(unit => !chainUnits.includes(unit))
+		currentBounceTarget = getDistanceUnitOfTeamWithinRangeTo(false, currentBounceTarget, maxDistance, unchainedUnits)
 	}
 	return chainUnits
 }

@@ -5,14 +5,14 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable, getBestRandomAsMax, getInteractableUnitsOfTeam, getBestSortedAsMax, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow } from '#/helpers/abilityUtils'
+import { getDistanceUnit, getRowOfMostAttackable, getInteractableUnitsOfTeam, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { containsHex, getHexRing, getHotspotHexes, getOccupiedHexes, getSurroundingWithin } from '#/helpers/boardUtils'
+import { containsHex, getHexRing, getHotspotHexes, getOccupiedHexes, getHexesSurroundingWithin } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BleedData, BonusLabelKey, ChampionEffects, DamageModifier } from '#/helpers/types'
-import { randomItem, shuffle } from '#/helpers/utils'
+import { getBestRandomAsMax, getBestSortedAsMax, randomItem, shuffle } from '#/helpers/utils'
 
 export const baseChampionEffects = {
 
@@ -450,7 +450,7 @@ export const baseChampionEffects = {
 			if (!target) { return false }
 			const sourceID = ChampionKey.Malzahar
 			if (target.getBleed(sourceID)) {
-				const unafflictedEnemies = getInteractableUnitsOfTeam(target.team).filter(unit => !unit.getBleed(sourceID))
+				const unafflictedEnemies = getAttackableUnitsOfTeam(target.team).filter(unit => !unit.getBleed(sourceID))
 				const newTarget = getDistanceUnitFromUnits(false, target, unafflictedEnemies)
 				if (newTarget) {
 					target = newTarget
@@ -473,7 +473,7 @@ export const baseChampionEffects = {
 				remainingIterations: iterationCount,
 				onDeath: (elapsedMS, oldTarget) => {
 					const spreadCount = champion.getSpellVariable(spell, 'SpreadTargets' as SpellKey)
-					getBestSortedAsMax(false, getInteractableUnitsOfTeam(oldTarget.team), (unit) => unit.coordDistanceSquaredTo(oldTarget) + (unit.getBleed(sourceID) ? 1 : 0))
+					getBestSortedAsMax(false, getInteractableUnitsOfTeam(oldTarget.team), (unit) => unit.coordDistanceSquaredTo(oldTarget) + (unit.getBleed(sourceID) ? 1 : 0)) //TODO attackable only?
 						.slice(0, spreadCount)
 						.forEach(newTarget => {
 							newTarget.addBleedIfStrongerThan(sourceID, bleed)
@@ -553,7 +553,7 @@ export const baseChampionEffects = {
 					const occupiedHexes = getOccupiedHexes(state.units.filter(unit => unit !== withUnit))
 					champion.queueMoveUnitEffect(elapsedMS, undefined, {
 						target: withUnit,
-						idealDestination: (target) => getBestRandomAsMax(true, getSurroundingWithin(target.activeHex, 1, true), (hex) => (containsHex(hex, occupiedHexes) ? undefined : champion.coordDistanceSquaredTo(hex))),
+						idealDestination: (target) => getBestRandomAsMax(true, getHexesSurroundingWithin(target.activeHex, 1, true), (hex) => (containsHex(hex, occupiedHexes) ? undefined : champion.coordDistanceSquaredTo(hex))),
 						ignoresDestinationCollision: true,
 						moveSpeed: HEX_MOVE_LEAGUEUNITS / 2, //TODO fixed fearSeconds duration
 					})
@@ -611,7 +611,7 @@ export const baseChampionEffects = {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
 			const shieldSeconds = champion.getSpellVariable(spell, 'Duration' as SpellKey)
-			const hexes = getSurroundingWithin(hotspotHex, hexRange, true)
+			const hexes = getHexesSurroundingWithin(hotspotHex, hexRange, true)
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes,
 				statusEffects: [
@@ -654,7 +654,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Quinn]: {
 		cast: (elapsedMS, spell, champion) => {
-			const highestASEnemy = getBestRandomAsMax(true, getInteractableUnitsOfTeam(champion.opposingTeam()), (unit) => unit.attackSpeed())
+			const highestASEnemy = getBestRandomAsMax(true, getAttackableUnitsOfTeam(champion.opposingTeam()), (unit) => unit.attackSpeed())
 			const disarmSeconds = champion.getSpellVariable(spell, 'DisarmDuration' as SpellKey)
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: highestASEnemy,
@@ -844,7 +844,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Veigar]: {
 		cast: (elapsedMS, spell, champion) => {
 			const strikeCount = champion.getSpellVariable(spell, 'NumStrikes' as SpellKey)
-			const enemies = getInteractableUnitsOfTeam(champion.opposingTeam())
+			const enemies = getAttackableUnitsOfTeam(champion.opposingTeam())
 			shuffle(enemies)
 			const castSeconds = 3 //TODO experimentally determine
 			const secondsBetweenCasts = castSeconds / strikeCount
@@ -906,7 +906,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Zac]: {
 		cast: (elapsedMS, spell, champion) => {
-			const validUnits = getInteractableUnitsOfTeam(champion.opposingTeam())
+			const validUnits = getAttackableUnitsOfTeam(champion.opposingTeam())
 				.filter(unit => unit.hexDistanceTo(champion) <= 3) //NOTE hardcoded
 			const targets = getBestSortedAsMax(true, validUnits, (unit) => unit.coordDistanceSquaredTo(champion))
 				.slice(0, 2)
@@ -942,7 +942,7 @@ export const baseChampionEffects = {
 			const targetHex = champion.target?.activeHex
 			if (!targetHex) { return false }
 			const centerHexes = [targetHex]
-			const outerHexes = getSurroundingWithin(targetHex, 1, false)
+			const outerHexes = getHexesSurroundingWithin(targetHex, 1, false)
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes: centerHexes,
 			})

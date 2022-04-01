@@ -1,13 +1,11 @@
 import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-academy/academy-library'
 
-import { state } from '#/game/store'
-
-import { checkCooldownFor, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/helpers/abilityUtils'
-import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
+import { checkCooldownFor, getAttackableUnitsOfTeam, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { AugmentEffects } from '#/helpers/types'
-import { randomItem } from '#/helpers/utils'
+import { getBestRandomAsMax } from '#/helpers/utils'
 
 import { baseAugmentEffects } from '../augments'
 
@@ -179,9 +177,9 @@ export const augmentEffects = {
 			if (damageType !== DamageType.magic) { return }
 			const magicDamage = getFirstVariableOf(augment, `MagicDamage${getStageScalingIndex() + 1}`, 'MagicDamage')
 			const targets = [target]
-			const nearestToTarget = getClosestAttackableOfTeam(target.team, target, state.units)
-			if (nearestToTarget.length) {
-				targets.push(randomItem(nearestToTarget)!)
+			const nearestToTarget = getBestRandomAsMax(false, getAttackableUnitsOfTeam(target.team).filter(unit => unit !== target), (unit) => unit.coordDistanceSquaredTo(target))
+			if (nearestToTarget) {
+				targets.push(nearestToTarget)
 			}
 			targets.forEach(unit => target.queueProjectileEffect(elapsedMS, undefined, {
 				target: unit,

@@ -16,15 +16,15 @@ import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
 import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
-import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, getStageScalingIndex, thresholdCheck } from '#/helpers/abilityUtils'
+import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
-import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getOccupiedHexes, getSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
+import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getOccupiedHexes, getHexesSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS, CC_STATUS_EFFECTS } from '#/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
-import { uniqueIdentifier } from '#/helpers/utils'
+import { getBestRandomAsMax, uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
 
@@ -642,7 +642,7 @@ export class ChampionUnit {
 		return this.collides && !this.moving && this.data.stats.range > 0 && !this.statusEffects.stunned.active && this.performActionUntilMS < elapsedMS
 	}
 	isAttackable() {
-		return this.isInteractable() && !this.statusEffects.stealth.active && !this.statusEffects.banished.active
+		return this.isInteractable() && !this.statusEffects.stealth.active
 	}
 	isInteractable() {
 		return this.collides && !this.dead && !this.statusEffects.banished.active
@@ -1013,7 +1013,7 @@ export class ChampionUnit {
 			this.customMoveSpeed = customSpeed
 			this.onMovementComplete = (elapsedMS, unit) => {
 				if (!keepsTarget) {
-					unit.setTarget(isUnitTarget && target.team !== this.team && target.isInteractable() ? target : null)
+					unit.setTarget(isUnitTarget && target.team !== this.team && target.isAttackable() ? target : null)
 				}
 				onMovementComplete?.(elapsedMS, unit)
 			}
@@ -1230,17 +1230,9 @@ export class ChampionUnit {
 		return this.getBonuses(...vampBonuses)
 	}
 
-	getInteractableUnitsIn(hexes: HexCoord[], team: TeamNumber | null): ChampionUnit[] {
-		return state.units.filter(unit => {
-			if ((team != null && unit.team !== team) || !unit.isInteractable()) {
-				return false
-			}
-			return unit.isIn(hexes)
-		})
-	}
 	getInteractableUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
-		const hexes = getSurroundingWithin(this.activeHex, distance, true)
-		return this.getInteractableUnitsIn(hexes, team)
+		const hexes = getHexesSurroundingWithin(this.activeHex, distance, true)
+		return getInteractableUnitsOfTeam(team).filter(unit => unit.isIn(hexes))
 	}
 
 	getAttackModifier(elapsedMS: DOMHighResTimeStamp) {

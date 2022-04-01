@@ -3,14 +3,14 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
-import { state } from '#/game/store'
 
-import { applyGrievousBurn, getChainFrom, getBestRandomAsMax, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam } from '#/helpers/abilityUtils'
-import { getInverseHex, getClosestAttackableEnemies, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
+import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getInverseHex, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusVariable, HexCoord, ItemEffects } from '#/helpers/types'
+import { getBestRandomAsMax, getBestSortedAsMax } from '#/helpers/utils'
 
 export const baseItemEffects = {
 
@@ -223,7 +223,8 @@ export const baseItemEffects = {
 	[ItemKey.RunaansHurricane]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const [boltCount, boltMultiplier] = getVariables(item, 'AdditionalTargets', 'MultiplierForDamage')
-			const additionalTargets = getClosestAttackableEnemies(holder, [...state.units].filter(unit => unit !== target), 99, boltCount)
+			const additionalTargets = getBestSortedAsMax(false, getAttackableUnitsOfTeam(target.team).filter(unit => unit !== target), (unit) => unit.coordDistanceSquaredTo(holder)) //TODO experimentally determine bolt target
+				.slice(0, boltCount)
 			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, false, boltMultiplier / 100) //TODO verify
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {
 				const boltTarget = additionalTargets[boltIndex]
@@ -308,7 +309,7 @@ export const baseItemEffects = {
 			const [banishSeconds] = getVariables(item, 'BanishDuration')
 			const targetHex = getInverseHex(unit.startHex)
 			const units = getUnitsOfTeam(unit.opposingTeam()).filter(unit => !unit.isUnstoppable())
-			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, unit.opposingTeam(), undefined, units) //TODO not random
+			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, undefined, units) //TODO not random
 			if (target) {
 				target.applyStatusEffect(0, StatusEffectType.banished, banishSeconds * 1000)
 			}

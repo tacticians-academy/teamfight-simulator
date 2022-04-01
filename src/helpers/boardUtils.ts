@@ -1,9 +1,10 @@
 import type { ChampionUnit } from '#/game/ChampionUnit'
+import { getCoordFrom } from '#/game/store'
 
 import { doesLineInterceptCircle } from '#/helpers/angles'
-import { getBestRandomAsMax, getInteractableUnitsOfTeam } from '#/helpers/abilityUtils'
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/helpers/constants'
 import type { HexCoord, HexRowCol, TeamNumber } from '#/helpers/types'
+import { getBestRandomAsMax } from '#/helpers/utils'
 
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
@@ -13,10 +14,10 @@ export function buildBoard(fillObjects: boolean): any[][] {
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
-	const unitHexes = units.filter(unit => unit.hasCollision()).map(unit => unit.activeHex)
+	const unitHexes = getOccupiedHexes(units)
 	for (let distance = 0; distance <= 4; distance += 1) { //TODO recurse to unlimited distance
 		for (const checkHex of getHexRing(startHex, distance)) {
-			if (!containsHex(checkHex, unitHexes)) {
+			if (!containsHex(checkHex, unitHexes)) { //TODO random
 				return checkHex
 			}
 		}
@@ -24,13 +25,8 @@ export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit
 	console.error('No available hex', startHex, unitHexes)
 }
 
-export function getDistanceUnitOfTeamWithinRangeTo(isMaximum: boolean, target: ChampionUnit | HexCoord, teamNumber: TeamNumber | null, maxHexDistance: number | undefined, units?: ChampionUnit[]) {
-	if (!units) {
-		units = getInteractableUnitsOfTeam(teamNumber)
-	} else {
-		units = units.filter(unit => (teamNumber == null || unit.team === teamNumber) && unit.isInteractable())
-	}
-	return getBestRandomAsMax(isMaximum, units, (unit) => {
+export function getDistanceUnitOfTeamWithinRangeTo(isMaximum: boolean, target: ChampionUnit | HexCoord, maxHexDistance: number | undefined, validUnits: ChampionUnit[]) {
+	return getBestRandomAsMax(isMaximum, validUnits, (unit) => {
 		return maxHexDistance != null && unit.hexDistanceTo(target) > maxHexDistance ? undefined : unit.coordDistanceSquaredTo(target)
 	})
 }
@@ -69,7 +65,7 @@ const surroundings = [
 	[[4, 0], [3, 1], [3, 2], [2, 3], [2, 4], [1, 4], [0, 4], [-1, 4], [-2, 4], [-3, 3], [-3, 2], [-4, 1]],
 ]
 
-export function getSurroundingWithin(hex: HexCoord, maxDistance: number, includingOrigin: boolean): HexCoord[] {
+export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: number, includingOrigin: boolean): HexCoord[] {
 	const results: HexCoord[] = []
 	for (let distance = 1; distance <= maxDistance; distance += 1) {
 		results.push(...getHexRing(hex, distance))
@@ -181,42 +177,6 @@ export function getFrontBehindHexes(unit: ChampionUnit, inFront: boolean) {
 	return getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
 }
 
-export function getClosestAttackableEnemies(unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
-	return getClosestAttackableOfTeam(unit.opposingTeam(), unit, allUnits, range, minimumUnits)
-}
-
-export function getClosestAttackableOfTeam(team: TeamNumber, unit: ChampionUnit, allUnits: ChampionUnit[], range?: number, minimumUnits: number = 1) {
-	let currentRange = 0
-	if (range == null) {
-		range = unit.range()
-	}
-	let checkHexes = [unit.activeHex]
-	const checkedHexes: HexCoord[] = [...checkHexes]
-	const enemies: ChampionUnit[] = []
-	while (checkHexes.length && enemies.length < minimumUnits) {
-		const visitedSurroundingHexes: HexCoord[] = []
-		for (const checkHex of checkHexes) {
-			for (const surroundingHex of getHexRing(checkHex)) {
-				if (!containsHex(surroundingHex, checkedHexes)) {
-					checkedHexes.push(surroundingHex)
-					visitedSurroundingHexes.push(surroundingHex)
-					for (const checkUnit of allUnits) {
-						if (checkUnit.isAttackable() && checkUnit.team === team && checkUnit.isAt(surroundingHex)) {
-							enemies.push(checkUnit)
-						}
-					}
-				}
-			}
-		}
-		currentRange += 1
-		if (currentRange >= range) {
-			break
-		}
-		checkHexes = visitedSurroundingHexes
-	}
-	return enemies
-}
-
 export function coordinateDistanceSquared([startX, startY]: HexCoord, [destX, destY]: HexCoord) {
 	const diffX = destX - startX
 	const diffY = destY - startY
@@ -246,6 +206,13 @@ export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {
 		distanceAccumulator += 1
 	}
 	return distanceAccumulator
+}
+
+export function getBestHexWithinRangeTo(target: ChampionUnit, maxHexRange: number, possibleHexes: HexCoord[]): HexCoord | undefined {
+	return getBestRandomAsMax(true, possibleHexes, (hex) => {
+		const outOfRange = target.hexDistanceTo(hex) > maxHexRange
+		return coordinateDistanceSquared(target.coord, getCoordFrom(hex)) * (outOfRange ? -1 : 1)
+	})
 }
 
 export function getTeamName(team: number) {

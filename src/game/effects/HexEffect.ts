@@ -7,7 +7,7 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { GameEffect } from '#/game/effects/GameEffect'
 import type { GameEffectData } from '#/game/effects/GameEffect'
 
-import { getSurroundingWithin } from '#/helpers/boardUtils'
+import { getHexesSurroundingWithin } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 import type { HexCoord } from '#/helpers/types'
 
@@ -55,14 +55,14 @@ export class HexEffect extends GameEffect {
 		if (!this.hexes.value) {
 			const source = this.hexSource ?? this.source
 			const sourceHex = 'activeHex' in source ? source.activeHex : source
-			const hexes = getSurroundingWithin(sourceHex, this.hexDistanceFromSource!, true)
+			const hexes = getHexesSurroundingWithin(sourceHex, this.hexDistanceFromSource!, true)
 			this.hexes.value = hexes
 		}
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		if (this.taunts && this.source.isInteractable()) {
+		if (this.taunts && this.source.isAttackable()) {
 			unit.setTarget(this.source)
 		}
 		return true

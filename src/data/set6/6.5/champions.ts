@@ -5,13 +5,13 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getBestArrayAsMax, getBestHexWithinRangeTo, getBestRandomAsMax, getBestSortedAsMax, getDistanceHex, getDistanceUnit, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getDistanceHex, getDistanceUnit, getProjectileSpread } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getDistanceUnitOfTeamWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing, getSurroundingWithin } from '#/helpers/boardUtils'
+import { getDistanceUnitOfTeamWithinRangeTo, getBestHexWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing, getHexesSurroundingWithin } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusLabelKey, ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
-import { randomItem } from '#/helpers/utils'
+import { getBestArrayAsMax, getBestRandomAsMax, getBestSortedAsMax, randomItem } from '#/helpers/utils'
 
 import { baseChampionEffects } from '../champions'
 import { delayUntil } from '#/game/loop'
@@ -181,7 +181,7 @@ export const championEffects = {
 				}
 			}
 			const fixedHexRange = champion.data.stats.range
-			const target = getDistanceUnitOfTeamWithinRangeTo(true, champion, champion.opposingTeam(), fixedHexRange)
+			const target = getDistanceUnitOfTeamWithinRangeTo(true, champion, fixedHexRange, getAttackableUnitsOfTeam(champion.opposingTeam()))
 			if (!target) { return true } //TODO
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
@@ -224,7 +224,7 @@ export const championEffects = {
 				target: champion,
 				targetTeam: champion.team,
 				idealDestination: (champion) => {
-					const validUnits = getInteractableUnitsOfTeam(champion.opposingTeam()).filter(unit => unit !== champion.target)
+					const validUnits = getAttackableUnitsOfTeam(champion.opposingTeam()).filter(unit => unit !== champion.target)
 					const bestUnits = getBestArrayAsMax(false, validUnits, (unit) => unit.health)
 					return getBestRandomAsMax(true, bestUnits, (unit) => unit.coordDistanceSquaredTo(champion)) ?? champion.target
 				},
@@ -333,7 +333,7 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const targetTeam = champion.opposingTeam()
 			const fixedHexRange = champion.getSpellVariable(spell, 'SpellRange' as SpellKey)
-			const validUnits = getInteractableUnitsOfTeam(targetTeam).filter(unit => unit.hexDistanceTo(champion) <= fixedHexRange)
+			const validUnits = getAttackableUnitsOfTeam(targetTeam).filter(unit => unit.hexDistanceTo(champion) <= fixedHexRange)
 			const bestHex = randomItem(getHotspotHexes(true, validUnits, targetTeam, 1)) //TODO experimentally determine
 			if (!bestHex) { return false }
 			const attackSpeedReducePercent = champion.getSpellVariable(spell, 'ASReduction' as SpellKey)
@@ -565,7 +565,7 @@ export const championEffects = {
 						if (bulletIndex === 0) {
 							champion.queueMoveUnitEffect(elapsedMS, undefined, {
 								target: champion,
-								idealDestination: () => getDistanceHex(true, target, getSurroundingWithin(champion.activeHex, 2, false)), //TODO experimentally determine
+								idealDestination: () => getDistanceHex(true, target, getHexesSurroundingWithin(champion.activeHex, 2, false)), //TODO experimentally determine
 								moveSpeed: 2000, //TODO experimentally determine
 								keepsTarget: true,
 							})
@@ -600,7 +600,7 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 			if (damageCalculation) {
 				target.damage(elapsedMS, true, champion, DamageSourceType.spell, damageCalculation, false)
 				if (target.dead) {
-					const newTarget = getBestRandomAsMax(false, getInteractableUnitsOfTeam(target.team), (unit) => unit.health)
+					const newTarget = getBestRandomAsMax(false, getAttackableUnitsOfTeam(target.team), (unit) => unit.health)
 					if (newTarget) {
 						return ireliaResetRecursive(spell, champion, moveSpeed, newTarget)
 					}
