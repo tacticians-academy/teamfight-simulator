@@ -733,7 +733,10 @@ export class ChampionUnit {
 	}
 
 	takeBonusDamage(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit, damageCalculation: SpellCalculation, isAoE: boolean) {
-		this.damage(elapsedMS, false, source, DamageSourceType.bonus, damageCalculation, isAoE)
+		if (this.dead) {
+			return undefined
+		}
+		return this.damage(elapsedMS, false, source, DamageSourceType.bonus, damageCalculation, isAoE)
 	}
 
 	damage(elapsedMS: DOMHighResTimeStamp, isOriginalSource: boolean, source: ChampionUnit | undefined, sourceType: DamageSourceType, damageCalculation: SpellCalculation, isAOE: boolean, damageModifier?: DamageModifier): DamageResult | undefined {
