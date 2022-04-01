@@ -306,7 +306,6 @@ export const baseChampionEffects = {
 									moveSpeed: 1000, //TODO experimentally determine
 									hexEffect: {
 										damageCalculation,
-										expiresAfterMS: 50, //TODO
 										hexSource: target,
 										hexDistanceFromSource: 2,
 										bonuses: [spell.name as SpellKey, [BonusKey.ArmorShred, shredProportion, shredExpiresAtMS], [BonusKey.MagicResistShred, shredProportion, shredExpiresAtMS]],

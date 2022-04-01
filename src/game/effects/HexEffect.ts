@@ -22,6 +22,8 @@ export interface HexEffectData extends GameEffectData {
 	taunts?: boolean
 }
 
+const MIN_ACTIVATION_TIME = 50
+
 export class HexEffect extends GameEffect {
 	hexes: Ref<HexCoord[] | undefined>
 	hexDistanceFromSource: number | undefined
@@ -33,6 +35,11 @@ export class HexEffect extends GameEffect {
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
 		this.activatesAfterMS = spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
+		const remainingMinimumActivation = MIN_ACTIVATION_TIME - this.activatesAfterMS
+		if (remainingMinimumActivation > 0) {
+			this.startsAtMS -= remainingMinimumActivation
+			this.activatesAfterMS += remainingMinimumActivation
+		}
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 
