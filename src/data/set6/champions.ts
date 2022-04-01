@@ -129,6 +129,7 @@ export const baseChampionEffects = {
 			const startsAfterMS = delaySeconds * 1000
 			const expiresAfterMS = fieldSeconds * 1000
 			const shape = new ShapeEffectCircle(hotspotHex, HEX_MOVE_LEAGUEUNITS * (hexRadius + 0.2))
+			const bonusKey = spell.name as SpellKey
 			champion.queueShapeEffect(elapsedMS, spell, { //TODO projectile
 				targetTeam: champion.team,
 				shape,
@@ -136,7 +137,7 @@ export const baseChampionEffects = {
 				expiresAfterMS,
 				opacity: 0.5,
 				onCollision: (elapsedMS, effect, withUnit) => {
-					withUnit.setBonusesFor(ChampionKey.Ekko, [BonusKey.AttackSpeed, allyASProportion * 100, elapsedMS + allySeconds * 1000])
+					withUnit.setBonusesFor(bonusKey, [BonusKey.AttackSpeed, allyASProportion * 100, elapsedMS + allySeconds * 1000])
 				},
 			})
 			return champion.queueShapeEffect(elapsedMS, spell, {
@@ -145,7 +146,7 @@ export const baseChampionEffects = {
 				expiresAfterMS,
 				opacity: 0.5,
 				onCollision: (elapsedMS, effect, withUnit) => {
-					withUnit.setBonusesFor(ChampionKey.Ekko, [BonusKey.AttackSpeed, -enemyASProportion * 100, elapsedMS + enemySeconds * 1000])
+					withUnit.setBonusesFor(bonusKey, [BonusKey.AttackSpeed, -enemyASProportion * 100, elapsedMS + enemySeconds * 1000])
 				},
 			})
 		},
@@ -427,7 +428,8 @@ export const baseChampionEffects = {
 			alliesByLowestHP
 				.slice(0, allyCount)
 				.forEach(unit => {
-					if (!unit.getBonusesFrom(ChampionKey.Lulu).length) {
+					const bonusKey = spell.name as SpellKey
+					if (!unit.getBonusesFrom(bonusKey).length) {
 						champion.queueHexEffect(elapsedMS, spell, {
 							hexSource: unit,
 							hexDistanceFromSource: 1,
@@ -436,8 +438,8 @@ export const baseChampionEffects = {
 							],
 						})
 					}
+					unit.addBonuses(bonusKey)
 					unit.gainHealth(elapsedMS, champion, healAmount, true)
-					unit.addBonuses(ChampionKey.Lulu)
 				})
 			return true
 		},
@@ -480,7 +482,7 @@ export const baseChampionEffects = {
 				},
 			}
 			target.addBleedIfStrongerThan(sourceID, bleed)
-			target.setBonusesFor(ChampionKey.Malzahar, [BonusKey.MagicResistShred, mrShredProportion, elapsedMS + durationMS])
+			target.setBonusesFor(spell.name as SpellKey, [BonusKey.MagicResistShred, mrShredProportion, elapsedMS + durationMS])
 			return true
 		},
 	},
@@ -519,10 +521,11 @@ export const baseChampionEffects = {
 				const bonusADProportion = champion.getSpellVariable(spell, 'PercentAD' as SpellKey)
 				const allyADAP = champion.getSpellVariable(spell, 'AllyADAPBuff' as SpellKey)
 				const expiresAtMS = elapsedMS + buffSeconds * 1000
-				champion.setBonusesFor(ChampionKey.Tibbers, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
+				const bonusKey = spell!.name as SpellKey
+				champion.setBonusesFor(bonusKey, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
 				champion
 					.alliedUnits(false)
-					.forEach(unit => unit.setBonusesFor(ChampionKey.Tibbers, [BonusKey.AttackDamage, allyADAP, expiresAtMS], [BonusKey.AbilityPower, allyADAP, expiresAtMS]))
+					.forEach(unit => unit.setBonusesFor(bonusKey, [BonusKey.AttackDamage, allyADAP, expiresAtMS], [BonusKey.AbilityPower, allyADAP, expiresAtMS]))
 			})
 		},
 	},
@@ -634,7 +637,7 @@ export const baseChampionEffects = {
 				onCollision: (elapsedMS, effect, withUnit) => {
 					const healAmount = champion.getSpellCalculationResult(spell, SpellKey.Heal)
 					withUnit.gainHealth(elapsedMS, champion, healAmount, true)
-					withUnit.setBonusesFor(ChampionKey.Seraphine, [BonusKey.AttackSpeed, bonusASProportion * 100, elapsedMS + bonusSeconds * 1000])
+					withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, bonusASProportion * 100, elapsedMS + bonusSeconds * 1000])
 				},
 			})
 			champion.queueProjectileEffect(elapsedMS, spell, {
@@ -835,7 +838,7 @@ export const baseChampionEffects = {
 							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
 						})
 					} else {
-						champion.addBonuses(ChampionKey.Vex, [shieldKey, shieldAmp])
+						champion.addBonuses(spell.name as SpellKey, [shieldKey, shieldAmp])
 					}
 				},
 			})
