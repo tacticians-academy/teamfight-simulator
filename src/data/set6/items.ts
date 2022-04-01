@@ -30,11 +30,11 @@ export const baseItemEffects = {
 
 	[ItemKey.BansheesClaw]: {
 		adjacentHexBuff: (item, holder, adjacentUnits) => {
-			const [damageCap] = getVariables(item, 'DamageCap')
+			const [shieldAmount] = getVariables(item, 'ShieldHP')
 			adjacentUnits.push(holder)
 			adjacentUnits.forEach(unit => unit.queueShield(0, holder, {
 				type: 'spellShield',
-				amount: damageCap,
+				amount: shieldAmount,
 			}))
 		},
 	},

@@ -2,7 +2,7 @@ import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-aca
 
 import { state } from '#/game/store'
 
-import { checkCooldownFor, getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { checkCooldownFor, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, getClosestAttackableOfTeam, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -121,7 +121,7 @@ export const augmentEffects = {
 	[AugmentGroupKey.Electrocharge]: {
 		damageTakenByHolder: (augment, elapsedMS, holder, source, { didCrit }) => {
 			if (didCrit && checkCooldownFor(elapsedMS, holder, augment, augment.name, true)) {
-				const [damage] = getVariables(augment, 'Damage')
+				const damage = getFirstVariableOf(augment, `Damage${getStageScalingIndex() + 1}`, 'Damage')
 				holder.queueHexEffect(elapsedMS, undefined, {
 					hexDistanceFromSource: 2, //TODO experimentally determine
 					damageCalculation: createDamageCalculation(augment.groupID, damage, DamageType.magic, undefined),
@@ -177,8 +177,7 @@ export const augmentEffects = {
 	[AugmentGroupKey.LudensEcho]: {
 		onFirstEffectTargetHit: (augment, elapsedMS, target, source, { damageType }) => {
 			if (damageType !== DamageType.magic) { return }
-
-			const [magicDamage] = getVariables(augment, 'MagicDamage')
+			const magicDamage = getFirstVariableOf(augment, `MagicDamage${getStageScalingIndex() + 1}`, 'MagicDamage')
 			const targets = [target]
 			const nearestToTarget = getClosestAttackableOfTeam(target.team, target, state.units)
 			if (nearestToTarget.length) {

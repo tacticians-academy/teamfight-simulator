@@ -77,6 +77,19 @@ export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarL
 
 type ItemAugmentCompatible = {name?: string, effects?: EffectVariables, variables?: EffectVariables}
 
+export function getFirstVariableOf({name, effects, variables}: ItemAugmentCompatible, ...keys: string[]) {
+	if (effects === undefined) {
+		effects = variables
+	}
+	for (const key of keys) {
+		const value = effects![key]
+		if (value !== undefined) {
+			return value ?? 0
+		}
+	}
+	console.log('ERR no first', name ?? 'augment', keys, effects)
+	return 0
+}
 export function getVariables({name, effects, variables}: ItemAugmentCompatible, ...keys: string[]) {
 	if (effects === undefined) {
 		effects = variables
@@ -161,6 +174,10 @@ export function getAttackableUnitsOfTeam(team: TeamNumber | null) {
 }
 export function getInteractableUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team) && unit.isInteractable())
+}
+
+export function getStageScalingIndex() {
+	return Math.min(Math.max(2, state.stageNumber), 5) - 2
 }
 
 export function getHexRow(row: number) {

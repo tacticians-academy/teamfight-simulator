@@ -3,7 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@babel/types': ^7.17.0
   '@ky-is/eslint-config': ^2.3.6
-  '@tacticians-academy/academy-library': ^0.17.0
+  '@tacticians-academy/academy-library': ^0.18.1
   '@tailwindcss/forms': ^0.5.0
   '@types/node': ^16.11.26
   '@vitejs/plugin-vue': ^2.3.1
@@ -22,7 +22,7 @@ specifiers:
   vue-tsc: ^0.33.9
 
 dependencies:
-  '@tacticians-academy/academy-library': 0.17.0
+  '@tacticians-academy/academy-library': 0.18.1
   '@tailwindcss/forms': 0.5.0_tailwindcss@3.0.23
   tailwindcss: 3.0.23_autoprefixer@10.4.4
   vue: 3.2.31
@@ -139,8 +139,8 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
 
-  /@tacticians-academy/academy-library/0.17.0:
-    resolution: {integrity: sha512-JEW0/54I0Eh1k6c8aZ0QRbyp5N0RSv4G56TryOLY/ero3BFdHFEBxBB0W7DCnFoqDUVWGlvuMNNRfIPz9aMfcA==}
+  /@tacticians-academy/academy-library/0.18.1:
+    resolution: {integrity: sha512-flBfFXJeg2jidMh2ywGkThafjiEKwb8byzyjlOA5EkyMZBCKv0YU06V8rTW/wt2FF7HkUgIPbOBPcTmlW3vGcQ==}
     dev: false
 
   /@tailwindcss/forms/0.5.0_tailwindcss@3.0.23:

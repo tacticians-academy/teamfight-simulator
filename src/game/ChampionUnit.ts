@@ -16,7 +16,7 @@ import { TargetEffect } from '#/game/effects/TargetEffect'
 import type { TargetEffectData } from '#/game/effects/TargetEffect'
 import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 
-import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, thresholdCheck } from '#/helpers/abilityUtils'
+import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getBestRandomAsMax, getStageScalingIndex, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
@@ -27,10 +27,6 @@ import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, Bo
 import { uniqueIdentifier } from '#/helpers/utils'
 
 let instanceIndex = 0
-
-function stageIndex() {
-	return Math.min(Math.max(2, state.stageNumber), 5) - 2
-}
 
 export class ChampionUnit {
 	instanceID: string
@@ -171,7 +167,7 @@ export class ChampionUnit {
 	}
 
 	baseHP() {
-		const hpStat = this.data.stats.hp ?? [1500, 1800, 2100, 2500][stageIndex()] // ??TFT_VoidSpawn
+		const hpStat = this.data.stats.hp ?? [1500, 1800, 2100, 2500][getStageScalingIndex()] // ??TFT_VoidSpawn
 		return hpStat * this.starMultiplier
 	}
 
@@ -1153,7 +1149,7 @@ export class ChampionUnit {
 	attackDamage() {
 		let baseAD = this.data.stats.damage
 		if (baseAD === 0) {
-			baseAD = [100, 100, 125, 140][stageIndex()]
+			baseAD = [100, 100, 125, 140][getStageScalingIndex()]
 		}
 		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
 		const multiplyAttackSpeed = this.getSpellVariableIfExists(this.getCurrentSpell(), SpellKey.ADFromAttackSpeed)
