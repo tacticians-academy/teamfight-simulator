@@ -42,7 +42,7 @@ export interface GameEffectData {
 	/** Callback before `damageCalculation` is applied. */
 	onModifyDamage?: DamageFn
 	/** Callback for each unit the `GameEffect` applies to. */
-	onCollision?: CollisionFn
+	onCollided?: CollisionFn
 	/** The effect's rendered visual opacity. Defaults to 1. */
 	opacity?: number
 }
@@ -88,7 +88,7 @@ export class GameEffect extends GameEffectChild {
 
 	onActivate: ActivateFn | undefined
 	onModifyDamage: DamageFn | undefined
-	onCollision: CollisionFn | undefined
+	onCollided: CollisionFn | undefined
 
 	constructor(source: ChampionUnit, spell: ChampionSpellData | undefined, data: GameEffectData) {
 		super()
@@ -105,7 +105,7 @@ export class GameEffect extends GameEffectChild {
 		this.statusEffects = data.statusEffects
 		this.onActivate = data.onActivate
 		this.onModifyDamage = data.onModifyDamage
-		this.onCollision = data.onCollision
+		this.onCollided = data.onCollided
 		this.opacity = data.opacity
 		if (this.damageCalculation && this.damageSourceType == null) {
 			console.warn('damageSourceType', spell != null, data)
@@ -161,7 +161,7 @@ export class GameEffect extends GameEffectChild {
 		}
 		if (!wasSpellShielded) {
 			this.applyBonuses(elapsedMS, unit)
-			this.onCollision?.(elapsedMS, this, unit, damage)
+			this.onCollided?.(elapsedMS, this, unit, damage)
 		}
 
 		if (isFirstTarget && damage && this.damageCalculation) {

@@ -72,7 +72,7 @@ export const championEffects = {
 					return championHex ?? target.activeHex
 				},
 				moveSpeed,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit === target) {
 						if (targetHex) {
 							target.customMoveTo(targetHex ?? target, true, moveSpeed, false, (elapsedMS, target) => {
@@ -124,7 +124,7 @@ export const championEffects = {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				destroysOnCollision: true,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit.statusEffects.ablaze.active) {
 						withUnit.statusEffects.ablaze.active = false
 						const bonusCalculation = champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey)
@@ -325,7 +325,7 @@ export const championEffects = {
 	[ChampionKey.RekSai]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					const healAmount = champion.getSpellCalculationResult(spell, (withUnit.hitBy.has(champion.instanceID) ? 'HealBonus' : 'Heal') as SpellKey)
 					champion.gainHealth(elapsedMS, champion, healAmount, true)
 				},
@@ -347,7 +347,7 @@ export const championEffects = {
 				target: bestHex,
 				fixedHexRange,
 				destroysOnCollision: false,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, -attackSpeedReducePercent, elapsedMS + durationSeconds * 1000])
 					withUnit.bleeds.add({
 						sourceID: Math.random().toString(),
@@ -385,7 +385,7 @@ export const championEffects = {
 				destroysOnCollision: false,
 				fixedHexRange: MAX_HEX_COUNT,
 				hasBackingVisual: true,
-				onCollision: (elapsedMS, effect, withUnit, damage) => {
+				onCollided: (elapsedMS, effect, withUnit, damage) => {
 					if (damage == null) { return }
 					const lowestHPAlly = getBestRandomAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
@@ -415,7 +415,7 @@ export const championEffects = {
 					target,
 					targetTeam: champion.team,
 					missile,
-					onCollision: (elapsedMS, effect, withUnit) => {
+					onCollided: (elapsedMS, effect, withUnit) => {
 						const attackSpeedProportion = champion.getSpellVariable(spell, SpellKey.AttackSpeed)
 						withUnit.setBonusesFor(bonusLabelKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationMS])
 						target.applyStatusEffect(elapsedMS, StatusEffectType.ccImmune, durationMS)
@@ -575,7 +575,7 @@ export const championEffects = {
 							})
 						}
 					},
-					onCollision(elapsedMS, effect, withUnit, damage) {
+					onCollided(elapsedMS, effect, withUnit, damage) {
 						if (bulletIndex === 0) {
 							champion.completeAutoAttack(elapsedMS, effect, withUnit, damage, empoweredAuto, true)
 						}
@@ -635,7 +635,7 @@ function addDravenAxe(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, 
 			amount: 1,
 			expiresAtMS,
 			returnMissile, //TODO fixed 2s travel time
-			onCollision: (elapsedMS, effect, withUnit) => {
+			onCollided: (elapsedMS, effect, withUnit) => {
 				if (withUnit === champion && effect.intersects(champion)) {
 					console.log('AXE')
 					addDravenAxe(elapsedMS, spell, champion)

@@ -172,7 +172,7 @@ export class ProjectileEffect extends GameEffect {
 				this.isReturning = true
 				return true
 			}
-			this.onCollision?.(elapsedMS, this, this.source)
+			this.onCollided?.(elapsedMS, this, this.source)
 		}
 		if (this.delayAfterReachingTargetMS != null && isUnit(this.target)) {
 			if (this.expiresAtMS == null) {
@@ -193,7 +193,7 @@ export class ProjectileEffect extends GameEffect {
 
 	checkDelayCollision(elapsedMS: DOMHighResTimeStamp) {
 		if (this.delayAfterReachingTargetMS != null && this.expiresAtMS != null && isUnit(this.target)) {
-			this.onCollision?.(elapsedMS, this, this.target)
+			this.onCollided?.(elapsedMS, this, this.target)
 		}
 	}
 

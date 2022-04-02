@@ -195,5 +195,5 @@ export interface EmpoweredAuto {
 	statusEffects?: StatusEffectData[]
 	hexEffect?: HexEffectData
 	onActivate?: ActivateFn
-	onCollision?: CollisionFn
+	onCollided?: CollisionFn
 }

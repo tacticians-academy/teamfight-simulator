@@ -255,7 +255,7 @@ export class ChampionUnit {
 				// stackingDamageModifier?: DamageModifier
 				// destroysOnCollision?: boolean
 				// onActivate?: ActivateFn
-				// onCollision?: CollisionFn
+				// onCollided?: CollisionFn
 			}
 			this.empoweredAutos.forEach(empower => {
 				if (empower.expiresAtMS != null && elapsedMS >= empower.expiresAtMS) {
@@ -308,9 +308,9 @@ export class ChampionUnit {
 					if (empoweredAuto.returnMissile) { console.warn('empoweredAutos multiple returnMissile not supported') }
 					empoweredAuto.returnMissile = empower.returnMissile
 				}
-				if (empower.onCollision) {
-					if (empoweredAuto.onCollision) { console.warn('empoweredAutos multiple onCollision not supported') }
-					empoweredAuto.onCollision = empower.onCollision
+				if (empower.onCollided) {
+					if (empoweredAuto.onCollided) { console.warn('empoweredAutos multiple onCollided not supported') }
+					empoweredAuto.onCollided = empower.onCollided
 				}
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
@@ -338,7 +338,7 @@ export class ChampionUnit {
 						statusEffects: empoweredAuto.statusEffects,
 						bonuses: empoweredAuto.bonuses,
 						bounce: empoweredAuto.bounce,
-						onCollision: (elapsedMS, effect, target, damage) => {
+						onCollided: (elapsedMS, effect, target, damage) => {
 							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto, canReProcAttack)
 						},
 					})
@@ -361,7 +361,7 @@ export class ChampionUnit {
 						bonuses: empoweredAuto.bonuses,
 						returnMissile: empoweredAuto.returnMissile,
 						hexEffect: empoweredAuto.hexEffect,
-						onCollision: (elapsedMS, effect, target, damage) => {
+						onCollided: (elapsedMS, effect, target, damage) => {
 							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto, canReProcAttack)
 						},
 					})
@@ -398,7 +398,7 @@ export class ChampionUnit {
 		}
 		this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 		withUnit.basicAttackSourceIDs.push(this.instanceID)
-		empoweredAuto.onCollision?.(elapsedMS, effect, withUnit, damage)
+		empoweredAuto.onCollided?.(elapsedMS, effect, withUnit, damage)
 	}
 
 	addBleedIfStrongerThan(sourceID: string, bleed: BleedData) {
@@ -813,7 +813,7 @@ export class ChampionUnit {
 			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + damage[BonusKey.MagicResistShred]
 		}
 		if (reduction > 0) {
-			defenseStat! *= (1 - reduction)
+			defenseStat! *= (1 - Math.min(1, reduction))
 		}
 		let didCrit = false
 		if (source && (damage.damageType !== DamageType.magic || source.canDamageCrit(damage))) {

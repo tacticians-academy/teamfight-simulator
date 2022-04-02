@@ -28,7 +28,7 @@ export interface MoveUnitEffectData extends GameEffectData {
 	idealDestination: CalculateDestinationFn
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData
-	/** Increases the collision size for checking `onCollision`. */
+	/** Increases the collision size for checking `onCollided`. */
 	collisionSizeMultiplier?: number
 	/** Called when the `target` reaches the destination `HexCoord`. */
 	onDestination?: ActivateFn
@@ -96,7 +96,7 @@ export class MoveUnitEffect extends GameEffect {
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
 		const updateResult = this.updateSuper(elapsedMS)
 		if (updateResult != null) { return updateResult }
-		if (this.onCollision) {
+		if (this.onCollided) {
 			const collisionRadius = (UNIT_SIZE_PROPORTION * (this.collisionSizeMultiplier != null ? this.collisionSizeMultiplier : 1) + UNIT_SIZE_PROPORTION) / 2
 			const collisionRadiusSquared = collisionRadius * collisionRadius
 			for (const unit of state.units) {
@@ -104,7 +104,7 @@ export class MoveUnitEffect extends GameEffect {
 					continue
 				}
 				if (coordinateDistanceSquared(unit.coord, this.target.coord) <= collisionRadiusSquared) {
-					this.onCollision(elapsedMS, this, unit)
+					this.onCollided(elapsedMS, this, unit)
 					this.collidedWith.push(unit.instanceID)
 				}
 			}

@@ -34,7 +34,7 @@ export const baseChampionEffects = {
 				statusEffects: [
 					[StatusEffectType.stunned, { durationMS }],
 				],
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit === champion) { return }
 					champion.performActionUntilMS = 0
 					const adjacentHex = withUnit.projectHexFrom(champion, false, 1)
@@ -100,7 +100,7 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const hpOnKillProportion = champion.getSpellVariable(spell, 'BonusHealthOnKill' as SpellKey)
 			return champion.queueTargetEffect(elapsedMS, spell, {
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit.dead) {
 						champion.increaseMaxHealthBy(champion.healthMax * hpOnKillProportion) //TODO allow setting base stacks
 					}
@@ -114,7 +114,7 @@ export const baseChampionEffects = {
 			if (!champion.wasInRangeOfTarget) { return false }
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS * 1.125),
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(spell, SpellKey.Heal)!, true)
 				},
 			})
@@ -142,7 +142,7 @@ export const baseChampionEffects = {
 				startsAfterMS,
 				expiresAfterMS,
 				opacity: 0.5,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					withUnit.setBonusesFor(bonusLabelKey, [BonusKey.AttackSpeed, allyASProportion * 100, elapsedMS + allySeconds * 1000])
 				},
 			})
@@ -151,7 +151,7 @@ export const baseChampionEffects = {
 				startsAfterMS,
 				expiresAfterMS,
 				opacity: 0.5,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					withUnit.setBonusesFor(bonusLabelKey, [BonusKey.AttackSpeed, -enemyASProportion * 100, elapsedMS + enemySeconds * 1000])
 				},
 			})
@@ -162,7 +162,7 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: true,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					const allASBoosts = champion.getBonusesFrom(SpellKey.ASBoost)
 					const maxStacks = champion.getSpellVariable(spell, SpellKey.MaxStacks)
 					if (allASBoosts.length < maxStacks) {
@@ -254,7 +254,7 @@ export const baseChampionEffects = {
 					targetTeam: champion.team,
 					hexes: getHexRow(champion.activeHex[1]),
 					expiresAfterMS: durationMS, //TODO verify
-					onCollision: (elapsedMS, effect, withUnit) => {
+					onCollided: (elapsedMS, effect, withUnit) => {
 						withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, attackSpeedProportion, elapsedMS + durationMS])
 					},
 				})
@@ -481,7 +481,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					const manaReave = champion.getSpellVariable(spell, SpellKey.ManaReave)
 					const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
 					const damageReduction = champion.getSpellVariable(spell, SpellKey.DamageReduction)
@@ -510,7 +510,7 @@ export const baseChampionEffects = {
 					})
 					champion.manaLockUntilMS = elapsedMS + expiresAfterMS
 				},
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					withUnit.setBonusesFor(champion.instanceID as ChampionKey, [BonusKey.Armor, bonusStats, elapsedMS + expiresAfterMS], [BonusKey.MagicResist, bonusStats, elapsedMS + expiresAfterMS])
 				},
 			})
@@ -649,7 +649,7 @@ export const baseChampionEffects = {
 			return champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.opposingTeam(),
 				hexDistanceFromSource: Math.min(4, fearHexRange) as SurroundingHexRange, //TODO support 5 hex range
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					const occupiedHexes = getOccupiedHexes(state.units.filter(unit => unit !== withUnit))
 					champion.queueMoveUnitEffect(elapsedMS, undefined, {
 						target: withUnit,
@@ -721,7 +721,7 @@ export const baseChampionEffects = {
 			champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.team,
 				hexes,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					withUnit.queueShield(elapsedMS, champion, {
 						amount: shieldAmount,
 						expiresAfterMS: shieldSeconds * 1000,
@@ -740,7 +740,7 @@ export const baseChampionEffects = {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: mostDistantEnemy,
 				returnMissile: spell!.missile,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit !== champion) { return }
 					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
 					champion.queueShield(elapsedMS, champion, {
@@ -780,7 +780,7 @@ export const baseChampionEffects = {
 				fixedHexRange: MAX_HEX_COUNT,
 				destroysOnCollision: false,
 				opacity: 0.5,
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					const healAmount = champion.getSpellCalculationResult(spell, SpellKey.Heal)
 					withUnit.gainHealth(elapsedMS, champion, healAmount, true)
 					withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, bonusASProportion * 100, elapsedMS + bonusSeconds * 1000])
@@ -823,7 +823,7 @@ export const baseChampionEffects = {
 			const arcRadians = toRadians(45) //TODO experimentally determine
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCone(champion, false, target, HEX_MOVE_LEAGUEUNITS * 2, arcRadians),
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					const heal = champion.getSpellCalculationResult(spell, 'Healing' as SpellKey)
 					champion.gainHealth(elapsedMS, champion, heal, true)
 				},
@@ -914,7 +914,7 @@ export const baseChampionEffects = {
 								idealDestination: () => (farthestEnemy ? champion.projectHexFrom(farthestEnemy, false, 1) : champion.activeHex),
 								moveSpeed: 2000, //TODO experimentally determine
 								collisionSizeMultiplier: 2,
-								onCollision: (elapsedMS, effect, withUnit) => {
+								onCollided: (elapsedMS, effect, withUnit) => {
 									withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, impactStunSeconds * 1000)
 								},
 							})
@@ -1056,10 +1056,10 @@ export const baseChampionEffects = {
 			if (!targets.length) { return false }
 			champion.queueProjectileEffect(elapsedMS, spell, { //TODO line visual style
 				target: targets[0],
-				onCollision: (elapsedMS, effect, withUnit) => {
+				onCollided: (elapsedMS, effect, withUnit) => {
 					champion.queueProjectileEffect(elapsedMS, spell, {
 						target: targets[1] ?? targets[0],
-						onCollision: (elapsedMS, effect, withUnit) => {
+						onCollided: (elapsedMS, effect, withUnit) => {
 							targets.forEach(target => {
 								champion.queueMoveUnitEffect(elapsedMS, undefined, {
 									target,
@@ -1113,7 +1113,7 @@ export const baseChampionEffects = {
 					[StatusEffectType.stunned, { durationMS }],
 				],
 				delayAfterReachingTargetMS: durationMS,
-				onCollision: (elapsedMS, effect, withUnit, damage) => {
+				onCollided: (elapsedMS, effect, withUnit, damage) => {
 					if (damage == null) {
 						champion.queueHexEffect(elapsedMS, undefined, {
 							damageCalculation: champion.getSpellCalculation(spell, SpellKey.Damage),
