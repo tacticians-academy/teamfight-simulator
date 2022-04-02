@@ -10,7 +10,7 @@ import type { ChampionEffects } from '#/sim/data/types'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/sim/effects/ShapeEffect'
 
 import { toRadians } from '#/sim/helpers/angles'
-import { getHexRing, getBestDensityHexes, getOccupiedHexes, getHexesSurroundingWithin } from '#/sim/helpers/board'
+import { getHexRing, getBestDensityHexes, getOccupiedHexes, getHexesSurroundingWithin, getEdgeHexes } from '#/sim/helpers/board'
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/sim/helpers/constants'
@@ -957,6 +957,49 @@ export const baseChampionEffects = {
 					})
 				})
 			}
+			return true
+		},
+	},
+
+	[ChampionKey.Viktor]: {
+		passive: (elapsedMS, spell, target, source, damage) => {
+			const armorShredProportion = source.getSpellVariable(spell, 'ArmorReduction' as SpellKey)
+			const armorShredSeconds = source.getSpellVariable(spell, 'ShredDuration' as SpellKey)
+			target.applyStatusEffect(elapsedMS, StatusEffectType.armorReduction, armorShredSeconds * 1000, armorShredProportion)
+		},
+		cast: (elapsedMS, spell, champion) => {
+			delayUntil(elapsedMS, spell.castTime!).then(elapsedMS => {
+				const laserCount = champion.getSpellVariable(spell, 'NumLasers' as SpellKey)
+				const droneMissile = champion.getMissileWithSuffix('EDroneMis')
+				const laserMissile = champion.getMissileWithSuffix('EDamageMis')
+				const droneHexes = shuffle(getEdgeHexes(state.hexRowsCols)) //TODO distributed random
+					.slice(0, laserCount)
+				champion.queueHexEffect(elapsedMS, undefined, {
+					startsAfterMS: droneMissile?.travelTime,
+					hexes: droneHexes,
+					onActivate: (elapsedMS) => {
+						const validTargets = shuffle(getAttackableUnitsOfTeam(champion.opposingTeam()))
+						if (!validTargets.length) { return }
+						droneHexes.forEach((droneHex, laserIndex) => {
+							champion.queueProjectileEffect(elapsedMS, spell, {
+								projectileStartsFrom: droneHex,
+								target: validTargets[laserIndex % validTargets.length], //TODO handle same projectileStartsFrom/target hex
+								missile: laserMissile,
+								destroysOnCollision: false,
+								fixedHexRange: MAX_HEX_COUNT,
+								onModifyDamage: (elapsedMS, withUnit, damage) => {
+									const shieldDestructionProportion = champion.getSpellVariable(spell, 'ShieldDestructionPercent' as SpellKey)
+									withUnit.shields.forEach(shield => {
+										if (shield.amount != null) {
+											shield.amount *= (1 - shieldDestructionProportion)
+										}
+									})
+								},
+							})
+						})
+					},
+				})
+			})
 			return true
 		},
 	},

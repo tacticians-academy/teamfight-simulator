@@ -62,6 +62,18 @@ export function getOccupiedHexes(units: ChampionUnit[]) {
 		.map(unit => unit.activeHex)
 }
 
+export function getEdgeHexes(hexRowsCols: HexRowCol[][]) {
+	const edgeHexes: HexCoord[] = []
+	hexRowsCols.forEach((row, rowIndex) => {
+		if (rowIndex === 0 || rowIndex === BOARD_ROW_COUNT - 1) {
+			edgeHexes.push(...row.map(rowCol => rowCol.hex))
+		} else {
+			edgeHexes.push(row[0].hex, row[BOARD_COL_COUNT - 1].hex)
+		}
+	})
+	return edgeHexes
+}
+
 export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: SurroundingHexRange, includingOrigin: boolean): HexCoord[] {
 	const results: HexCoord[] = []
 	for (let distance = 1; distance <= maxDistance; distance += 1) {
