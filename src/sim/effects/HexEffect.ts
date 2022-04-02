@@ -68,7 +68,7 @@ export class HexEffect extends GameEffect {
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
-		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
+		const updateResult = this.updateSuper(elapsedMS)
 		if (updateResult != null) { return updateResult }
 		this.checkCollision(elapsedMS, units)
 		if (this.ticksEveryMS != null) {

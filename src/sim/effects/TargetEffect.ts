@@ -91,7 +91,7 @@ export class TargetEffect extends GameEffect {
 				return false
 			}
 		}
-		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
+		const updateResult = this.updateSuper(elapsedMS)
 		if (updateResult === false) {
 			return false
 		}

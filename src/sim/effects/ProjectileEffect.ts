@@ -195,7 +195,7 @@ export class ProjectileEffect extends GameEffect {
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
-		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
+		const updateResult = this.updateSuper(elapsedMS)
 		if (updateResult != null) {
 			if (!updateResult) {
 				this.checkDelayCollision(elapsedMS)

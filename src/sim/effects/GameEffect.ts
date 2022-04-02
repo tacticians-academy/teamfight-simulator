@@ -5,7 +5,6 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 import { getters } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
-import { GAME_TICK_MS } from '#/sim/loop'
 
 import { DamageSourceType } from '#/sim/helpers/types'
 import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/sim/helpers/types'
@@ -178,9 +177,9 @@ export class GameEffect extends GameEffectChild {
 		})
 	}
 
-	updateSuper(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
+	updateSuper(elapsedMS: DOMHighResTimeStamp) {
 		if (this.activated && this.expiresAtMS != null && elapsedMS > this.expiresAtMS) {
-			return elapsedMS < this.expiresAtMS + GAME_TICK_MS * 2
+			return elapsedMS < this.startsAtMS + 100 // Ensure the visuals have time to render once before removing
 		}
 		if (!this.started.value && elapsedMS >= this.startsAtMS) {
 			this.start()

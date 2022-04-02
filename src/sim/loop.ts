@@ -10,7 +10,7 @@ import { getAliveUnitsOfTeamWithTrait } from '#/sim/helpers/effectUtils'
 import type { TeamNumber } from '#/sim/helpers/types'
 import { uniqueIdentifier } from '#/sim/helpers/utils'
 
-export const GAME_TICK_MS = 1000 / 30 // Confirmed
+const GAME_TICK_MS = 1000 / 30 // Confirmed
 
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
