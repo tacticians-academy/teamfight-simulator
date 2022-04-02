@@ -15,7 +15,6 @@ export const GAME_TICK_MS = 1000 / 30 // Confirmed
 let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
 let elapsedMS: DOMHighResTimeStamp = 0
-let unanimatedStackSize = 0
 
 let didBacklineJump = false
 let didMeleeMove = false
@@ -62,7 +61,6 @@ function frameRequestCallback(frameMS: DOMHighResTimeStamp) {
 
 function initGame(frameMS: DOMHighResTimeStamp) {
 	delays.clear()
-	unanimatedStackSize = 0
 	startedAtMS = frameMS
 	elapsedMS = 0
 	didBacklineJump = false

@@ -208,11 +208,10 @@ export const baseItemEffects = {
 
 	[ItemKey.Redemption]: {
 		update: (elapsedMS, item, itemID, holder) => {
-			if (checkCooldownFor(elapsedMS, holder, item, itemID, true, 'HealTickRate')) {
+			if (checkCooldownFor(elapsedMS, holder, item, itemID, false, 'HealTickRate')) {
 				const [aoeDamageReduction, missingHPHeal, maxHeal, hexDistanceFromSource, healTickSeconds] = getVariables(item, 'AoEDamageReduction', 'MissingHPHeal', 'MaxHeal', 'HexRadius', 'HealTickRate')
 				const tickMS = healTickSeconds * 1000
 				holder.queueHexEffect(elapsedMS, undefined, {
-					startsAfterMS: tickMS,
 					hexDistanceFromSource: hexDistanceFromSource as SurroundingHexRange,
 					statusEffects: [
 						[StatusEffectType.aoeDamageReduction, { durationMS: tickMS, amount: aoeDamageReduction }],

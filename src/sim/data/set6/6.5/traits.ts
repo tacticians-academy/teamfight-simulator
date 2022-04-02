@@ -57,9 +57,10 @@ export const traitEffects = {
 				console.log('ERR', TraitKey.Rivals, unit.name)
 			}
 		},
-		enemyDeath: (activeEffect, elapsedMS, dead, [unit]) => {
+		enemyDeath: (activeEffect, elapsedMS, deadEnemy, [unit]) => {
+			if (unit == null) { return }
 			if (unit.name === ChampionKey.Jinx) {
-				if (unit.target !== dead) { //TODO use damage credit instead
+				if (unit.target !== deadEnemy) { //TODO use damage credit instead
 					return
 				}
 				const [empoweredSeconds, empoweredAS] = getVariables(activeEffect, 'JinxASDuration', 'JinxEmpoweredAS')

@@ -68,7 +68,7 @@ export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: Surroundin
 		results.push(...getHexRing(hex, distance as SurroundingHexRange))
 	}
 	if (includingOrigin) {
-		results.push(hex)
+		results.push([...hex])
 	}
 	return results
 }

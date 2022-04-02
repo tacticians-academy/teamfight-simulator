@@ -568,7 +568,7 @@ export const baseChampionEffects = {
 			champion.statusEffects.ccImmune.active = true
 			champion.statusEffects.ccImmune.expiresAtMS = Number.MAX_SAFE_INTEGER
 			champion.empoweredAutos.add({
-				amount: 999999,
+				amount: 9001,
 				nthAuto: 3, //NOTE hardcoded
 				bounce: {
 					bouncesRemaining: chainCount, //TODO applies to first target as bonus
@@ -598,7 +598,7 @@ export const baseChampionEffects = {
 					const expiresAtMS = elapsedMS + energizedSeconds * 1000
 					champion.alliedUnits(true).forEach(alliedUnit => {
 						alliedUnit.empoweredAutos.add({
-							amount: 99,
+							amount: 9001,
 							expiresAtMS,
 							damageModifier: {
 								alwaysCrits: true,

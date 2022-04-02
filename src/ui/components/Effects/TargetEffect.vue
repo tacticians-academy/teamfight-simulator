@@ -12,8 +12,8 @@ const props = defineProps<{
 const [source, target] = props.sourceTarget as [ChampionUnit, ChampionUnit]
 
 const data = computed(() => {
-	const [x1, y1] = source.coord // eslint-disable-line vue/no-setup-props-destructure
-	const [x2, y2] = target.coord // eslint-disable-line vue/no-setup-props-destructure
+	const [x1, y1] = source.coord
+	const [x2, y2] = target.coord
 	const distanceX = x2 - x1
 	const distanceY = y2 - y1
 	const length = Math.sqrt(distanceX * distanceX + distanceY * distanceY)

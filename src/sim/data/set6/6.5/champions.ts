@@ -448,7 +448,7 @@ export const championEffects = {
 			const expiresAtMS = elapsedMS + empowerSeconds * 1000
 			champion.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, attackSpeedProportion, expiresAtMS])
 			champion.empoweredAutos.add({
-				amount: 99,
+				amount: 9001,
 				expiresAtMS,
 				bounce: {
 					maxHexRangeFromOriginalTarget,

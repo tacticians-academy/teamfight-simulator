@@ -389,10 +389,12 @@ export class ChampionUnit {
 
 	completeAutoAttack(elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage: DamageResult | undefined, empoweredAuto: EmpoweredAuto, canReProcAttack: boolean) {
 		if (effect.collidedWith.length) { return }
-		const passiveFn = this.championEffects?.passive
-		if (passiveFn && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
-			passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), withUnit, this, damage)
-			this.postCast(elapsedMS, canReProcAttack)
+		const effects = this.championEffects
+		if (effects?.passive && (effects.passiveCasts !== true || this.readyToCast(elapsedMS))) {
+			effects.passive(elapsedMS, this.data.passive ?? this.getCurrentSpell(), withUnit, this, damage)
+			if (effects.passiveCasts === true) {
+				this.postCast(elapsedMS, canReProcAttack)
+			}
 		}
 		this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 		withUnit.basicAttackSourceIDs.push(this.instanceID)
@@ -1082,8 +1084,8 @@ export class ChampionUnit {
 	getSpellVariableIfExists(spell: ChampionSpellData | undefined, key: SpellKey) {
 		return spell?.variables[key]?.[this.starLevel]
 	}
-	getSpellVariable(spell: ChampionSpellData | undefined, key: SpellKey) {
-		if (spell?.calculations[key]) {
+	getSpellVariable(spell: ChampionSpellData | undefined, key: SpellKey, forceAsVariable?: boolean) {
+		if (forceAsVariable !== true && spell?.calculations[key]) {
 			console.warn('Requested variable that has a calculation, using instead!', spell.name, key)
 			return this.getSpellCalculationResult(spell, key)
 		}
@@ -1295,6 +1297,9 @@ export class ChampionUnit {
 			}
 			data.target = data.fixedHexRange != null || data.missile?.tracksTarget === false ? target.activeHex : target
 		}
+		if (data.damageCalculation && data.targetTeam === undefined) {
+			data.targetTeam = this.opposingTeam()
+		}
 		if (data.hexEffect) {
 			if (data.hexEffect.hexDistanceFromSource != null && !data.hexEffect.hexSource) {
 				data.hexEffect.hexSource = data.target
@@ -1328,7 +1333,7 @@ export class ChampionUnit {
 		if (data.damageCalculation && !data.damageSourceType) {
 			data.damageSourceType = DamageSourceType.spell
 		}
-		if (data.damageCalculation && !data.targetTeam) {
+		if (data.damageCalculation && data.targetTeam === undefined) {
 			data.targetTeam = this.opposingTeam()
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
