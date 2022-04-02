@@ -577,7 +577,7 @@ export const championEffects = {
 					},
 					onCollision(elapsedMS, effect, withUnit, damage) {
 						if (bulletIndex === 0) {
-							champion.completeAutoAttack(elapsedMS, effect, withUnit, damage, empoweredAuto)
+							champion.completeAutoAttack(elapsedMS, effect, withUnit, damage, empoweredAuto, true)
 						}
 					},
 				})

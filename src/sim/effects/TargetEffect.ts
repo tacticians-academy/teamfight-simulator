@@ -67,8 +67,8 @@ export class TargetEffect extends GameEffect {
 		const [wasSpellShielded, damage] = this.applyDamage(elapsedMS, unit)
 		if (!wasSpellShielded && isFirstApply) {
 			this.applyBonuses(elapsedMS, unit)
-			this.applyPost(elapsedMS, unit)
 			this.onCollision?.(elapsedMS, this, unit, damage)
+			this.applyPost(elapsedMS, unit)
 		}
 		return !wasSpellShielded
 	}

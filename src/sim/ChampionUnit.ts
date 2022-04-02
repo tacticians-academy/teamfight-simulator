@@ -239,7 +239,6 @@ export class ChampionUnit {
 		} else {
 			this.basicAttackCount += 1
 			const canReProcAttack = this.attackStartAtMS > 1
-			const passiveFn = this.championEffects?.passive
 			const empoweredAuto: EmpoweredAuto = {
 				amount: 1,
 				damageModifier: {},
@@ -340,12 +339,7 @@ export class ChampionUnit {
 						bonuses: empoweredAuto.bonuses,
 						bounce: empoweredAuto.bounce,
 						onCollision: (elapsedMS, effect, target, damage) => {
-							if (effect.collidedWith.length) { return }
-							if (passiveFn && this.target && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
-								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), this.target, this, damage)
-								this.postCast(elapsedMS, canReProcAttack)
-							}
-							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto)
+							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto, canReProcAttack)
 						},
 					})
 					this.attackStartAtMS = elapsedMS
@@ -368,12 +362,7 @@ export class ChampionUnit {
 						returnMissile: empoweredAuto.returnMissile,
 						hexEffect: empoweredAuto.hexEffect,
 						onCollision: (elapsedMS, effect, target, damage) => {
-							if (effect.collidedWith.length) { return }
-							if (passiveFn && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
-								passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), target, this, damage)
-								this.postCast(elapsedMS, canReProcAttack)
-							}
-							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto)
+							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto, canReProcAttack)
 						},
 					})
 				}
@@ -398,7 +387,13 @@ export class ChampionUnit {
 		}
 	}
 
-	completeAutoAttack(elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage: DamageResult | undefined, empoweredAuto: EmpoweredAuto) {
+	completeAutoAttack(elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage: DamageResult | undefined, empoweredAuto: EmpoweredAuto, canReProcAttack: boolean) {
+		if (effect.collidedWith.length) { return }
+		const passiveFn = this.championEffects?.passive
+		if (passiveFn && (this.championEffects?.passiveCasts !== true || this.readyToCast(elapsedMS))) {
+			passiveFn(elapsedMS, this.data.passive ?? this.getCurrentSpell(), withUnit, this, damage)
+			this.postCast(elapsedMS, canReProcAttack)
+		}
 		this.gainMana(elapsedMS, 10 + this.getBonuses(BonusKey.ManaRestorePerAttack))
 		withUnit.basicAttackSourceIDs.push(this.instanceID)
 		empoweredAuto.onCollision?.(elapsedMS, effect, withUnit, damage)
