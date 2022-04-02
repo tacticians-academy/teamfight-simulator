@@ -384,6 +384,72 @@ export const baseChampionEffects = {
 		},
 	},
 
+	[ChampionKey.Jinx]: {
+		passive: (elapsedMS, spell, target, source, damage) => {
+			if (source.castCount > 0) {
+				const otherEnemies = getAttackableUnitsOfTeam(source.opposingTeam()).filter(unit => unit !== target)
+				source.setTarget(randomItem(otherEnemies))
+			}
+		},
+		cast: (elapsedMS, spell, champion) => {
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target: champion,
+				idealDestination: (champion) => randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(champion.opposingTeam()), true, 4)),
+				moveSpeed: 1000, //TODO experimentally determine
+				onDestination: (elapsedMS, champion) => {
+					champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
+					champion.addBonuses(spell.name as BonusLabelKey, [BonusKey.HexRangeIncrease, MAX_HEX_COUNT])
+
+					const centerHex = champion.activeHex
+					const innerRadius = champion.getSpellVariable(spell, 'InnerRadius' as SpellKey)
+					const outerRadius = champion.getSpellVariable(spell, 'OuterRadius' as SpellKey)
+					const damageFalloffProportion = champion.getSpellVariable(spell, 'FalloffPercent' as SpellKey)
+					const innerHexes = getHexesSurroundingWithin(centerHex, innerRadius as SurroundingHexRange, false)
+					const outerHexes = getHexesSurroundingWithin(centerHex, Math.min(4, outerRadius) as SurroundingHexRange, false) //TODO support 5 range
+					const magicDamage = champion.getSpellVariable(spell, SpellKey.Damage, true)
+					const damageCalculation = createDamageCalculation(spell.name, magicDamage, DamageType.magic, BonusKey.AbilityPower, false, 0.01)
+					champion.queueHexEffect(elapsedMS, undefined, {
+						hexes: innerHexes,
+						damageCalculation,
+						damageModifier: {
+							multiplier: -damageFalloffProportion,
+						},
+						opacity: damageFalloffProportion,
+					})
+					champion.queueHexEffect(elapsedMS, undefined, {
+						hexes: outerHexes,
+						damageCalculation,
+						damageModifier: {
+							multiplier: -damageFalloffProportion,
+						},
+						opacity: damageFalloffProportion,
+					})
+
+					const burnHexes = getHexesSurroundingWithin(centerHex, 2, true) //NOTE Hardcoded
+					const burnPercent = champion.getSpellVariable(spell, 'PercentBurn' as SpellKey)
+					const burnHexSeconds = champion.getSpellVariable(spell, 'HexDuration' as SpellKey)
+					const burnTickMS = 1000 //NOTE hardcoded
+					champion.queueHexEffect(elapsedMS, undefined, {
+						targetTeam: null,
+						hexes: burnHexes,
+						expiresAfterMS: burnHexSeconds * 1000,
+						ticksEveryMS: burnTickMS,
+						damageCalculation: createDamageCalculation(spell.name, burnPercent, DamageType.true, BonusKey.Health, true, 0.01),
+					})
+
+					champion.empoweredAutos.add({
+						amount: 9001,
+						hexEffect: {
+							hexDistanceFromSource: 1, //NOTE hardcoded
+							targetTeam: champion.opposingTeam(),
+							damageCalculation: champion.getSpellCalculation(spell, SpellKey.Damage), //TODO This adds to the base attack damage for the target. Should it replace it instead?
+						},
+					})
+				},
+			})
+		},
+	},
+
 	[ChampionKey.KaiSa]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
