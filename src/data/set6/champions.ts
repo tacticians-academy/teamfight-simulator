@@ -8,6 +8,7 @@ import { state } from '#/game/store'
 import { getDistanceUnitOfTeam, getRowOfMostAttackable, getInteractableUnitsOfTeam, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow, getAttackableUnitsOfTeam, getProjectileSpread, getDistanceUnitsOfTeam } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { containsHex, getHexRing, getBestDensityHexes, getOccupiedHexes, getHexesSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
+import type { SurroundingHexRange } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
@@ -118,7 +119,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Ekko]: {
 		cast: (elapsedMS, spell, champion) => {
 			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
-			const hotspotHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, hexRadius as any))
+			const hotspotHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, hexRadius as SurroundingHexRange))
 			if (!hotspotHex) { return false }
 			const delaySeconds = champion.getSpellVariable(spell, 'FieldDelay' as SpellKey)
 			const fieldSeconds = champion.getSpellVariable(spell, 'FieldDuration' as SpellKey)
@@ -183,9 +184,9 @@ export const baseChampionEffects = {
 			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target: champion,
-				idealDestination: (champion) => randomItem(getBestDensityHexes(true, getAttackableUnitsOfTeam(champion.opposingTeam()), true, Math.min(4, hexRadius) as any)),
+				idealDestination: (champion) => randomItem(getBestDensityHexes(true, getAttackableUnitsOfTeam(champion.opposingTeam()), true, Math.min(4, hexRadius) as SurroundingHexRange)),
 				hexEffect: {
-					hexDistanceFromSource: hexRadius,
+					hexDistanceFromSource: Math.min(4, hexRadius) as SurroundingHexRange,
 					statusEffects: [
 						[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
 					],
@@ -385,7 +386,7 @@ export const baseChampionEffects = {
 				moveSpeed: 4000, //TODO
 				idealDestination: (champion) => {
 					const enemies = getInteractableUnitsOfTeam(champion.opposingTeam())
-					const enemyColdMap = getBestDensityHexes(false, enemies, true, Math.min(4, champion.range()) as any)
+					const enemyColdMap = getBestDensityHexes(false, enemies, true, Math.min(4, champion.range()) as SurroundingHexRange)
 					return getBestRandomAsMax(true, enemyColdMap.filter(hex => !champion.isAt(hex)), (hex) => enemies.reduce((acc, unit) => acc + unit.coordDistanceSquaredTo(hex), 0))
 				},
 				onDestination: (elapsedMS, champion) => {
@@ -576,7 +577,7 @@ export const baseChampionEffects = {
 			const fearSeconds = champion.getSpellVariable(spell, 'FearDuration' as SpellKey)
 			return champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.opposingTeam(),
-				hexDistanceFromSource: Math.min(4, fearHexRange), //TODO support 5 hex range
+				hexDistanceFromSource: Math.min(4, fearHexRange) as SurroundingHexRange, //TODO support 5 hex range
 				onCollision: (elapsedMS, effect, withUnit) => {
 					const occupiedHexes = getOccupiedHexes(state.units.filter(unit => unit !== withUnit))
 					champion.queueMoveUnitEffect(elapsedMS, undefined, {
@@ -902,7 +903,7 @@ export const baseChampionEffects = {
 				expiresAfterMS,
 				onRemoved: (elapsedMS, shield) => {
 					champion.manaLockUntilMS = 0
-					const hexDistanceFromSource = champion.data.stats.range
+					const hexDistanceFromSource = champion.data.stats.range as SurroundingHexRange
 					champion.queueHexEffect(elapsedMS, spell, {
 						hexDistanceFromSource,
 					})

@@ -6,10 +6,11 @@ import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 
 import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam, getAttackableUnitsOfTeam, getDistanceUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getInverseHex, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
+import type { SurroundingHexRange } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
-import type { BonusVariable, HexCoord, ItemEffects } from '#/helpers/types'
+import type { BonusLabelKey, BonusVariable, HexCoord, ItemEffects } from '#/helpers/types'
 import { getBestRandomAsMax, getBestSortedAsMax } from '#/helpers/utils'
 
 export const baseItemEffects = {
@@ -87,7 +88,7 @@ export const baseItemEffects = {
 		update: (elapsedMS, item, itemID, unit) => {
 			const [attackSpeedPercent, hexRadius] = getVariables(item, 'ASSlow', 'HexRadius')
 			const durationSeconds = 0.5 //NOTE hardcoded apparently??
-			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
+			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius as SurroundingHexRange, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow, durationSeconds * 1000, attackSpeedPercent))
 		},
 	},
@@ -98,7 +99,7 @@ export const baseItemEffects = {
 			const unitsTargeting = getInteractableUnitsOfTeam(unit.opposingTeam())
 				.filter(enemy => enemy.target === unit)
 				.length
-			unit.setBonusesFor(itemID as any, [BonusKey.Armor, perEnemyArmor * unitsTargeting], [BonusKey.MagicResist, perEnemyMR * unitsTargeting])
+			unit.setBonusesFor(itemID as BonusLabelKey, [BonusKey.Armor, perEnemyArmor * unitsTargeting], [BonusKey.MagicResist, perEnemyMR * unitsTargeting])
 		},
 	},
 
@@ -117,7 +118,7 @@ export const baseItemEffects = {
 	[ItemKey.GuinsoosRageblade]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const [perStackAS] = getVariables(item, 'ASPerStack')
-			holder.addBonuses(itemID as any, [BonusKey.AttackSpeed, perStackAS])
+			holder.addBonuses(itemID as BonusLabelKey, [BonusKey.AttackSpeed, perStackAS])
 		},
 	},
 
@@ -153,7 +154,7 @@ export const baseItemEffects = {
 		update: (elapsedMS, item, itemID, unit) => {
 			const [mrShred, hexRadius] = getVariables(item, 'MRShred', 'HexRange')
 			const durationSeconds = 0.25 //NOTE hardcoded
-			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius, unit.opposingTeam())
+			const affectedUnits = unit.getInteractableUnitsWithin(hexRadius as SurroundingHexRange, unit.opposingTeam())
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, durationSeconds * 1000, mrShred / 100))
 		},
 		castWithinHexRange: (elapsedMS, item, itemID, caster, holder) => {
@@ -209,7 +210,7 @@ export const baseItemEffects = {
 				const tickMS = healTickSeconds * 1000
 				holder.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: tickMS,
-					hexDistanceFromSource,
+					hexDistanceFromSource: hexDistanceFromSource as SurroundingHexRange,
 					statusEffects: [
 						[StatusEffectType.aoeDamageReduction, { durationMS: tickMS, amount: aoeDamageReduction }],
 					],
@@ -271,7 +272,7 @@ export const baseItemEffects = {
 		update: (elapsedMS, item, itemID, holder) => {
 			if (checkCooldownFor(elapsedMS, holder, item, itemID, true)) {
 				const [hexRange] = getVariables(item, 'HexRange')
-				const units = holder.getInteractableUnitsWithin(hexRange, holder.opposingTeam())
+				const units = holder.getInteractableUnitsWithin(hexRange as SurroundingHexRange, holder.opposingTeam())
 				const bestTargets = units.filter(unit => !Array.from(unit.bleeds).some(bleed => bleed.sourceID === GRIEVOUS_BURN_ID))
 				let bestTarget: ChampionUnit | undefined
 				if (bestTargets.length) {

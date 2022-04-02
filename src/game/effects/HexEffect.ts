@@ -8,6 +8,7 @@ import { GameEffect } from '#/game/effects/GameEffect'
 import type { GameEffectData } from '#/game/effects/GameEffect'
 
 import { getHexesSurroundingWithin } from '#/helpers/boardUtils'
+import type { SurroundingHexRange } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/helpers/constants'
 import type { HexCoord } from '#/helpers/types'
 
@@ -15,7 +16,7 @@ export interface HexEffectData extends GameEffectData {
 	/** Hexes to apply the effect to. Either `hexes` or `hexDistanceFromSource` must be provided. */
 	hexes?: HexCoord[]
 	/** Distance from the source unit that this HexEffect applies to at the time of activation. Either `hexes` or `hexDistanceFromSource` must be provided. */
-	hexDistanceFromSource?: number
+	hexDistanceFromSource?: SurroundingHexRange
 	/** A custom unit for `hexDistanceFromSource` to originate from (defaults to `source`). */
 	hexSource?: ChampionUnit | HexCoord
 	/** Taunts affected units to the source unit. */
@@ -26,7 +27,7 @@ const MIN_ACTIVATION_TIME = 50
 
 export class HexEffect extends GameEffect {
 	hexes: Ref<HexCoord[] | undefined>
-	hexDistanceFromSource: number | undefined
+	hexDistanceFromSource: SurroundingHexRange | undefined
 	hexSource: ChampionUnit | HexCoord | undefined
 	taunts: boolean
 

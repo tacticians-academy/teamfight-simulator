@@ -19,6 +19,7 @@ import { getCoordFrom, gameOver, getters, state, setData } from '#/game/store'
 import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/helpers/abilityUtils'
 import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getOccupiedHexes, getHexesSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
+import type { SurroundingHexRange } from '#/helpers/boardUtils'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
 import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
@@ -1230,7 +1231,7 @@ export class ChampionUnit {
 		return this.getBonuses(...vampBonuses)
 	}
 
-	getInteractableUnitsWithin(distance: number, team: TeamNumber | null): ChampionUnit[] {
+	getInteractableUnitsWithin(distance: SurroundingHexRange, team: TeamNumber | null): ChampionUnit[] {
 		const hexes = getHexesSurroundingWithin(this.activeHex, distance, true)
 		return getInteractableUnitsOfTeam(team).filter(unit => unit.isIn(hexes))
 	}
@@ -1429,17 +1430,17 @@ export class ChampionUnit {
 		return getAngleBetween(this.coord, coord)
 	}
 
-	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean, distance: number) {
+	projectHexFromHex(targetHex: HexCoord, pastTarget: boolean, distance: SurroundingHexRange) {
 		if (!pastTarget) {
 			const maxHexDistanceToTarget = this.hexDistanceTo(targetHex) - 1
 			if (distance > maxHexDistanceToTarget) {
-				distance = maxHexDistanceToTarget
+				distance = maxHexDistanceToTarget as SurroundingHexRange
 			}
 		}
 		const bestHex = getBestRandomAsMax(pastTarget, getHexRing(targetHex, distance), (hex) => this.coordDistanceSquaredTo(hex))
 		return bestHex && isSameHex(bestHex, this.activeHex) ? bestHex : getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
 	}
-	projectHexFrom(target: ChampionUnit, pastTarget: boolean, distance: number) {
+	projectHexFrom(target: ChampionUnit, pastTarget: boolean, distance: SurroundingHexRange) {
 		return this.projectHexFromHex(target.activeHex, pastTarget, distance)
 	}
 }

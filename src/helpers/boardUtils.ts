@@ -9,14 +9,23 @@ import { getBestRandomAsMax } from '#/helpers/utils'
 const lastCol = BOARD_COL_COUNT - 1
 const lastRow = BOARD_ROW_COUNT - 1
 
+const surroundings: [HexCoord[], HexCoord[], HexCoord[], HexCoord[]] = [
+	[[1, 0], [0, 1], [-1, 1]],
+	[[2, 0], [1, 1], [1, 2], [0, 2], [-1, 2], [-2, 1]],
+	[[3, 0], [2, 1], [2, 2], [1, 3], [0, 3], [-1, 3], [-2, 3], [-2, 2], [-3, 1]],
+	[[4, 0], [3, 1], [3, 2], [2, 3], [2, 4], [1, 4], [0, 4], [-1, 4], [-2, 4], [-3, 3], [-3, 2], [-4, 1]],
+]
+
+export type SurroundingHexRange = 0 | 1 | 2 | 3 | 4
+
 export function buildBoard(fillObjects: boolean): any[][] {
 	return [...Array(BOARD_ROW_COUNT)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex] } : 0)))
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
 	const unitHexes = getOccupiedHexes(units)
-	for (let distance = 0; distance <= 4; distance += 1) { //TODO recurse to unlimited distance
-		for (const checkHex of getHexRing(startHex, distance)) {
+	for (let distance = 1; distance <= 4; distance += 1) { //TODO recurse to unlimited distance
+		for (const checkHex of getHexRing(startHex, distance as SurroundingHexRange)) {
 			if (!containsHex(checkHex, unitHexes)) { //TODO random
 				return checkHex
 			}
@@ -58,17 +67,10 @@ export function getOccupiedHexes(units: ChampionUnit[]) {
 		.map(unit => unit.activeHex)
 }
 
-const surroundings = [
-	[[1, 0], [0, 1], [-1, 1]],
-	[[2, 0], [1, 1], [1, 2], [0, 2], [-1, 2], [-2, 1]],
-	[[3, 0], [2, 1], [2, 2], [1, 3], [0, 3], [-1, 3], [-2, 3], [-2, 2], [-3, 1]],
-	[[4, 0], [3, 1], [3, 2], [2, 3], [2, 4], [1, 4], [0, 4], [-1, 4], [-2, 4], [-3, 3], [-3, 2], [-4, 1]],
-]
-
-export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: number, includingOrigin: boolean): HexCoord[] {
+export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: SurroundingHexRange, includingOrigin: boolean): HexCoord[] {
 	const results: HexCoord[] = []
 	for (let distance = 1; distance <= maxDistance; distance += 1) {
-		results.push(...getHexRing(hex, distance))
+		results.push(...getHexRing(hex, distance as SurroundingHexRange))
 	}
 	if (includingOrigin) {
 		results.push(hex)
@@ -76,7 +78,7 @@ export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: number, in
 	return results
 }
 
-export function getHexRing([col, row]: HexCoord, atDistance: number = 1): HexCoord[] {
+export function getHexRing([col, row]: HexCoord, atDistance: SurroundingHexRange = 1): HexCoord[] {
 	if (atDistance < 1) {
 		return [[col, row]]
 	}
@@ -127,13 +129,13 @@ export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: Champio
 	return bestHexRowCol?.hex
 }
 
-export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], includingUnderTargetUnit: boolean, maxDistance: 1 | 2 | 3 | 4) {
+export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], includingUnderTargetUnit: boolean, maxDistance: SurroundingHexRange) {
 	const densityBoard = buildBoard(false) as number[][]
 	let results: HexCoord[] = []
 	let bestHexValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
 	units.forEach(unit => {
 		for (let distance = (includingUnderTargetUnit ? 0 : 1); distance <= maxDistance; distance += 1) {
-			getHexRing(unit.activeHex, distance).forEach(surroundingHex => {
+			getHexRing(unit.activeHex, distance as SurroundingHexRange).forEach(surroundingHex => {
 				const [col, row] = surroundingHex
 				const newValue = densityBoard[row][col] + maxDistance + 1 - distance
 				densityBoard[row][col] = newValue

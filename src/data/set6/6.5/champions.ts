@@ -5,9 +5,10 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getDistanceHex, getDistanceUnitOfTeam, getDistanceUnitsOfTeam, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getDistanceHex, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
 import { getDistanceUnitOfTeamWithinRangeTo, getBestHexWithinRangeTo, getBestDensityHexes, getProjectedHexLineFrom, getHexRing, getHexesSurroundingWithin } from '#/helpers/boardUtils'
+import type { SurroundingHexRange } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusLabelKey, ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
@@ -209,7 +210,7 @@ export const championEffects = {
 			const attackSpeedProportion = champion.getSpellVariable(spell, 'ASPercent' as SpellKey)
 			return champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.team,
-				hexDistanceFromSource: hexRadius,
+				hexDistanceFromSource: hexRadius as SurroundingHexRange,
 				bonuses: [champion.instanceID as ChampionKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationSeconds * 1000]],
 			})
 		},
@@ -421,7 +422,7 @@ export const championEffects = {
 
 						target.queueHexEffect(elapsedMS, undefined, {
 							startsAfterMS: durationMS,
-							hexDistanceFromSource: 2 * (champion.starLevel === 3 ? 2 : 1),
+							hexDistanceFromSource: 2 * (champion.starLevel === 3 ? 2 : 1) as SurroundingHexRange,
 							damageCalculation: champion.getSpellCalculation(spell, SpellKey.Damage),
 							onActivate: (elapsedMS, target) => {
 								target.die(elapsedMS, undefined)
@@ -517,7 +518,7 @@ export const championEffects = {
 					idealDestination: () => champion.projectHexFrom(target, true, 1),
 					moveSpeed,
 					hexEffect: {
-						hexDistanceFromSource: hexRadius,
+						hexDistanceFromSource: hexRadius as SurroundingHexRange,
 						damageCalculation: champion.getSpellCalculation(spell, 'DamageFinal' as SpellKey),
 					},
 					onActivate: (elapsedMS, champion) => {
