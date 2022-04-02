@@ -4,7 +4,7 @@ import { computed, defineProps } from 'vue'
 import { substituteVariables, getAssetPrefixFor } from '@tacticians-academy/academy-library'
 import type { EffectVariables, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
-import { state } from '#/common/store'
+import { state } from '#/store/store'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

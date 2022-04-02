@@ -1,13 +1,9 @@
 import type { AugmentData, BonusKey, ChampionSpellData, ItemData, TraitEffectData, TraitKey } from '@tacticians-academy/academy-library'
 
-import type { TeamNumber } from '#/common/types'
-
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { AttackEffectData, GameEffect } from '#/sim/effects/GameEffect'
 
-import type { BonusVariable, DamageResult } from '#/sim/helpers/types'
-
-import type { EmpoweredAuto} from '#/sim/helpers/types'
+import type { BonusVariable, DamageResult, EmpoweredAuto, TeamNumber } from '#/sim/helpers/types'
 
 type EffectResults = BonusVariable[] | void
 

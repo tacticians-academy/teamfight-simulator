@@ -3,8 +3,9 @@ import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library
 
 const DEFAULT_SET: SetNumber = 6.5
 
-import { state } from '#/common/store'
-import type { HexCoord, StarLevel } from '#/common/types'
+import { state } from '#/store/store'
+
+import type { HexCoord, StarLevel } from '#/sim/helpers/types'
 
 interface StorageChampion {
 	name: string

@@ -1,7 +1,7 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionKey, ItemData, ItemKey, SpellCalculation, TraitKey } from '@tacticians-academy/academy-library'
 
-import { setData } from '#/common/store'
+import { setData } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 

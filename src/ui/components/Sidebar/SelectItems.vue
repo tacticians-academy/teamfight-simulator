@@ -3,7 +3,7 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 
 import { computed } from 'vue'
 
-import { setData, state, useStore } from '#/common/store'
+import { setData, state, useStore } from '#/store/store'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

@@ -3,9 +3,9 @@ import { computed, ref } from 'vue'
 
 import type { AugmentData, AugmentGroupKey } from '@tacticians-academy/academy-library'
 
-import { useStore, setAugmentFor, setData } from '#/common/store'
+import { useStore, setAugmentFor, setData } from '#/store/store'
 
-import type { TeamNumber } from '#/common/types'
+import type { TeamNumber } from '#/sim/helpers/types'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

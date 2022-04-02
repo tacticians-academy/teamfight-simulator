@@ -2,8 +2,7 @@ import type { CSSProperties } from 'vue'
 
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
-import { getCoordFrom } from '#/common/store'
-import type { HexCoord } from '#/common/types'
+import { getCoordFrom } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { GameEffect } from '#/sim/effects/GameEffect'
@@ -12,6 +11,7 @@ import type { GameEffectData } from '#/sim/effects/GameEffect'
 import { getAngleBetween, doesLineInterceptCircle, radianDistance, doesRectangleInterceptCircle } from '#/sim/helpers/angles'
 import { coordinateDistanceSquared } from '#/sim/helpers/board'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import type { HexCoord } from '#/sim/helpers/types'
 
 class ShapeEffectShape {
 	intersects: (unit: ChampionUnit) => boolean = () => false

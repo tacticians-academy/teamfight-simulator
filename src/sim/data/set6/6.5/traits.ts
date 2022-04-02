@@ -1,11 +1,12 @@
 import { ChampionKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 
-import { getters } from '#/common/store'
+import { getters } from '#/store/store'
 
-import { getUnitsOfTeam, getVariables } from '#/sim/helpers/effectUtils'
+import type { TraitEffects } from '#/sim/data/types'
+
 import { getFrontBehindHexes } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
-import type { TraitEffects } from '#/sim/data/types'
+import { getUnitsOfTeam, getVariables } from '#/sim/helpers/effectUtils'
 import type { BonusVariable } from '#/sim/helpers/types'
 
 import { baseTraitEffects } from '../traits'

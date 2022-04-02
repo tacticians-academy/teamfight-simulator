@@ -3,8 +3,6 @@ import type { Ref } from 'vue'
 
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
-import type { HexCoord } from '#/common/types'
-
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { GameEffect } from '#/sim/effects/GameEffect'
 import type { GameEffectData } from '#/sim/effects/GameEffect'
@@ -12,6 +10,7 @@ import type { GameEffectData } from '#/sim/effects/GameEffect'
 import { getHexesSurroundingWithin } from '#/sim/helpers/board'
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/sim/helpers/constants'
+import type { HexCoord } from '#/sim/helpers/types'
 
 export interface HexEffectData extends GameEffectData {
 	/** Hexes to apply the effect to. Either `hexes` or `hexDistanceFromSource` must be provided. */

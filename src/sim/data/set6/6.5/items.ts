@@ -1,9 +1,9 @@
 import { BonusKey, ItemKey } from '@tacticians-academy/academy-library'
 
-import { StatusEffectType } from '#/common/types'
+import type { ItemEffects } from '#/sim/data/types'
 
 import { getVariables } from '#/sim/helpers/effectUtils'
-import type { ItemEffects } from '#/sim/data/types'
+import { StatusEffectType } from '#/sim/helpers/types'
 
 import { baseItemEffects } from '../items'
 

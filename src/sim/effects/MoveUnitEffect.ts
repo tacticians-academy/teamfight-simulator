@@ -1,7 +1,6 @@
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
-import { state } from '#/common/store'
-import type { HexCoord } from '#/common/types'
+import { state } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { GameEffect } from '#/sim/effects/GameEffect'
@@ -10,7 +9,7 @@ import type { HexEffectData } from '#/sim/effects/HexEffect'
 
 import { coordinateDistanceSquared } from '#/sim/helpers/board'
 import { DEFAULT_CAST_SECONDS, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
-import type { ActivateFn } from '#/sim/helpers/types'
+import type { ActivateFn, HexCoord } from '#/sim/helpers/types'
 
 type CalculateDestinationFn = (target: ChampionUnit) => ChampionUnit | HexCoord | null | undefined
 

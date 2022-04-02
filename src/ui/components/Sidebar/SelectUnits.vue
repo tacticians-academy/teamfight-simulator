@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import type { ChampionData } from '@tacticians-academy/academy-library'
 
-import { useStore, state, setData } from '#/common/store'
+import { useStore, state, setData } from '#/store/store'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

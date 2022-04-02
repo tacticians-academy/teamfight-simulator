@@ -7,9 +7,10 @@ import Unit from '#/ui/components/Unit.vue'
 
 import { computed, onMounted, ref } from 'vue'
 
-import { useStore, getCoordFrom, getSocialiteHexStrength, setSocialiteHex } from '#/common/store'
-import { getMirrorHex, isSameHex } from '#/common/hexes'
-import type { HexCoord } from '#/common/types'
+import { useStore, getCoordFrom, getSocialiteHexStrength, setSocialiteHex } from '#/store/store'
+
+import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
+import type { HexCoord } from '#/sim/helpers/types'
 
 import { HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/ui/helpers/constants'
 import { getDragNameOf, onDragOver } from '#/ui/helpers/dragDrop'

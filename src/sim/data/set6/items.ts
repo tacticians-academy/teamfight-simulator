@@ -1,22 +1,19 @@
 import { ChampionKey, ItemKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { getInverseHex } from '#/common/hexes'
-import { state } from '#/common/store'
-import { StatusEffectType } from '#/common/types'
-import type { HexCoord } from '#/common/types'
-
 import type { ChampionUnit } from '#/sim/ChampionUnit'
+
+import type { ItemEffects } from '#/sim/data/types'
 import { ShapeEffectRectangle } from '#/sim/effects/ShapeEffect'
 
-import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam, getAttackableUnitsOfTeam, getDistanceUnitsOfTeam } from '#/sim/helpers/effectUtils'
 import { getDistanceUnitOfTeamWithinRangeTo } from '#/sim/helpers/board'
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
 import { HEX_PROPORTION } from '#/sim/helpers/constants'
-import { DamageSourceType, SpellKey } from '#/sim/helpers/types'
-import type { ItemEffects } from '#/sim/data/types'
-import type { BonusLabelKey, BonusVariable } from '#/sim/helpers/types'
+import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam, getAttackableUnitsOfTeam, getDistanceUnitsOfTeam } from '#/sim/helpers/effectUtils'
+import { getInverseHex } from '#/sim/helpers/hexes'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/sim/helpers/types'
+import type { BonusLabelKey, BonusVariable, HexCoord } from '#/sim/helpers/types'
 import { getBestRandomAsMax } from '#/sim/helpers/utils'
 
 export const baseItemEffects = {

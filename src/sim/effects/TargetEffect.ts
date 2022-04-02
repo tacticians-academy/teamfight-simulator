@@ -7,8 +7,8 @@ import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { GameEffect } from '#/sim/effects/GameEffect'
 import type { AttackBounce, AttackEffectData } from '#/sim/effects/GameEffect'
 
-import { getInteractableUnitsOfTeam, getNextBounceFrom } from '#/sim/helpers/effectUtils'
 import { DEFAULT_CAST_SECONDS, DEFAULT_TRAVEL_SECONDS } from '#/sim/helpers/constants'
+import { getInteractableUnitsOfTeam, getNextBounceFrom } from '#/sim/helpers/effectUtils'
 
 export interface TargetEffectData extends AttackEffectData {
 	/** The delay to apply after starting. Inferred from the passed `SpellCalculation` if provided. */

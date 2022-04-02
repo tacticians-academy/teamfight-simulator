@@ -5,13 +5,12 @@ import { BonusKey } from '@tacticians-academy/academy-library'
 
 import { getDragName, getDragType, onDragOver } from '#/ui/helpers/dragDrop'
 import type { DraggableType } from '#/ui/helpers/dragDrop'
-import { useStore } from '#/common/store'
-import { StatusEffectType } from '#/common/types'
-import type { StarLevel } from '#/common/types'
+import { useStore } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
-
 import { UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import { StatusEffectType } from '#/sim/helpers/types'
+import type { StarLevel } from '#/sim/helpers/types'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

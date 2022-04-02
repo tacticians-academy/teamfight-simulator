@@ -4,7 +4,7 @@ import SelectPlayers from '#/ui/components/Sidebar/SelectPlayers.vue'
 
 import { computed } from 'vue'
 
-import { useStore } from '#/common/store'
+import { useStore } from '#/store/store'
 
 import { cancelLoop, runLoop } from '#/sim/loop'
 

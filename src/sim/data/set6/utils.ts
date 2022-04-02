@@ -1,13 +1,13 @@
 import { AugmentGroupKey, ChampionKey } from '@tacticians-academy/academy-library'
 
-import { getMirrorHex, isSameHex } from '#/common/hexes'
-import { getters, state } from '#/common/store'
-import type { HexCoord, TeamNumber } from '#/common/types'
+import { getters, state } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
-import { getVariables } from '#/sim/helpers/effectUtils'
 import { getHexRing } from '#/sim/helpers/board'
+import { getVariables } from '#/sim/helpers/effectUtils'
+import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
+import type { HexCoord, TeamNumber } from '#/sim/helpers/types'
 
 export const INNOVATION_NAMES = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
 

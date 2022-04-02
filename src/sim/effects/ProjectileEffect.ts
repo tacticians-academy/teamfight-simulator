@@ -4,19 +4,19 @@ import type { Ref } from 'vue'
 
 import type { ChampionSpellData, ChampionSpellMissileData } from '@tacticians-academy/academy-library'
 
-import { getCoordFrom } from '#/common/store'
-import type { HexCoord } from '#/common/types'
+import { getCoordFrom } from '#/store/store'
+
+import type { HexCoord } from '#/sim/helpers/types'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { GameEffect } from '#/sim/effects/GameEffect'
 import type { AttackBounce, AttackEffectData } from '#/sim/effects/GameEffect'
 import type { HexEffectData } from '#/sim/effects/HexEffect'
 
-import type { DamageModifier } from '#/sim/helpers/types'
-
-import { applyStackingModifier, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/sim/helpers/effectUtils'
 import { coordinateDistanceSquared } from '#/sim/helpers/board'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import { applyStackingModifier, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/sim/helpers/effectUtils'
+import type { DamageModifier } from '#/sim/helpers/types'
 
 type TargetDeathAction = 'continue' | 'closestFromSource' | 'farthestFromSource' | 'closestFromTarget' | 'farthestFromTarget'
 

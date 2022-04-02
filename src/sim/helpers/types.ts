@@ -3,9 +3,12 @@ import type { BonusKey, DamageType, SpellCalculation, TraitData, TraitEffectData
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { AttackBounce, GameEffect } from '#/sim/effects/GameEffect'
-import type { StatusEffectType } from '#/common/types'
-import type { HexCoord, MutantType } from '#/common/types'
 import type { HexEffectData } from '#/sim/effects/HexEffect'
+
+export type HexCoord = [col: number, row: number]
+
+export type StarLevel = 1 | 2 | 3 | 4
+export type TeamNumber = 0 | 1
 
 export interface HexRowCol {
 	hex: HexCoord
@@ -43,6 +46,23 @@ export interface SynergyData {
 	uniqueUnitNames: string[]
 }
 
+export enum StatusEffectType {
+	ablaze = 'ablaze',
+	aoeDamageReduction = 'aoeDamageReduction',
+	armorReduction = 'armorReduction',
+	attackSpeedSlow = 'attackSpeedSlow',
+	banished = 'banished',
+	ccImmune = 'ccImmune',
+	disarm = 'disarm',
+	empowered = 'empowered',
+	grievousWounds = 'grievousWounds',
+	invulnerable = 'invulnerable',
+	magicResistReduction = 'magicResistReduction',
+	stealth = 'stealth',
+	stunned = 'stunned',
+	unstoppable = 'unstoppable',
+}
+
 export type StatusEffectData = [StatusEffectType, {
 	durationMS: DOMHighResTimeStamp
 	amount?: number
@@ -58,6 +78,16 @@ export type StatusEffects = Record<StatusEffectType, StatusEffect>
 export type ActivateFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage?: DamageResult) => void
 export type DamageFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage: DamageResult) => void
+
+export enum MutantType {
+	AdrenalineRush = 'Adrenaline',
+	BioLeeching = 'BioLeeching',
+	Cybernetic = 'Cyber',
+	Metamorphosis = 'Metamorphosis',
+	SynapticWeb = 'Synaptic',
+	Voidborne = 'Voidborne',
+	VoraciousAppetite = 'Voracious',
+}
 
 export const enum MutantBonus {
 	VoraciousADAP = 'ADAP',

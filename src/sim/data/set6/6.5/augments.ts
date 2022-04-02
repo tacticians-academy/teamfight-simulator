@@ -1,12 +1,11 @@
 import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-academy/academy-library'
 
-import { StatusEffectType } from '#/common/types'
+import type { AugmentEffects } from '#/sim/data/types'
 
-import { checkCooldownFor, getAttackableUnitsOfTeam, getDistanceUnitOfTeam, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
 import { getHexRing, isInBackLines } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
-import { DamageSourceType, SpellKey } from '#/sim/helpers/types'
-import type { AugmentEffects } from '#/sim/data/types'
+import { checkCooldownFor, getDistanceUnitOfTeam, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/sim/helpers/types'
 
 import { baseAugmentEffects } from '../augments'
 

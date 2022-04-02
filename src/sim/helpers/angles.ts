@@ -1,4 +1,4 @@
-import type { HexCoord } from '#/common/types'
+import type { HexCoord } from '#/sim/helpers/types'
 
 const pi2 = Math.PI * 2
 

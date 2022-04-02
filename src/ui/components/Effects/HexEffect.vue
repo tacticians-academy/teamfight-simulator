@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
-import { getCoordFrom } from '#/common/store'
-import type { HexCoord } from '#/common/types'
+import { getCoordFrom } from '#/store/store'
 
 import type { HexEffect } from '#/sim/effects/HexEffect'
+
+import type { HexCoord } from '#/sim/helpers/types'
 
 const props = defineProps<{
 	effect: HexEffect

@@ -3,11 +3,9 @@ import { markRaw } from 'vue'
 import { AugmentGroupKey, ChampionKey, ItemKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 
-import { containsHex, isSameHex } from '#/common/hexes'
-import { getCoordFrom, gameOver, getters, state, setData } from '#/common/store'
-import { StatusEffectType } from '#/common/types'
-import type { HexCoord, StarLevel, TeamNumber } from '#/common/types'
+import { getCoordFrom, gameOver, getters, state, setData } from '#/store/store'
 
+import type { ChampionFns } from '#/sim/data/types'
 import { HexEffect } from '#/sim/effects/HexEffect'
 import type { HexEffectData } from '#/sim/effects/HexEffect'
 import type { AttackEffectData, GameEffect } from '#/sim/effects/GameEffect'
@@ -20,18 +18,16 @@ import type { ShapeEffectData } from '#/sim/effects/ShapeEffect'
 import { TargetEffect } from '#/sim/effects/TargetEffect'
 import type { TargetEffectData } from '#/sim/effects/TargetEffect'
 
-import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/sim/helpers/effectUtils'
+import { getAngleBetween } from '#/sim/helpers/angles'
 import { coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getOccupiedHexes, getHexesSurroundingWithin, hexDistanceFrom, recursivePathTo } from '#/sim/helpers/board'
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/sim/helpers/calculate'
 import { MOVE_LOCKOUT_JUMPERS_MS, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/sim/helpers/constants'
-import { SpellKey, DamageSourceType } from '#/sim/helpers/types'
-import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, ShieldEntry, StatusEffect, ShieldData, SynergyData } from '#/sim/helpers/types'
-
-import { getAngleBetween } from '#/sim/helpers/angles'
+import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/sim/helpers/effectUtils'
+import { containsHex, isSameHex } from '#/sim/helpers/hexes'
+import { SpellKey, DamageSourceType, StatusEffectType } from '#/sim/helpers/types'
+import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 import { getBestRandomAsMax, uniqueIdentifier } from '#/sim/helpers/utils'
-import type { EmpoweredAuto } from '#/sim/helpers/types'
-import type { ChampionFns } from '#/sim/data/types'
 
 let instanceIndex = 0
 

@@ -1,6 +1,5 @@
-import type { HexCoord } from '#/common/types'
-
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/sim/helpers/constants'
+import type { HexCoord } from '#/sim/helpers/types'
 
 export function getInverseHex(hex: HexCoord): HexCoord {
 	return [BOARD_COL_COUNT - hex[0] - 1, BOARD_ROW_COUNT - hex[1] - 1]

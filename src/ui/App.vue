@@ -7,7 +7,7 @@ import Sidebar from '#/ui/components/Sidebar/Sidebar.vue'
 import { SET_NUMBERS } from '@tacticians-academy/academy-library'
 import type { SetNumber } from '@tacticians-academy/academy-library'
 
-import { state, setSetNumber } from '#/common/store'
+import { state, setSetNumber } from '#/store/store'
 
 function onSetNumber(set: SetNumber) {
 	setSetNumber(set)

@@ -1,21 +1,19 @@
 import { AugmentGroupKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionKey } from '@tacticians-academy/academy-library'
 
-import { getters, state } from '#/common/store'
-import { StatusEffectType } from '#/common/types'
-import type { TeamNumber } from '#/common/types'
-
-import type { AttackBounce } from '#/sim/effects/GameEffect'
-import { delayUntil } from '#/sim/loop'
-
-import { applyGrievousBurn, checkCooldownFor, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
-import { getHexRing, isInBackLines, getFrontBehindHexes } from '#/sim/helpers/board'
-import { createDamageCalculation } from '#/sim/helpers/calculate'
-import { DamageSourceType, SpellKey } from '#/sim/helpers/types'
+import { getters, state } from '#/store/store'
 
 import type { AugmentEffects } from '#/sim/data/types'
 import { getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/sim/data/set6/utils'
 import { applyChemtech } from '#/sim/data/set6/traits'
+
+import { applyGrievousBurn, checkCooldownFor, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
+import { getHexRing, isInBackLines, getFrontBehindHexes } from '#/sim/helpers/board'
+import { createDamageCalculation } from '#/sim/helpers/calculate'
+import type { AttackBounce } from '#/sim/effects/GameEffect'
+import { delayUntil } from '#/sim/loop'
+import { DamageSourceType, SpellKey, StatusEffectType } from '#/sim/helpers/types'
+import type { TeamNumber } from '#/sim/helpers/types'
 
 export const baseAugmentEffects = {
 

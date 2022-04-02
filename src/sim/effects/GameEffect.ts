@@ -2,13 +2,12 @@ import { ref } from 'vue'
 
 import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/academy-library'
 
-import { getters } from '#/common/store'
-import type { HexCoord, TeamNumber } from '#/common/types'
+import { getters } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
 import { DamageSourceType } from '#/sim/helpers/types'
-import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, StatusEffectData } from '#/sim/helpers/types'
+import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/sim/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => { throw 'ERR empty GameEffectChild apply' }
