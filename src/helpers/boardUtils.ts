@@ -3,7 +3,7 @@ import { getCoordFrom } from '#/game/store'
 
 import { doesLineInterceptCircle } from '#/helpers/angles'
 import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/helpers/constants'
-import type { HexCoord, HexRowCol, TeamNumber } from '#/helpers/types'
+import type { HexCoord, HexRowCol } from '#/helpers/types'
 import { getBestRandomAsMax } from '#/helpers/utils'
 
 const lastCol = BOARD_COL_COUNT - 1
@@ -127,30 +127,40 @@ export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: Champio
 	return bestHexRowCol?.hex
 }
 
-export function getHotspotHexes(includingUnderTargetUnit: boolean, units: ChampionUnit[], team: TeamNumber | null, maxDistance: 1 | 2 | 3 | 4) {
-	const densityBoard = buildBoard(false)
+export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], includingUnderTargetUnit: boolean, maxDistance: 1 | 2 | 3 | 4) {
+	const densityBoard = buildBoard(false) as number[][]
 	let results: HexCoord[] = []
-	let densestHexValue = 0
-	for (const unit of units) {
-		if (team != null && unit.team !== team) {
-			continue
-		}
-		if (!unit.isAttackable()) {
-			continue
-		}
+	let bestHexValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
+	units.forEach(unit => {
 		for (let distance = (includingUnderTargetUnit ? 0 : 1); distance <= maxDistance; distance += 1) {
 			getHexRing(unit.activeHex, distance).forEach(surroundingHex => {
 				const [col, row] = surroundingHex
 				const newValue = densityBoard[row][col] + maxDistance + 1 - distance
 				densityBoard[row][col] = newValue
-				if (newValue > densestHexValue) {
-					results = [surroundingHex]
-					densestHexValue = newValue
-				} else if (newValue === densestHexValue) {
-					results.push(surroundingHex)
+				if (isMaximum) {
+					if (newValue > bestHexValue) {
+						results = [surroundingHex]
+						bestHexValue = newValue
+					} else if (newValue === bestHexValue) {
+						results.push(surroundingHex)
+					}
 				}
 			})
 		}
+	})
+	if (!isMaximum) {
+		densityBoard.forEach((rowScores, rowIndex) => {
+			rowScores.forEach((rowColScore, colIndex) => {
+				if (rowColScore === 0) { return }
+				const hex: HexCoord = [colIndex, rowIndex]
+				if (rowColScore < bestHexValue) {
+					bestHexValue = rowColScore
+					results = [hex]
+				} else if (rowColScore === bestHexValue) {
+					results.push(hex)
+				}
+			})
+		})
 	}
 	return results
 }

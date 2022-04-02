@@ -5,9 +5,9 @@ import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { delayUntil } from '#/game/loop'
 import { state } from '#/game/store'
 
-import { getDistanceUnit, getRowOfMostAttackable, getInteractableUnitsOfTeam, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { getDistanceUnitOfTeam, getRowOfMostAttackable, getInteractableUnitsOfTeam, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow, getAttackableUnitsOfTeam, getProjectileSpread, getDistanceUnitsOfTeam } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { containsHex, getHexRing, getHotspotHexes, getOccupiedHexes, getHexesSurroundingWithin } from '#/helpers/boardUtils'
+import { containsHex, getHexRing, getBestDensityHexes, getOccupiedHexes, getHexesSurroundingWithin, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { SpellKey, StatusEffectType } from '#/helpers/types'
@@ -20,7 +20,7 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const durationMS = stunSeconds * 1000
-			const target = getDistanceUnit(true, champion) //TODO Blitz pulls Blitz
+			const target = getDistanceUnitOfTeam(true, champion, champion.opposingTeam()) //TODO Blitz pulls Blitz
 			champion.setTarget(target)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
@@ -70,7 +70,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Caitlyn]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = getDistanceUnit(true, champion)
+			const target = getDistanceUnitOfTeam(true, champion, champion.opposingTeam())
 			if (!target) { return false }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
@@ -118,7 +118,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Ekko]: {
 		cast: (elapsedMS, spell, champion) => {
 			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
-			const hotspotHex = randomItem(getHotspotHexes(true, state.units, null, hexRadius as any))
+			const hotspotHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, hexRadius as any))
 			if (!hotspotHex) { return false }
 			const delaySeconds = champion.getSpellVariable(spell, 'FieldDelay' as SpellKey)
 			const fieldSeconds = champion.getSpellVariable(spell, 'FieldDuration' as SpellKey)
@@ -183,7 +183,7 @@ export const baseChampionEffects = {
 			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target: champion,
-				idealDestination: (champion) => randomItem(getHotspotHexes(true, state.units, champion.opposingTeam(), Math.min(4, hexRadius) as any)),
+				idealDestination: (champion) => randomItem(getBestDensityHexes(true, getAttackableUnitsOfTeam(champion.opposingTeam()), true, Math.min(4, hexRadius) as any)),
 				hexEffect: {
 					hexDistanceFromSource: hexRadius,
 					statusEffects: [
@@ -606,7 +606,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Orianna]: {
 		cast: (elapsedMS, spell, champion) => {
 			const hexRange = 2 //NOTE hardcoded
-			const hotspotHex = randomItem(getHotspotHexes(true, state.units, null, hexRange))
+			const hotspotHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, hexRange))
 			if (!hotspotHex) { return false }
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
@@ -635,7 +635,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Poppy]: {
 		passiveCasts: true,
 		passive: (elapsedMS, spell, target, champion, damage) => {
-			const mostDistantEnemy = getDistanceUnit(true, champion, champion.opposingTeam())
+			const mostDistantEnemy = getDistanceUnitOfTeam(true, champion, champion.opposingTeam())
 			if (!mostDistantEnemy) { return false }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: mostDistantEnemy,
@@ -670,7 +670,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Seraphine]: {
 		cast: (elapsedMS, spell, champion) => {
-			const densestEnemyHex = randomItem(getHotspotHexes(true, state.units, null, 1)) //TODO experimentally determine
+			const densestEnemyHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, 1)) //TODO experimentally determine
 			if (!densestEnemyHex) { return false }
 			const bonusASProportion = champion.getSpellVariable(spell, 'ASBonus' as SpellKey)
 			const bonusSeconds = champion.getSpellVariable(spell, 'ASBonusDuration' as SpellKey)
@@ -702,7 +702,7 @@ export const baseChampionEffects = {
 			const aoeStunSeconds = champion.getSpellVariable(spell, 'AoEStunDuration' as SpellKey)
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				moveSpeed: 1000, //TODO experimentally determine
-				idealDestination: (target) => randomItem(getHotspotHexes(false, state.units.filter(unit => unit !== target), target.team, 2)),
+				idealDestination: (target) => randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(target.team).filter(unit => unit !== target), false, 2)),
 				statusEffects: [
 					[StatusEffectType.stunned, { durationMS: targetStunSeconds * 1000 }],
 				],
@@ -733,14 +733,14 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Syndra]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = getDistanceUnit(false, champion, champion.opposingTeam())
+			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
 			if (!target) { return false }
 			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			// const aoeStunSeconds = champion.getSpellVariable(spell, 'VIPDebutantBonus' as SpellKey) //TODO VIP
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target,
 				moveSpeed: 1000, //TODO experimentally determine
-				idealDestination: (target) => getDistanceUnit(true, champion, target.team)?.activeHex,
+				idealDestination: (target) => getDistanceUnitOfTeam(true, champion, champion.opposingTeam())?.activeHex,
 				statusEffects: [
 					[StatusEffectType.stunned, { durationMS: targetStunSeconds * 1000 }],
 				],
@@ -806,7 +806,7 @@ export const baseChampionEffects = {
 					delayUntil(elapsedMS, bellySeconds).then(elapsedMS => {
 						target.collides = true
 						if (!target.dead) {
-							const farthestEnemy = getDistanceUnit(true, champion, champion.opposingTeam())
+							const farthestEnemy = getDistanceUnitOfTeam(true, champion, champion.opposingTeam())
 							const impactStunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
 							champion.queueMoveUnitEffect(elapsedMS, undefined, {
 								target,

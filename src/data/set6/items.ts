@@ -4,7 +4,7 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectRectangle } from '#/game/effects/ShapeEffect'
 
-import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam, getAttackableUnitsOfTeam } from '#/helpers/abilityUtils'
+import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariables, GRIEVOUS_BURN_ID, spawnUnit, getDistanceUnitFromUnits, checkCooldownFor, getUnitsOfTeam, getAttackableUnitsOfTeam, getDistanceUnitsOfTeam } from '#/helpers/abilityUtils'
 import { getInverseHex, getDistanceUnitOfTeamWithinRangeTo } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { HEX_PROPORTION } from '#/helpers/constants'
@@ -223,7 +223,7 @@ export const baseItemEffects = {
 	[ItemKey.RunaansHurricane]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
 			const [boltCount, boltMultiplier] = getVariables(item, 'AdditionalTargets', 'MultiplierForDamage')
-			const additionalTargets = getBestSortedAsMax(false, getAttackableUnitsOfTeam(target.team).filter(unit => unit !== target), (unit) => unit.coordDistanceSquaredTo(holder)) //TODO experimentally determine bolt target
+			const additionalTargets = getDistanceUnitsOfTeam(false, target, target.team)
 				.slice(0, boltCount)
 			const damageCalculation = createDamageCalculation(itemID, 1, undefined, BonusKey.AttackDamage, false, boltMultiplier / 100) //TODO verify
 			for (let boltIndex = 0; boltIndex < boltCount; boltIndex += 1) {

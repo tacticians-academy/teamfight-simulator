@@ -5,9 +5,9 @@ import type { ChampionUnit } from '#/game/ChampionUnit'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/game/effects/ShapeEffect'
 import { state } from '#/game/store'
 
-import { getAttackableUnitsOfTeam, getDistanceHex, getDistanceUnit, getProjectileSpread } from '#/helpers/abilityUtils'
+import { getAttackableUnitsOfTeam, getDistanceHex, getDistanceUnitOfTeam, getDistanceUnitsOfTeam, getInteractableUnitsOfTeam, getProjectileSpread } from '#/helpers/abilityUtils'
 import { toRadians } from '#/helpers/angles'
-import { getDistanceUnitOfTeamWithinRangeTo, getBestHexWithinRangeTo, getHotspotHexes, getProjectedHexLineFrom, getHexRing, getHexesSurroundingWithin } from '#/helpers/boardUtils'
+import { getDistanceUnitOfTeamWithinRangeTo, getBestHexWithinRangeTo, getBestDensityHexes, getProjectedHexLineFrom, getHexRing, getHexesSurroundingWithin } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/helpers/constants'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
 import type { BonusLabelKey, ChampionEffects, HexCoord, ShieldData } from '#/helpers/types'
@@ -113,7 +113,7 @@ export const championEffects = {
 
 	[ChampionKey.Brand]: {
 		cast: (elapsedMS, spell, champion) => {
-			const target = getDistanceUnit(false, champion, champion.opposingTeam())
+			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
 			if (!target) { return false }
 			const blazeSeconds = champion.getSpellVariable(spell, 'BlazeDuration' as SpellKey)
 			// const vip = champion.getSpellVariable(spell, 'VIPBonusReducedDamage' as SpellKey) //TODO VIP
@@ -334,7 +334,7 @@ export const championEffects = {
 			const targetTeam = champion.opposingTeam()
 			const fixedHexRange = champion.getSpellVariable(spell, 'SpellRange' as SpellKey)
 			const validUnits = getAttackableUnitsOfTeam(targetTeam).filter(unit => unit.hexDistanceTo(champion) <= fixedHexRange)
-			const bestHex = randomItem(getHotspotHexes(true, validUnits, targetTeam, 1)) //TODO experimentally determine
+			const bestHex = randomItem(getBestDensityHexes(true, validUnits, true, 1)) //TODO experimentally determine
 			if (!bestHex) { return false }
 			const attackSpeedReducePercent = champion.getSpellVariable(spell, 'ASReduction' as SpellKey)
 			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
@@ -459,7 +459,7 @@ export const championEffects = {
 
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
-			const densestEnemyHexes = getHotspotHexes(true, state.units, champion.opposingTeam(), 1)
+			const densestEnemyHexes = getBestDensityHexes(true, getInteractableUnitsOfTeam(champion.opposingTeam()), true, 1)
 			const farthestDenseHex = getDistanceHex(true, champion, densestEnemyHexes)
 			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
 			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true, 1)

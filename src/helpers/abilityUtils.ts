@@ -9,7 +9,7 @@ import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo } from '#/
 import { createDamageCalculation } from '#/helpers/calculate'
 import { StatusEffectType } from '#/helpers/types'
 import type { DamageModifier, HexCoord, StarLevel, TeamNumber } from '#/helpers/types'
-import { getArrayValueCounts, getBestRandomAsMax, getBestUniqueAsMax, randomItem } from '#/helpers/utils'
+import { getArrayValueCounts, getBestRandomAsMax, getBestSortedAsMax, getBestUniqueAsMax, randomItem } from '#/helpers/utils'
 
 export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
 	const hex = fromUnit.activeHex
@@ -143,13 +143,19 @@ export function getDistanceHex(isMaximum: boolean, fromUnit: ChampionUnit, hexes
 	return getBestRandomAsMax(isMaximum, hexes, (hex) => fromUnit.coordDistanceSquaredTo(hex))
 }
 
-export function getDistanceUnit(isMaximum: boolean, fromUnit: ChampionUnit, team?: TeamNumber | null) {
+export function getDistanceUnitOfTeam(isMaximum: boolean, fromUnit: ChampionUnit, team: TeamNumber | null) {
 	const units = getAttackableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
 		.filter(unit => unit !== fromUnit)
 	return getBestUniqueAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
 export function getDistanceUnitFromUnits(isMaximum: boolean, fromUnit: ChampionUnit, units: ChampionUnit[]) {
 	return getBestUniqueAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
+}
+
+export function getDistanceUnitsOfTeam(isMaximum: boolean, fromUnit: ChampionUnit, team: TeamNumber | null) {
+	const units = getAttackableUnitsOfTeam(team === undefined ? fromUnit.opposingTeam() : team)
+		.filter(unit => unit !== fromUnit)
+	return getBestSortedAsMax(isMaximum, units, (unit) => fromUnit.coordDistanceSquaredTo(unit))
 }
 
 export function modifyMissile(spell: ChampionSpellData, data: ChampionSpellMissileData) {

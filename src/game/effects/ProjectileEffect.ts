@@ -10,10 +10,11 @@ import type { AttackBounce, AttackEffectData } from '#/game/effects/GameEffect'
 import type { HexEffectData } from '#/game/effects/HexEffect'
 import { getCoordFrom } from '#/game/store'
 
-import { applyStackingModifier, getDistanceUnit, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
+import { applyStackingModifier, getAttackableUnitsOfTeam, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/helpers/abilityUtils'
 import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { DamageModifier, HexCoord} from '#/helpers/types'
+import { getBestRandomAsMax } from '#/helpers/utils'
 
 type TargetDeathAction = 'continue' | 'closestFromSource' | 'farthestFromSource' | 'closestFromTarget' | 'farthestFromTarget'
 
@@ -211,9 +212,12 @@ export class ProjectileEffect extends GameEffect {
 				if (this.targetDeathAction === 'continue') {
 					this.setTarget(this.target.activeHex)
 				} else {
-					const newTarget = getDistanceUnit(this.targetDeathAction.startsWith('farthest'), this.targetDeathAction.endsWith('Target') ? this.target : this.source)
+					const distanceFromUnit = this.targetDeathAction.endsWith('Target') ? this.target : this.source
+					const newTarget = getDistanceUnitOfTeam(this.targetDeathAction.startsWith('farthest'), distanceFromUnit, this.target.team)
 					if (newTarget) {
 						this.setTarget(newTarget)
+					} else {
+						return false
 					}
 				}
 			} else {

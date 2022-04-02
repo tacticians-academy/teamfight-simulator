@@ -1,6 +1,6 @@
 import { AugmentGroupKey, BonusKey, DamageType, TraitKey } from '@tacticians-academy/academy-library'
 
-import { checkCooldownFor, getAttackableUnitsOfTeam, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/helpers/abilityUtils'
+import { checkCooldownFor, getAttackableUnitsOfTeam, getDistanceUnitOfTeam, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/helpers/abilityUtils'
 import { getHexRing, isInBackLines } from '#/helpers/boardUtils'
 import { createDamageCalculation } from '#/helpers/calculate'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/helpers/types'
@@ -177,7 +177,7 @@ export const augmentEffects = {
 			if (damageType !== DamageType.magic) { return }
 			const magicDamage = getFirstVariableOf(augment, `MagicDamage${getStageScalingIndex() + 1}`, 'MagicDamage')
 			const targets = [target]
-			const nearestToTarget = getBestRandomAsMax(false, getAttackableUnitsOfTeam(target.team).filter(unit => unit !== target), (unit) => unit.coordDistanceSquaredTo(target))
+			const nearestToTarget = getDistanceUnitOfTeam(false, target, target.team)
 			if (nearestToTarget) {
 				targets.push(nearestToTarget)
 			}
