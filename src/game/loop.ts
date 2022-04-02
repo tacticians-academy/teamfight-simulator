@@ -5,6 +5,7 @@ import type { GameEffect } from '#/game/effects/GameEffect'
 import { getters, setData, state } from '#/game/store'
 
 import { getAliveUnitsOfTeamWithTrait } from '#/helpers/abilityUtils'
+import { MOVE_LOCKOUT_JUMPERS_MS, MOVE_LOCKOUT_MELEE_MS } from '#/helpers/constants'
 import type { TeamNumber } from '#/helpers/types'
 import { uniqueIdentifier } from '#/helpers/utils'
 
@@ -14,9 +15,6 @@ let frameID: number | null = null
 let startedAtMS: DOMHighResTimeStamp = 0
 let elapsedMS: DOMHighResTimeStamp = 0
 let unanimatedStackSize = 0
-
-const MOVE_LOCKOUT_JUMPERS_MS = 500 //TODO experimentally determine
-const MOVE_LOCKOUT_MELEE_MS = 1000 //TODO experimentally determine
 
 let didBacklineJump = false
 let didMeleeMove = false

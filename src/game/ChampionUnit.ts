@@ -21,7 +21,7 @@ import { getAngleBetween } from '#/helpers/angles'
 import { containsHex, coordinateDistanceSquared, getClosestHexAvailableTo, getHexRing, getOccupiedHexes, getHexesSurroundingWithin, hexDistanceFrom, isSameHex, recursivePathTo } from '#/helpers/boardUtils'
 import type { SurroundingHexRange } from '#/helpers/boardUtils'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/helpers/calculate'
-import { BACKLINE_JUMP_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
+import { MOVE_LOCKOUT_JUMPERS_MS, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/helpers/constants'
 import { saveUnits } from '#/helpers/storage'
 import { SpellKey, DamageSourceType, StatusEffectType, NEGATIVE_STATUS_EFFECTS, CC_STATUS_EFFECTS } from '#/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, ChampionFns, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StarLevel, StatusEffect, TeamNumber, ShieldData, SynergyData } from '#/helpers/types'
@@ -631,8 +631,8 @@ export class ChampionUnit {
 	jumpToBackline() {
 		const [col, row] = this.startHex
 		const targetHex: HexCoord = [col, this.team === 0 ? BOARD_ROW_COUNT - 1 : 0]
-		this.customMoveTo(targetHex, true, 1500, false) // BACKLINE_JUMP_MS //TODO adjust speed for fixed duration
-		this.applyStatusEffect(0, StatusEffectType.stealth, BACKLINE_JUMP_MS)
+		this.customMoveTo(targetHex, true, 1500, false) // MOVE_LOCKOUT_JUMPERS_MS //TODO adjust speed for fixed duration
+		this.applyStatusEffect(0, StatusEffectType.stealth, MOVE_LOCKOUT_JUMPERS_MS)
 	}
 
 	isUnstoppable() {
