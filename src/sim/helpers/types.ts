@@ -19,14 +19,6 @@ export const enum DamageSourceType {
 	attack = 'attack', spell = 'spell', bonus = 'bonus'
 }
 
-export interface DamageModifier {
-	increase?: number
-	multiplier?: number
-	critChance?: number
-	alwaysCrits?: boolean
-	ignoresInvulnerability?: boolean
-}
-
 export interface DamageResult {
 	isOriginalSource: boolean
 	sourceType: DamageSourceType
@@ -36,6 +28,19 @@ export interface DamageResult {
 	didCrit: boolean
 	[BonusKey.ArmorShred]: number
 	[BonusKey.MagicResistShred]: number
+}
+
+export type ActivateFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
+export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage?: DamageResult) => void
+export type DamageFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage: DamageResult) => void
+
+export interface DamageModifier {
+	increase?: number
+	multiplier?: number
+	critChance?: number
+	alwaysCrits?: boolean
+	ignoresInvulnerability?: boolean
+	onModifyDamage?: DamageFn
 }
 
 export interface SynergyData {
@@ -74,10 +79,6 @@ export interface StatusEffect {
 	amount: number
 }
 export type StatusEffects = Record<StatusEffectType, StatusEffect>
-
-export type ActivateFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
-export type CollisionFn = (elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage?: DamageResult) => void
-export type DamageFn = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, damage: DamageResult) => void
 
 export enum MutantType {
 	AdrenalineRush = 'Adrenaline',

@@ -104,8 +104,8 @@ export class MoveUnitEffect extends GameEffect {
 					continue
 				}
 				if (coordinateDistanceSquared(unit.coord, this.target.coord) <= collisionRadiusSquared) {
-					this.collidedWith.push(unit.instanceID)
 					this.onCollision(elapsedMS, this, unit)
+					this.collidedWith.push(unit.instanceID)
 				}
 			}
 		}

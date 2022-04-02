@@ -7,7 +7,7 @@ import { getters } from '#/store/store'
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
 import { DamageSourceType } from '#/sim/helpers/types'
-import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/sim/helpers/types'
+import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/sim/helpers/types'
 
 export class GameEffectChild {
 	apply: (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => boolean | undefined = () => { throw 'ERR empty GameEffectChild apply' }
@@ -39,6 +39,8 @@ export interface GameEffectData {
 	statusEffects?: StatusEffectData[]
 	/** Callback once the effect begins. */
 	onActivate?: ActivateFn
+	/** Callback before `damageCalculation` is applied. */
+	onModifyDamage?: DamageFn
 	/** Callback for each unit the `GameEffect` applies to. */
 	onCollision?: CollisionFn
 	/** The effect's rendered visual opacity. Defaults to 1. */
@@ -85,6 +87,7 @@ export class GameEffect extends GameEffectChild {
 	collidedWith: string[] = []
 
 	onActivate: ActivateFn | undefined
+	onModifyDamage: DamageFn | undefined
 	onCollision: CollisionFn | undefined
 
 	constructor(source: ChampionUnit, spell: ChampionSpellData | undefined, data: GameEffectData) {
@@ -101,6 +104,7 @@ export class GameEffect extends GameEffectChild {
 		this.bonuses = data.bonuses
 		this.statusEffects = data.statusEffects
 		this.onActivate = data.onActivate
+		this.onModifyDamage = data.onModifyDamage
 		this.onCollision = data.onCollision
 		this.opacity = data.opacity
 		if (this.damageCalculation && this.damageSourceType == null) {
@@ -130,6 +134,9 @@ export class GameEffect extends GameEffectChild {
 				: { increase: 0 }
 			if (wasSpellShielded && spellShield.amount != null) {
 				damageModifier.increase! -= spellShield.amount
+			}
+			if (this.onModifyDamage) {
+				damageModifier.onModifyDamage = this.onModifyDamage
 			}
 			damage = unit.damage(elapsedMS, true, this.source, this.damageSourceType!, this.damageCalculation!, true, damageModifier)
 		}
@@ -172,7 +179,6 @@ export class GameEffect extends GameEffectChild {
 			return unit.isInteractable() && this.intersects(unit)
 		})
 		targetingUnits.forEach(unit => {
-			this.collidedWith.push(unit.instanceID)
 			this.apply(elapsedMS, unit, false)
 		})
 	}

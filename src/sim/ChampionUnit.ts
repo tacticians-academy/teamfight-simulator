@@ -769,6 +769,8 @@ export class ChampionUnit {
 			[BonusKey.MagicResistShred]: source?.getBonuses(BonusKey.MagicResistShred) ?? 0,
 		}
 
+		damageModifier?.onModifyDamage?.(elapsedMS, this, damage)
+
 		if (source) {
 			getters.activeAugmentEffectsByTeam.value[source.team].forEach(([augment, effects]) => {
 				effects.modifyDamageByHolder?.(augment, this, source, damage)
