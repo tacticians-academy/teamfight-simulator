@@ -4,11 +4,11 @@ import { computed, defineProps, ref } from 'vue'
 import { BonusKey } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/game/ChampionUnit'
-import type { DraggableType } from '#/helpers/dragDrop'
 import { useStore } from '#/game/store'
 
 import { UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import { getDragName, getDragType, onDragOver } from '#/helpers/dragDrop'
+import type { DraggableType } from '#/helpers/dragDrop'
 import { StatusEffectType } from '#/helpers/types'
 import type { StarLevel } from '#/helpers/types'
 import { getIconURLFor } from '#/helpers/utils'
