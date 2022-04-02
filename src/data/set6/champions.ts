@@ -378,6 +378,34 @@ export const baseChampionEffects = {
 		},
 	},
 
+	[ChampionKey.KaiSa]: {
+		cast: (elapsedMS, spell, champion) => {
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target: champion,
+				moveSpeed: 4000, //TODO
+				idealDestination: (champion) => {
+					const enemies = getInteractableUnitsOfTeam(champion.opposingTeam())
+					const enemyColdMap = getBestDensityHexes(false, enemies, true, Math.min(4, champion.range()) as any)
+					return getBestRandomAsMax(true, enemyColdMap.filter(hex => !champion.isAt(hex)), (hex) => enemies.reduce((acc, unit) => acc + unit.coordDistanceSquaredTo(hex), 0))
+				},
+				onDestination: (elapsedMS, champion) => {
+					const attackableEnemies = getAttackableUnitsOfTeam(champion.opposingTeam())
+					const missileCount = champion.getSpellVariable(spell, 'NumMissiles' as SpellKey) + champion.basicAttackCount
+					const castSeconds = champion.getSpellVariable(spell, 'FakeCastTime' as SpellKey)
+					getProjectileSpread(missileCount, toRadians(5)).forEach((changeRadians, index) => {
+						champion.queueProjectileEffect(elapsedMS, spell, {
+							startsAfterMS: (castSeconds + castSeconds * index / missileCount) * 1000,
+							target: attackableEnemies[index % attackableEnemies.length],
+							changeRadians, //TODO from sides with turn speed
+							targetDeathAction: 'closestFromTarget',
+							// missile: //TODO shoulder missile fixed travel time
+						})
+					})
+				},
+			})
+		},
+	},
+
 	[ChampionKey.Kassadin]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
