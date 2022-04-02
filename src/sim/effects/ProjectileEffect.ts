@@ -34,6 +34,8 @@ export interface ProjectileEffectData extends AttackEffectData {
 	missile?: ChampionSpellMissileData
 	/** Defaults to the source unit's attack target unit, or the unit's hex at cast time if `fixedHexRange` is set. */
 	target?: ChampionUnit | HexCoord
+	/** Origin point for the Projectile. Defaults to the queuing source. */
+	projectileStartsFrom?: ChampionUnit | HexCoord
 	/** Creates a `HexEffect` upon completion. */
 	hexEffect?: HexEffectData
 	/** If the `Projectile` should retarget a new unit upon death of the original target. Only works when `target` is a ChampionUnit. */
@@ -53,6 +55,7 @@ export class ProjectileEffect extends GameEffect {
 	missile: ChampionSpellMissileData
 	currentSpeed: number
 	target: ChampionUnit | HexCoord
+	projectileStartsFrom: ChampionUnit | HexCoord
 	targetCoord: HexCoord
 	hexEffect: HexEffectData | undefined
 	destroysOnCollision: boolean | undefined
@@ -81,7 +84,8 @@ export class ProjectileEffect extends GameEffect {
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = data.expiresAfterMS != null ? data.expiresAfterMS : undefined
 
-		this.coord = ref([...source.coord] as HexCoord) // Destructure to avoid mutating source
+		this.projectileStartsFrom = data.projectileStartsFrom ?? source
+		this.coord = ref([...('coord' in this.projectileStartsFrom ? this.projectileStartsFrom.coord : getCoordFrom(this.projectileStartsFrom))] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile!
 		this.currentSpeed = Math.min(10000, this.missile.speedInitial!) //TODO high speeds miss collisions, derive from .travelTime
 		this.target = data.target!
@@ -158,7 +162,7 @@ export class ProjectileEffect extends GameEffect {
 		if (this.returnMissile) {
 			if (!this.isReturning) {
 				this.maxDistance = undefined
-				this.setTarget(this.source)
+				this.setTarget(this.projectileStartsFrom)
 				this.missile = this.returnMissile
 				this.updateWidth()
 				this.opacity = 0.5
@@ -270,7 +274,7 @@ export class ProjectileEffect extends GameEffect {
 
 		if (this.destroysOnCollision != null && this.targetTeam !== undefined) {
 			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
-				if (this.intersects(unit)) {
+				if (!this.collidedWith.includes(unit.instanceID) && this.intersects(unit)) {
 					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
 						if (this.destroysOnCollision) {
 							return this.checkIfDies(elapsedMS)
