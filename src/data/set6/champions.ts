@@ -75,7 +75,7 @@ export const baseChampionEffects = {
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				destroysOnCollision: true,
-				targetDeathAction: 'farthest',
+				targetDeathAction: 'farthestFromSource',
 			})
 		},
 	},

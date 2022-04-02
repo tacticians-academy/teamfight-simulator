@@ -15,7 +15,7 @@ import { coordinateDistanceSquared } from '#/helpers/boardUtils'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/helpers/constants'
 import type { DamageModifier, HexCoord} from '#/helpers/types'
 
-type TargetDeathAction = 'continue' | 'closest' | 'farthest'
+type TargetDeathAction = 'continue' | 'closestFromSource' | 'farthestFromSource' | 'closestFromTarget' | 'farthestFromTarget'
 
 export interface ProjectileEffectData extends AttackEffectData {
 	/** Delays activation of the `Projectile` until after reaching the target by this amount. */
@@ -211,7 +211,7 @@ export class ProjectileEffect extends GameEffect {
 				if (this.targetDeathAction === 'continue') {
 					this.setTarget(this.target.activeHex)
 				} else {
-					const newTarget = getDistanceUnit(this.targetDeathAction === 'farthest', this.source)
+					const newTarget = getDistanceUnit(this.targetDeathAction.startsWith('farthest'), this.targetDeathAction.endsWith('Target') ? this.target : this.source)
 					if (newTarget) {
 						this.setTarget(newTarget)
 					}
