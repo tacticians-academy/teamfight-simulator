@@ -62,8 +62,6 @@ export class MoveUnitEffect extends GameEffect {
 		this.hexEffect = data.hexEffect
 		this.collisionSizeMultiplier = data.collisionSizeMultiplier
 		this.onDestination = data.onDestination
-
-		this.postInit()
 	}
 
 	start = () => {

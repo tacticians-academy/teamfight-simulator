@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 
@@ -108,7 +107,6 @@ export class ProjectileEffect extends GameEffect {
 		}
 
 		this.updateWidth()
-		this.postInit()
 	}
 
 	updateWidth() {
@@ -267,7 +265,7 @@ export class ProjectileEffect extends GameEffect {
 			}
 		}
 
-		if (this.destroysOnCollision != null) {
+		if (this.destroysOnCollision != null && this.targetTeam !== undefined) {
 			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
 				if (this.intersects(unit)) {
 					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {

@@ -59,8 +59,6 @@ export class TargetEffect extends GameEffect {
 		if (this.bounce) {
 			this.bounce.hitUnits = Array.from(this.currentTargets)
 		}
-
-		this.postInit()
 	}
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFirstApply: boolean) => {

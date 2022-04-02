@@ -19,16 +19,17 @@ export interface HexEffectData extends GameEffectData {
 	hexDistanceFromSource?: SurroundingHexRange
 	/** A custom unit for `hexDistanceFromSource` to originate from (defaults to `source`). */
 	hexSource?: ChampionUnit | HexCoord
+	/** The interval to re-apply the effect to units inside it, until it expires. */
+	ticksEveryMS?: DOMHighResTimeStamp
 	/** Taunts affected units to the source unit. */
 	taunts?: boolean
 }
 
-const MIN_ACTIVATION_TIME = 50
-
 export class HexEffect extends GameEffect {
-	hexes: Ref<HexCoord[] | undefined>
+	hexes: HexCoord[] | undefined
 	hexDistanceFromSource: SurroundingHexRange | undefined
 	hexSource: ChampionUnit | HexCoord | undefined
+	ticksEveryMS: DOMHighResTimeStamp | undefined
 	taunts: boolean
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: HexEffectData) {
@@ -36,28 +37,21 @@ export class HexEffect extends GameEffect {
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
 		this.activatesAfterMS = spell ? (spell.missile?.travelTime ?? DEFAULT_TRAVEL_SECONDS) * 1000 : 0
-		const remainingMinimumActivation = MIN_ACTIVATION_TIME - this.activatesAfterMS
-		if (remainingMinimumActivation > 0) {
-			this.startsAtMS -= remainingMinimumActivation
-			this.activatesAfterMS += remainingMinimumActivation
-		}
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS == null ? 0 : data.expiresAfterMS)
 
-		this.hexes = ref(data.hexes)
+		this.hexes = data.hexes
 		this.hexDistanceFromSource = data.hexDistanceFromSource
 		this.hexSource = data.hexSource
+		this.ticksEveryMS = data.ticksEveryMS
 		this.taunts = data.taunts ?? false
-
-		this.postInit()
 	}
 
 	start = () => {
-		if (!this.hexes.value) {
+		if (!this.hexes) {
 			const source = this.hexSource ?? this.source
 			const sourceHex = 'activeHex' in source ? source.activeHex : source
-			const hexes = getHexesSurroundingWithin(sourceHex, this.hexDistanceFromSource!, true)
-			this.hexes.value = hexes
+			this.hexes = getHexesSurroundingWithin(sourceHex, this.hexDistanceFromSource!, true)
 		}
 	}
 
@@ -70,12 +64,16 @@ export class HexEffect extends GameEffect {
 	}
 
 	intersects = (unit: ChampionUnit) => {
-		return unit.isIn(this.hexes.value!)
+		return unit.isIn(this.hexes!)
 	}
 
 	update = (elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) => {
 		const updateResult = this.updateSuper(elapsedMS, diffMS, units)
 		if (updateResult != null) { return updateResult }
 		this.checkCollision(elapsedMS, units)
+		if (this.ticksEveryMS != null) {
+			this.collidedWith = []
+			this.activatesAtMS += this.ticksEveryMS
+		}
 	}
 }

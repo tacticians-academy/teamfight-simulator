@@ -5,6 +5,7 @@ import type { ChampionSpellData, SpellCalculation } from '@tacticians-academy/ac
 import { getters } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
+import { GAME_TICK_MS } from '#/sim/loop'
 
 import { DamageSourceType } from '#/sim/helpers/types'
 import type { ActivateFn, BonusLabelKey, BonusVariable, CollisionFn, DamageModifier, DamageResult, HexCoord, StatusEffectData, TeamNumber } from '#/sim/helpers/types'
@@ -22,7 +23,7 @@ export interface GameEffectData {
 	/** The delay until it should stop applying. Defaults to `0` (only applying once). */
 	expiresAfterMS?: DOMHighResTimeStamp
 	/** The team whose units to hit-test. */
-	targetTeam?: TeamNumber
+	targetTeam?: TeamNumber | null
 	/** `SpellCalculation` to apply to any affected units. */
 	damageCalculation?: SpellCalculation
 	/** Bonus `SpellCalculation` to apply to the first unit hit (ignores `damageModifier`). */
@@ -72,7 +73,7 @@ export class GameEffect extends GameEffectChild {
 	activatesAtMS: DOMHighResTimeStamp = 0
 	expiresAtMS: DOMHighResTimeStamp | undefined
 	source: ChampionUnit
-	targetTeam: TeamNumber | null
+	targetTeam: TeamNumber | null | undefined
 	damageCalculation: SpellCalculation | undefined
 	bonusCalculations: SpellCalculation[]
 	modifiesOnMultiHit: boolean
@@ -92,7 +93,7 @@ export class GameEffect extends GameEffectChild {
 		this.instanceID = `e${instanceIndex += 1}`
 		this.hitID = spell ? `${source.instanceID}${spell.name}${source.castCount}` : this.instanceID
 		this.source = source
-		this.targetTeam = data.targetTeam === undefined ? source.opposingTeam() : data.targetTeam
+		this.targetTeam = data.targetTeam
 		this.damageCalculation = data.damageCalculation
 		this.bonusCalculations = data.bonusCalculations ?? []
 		this.modifiesOnMultiHit = data.modifiesOnMultiHit ?? false
@@ -106,9 +107,6 @@ export class GameEffect extends GameEffectChild {
 		if (this.damageCalculation && this.damageSourceType == null) {
 			console.warn('damageSourceType', spell != null, data)
 		}
-	}
-	postInit() {
-		this.started.value = this.startsAtMS === 0
 	}
 
 	applyBonuses(elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) {
@@ -169,7 +167,7 @@ export class GameEffect extends GameEffectChild {
 
 	checkCollision(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const targetingUnits = units.filter(unit => {
-			if (this.targetTeam != null && unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID)) {
+			if (this.targetTeam != null && (unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID))) {
 				return false
 			}
 			return unit.isInteractable() && this.intersects(unit)
@@ -182,11 +180,11 @@ export class GameEffect extends GameEffectChild {
 
 	updateSuper(elapsedMS: DOMHighResTimeStamp, diffMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		if (this.activated && this.expiresAtMS != null && elapsedMS > this.expiresAtMS) {
-			return false
+			return elapsedMS < this.expiresAtMS + GAME_TICK_MS * 2
 		}
 		if (!this.started.value && elapsedMS >= this.startsAtMS) {
-			this.started.value = true
 			this.start()
+			this.started.value = true
 		}
 		if (elapsedMS < this.activatesAtMS) {
 			return true
