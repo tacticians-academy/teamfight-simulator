@@ -455,17 +455,11 @@ export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augm
 function loadUnits() {
 	const synergiesByTeam = [[], []]
 	const units = getSavedUnits(state.setNumber)
-		.filter(storageChampion => { //TODO remove
-			if (storageChampion.hex == null) {
-				storageChampion.hex = (storageChampion as any).coord
-			}
-			return storageChampion.hex != null
-		})
 		.map(storageChampion => {
 			const championItems = storageChampion.items
 				.map(id => setData.currentItems.find(item => item.id === id))
 				.filter((item): item is ItemData => !!item)
-			const champion = new ChampionUnit(storageChampion.name, storageChampion.hex ?? (storageChampion as any).position, storageChampion.starLevel)
+			const champion = new ChampionUnit(storageChampion.name, storageChampion.hex, storageChampion.starLevel)
 			champion.items = championItems
 			champion.resetPre(synergiesByTeam)
 			return champion
