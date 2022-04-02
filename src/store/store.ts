@@ -289,7 +289,6 @@ function getItemFrom(name: string) {
 function repositionUnit(unit: ChampionUnit, hex: HexCoord) {
 	unit.startHex = [...hex]
 	unit.updateTeam()
-	window.setTimeout(() => saveUnits(state.setNumber))
 }
 
 const store = {
@@ -396,33 +395,28 @@ const store = {
 		unit.genericReset()
 		resetUnitsAfterUpdating()
 	},
-	copyUnit(unit: ChampionUnit, hex: HexCoord) {
-		store._deleteUnit(hex)
-		store.addUnit(unit.name, hex, unit.starLevel)
-		//TODO copy star level, items, etc
-		state.dragUnit = null
-	},
-	moveUnit(unit: ChampionUnit | string, hex: HexCoord) {
-		const isNew = typeof unit === 'string'
-		if (isNew) {
-			store._deleteUnit(hex)
-			store.addUnit(unit, hex, 1)
-		} else {
-			const existingUnit = state.units.find(unit => unit.isStartAt(hex))
-			if (existingUnit) {
-				repositionUnit(existingUnit, unit.startHex)
-			}
-			repositionUnit(unit, hex)
-			resetUnitsAfterUpdating()
-		}
-		state.dragUnit = null
-	},
 	dropUnit(event: DragEvent, name: string, hex: HexCoord) {
-		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
-			store.copyUnit(state.dragUnit, hex)
+		const unit = state.dragUnit
+		if (unit && event.dataTransfer?.effectAllowed === 'copy') {
+			store._deleteUnit(hex)
+			store.addUnit(name, hex, unit.starLevel)
+			//TODO copy items?
+			state.dragUnit = null
 		} else {
-			store.moveUnit(state.dragUnit ?? name, hex)
+			if (unit) {
+				const existingUnit = state.units.find(unit => unit.isStartAt(hex))
+				if (existingUnit) {
+					repositionUnit(existingUnit, unit.startHex)
+				}
+				repositionUnit(unit, hex)
+				resetUnitsAfterUpdating()
+				state.dragUnit = null
+			} else {
+				store._deleteUnit(hex)
+				store.addUnit(name, hex, 1)
+			}
 		}
+		saveUnits(state.setNumber)
 	},
 
 	resetGame() {
