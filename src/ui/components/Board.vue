@@ -49,9 +49,16 @@ function onClearHexMenu(event?: Event) {
 }
 
 onMounted(() => {
-	// Cache hex positions
+	checkIfBoardIsLoaded()
+})
+
+function checkIfBoardIsLoaded() {
 	const container = hexContainer.value!
 	const containerRect = container.getBoundingClientRect()
+	if (containerRect.height <= 0) { // Wait until rendering finishes
+		window.setTimeout(checkIfBoardIsLoaded)
+		return
+	}
 	const containerSize = containerRect.width
 	const rows = Array.from(container.children) as HTMLElement[]
 	// const firstHex = rows[0].children[0]
@@ -69,7 +76,7 @@ onMounted(() => {
 	}
 
 	loadedBoard()
-})
+}
 </script>
 
 <template>
