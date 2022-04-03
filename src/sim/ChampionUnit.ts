@@ -793,12 +793,12 @@ export class ChampionUnit {
 				damage.rawDamage *= 1 - dodgeChance
 			}
 		}
-		if (damageModifier?.increase != null) {
-			damage.rawDamage += damageModifier.increase
-		}
 		if (damage.rawDamage <= 0) {
 			console.warn('Negative damage', damage.rawDamage)
 			return undefined
+		}
+		if (damageModifier?.increase != null) {
+			damage.rawDamage = Math.max(0, damage.rawDamage + damageModifier.increase)
 		}
 		damage.rawDamage *= 1 + (damageModifier?.multiplier ?? 0) + (source?.getBonuses(BonusKey.DamageIncrease) ?? 0)
 		let defenseStat = damage.damageType === DamageType.physical
