@@ -1,15 +1,12 @@
-import { getCoordFrom } from '#/store/store'
+import { getCoordFrom, state } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
 import { doesLineInterceptCircle } from '#/sim/helpers/angles'
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/sim/helpers/constants'
+import { BOARD_COL_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/sim/helpers/constants'
 import { containsHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord, HexRowCol } from '#/sim/helpers/types'
 import { getBestRandomAsMax } from '#/sim/helpers/utils'
-
-const lastCol = BOARD_COL_COUNT - 1
-const lastRow = BOARD_ROW_COUNT - 1
 
 const surroundings: [HexCoord[], HexCoord[], HexCoord[], HexCoord[]] = [
 	[[1, 0], [0, 1], [-1, 1]],
@@ -20,8 +17,8 @@ const surroundings: [HexCoord[], HexCoord[], HexCoord[], HexCoord[]] = [
 
 export type SurroundingHexRange = 0 | 1 | 2 | 3 | 4
 
-export function buildBoard(fillObjects: boolean): any[][] {
-	return [...Array(BOARD_ROW_COUNT)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex] } : 0)))
+export function buildBoard(fillObjects: boolean, rowCount: number): any[][] {
+	return [...Array(rowCount)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex] } : 0)))
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
@@ -53,7 +50,7 @@ export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, 
 
 export function isInBackLines(unit: ChampionUnit) {
 	const row = unit.activeHex[1]
-	return row <= 1 || row >= lastRow - 1
+	return row < 2 || row >= state.rowsTotal - 2
 }
 
 export function getOccupiedHexes(units: ChampionUnit[]) {
@@ -65,7 +62,7 @@ export function getOccupiedHexes(units: ChampionUnit[]) {
 export function getEdgeHexes(hexRowsCols: HexRowCol[][]) {
 	const edgeHexes: HexCoord[] = []
 	hexRowsCols.forEach((row, rowIndex) => {
-		if (rowIndex === 0 || rowIndex === BOARD_ROW_COUNT - 1) {
+		if (rowIndex === 0 || rowIndex === state.rowsTotal - 1) {
 			edgeHexes.push(...row.map(rowCol => rowCol.hex))
 		} else {
 			edgeHexes.push(row[0].hex, row[BOARD_COL_COUNT - 1].hex)
@@ -91,6 +88,8 @@ export function getHexRing([col, row]: HexCoord, atDistance: SurroundingHexRange
 	}
 	const isOffsetRow = row % 2 === 1
 	const validHexes: HexCoord[] = []
+	const lastColIndex = BOARD_COL_COUNT - 1
+	const lastRowIndex = state.rowsTotal - 1
 	for (let mirror = 0; mirror < 2; mirror += 1) {
 		const rowMultiplier = mirror === 0 ? 1 : -1
 		for (const [colDelta, rowDelta] of surroundings[atDistance - 1]) {
@@ -98,7 +97,7 @@ export function getHexRing([col, row]: HexCoord, atDistance: SurroundingHexRange
 			const colMultiplier = rowDelta === 0 ? rowMultiplier : 1
 			const newCol = col + (colDelta + (isCheckOffsetFromRow ? 1 : 0)) * colMultiplier
 			const newRow = row + rowDelta * rowMultiplier
-			if (newCol >= 0 && newCol <= lastCol && newRow >= 0 && newRow <= lastRow) {
+			if ((newCol >= 0 && newCol <= lastColIndex) && (newRow >= 0 && newRow <= lastRowIndex)) {
 				validHexes.push([newCol, newRow])
 			}
 		}
@@ -137,7 +136,7 @@ export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: Champio
 }
 
 export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], includingUnderTargetUnit: boolean, maxDistance: SurroundingHexRange) {
-	const densityBoard = buildBoard(false) as number[][]
+	const densityBoard = buildBoard(false, state.rowsTotal) as number[][]
 	let results: HexCoord[] = []
 	let bestHexValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
 	units.forEach(unit => {

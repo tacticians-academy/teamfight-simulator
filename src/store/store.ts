@@ -19,6 +19,7 @@ import type { ShapeEffect } from '#/sim/effects/ShapeEffect'
 import type { TargetEffect } from '#/sim/effects/TargetEffect'
 
 import { buildBoard, getAdjacentRowUnitsTo } from '#/sim/helpers/board'
+import { BOARD_MAX_ROW_COUNT } from '#/sim/helpers/constants'
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
@@ -30,7 +31,7 @@ type TraitAndUnits = [TraitData, string[]]
 
 // State
 
-const hexRowsCols: HexRowCol[][] = buildBoard(true)
+const hexRowsCols: HexRowCol[][] = buildBoard(true, BOARD_MAX_ROW_COUNT)
 
 export const setData = shallowReactive({
 	activeAugments: [] as AugmentData[],
@@ -50,8 +51,8 @@ export const setData = shallowReactive({
 const setNumber = getSetNumber()
 export const state = reactive({
 	setNumber,
-	rowsPerSide: 0,
-	rowsTotal: 0,
+	rowsPerSide: BOARD_MAX_ROW_COUNT / 2,
+	rowsTotal: BOARD_MAX_ROW_COUNT,
 
 	loaded: {
 		board: false,

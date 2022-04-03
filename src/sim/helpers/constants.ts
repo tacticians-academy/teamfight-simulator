@@ -1,5 +1,4 @@
-export const BOARD_ROW_PER_SIDE_COUNT = 4 //TODO remove
-export const BOARD_ROW_COUNT = BOARD_ROW_PER_SIDE_COUNT * 2
+export const BOARD_MAX_ROW_COUNT = 8
 export const BOARD_COL_COUNT = 7
 
 export const DEFAULT_MANA_LOCK_MS = 1000

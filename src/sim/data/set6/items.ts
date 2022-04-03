@@ -2,7 +2,6 @@ import { ChampionKey, ItemKey, BonusKey, DamageType } from '@tacticians-academy/
 import type { ItemData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
-
 import type { ItemEffects } from '#/sim/data/types'
 import { ShapeEffectRectangle } from '#/sim/effects/ShapeEffect'
 

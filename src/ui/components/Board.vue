@@ -83,7 +83,7 @@ function checkIfBoardIsLoaded() {
 <div class="board">
 	<div class="relative">
 		<div ref="hexContainer" class="overflow-x-hidden aspect-square">
-			<div v-for="(row, rowIndex) in state.hexRowsCols" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
+			<div v-for="(row, rowIndex) in state.hexRowsCols" v-show="rowIndex < state.rowsTotal" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
 				<div
 					v-for="colRow in row" :key="colRow.hex[1]"
 					class="hex" :class="rowIndex < state.rowsPerSide ? 'team-a' : 'team-b'"

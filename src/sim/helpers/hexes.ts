@@ -1,11 +1,13 @@
-import { BOARD_COL_COUNT, BOARD_ROW_COUNT, BOARD_ROW_PER_SIDE_COUNT } from '#/sim/helpers/constants'
+import { state } from '#/store/store'
+
+import { BOARD_COL_COUNT } from '#/sim/helpers/constants'
 import type { HexCoord } from '#/sim/helpers/types'
 
 export function getInverseHex(hex: HexCoord): HexCoord {
-	return [BOARD_COL_COUNT - hex[0] - 1, BOARD_ROW_COUNT - hex[1] - 1]
+	return [BOARD_COL_COUNT - hex[0] - 1, state.rowsTotal - hex[1] - 1]
 }
 export function getMirrorHex(hex: HexCoord): HexCoord {
-	return hex[1] >= BOARD_ROW_PER_SIDE_COUNT ? getInverseHex(hex) : hex
+	return hex[1] >= state.rowsPerSide ? getInverseHex(hex) : hex
 }
 
 export function isSameHex(a: HexCoord | null, b: HexCoord | null) {
