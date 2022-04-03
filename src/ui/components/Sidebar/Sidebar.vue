@@ -15,7 +15,7 @@ import { getTeamName } from '#/ui/helpers/utils'
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
-	return state.didStart || (!state.isLoading && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
+	return state.didStart || (state.loaded.set && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
 })
 
 function onFight() {

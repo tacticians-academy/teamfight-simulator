@@ -25,7 +25,7 @@ function onSetNumber(set: SetNumber) {
 				<button
 					v-for="set in SET_NUMBERS" :key="set"
 					class="w-8 h-8 rounded-lg font-bold" :class="state.setNumber === set ? 'bg-gray-400 text-white' : 'text-secondary border-2 border-gray-300'"
-					:disabled="state.didStart || state.isLoading"
+					:disabled="state.didStart || !state.loaded.set"
 					@click="onSetNumber(set)"
 				>
 					{{ set }}

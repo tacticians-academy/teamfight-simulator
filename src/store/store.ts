@@ -53,7 +53,12 @@ export const state = reactive({
 	rowsPerSide: 0,
 	rowsTotal: 0,
 
-	isLoading: true,
+	loaded: {
+		board: false,
+		set: false,
+		units: false,
+	},
+
 	elapsedSeconds: 0,
 	didStart: false,
 	winningTeam: null as TeamNumber | null,
@@ -75,7 +80,8 @@ export const state = reactive({
 setSetNumber(setNumber)
 
 export async function setSetNumber(set: SetNumber) {
-	state.isLoading = true
+	state.loaded.set = false
+	state.loaded.units = false
 	const { activeAugments, emptyImplementationAugments } = await importAugments(set)
 	const { augmentEffects } = await importAugmentEffects(set)
 	const { championEffects } = await importChampionEffects(set)
@@ -107,9 +113,8 @@ export async function setSetNumber(set: SetNumber) {
 	state.rowsPerSide = set < 2 ? 3 : 4
 	state.rowsTotal = state.rowsPerSide * 2
 
-	loadUnits()
-	state.isLoading = false
-
+	state.loaded.set = true
+	loadUnitsIfNeeded()
 	saveSetNumber(set)
 }
 
@@ -466,7 +471,15 @@ export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augm
 	resetUnitsAfterUpdating()
 }
 
-function loadUnits() {
+export function loadedBoard() {
+	state.loaded.board = true
+	loadUnitsIfNeeded()
+}
+
+function loadUnitsIfNeeded() {
+	if (state.loaded.units || !state.loaded.board || !state.loaded.set) {
+		return
+	}
 	const synergiesByTeam = [[], []]
 	const units = getSavedUnits(state.setNumber)
 		.map(storageChampion => {
@@ -481,4 +494,5 @@ function loadUnits() {
 		})
 	state.units = units
 	resetUnitsAfterUpdating()
+	state.loaded.units = true
 }

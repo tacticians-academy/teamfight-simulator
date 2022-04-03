@@ -7,7 +7,7 @@ import Unit from '#/ui/components/Unit.vue'
 
 import { computed, onMounted, ref } from 'vue'
 
-import { useStore, getCoordFrom, getSocialiteHexStrength, setSocialiteHex } from '#/store/store'
+import { useStore, getCoordFrom, getSocialiteHexStrength, setSocialiteHex, loadedBoard } from '#/store/store'
 
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
@@ -67,6 +67,8 @@ onMounted(() => {
 			state.hexRowsCols[rowIndex][colIndex].coord = [x / containerSize, y / containerSize]
 		}
 	}
+
+	loadedBoard()
 })
 </script>
 
