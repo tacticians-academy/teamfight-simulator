@@ -10,7 +10,7 @@
 		"dev": "vite",
 		"lint": "eslint './src/**/*.{ts,vue}' && vue-tsc --noEmit",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite build && vite preview"
 	},
 	"dependencies": {
 		"@babel/types": "^7.17.0",

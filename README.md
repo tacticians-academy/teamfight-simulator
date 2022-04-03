@@ -67,4 +67,4 @@ _Note `tacticians-academy` uses [`pnpm`](https://pnpm.io) rather than `npm` for 
 
 The largest outstanding project is to script champion abilities. (Fortunately, since graphical representations are not required, there is significant overlap and reuse between many units and sets.)
 
-To get started, find an unimplemented issue from the [current Set milestone](#current-set-support). Champion abilities are a good place to start – you can refer to spell data in [`academy-library/champions`](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [`set6/champions`](src/data/set6/champions.ts?ts=2) as a template, give it a try!
+To get started, find an unimplemented issue from the [current Set milestone](#current-set-support). Champion abilities are a good place to start – you can refer to spell data in [`academy-library/champions`](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [`set6/champions`](src/sim/data/set6/champions.ts?ts=2) as a template, give it a try!
