@@ -87,3 +87,7 @@ export function shuffle<T>(array: T[]) {
 	}
 	return array
 }
+
+export function randomItems<T>(maxCount: number, array: T[]) {
+	return shuffle(array).slice(0, maxCount)
+}

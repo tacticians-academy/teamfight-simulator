@@ -18,7 +18,7 @@ import { getDistanceUnitOfTeam, getRowOfMostAttackable, getInteractableUnitsOfTe
 import { containsHex } from '#/sim/helpers/hexes'
 import { SpellKey, StatusEffectType } from '#/sim/helpers/types'
 import type { BleedData, BonusLabelKey, DamageModifier } from '#/sim/helpers/types'
-import { getBestRandomAsMax, getBestSortedAsMax, randomItem, shuffle } from '#/sim/helpers/utils'
+import { getBestRandomAsMax, getBestSortedAsMax, randomItem, randomItems, shuffle } from '#/sim/helpers/utils'
 
 export const baseChampionEffects = {
 
@@ -972,8 +972,7 @@ export const baseChampionEffects = {
 				const laserCount = champion.getSpellVariable(spell, 'NumLasers' as SpellKey)
 				const droneMissile = champion.getMissileWithSuffix('EDroneMis')
 				const laserMissile = champion.getMissileWithSuffix('EDamageMis')
-				const droneHexes = shuffle(getEdgeHexes(state.hexRowsCols)) //TODO distributed random
-					.slice(0, laserCount)
+				const droneHexes = randomItems(laserCount, getEdgeHexes(state.hexRowsCols)) //TODO distributed random
 				champion.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: droneMissile?.travelTime,
 					hexes: droneHexes,
