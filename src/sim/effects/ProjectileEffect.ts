@@ -247,7 +247,7 @@ export class ProjectileEffect extends GameEffect {
 		} else {
 			const [deltaX, deltaY, distanceX, distanceY] = this.getDelta()
 			if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
-				if (!this.isReturning && isUnit(this.target)) {
+				if (!this.isReturning && isUnit(this.target) && !this.collidedWith.includes(this.target.instanceID)) {
 					if (this.apply(elapsedMS, this.target, true) === false) {
 						return true
 					}
