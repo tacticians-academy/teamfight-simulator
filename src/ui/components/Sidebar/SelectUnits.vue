@@ -14,31 +14,28 @@ function onDrag(event: DragEvent, name: string) {
 }
 
 const unitGroups = computed(() => {
-	const unitGroups: [string, ChampionData[]][] = [['Supported', []], ['Unimplemented', []]]
+	let unitGroups: ['Supported' | 'Unimplemented', ChampionData[]][] = [['Supported', []], ['Unimplemented', []]]
 	setData.champions.forEach(champion => {
 		if (champion.teamSize === 0 || champion.stats.hp == null) { return }
 		const groupIndex = !champion.traits.length || setData.championEffects[champion.name] != null ? 0 : 1
 		unitGroups[groupIndex][1].push(champion)
 	})
-	unitGroups[0][1].sort((a, b) => a.name.localeCompare(b.name))
-	unitGroups[1][1].sort((a, b) => a.name.localeCompare(b.name))
+	unitGroups = unitGroups.filter(group => group[1].length)
 	return unitGroups
 })
 </script>
 
 <template>
 <div v-for="[title, group] in unitGroups" :key="title" class="sidebar-icons-group">
-	<template v-if="group.length">
-		<div class="font-semibold">{{ title }}</div>
-		<div class="sidebar-icons-container">
-			<div
-				v-for="unit in group" :key="unit.name"
-				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
-				:draggable="!state.didStart" @dragstart="onDrag($event, unit.name)"
-			>
-				<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
-			</div>
+	<div v-if="unitGroups.length > 1 || title !== 'Supported'" class="font-semibold">{{ title }}</div>
+	<div class="sidebar-icons-container">
+		<div
+			v-for="unit in group" :key="unit.name"
+			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
+			:draggable="!state.didStart" @dragstart="onDrag($event, unit.name)"
+		>
+			<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
 		</div>
-	</template>
+	</div>
 </div>
 </template>

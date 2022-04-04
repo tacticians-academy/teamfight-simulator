@@ -23,12 +23,13 @@ function onAugment(augment: AugmentData | null) {
 }
 
 const augmentGroups = computed(() => {
-	const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
+	let augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
 	setData.activeAugments.forEach(augment => {
 		const groupID = augment.groupID as AugmentGroupKey
 		const index = setData.emptyImplementationAugments.includes(groupID) || groupID.endsWith('Crest') || groupID.endsWith('Crown') ? 2 : (setData.augmentEffects[groupID] || groupID.endsWith('Heart') || groupID.endsWith('Soul') ? 0 : 1)
 		augmentGroups[index][1].push(augment)
 	})
+	augmentGroups = augmentGroups.filter(group => group[1].length)
 	return augmentGroups
 })
 </script>
