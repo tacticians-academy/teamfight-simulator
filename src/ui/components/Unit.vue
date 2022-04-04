@@ -91,7 +91,7 @@ function onInfo(event: Event) {
 					<template v-for="(shield, index) in unit.shields" :key="index">
 						<div
 							v-if="shield.activated === true"
-							:style="{ width: shield.type ? '7%' : `${100 * (shield.amount ?? 0) / unit.healthMax}%` }"
+							:style="{ width: shield.type ? '5%' : `${100 * (shield.amount ?? 0) / unit.healthMax}%` }"
 							:class="shield.type === 'spellShield' ? 'bg-purple-600' : (shield.type === 'barrier' ? 'bg-cyan-600' : 'bg-gray-300')"
 						/>
 					</template>
