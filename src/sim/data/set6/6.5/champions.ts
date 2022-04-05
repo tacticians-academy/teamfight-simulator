@@ -176,7 +176,7 @@ export const championEffects = {
 				const manaReduction = champion.getSpellVariable(spell, 'TransformManaReduc' as SpellKey)
 				const expiresAt = elapsedMS + transformSeconds * 1000
 				champion.increaseMaxHealthBy(bonusHealth)
-				champion.setBonusesFor(spell.name as SpellKey, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
+				champion.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.ManaReduction, manaReduction, expiresAt], [BonusKey.HexRangeIncrease, -rangeReduction, expiresAt])
 				if (champion.target) {
 					const jumpToHex = champion.projectHexFrom(champion.target, false, 1)
 					if (jumpToHex) {
@@ -214,7 +214,7 @@ export const championEffects = {
 			return champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.team,
 				hexDistanceFromSource: hexRadius as SurroundingHexRange,
-				bonuses: [champion.instanceID as ChampionKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationSeconds * 1000]],
+				bonuses: [spell.name as BonusLabelKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationSeconds * 1000]],
 			})
 		},
 	},
@@ -348,7 +348,7 @@ export const championEffects = {
 				fixedHexRange,
 				destroysOnCollision: false,
 				onCollided: (elapsedMS, effect, withUnit) => {
-					withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, -attackSpeedReducePercent, elapsedMS + durationSeconds * 1000])
+					withUnit.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.AttackSpeed, -attackSpeedReducePercent, elapsedMS + durationSeconds * 1000])
 					withUnit.bleeds.add({
 						sourceID: Math.random().toString(),
 						source: champion,
@@ -374,7 +374,7 @@ export const championEffects = {
 				target.damage(elapsedMS, false, champion, DamageSourceType.spell, damageCalculation, false)
 			}
 			const expiresAtMS = elapsedMS + statsSeconds * 1000
-			champion.addBonuses(spell!.name as SpellKey, [BonusKey.Armor, statsAmount, expiresAtMS], [BonusKey.MagicResist, statsAmount, expiresAtMS])
+			champion.addBonuses(spell!.name as BonusLabelKey, [BonusKey.Armor, statsAmount, expiresAtMS], [BonusKey.MagicResist, statsAmount, expiresAtMS])
 		},
 	},
 
@@ -446,7 +446,7 @@ export const championEffects = {
 			const damageCalculation = champion.getSpellCalculation(spell, 'DamageCalc' as SpellKey)
 			const attackSpeedProportion = champion.getSpellCalculationResult(spell, 'BonusAttackSpeed' as SpellKey)
 			const expiresAtMS = elapsedMS + empowerSeconds * 1000
-			champion.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, attackSpeedProportion, expiresAtMS])
+			champion.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.AttackSpeed, attackSpeedProportion, expiresAtMS])
 			champion.empoweredAutos.add({
 				amount: 9001,
 				expiresAtMS,

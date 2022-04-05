@@ -255,7 +255,7 @@ export const baseChampionEffects = {
 					hexes: getHexRow(champion.activeHex[1]),
 					expiresAfterMS: durationMS, //TODO verify
 					onCollided: (elapsedMS, effect, withUnit) => {
-						withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, attackSpeedProportion, elapsedMS + durationMS])
+						withUnit.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.AttackSpeed, attackSpeedProportion, elapsedMS + durationMS])
 					},
 				})
 				champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
@@ -314,7 +314,7 @@ export const baseChampionEffects = {
 										damageCalculation,
 										hexSource: target,
 										hexDistanceFromSource: 2,
-										bonuses: [spell.name as SpellKey, [BonusKey.ArmorShred, shredProportion, shredExpiresAtMS], [BonusKey.MagicResistShred, shredProportion, shredExpiresAtMS]],
+										bonuses: [spell.name as BonusLabelKey, [BonusKey.ArmorShred, shredProportion, shredExpiresAtMS], [BonusKey.MagicResistShred, shredProportion, shredExpiresAtMS]],
 									},
 									onDestination: (elapsedMS, champion) => {
 										if (!target.dead) { //TODO check if open
@@ -511,7 +511,7 @@ export const baseChampionEffects = {
 					champion.manaLockUntilMS = elapsedMS + expiresAfterMS
 				},
 				onCollided: (elapsedMS, effect, withUnit) => {
-					withUnit.setBonusesFor(champion.instanceID as ChampionKey, [BonusKey.Armor, bonusStats, elapsedMS + expiresAfterMS], [BonusKey.MagicResist, bonusStats, elapsedMS + expiresAfterMS])
+					withUnit.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.Armor, bonusStats, elapsedMS + expiresAfterMS], [BonusKey.MagicResist, bonusStats, elapsedMS + expiresAfterMS])
 				},
 			})
 			return true
@@ -581,7 +581,7 @@ export const baseChampionEffects = {
 				},
 			}
 			target.addBleedIfStrongerThan(sourceID, bleed)
-			target.setBonusesFor(spell.name as SpellKey, [BonusKey.MagicResistShred, mrShredProportion, elapsedMS + durationMS])
+			target.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.MagicResistShred, mrShredProportion, elapsedMS + durationMS])
 			return true
 		},
 	},
@@ -619,7 +619,7 @@ export const baseChampionEffects = {
 				const bonusADProportion = champion.getSpellVariable(spell, 'PercentAD' as SpellKey)
 				const allyADAP = champion.getSpellVariable(spell, 'AllyADAPBuff' as SpellKey)
 				const expiresAtMS = elapsedMS + buffSeconds * 1000
-				const bonusKey = spell!.name as SpellKey
+				const bonusKey = spell!.name as BonusLabelKey
 				champion.setBonusesFor(bonusKey, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
 				champion
 					.alliedUnits(false)
@@ -783,7 +783,7 @@ export const baseChampionEffects = {
 				onCollided: (elapsedMS, effect, withUnit) => {
 					const healAmount = champion.getSpellCalculationResult(spell, SpellKey.Heal)
 					withUnit.gainHealth(elapsedMS, champion, healAmount, true)
-					withUnit.setBonusesFor(spell.name as SpellKey, [BonusKey.AttackSpeed, bonusASProportion * 100, elapsedMS + bonusSeconds * 1000])
+					withUnit.setBonusesFor(spell.name as BonusLabelKey, [BonusKey.AttackSpeed, bonusASProportion * 100, elapsedMS + bonusSeconds * 1000])
 				},
 			})
 			champion.queueProjectileEffect(elapsedMS, spell, {
@@ -1026,7 +1026,7 @@ export const baseChampionEffects = {
 							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
 						})
 					} else {
-						champion.addBonuses(spell.name as SpellKey, [shieldKey, shieldAmp])
+						champion.addBonuses(spell.name as BonusLabelKey, [shieldKey, shieldAmp])
 					}
 				},
 			})

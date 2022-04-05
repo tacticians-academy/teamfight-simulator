@@ -5,7 +5,7 @@ import { setData } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
-import type { BonusEntry, BonusVariable, SpellKey, SynergyData } from '#/sim/helpers/types'
+import type { BonusEntry, BonusLabelKey, BonusVariable, SynergyData } from '#/sim/helpers/types'
 
 export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, statFromTarget?: boolean, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
 	return {
@@ -163,7 +163,7 @@ export function calculateChampionBonuses(unit: ChampionUnit) {
 	const spell = unit.getCurrentSpell()
 	const variables = unit.championEffects?.innate?.(spell, unit)
 	if (variables) {
-		bonuses.push([(spell?.name as SpellKey) ?? (unit.name as ChampionKey), variables])
+		bonuses.push([(spell?.name as BonusLabelKey) ?? (unit.name as ChampionKey), variables])
 	}
 	return bonuses
 }
