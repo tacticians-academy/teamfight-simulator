@@ -292,7 +292,7 @@ export const baseTraitEffects = {
 			if (traitLevel === 1) {
 				const lowestHPSyndicate = getBestRandomAsMax(false, units, (unit) => unit.health) //TODO should be stable
 				if (lowestHPSyndicate) {
-					units.forEach(unit => unit.setBonusesFor(TraitKey.Syndicate))
+					units.forEach(unit => unit.removeBonusesFor(TraitKey.Syndicate))
 					units = [lowestHPSyndicate]
 				}
 			}

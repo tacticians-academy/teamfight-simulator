@@ -629,7 +629,7 @@ export class ChampionUnit {
 			this.castCount += 1
 			this.activeSynergies.forEach(({ key, activeEffect }) => setData.traitEffects[key]?.cast?.(activeEffect!, elapsedMS, this))
 			getters.activeAugmentEffectsByTeam.value[this.team].forEach(([augment, effects]) => effects.cast?.(augment, elapsedMS, this))
-			this.setBonusesFor(SpellKey.ManaReave)
+			this.removeBonusesFor(SpellKey.ManaReave)
 			this.mana = this.getBonuses(BonusKey.ManaRestore) //TODO delay until mana lock
 		}
 	}
@@ -1116,6 +1116,10 @@ export class ChampionUnit {
 			return undefined
 		}
 		return calculation
+	}
+
+	removeBonusesFor(sourceKey: BonusLabelKey) {
+		this.bonuses = this.bonuses.filter(bonus => bonus[0] !== sourceKey)
 	}
 
 	setBonusesFor(sourceKey: BonusLabelKey, ...bonuses: BonusVariable[]) {
