@@ -17,7 +17,7 @@ specifiers:
   tailwindcss: ^3.0.23
   typescript: ^4.6.3
   vite: ^2.9.1
-  vite-plugin-checker: ^0.4.5
+  vite-plugin-checker: 0.4.4
   vite-tsconfig-paths: ^3.4.1
   vitest: ^0.8.4
   vue: ^3.2.31
@@ -32,7 +32,7 @@ dependencies:
   tailwindcss: 3.0.23_autoprefixer@10.4.4
   typescript: 4.6.3
   vite: 2.9.1
-  vite-plugin-checker: 0.4.5_vite@2.9.1
+  vite-plugin-checker: 0.4.4_vite@2.9.1
   vite-tsconfig-paths: 3.4.1_vite@2.9.1
   vue: 3.2.31
   vue-tsc: 0.33.9_typescript@4.6.3
@@ -2396,8 +2396,8 @@ packages:
       source-map: 0.7.3
     dev: true
 
-  /vite-plugin-checker/0.4.5_vite@2.9.1:
-    resolution: {integrity: sha512-kCfVzfGzK4D/G6vGPpAffpg9e57AlxUFOjMTr4qEiZpqHyy4ejBNi6OD1UzKn+ZIrWryLKMhjxjQ8hkwns45xA==}
+  /vite-plugin-checker/0.4.4_vite@2.9.1:
+    resolution: {integrity: sha512-bduh+oPybN0PIBCcAlIe8WlgG5P5WPVK0P43dB3jljsA/pR/Jp7BTXrflPdlWXxuQFdDasyOCVWpEVs1Zt+8yw==}
     hasBin: true
     peerDependencies:
       vite: ^2.0.0
