@@ -12,6 +12,8 @@ import { SIDEBAR_UNITS } from '#/ui/helpers/constants'
 import { getDragName, getDragType, onDragOver } from '#/ui/helpers/dragDrop'
 import { getTeamName } from '#/ui/helpers/utils'
 
+const SIDEBAR_VW = `${SIDEBAR_UNITS}vw`
+
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
@@ -67,7 +69,7 @@ function onDrop(event: DragEvent) {
 
 <style lang="postcss">
 .sidebar {
-	width: v-bind(SIDEBAR_UNITS);
+	width: v-bind(SIDEBAR_VW);
 	overflow: hidden;
 }
 

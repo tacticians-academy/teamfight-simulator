@@ -6,7 +6,7 @@ import { state } from '#/store/store'
 import { ChampionUnit } from '#/sim/ChampionUnit'
 import type { AttackBounce } from '#/sim/effects/GameEffect'
 
-import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo } from '#/sim/helpers/board'
+import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo, getHexRow } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
 import { StatusEffectType } from '#/sim/helpers/types'
 import type { DamageModifier, HexCoord, StarLevel, TeamNumber } from '#/sim/helpers/types'
@@ -124,10 +124,6 @@ export function getInteractableUnitsOfTeam(team: TeamNumber | null) {
 
 export function getStageScalingIndex() {
 	return Math.min(Math.max(2, state.stageNumber), 5) - 2
-}
-
-export function getHexRow(row: number) {
-	return state.hexRowsCols[row].map(rowCol => rowCol.hex)
 }
 
 export function getRowOfMostAttackable(team: TeamNumber | null) {

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
-import { getCoordFrom } from '#/store/store'
-
+import { getCoordFrom } from '#/sim/helpers/board'
 import type { HexEffect } from '#/sim/effects/HexEffect'
 
 const props = defineProps<{

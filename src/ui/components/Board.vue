@@ -5,15 +5,18 @@ import ShapeEffect from '#/ui/components/Effects/ShapeEffect.vue'
 import TargetEffect from '#/ui/components/Effects/TargetEffect.vue'
 import Unit from '#/ui/components/Unit.vue'
 
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 
-import { useStore, getCoordFrom, getSocialiteHexStrength, setSocialiteHex, loadedBoard } from '#/store/store'
+import { useStore, getSocialiteHexStrength, setSocialiteHex } from '#/store/store'
 
+import { boardRowsCols, getCoordFrom } from '#/sim/helpers/board'
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
 
-import { HALF_HEX_UNITS, HALF_HEX_BORDER_UNITS, HEX_BORDER_UNITS, HEX_UNITS, QUARTER_HEX_INSET_UNITS } from '#/ui/helpers/constants'
+import { HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragNameOf, onDragOver } from '#/ui/helpers/dragDrop'
+
+const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
 const hexContainer = ref<HTMLElement | null>(null)
 
@@ -47,51 +50,24 @@ function onClearHexMenu(event?: Event) {
 	event?.preventDefault()
 	hexForMenu.value = null
 }
-
-onMounted(() => {
-	checkIfBoardIsLoaded()
-})
-
-function checkIfBoardIsLoaded() {
-	const container = hexContainer.value!
-	const containerRect = container.getBoundingClientRect()
-	if (containerRect.height <= 0) { // Wait until rendering finishes
-		window.setTimeout(checkIfBoardIsLoaded)
-		return
-	}
-	const containerSize = containerRect.width
-	const rows = Array.from(container.children) as HTMLElement[]
-	// const firstHex = rows[0].children[0]
-	// state.hexProportion = 0.126 // firstHex.getBoundingClientRect().width / containerSize
-	for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
-		const row = rows[rowIndex]
-		const cols = Array.from(row.children) as HTMLElement[]
-		for (let colIndex = 0; colIndex < cols.length; colIndex += 1) {
-			const col = cols[colIndex]
-			const hexWidthHalf = col.offsetWidth / 2
-			const x = row.offsetLeft + col.offsetLeft + hexWidthHalf
-			const y = row.offsetTop + col.offsetTop + hexWidthHalf
-			state.hexRowsCols[rowIndex][colIndex].coord = [x / containerSize, y / containerSize]
-		}
-	}
-
-	loadedBoard()
-}
 </script>
 
 <template>
 <div class="board">
 	<div class="relative">
 		<div ref="hexContainer" class="overflow-x-hidden aspect-square">
-			<div v-for="(row, rowIndex) in state.hexRowsCols" v-show="rowIndex < state.rowsTotal" :key="rowIndex" class="row" :class="rowIndex % 2 === 1 && 'row-alt'">
+			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
 				<div
-					v-for="colRow in row" :key="colRow.hex[1]"
+					v-for="colRow in row" v-show="rowIndex < state.rowsTotal" :key="colRow.hex[1]"
 					class="hex" :class="rowIndex < state.rowsPerSide ? 'team-a' : 'team-b'"
-					:style="{ boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < state.rowsPerSide ? 0 : 1] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined }"
+					:style="{
+						left: `${colRow.coord[0] * 100}%`, top: `${colRow.coord[1] * 100}%`,
+						boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < state.rowsPerSide ? 0 : 1] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
+					}"
 					@dragover="onDragOver" @drop="onDrop($event, colRow.hex)"
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
-			</div>
+			</template>
 		</div>
 		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
@@ -133,8 +109,8 @@ function checkIfBoardIsLoaded() {
 
 <style lang="postcss">
 .hex {
-	width: v-bind(HEX_UNITS);
-	height: v-bind(HEX_UNITS);
+	width: v-bind(HEX_VW);
+	height: v-bind(HEX_VW);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
 .hex-overlay {
@@ -155,6 +131,10 @@ function checkIfBoardIsLoaded() {
 </style>
 
 <style scoped lang="postcss">
+.hex {
+	@apply absolute;
+	transform: translate(-50%, -50%)
+}
 .hex.team-a {
 	@apply bg-violet-300/25;
 }
@@ -174,22 +154,6 @@ function checkIfBoardIsLoaded() {
 </style>
 
 <style scoped lang="postcss">
-.row {
-	@apply relative  flex;
-	margin-bottom: v-bind(QUARTER_HEX_INSET_UNITS);
-}
-.row:last-child {
-	margin-bottom: v-bind(HEX_BORDER_UNITS);
-}
-.row-alt {
-	left: v-bind(HALF_HEX_UNITS);
-	margin-left: v-bind(HALF_HEX_BORDER_UNITS);
-}
-
-.row > .hex {
-	margin: v-bind(HEX_BORDER_UNITS) 0 0 v-bind(HEX_BORDER_UNITS);
-}
-
 .hex-button {
 	@apply mx-1 rounded-full;
 	font-size: 1.3vw;

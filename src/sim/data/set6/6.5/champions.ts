@@ -65,7 +65,7 @@ export const championEffects = {
 				targetTeam: target.team,
 				ignoresDestinationCollision: true,
 				idealDestination: () => {
-					const hexLineThroughTarget = getProjectedHexLineFrom(champion, target, state.hexRowsCols)
+					const hexLineThroughTarget = getProjectedHexLineFrom(champion, target)
 					const availableInLine = hexLineThroughTarget.filter(hex => !checkingUnits.some(unit => unit.isAt(hex)))
 					const championHex = availableInLine.pop()
 					targetHex = availableInLine.pop()

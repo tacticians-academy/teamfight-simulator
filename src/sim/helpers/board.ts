@@ -1,9 +1,9 @@
-import { getCoordFrom, state } from '#/store/store'
+import { state } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
 import { doesLineInterceptCircle } from '#/sim/helpers/angles'
-import { BOARD_COL_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/sim/helpers/constants'
+import { BOARD_COL_COUNT, BOARD_MAX_ROW_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/sim/helpers/constants'
 import { containsHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord, HexRowCol } from '#/sim/helpers/types'
 import { getBestRandomAsMax } from '#/sim/helpers/utils'
@@ -17,8 +17,8 @@ const surroundings: [HexCoord[], HexCoord[], HexCoord[], HexCoord[]] = [
 
 export type SurroundingHexRange = 0 | 1 | 2 | 3 | 4
 
-export function buildBoard(fillObjects: boolean, rowCount: number): any[][] {
-	return [...Array(rowCount)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex], coord: [0, 0] } : 0)))
+export function createEmptyBoard(rowCount: number) {
+	return [...Array(rowCount)].map(() => [...Array(BOARD_COL_COUNT).fill(0) as number[]])
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
@@ -59,18 +59,6 @@ export function getOccupiedHexes(units: ChampionUnit[]) {
 		.map(unit => unit.activeHex)
 }
 
-export function getEdgeHexes(hexRowsCols: HexRowCol[][]) {
-	const edgeHexes: HexCoord[] = []
-	hexRowsCols.forEach((row, rowIndex) => {
-		if (rowIndex === 0 || rowIndex === state.rowsTotal - 1) {
-			edgeHexes.push(...row.map(rowCol => rowCol.hex))
-		} else {
-			edgeHexes.push(row[0].hex, row[BOARD_COL_COUNT - 1].hex)
-		}
-	})
-	return edgeHexes
-}
-
 export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: SurroundingHexRange, includingOrigin: boolean): HexCoord[] {
 	const results: HexCoord[] = []
 	for (let distance = 1; distance <= maxDistance; distance += 1) {
@@ -105,13 +93,27 @@ export function getHexRing([col, row]: HexCoord, atDistance: SurroundingHexRange
 	return validHexes
 }
 
-export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: ChampionUnit, hexRowsCols: HexRowCol[][]) {
+// Board hexes/coords
+
+export const boardRowsCols: HexRowCol[][] = createEmptyBoard(BOARD_MAX_ROW_COUNT)
+	.map((row, rowIndex) => {
+		return row.map((col, colIndex) => {
+			const hexInset = HEX_PROPORTION / 2
+			const rowInset = rowIndex % 2 === 1 ? hexInset : 0
+			return {
+				hex: [colIndex, rowIndex],
+				coord: [(colIndex + 0.5) * HEX_PROPORTION + rowInset, (rowIndex + 0.5) * HEX_PROPORTION - rowIndex * hexInset / 2],
+			}
+		})
+	})
+
+export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: ChampionUnit) {
 	const fromCoord = fromUnit.coord
 	const [projectedX, projectedY] = toUnit.coord
 	const dX = (projectedX - fromCoord[0]) * MAX_HEX_COUNT
 	const dY = (projectedY - fromCoord[1]) * MAX_HEX_COUNT
 	const results: [number, HexCoord][] = []
-	hexRowsCols.forEach(row => {
+	boardRowsCols.forEach(row => {
 		row.forEach(colRow => {
 			if (doesLineInterceptCircle(colRow.coord, HEX_PROPORTION / 2, fromCoord, [dX, dY])) {
 				results.push([fromUnit.coordDistanceSquaredTo(colRow), colRow.hex])
@@ -122,21 +124,43 @@ export function getProjectedHexLineFrom(fromUnit: ChampionUnit, toUnit: Champion
 	return results.map(entry => entry[1])
 }
 
-export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: ChampionUnit, radiansChange: number, atDistance: number, hexRowsCols: HexRowCol[][]) {
+export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: ChampionUnit, radiansChange: number, atDistance: number) {
 	const angle = target.angleTo(fromUnit) + radiansChange
 	const [sourceX, sourceY] = fromUnit.coord
 	const deltaX = Math.cos(angle) * atDistance
 	const deltaY = Math.sin(angle) * atDistance
 	console.log(sourceX, sourceY, deltaX, deltaY)
 	const idealCoord: HexCoord = [sourceX + deltaX, sourceY + deltaY]
-	const allHexRowsCols = hexRowsCols.flatMap(row => row.map(col => col))
+	const allHexRowsCols = boardRowsCols.flatMap(row => row.map(col => col))
 	const bestHexRowCol = getBestRandomAsMax(false, allHexRowsCols, (hexRowCol) => coordinateDistanceSquared(hexRowCol.coord, idealCoord))
 	// console.log(JSON.stringify(fromUnit.activeHex), JSON.stringify(bestHexRowCol?.hex))
 	return bestHexRowCol?.hex
 }
 
+export function getCoordFrom([col, row]: HexCoord): HexCoord {
+	// const borderSize = HEX_BORDER_PROPORTION / 100
+	// return [(col + 0.5 + (row % 2 === 1 ? 0.5 : 0)) * HEX_PROPORTION + borderSize * (col - 0.5), (row + 1) * HEX_PROPORTION * 0.75 + borderSize * (row - 0.5)]
+	return [...boardRowsCols[row][col].coord]
+}
+
+export function getEdgeHexes() {
+	const edgeHexes: HexCoord[] = []
+	boardRowsCols.forEach((row, rowIndex) => {
+		if (rowIndex === 0 || rowIndex === state.rowsTotal - 1) {
+			edgeHexes.push(...row.map(rowCol => rowCol.hex))
+		} else {
+			edgeHexes.push(row[0].hex, row[BOARD_COL_COUNT - 1].hex)
+		}
+	})
+	return edgeHexes
+}
+
+export function getHexRow(row: number) {
+	return boardRowsCols[row].map(rowCol => rowCol.hex)
+}
+
 export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], includingUnderTargetUnit: boolean, maxDistance: SurroundingHexRange) {
-	const densityBoard = buildBoard(false, state.rowsTotal) as number[][]
+	const densityBoard = createEmptyBoard(state.rowsTotal)
 	let results: HexCoord[] = []
 	let bestHexValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
 	units.forEach(unit => {

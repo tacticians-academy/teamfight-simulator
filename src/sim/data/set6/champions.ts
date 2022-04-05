@@ -10,11 +10,11 @@ import type { ChampionEffects } from '#/sim/data/types'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/sim/effects/ShapeEffect'
 
 import { toRadians } from '#/sim/helpers/angles'
-import { getHexRing, getBestDensityHexes, getOccupiedHexes, getHexesSurroundingWithin, getEdgeHexes } from '#/sim/helpers/board'
+import { getBestDensityHexes, getHexRing, getHexRow, getOccupiedHexes, getHexesSurroundingWithin, getEdgeHexes } from '#/sim/helpers/board'
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
 import { DEFAULT_CAST_SECONDS, DEFAULT_MANA_LOCK_MS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/sim/helpers/constants'
-import { getDistanceUnitOfTeam, getRowOfMostAttackable, getInteractableUnitsOfTeam, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getHexRow, getAttackableUnitsOfTeam, getProjectileSpread } from '#/sim/helpers/effectUtils'
+import { getDistanceUnitOfTeam, getRowOfMostAttackable, getInteractableUnitsOfTeam, modifyMissile, getDistanceUnitFromUnits, getUnitsOfTeam, getAttackableUnitsOfTeam, getProjectileSpread } from '#/sim/helpers/effectUtils'
 import { containsHex } from '#/sim/helpers/hexes'
 import { SpellKey, StatusEffectType } from '#/sim/helpers/types'
 import type { BleedData, BonusLabelKey, DamageModifier } from '#/sim/helpers/types'
@@ -972,7 +972,7 @@ export const baseChampionEffects = {
 				const laserCount = champion.getSpellVariable(spell, 'NumLasers' as SpellKey)
 				const droneMissile = champion.getMissileWithSuffix('EDroneMis')
 				const laserMissile = champion.getMissileWithSuffix('EDamageMis')
-				const droneHexes = randomItems(laserCount, getEdgeHexes(state.hexRowsCols)) //TODO distributed random
+				const droneHexes = randomItems(laserCount, getEdgeHexes()) //TODO distributed random
 				champion.queueHexEffect(elapsedMS, undefined, {
 					startsAfterMS: droneMissile?.travelTime,
 					hexes: droneHexes,

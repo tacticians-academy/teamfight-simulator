@@ -18,20 +18,18 @@ import type { ProjectileEffect } from '#/sim/effects/ProjectileEffect'
 import type { ShapeEffect } from '#/sim/effects/ShapeEffect'
 import type { TargetEffect } from '#/sim/effects/TargetEffect'
 
-import { buildBoard, getAdjacentRowUnitsTo } from '#/sim/helpers/board'
+import { boardRowsCols, getAdjacentRowUnitsTo } from '#/sim/helpers/board'
 import { BOARD_MAX_ROW_COUNT } from '#/sim/helpers/constants'
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
-import type { HexCoord, HexRowCol, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
+import type { HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 
 import type { DraggableType } from '#/ui/helpers/dragDrop'
 
 type TraitAndUnits = [TraitData, string[]]
 
 // State
-
-const hexRowsCols: HexRowCol[][] = buildBoard(true, BOARD_MAX_ROW_COUNT)
 
 export const setData = shallowReactive({
 	activeAugments: [] as AugmentData[],
@@ -55,7 +53,6 @@ export const state = reactive({
 	rowsTotal: BOARD_MAX_ROW_COUNT,
 
 	loaded: {
-		board: false,
 		set: false,
 		units: false,
 	},
@@ -63,7 +60,6 @@ export const state = reactive({
 	elapsedSeconds: 0,
 	didStart: false,
 	winningTeam: null as TeamNumber | null,
-	hexRowsCols,
 	units: [] as ChampionUnit[],
 	hexEffects: new Set<HexEffect>(),
 	moveUnitEffects: new Set<MoveUnitEffect>(),
@@ -115,7 +111,7 @@ export async function setSetNumber(set: SetNumber) {
 	state.rowsTotal = state.rowsPerSide * 2
 
 	state.loaded.set = true
-	loadUnitsIfNeeded()
+	loadUnitsForSet()
 	saveSetNumber(set)
 }
 
@@ -437,12 +433,6 @@ export function useStore() {
 
 // Helpers
 
-export function getCoordFrom([col, row]: HexCoord): HexCoord {
-	// const borderSize = HEX_BORDER_PROPORTION / 100
-	// return [(col + 0.5 + (row % 2 === 1 ? 0.5 : 0)) * HEX_PROPORTION + borderSize * (col - 0.5), (row + 1) * HEX_PROPORTION * 0.75 + borderSize * (row - 0.5)]
-	return [...state.hexRowsCols[row][col].coord]
-}
-
 export function gameOver(forTeam: TeamNumber) {
 	state.winningTeam = forTeam === 0 ? 1 : 0
 	cancelLoop()
@@ -472,13 +462,8 @@ export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augm
 	resetUnitsAfterUpdating()
 }
 
-export function loadedBoard() {
-	state.loaded.board = true
-	loadUnitsIfNeeded()
-}
-
-function loadUnitsIfNeeded() {
-	if (state.loaded.units || !state.loaded.board || !state.loaded.set) {
+function loadUnitsForSet() {
+	if (state.loaded.units || !state.loaded.set) {
 		return
 	}
 	const synergiesByTeam = [[], []]
