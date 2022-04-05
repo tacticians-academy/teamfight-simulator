@@ -18,7 +18,7 @@ const surroundings: [HexCoord[], HexCoord[], HexCoord[], HexCoord[]] = [
 export type SurroundingHexRange = 0 | 1 | 2 | 3 | 4
 
 export function buildBoard(fillObjects: boolean, rowCount: number): any[][] {
-	return [...Array(rowCount)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex] } : 0)))
+	return [...Array(rowCount)].map((row, rowIndex) => [...Array(BOARD_COL_COUNT)].map((col, colIndex) => (fillObjects ? { hex: [colIndex, rowIndex], coord: [0, 0] } : 0)))
 }
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {

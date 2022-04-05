@@ -217,7 +217,7 @@ export function clearBoardStateAndReset() {
 	resetUnitsAfterUpdating()
 }
 
-function resetUnitsAfterUpdating() {
+export function resetUnitsAfterUpdating() {
 	resetChecks()
 	const synergiesByTeam = getters.synergiesByTeam.value
 	state.units = state.units.filter(unit => {

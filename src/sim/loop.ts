@@ -39,6 +39,12 @@ export function runLoop(animated: boolean) {
 	}
 }
 
+export function fastForwardUntil(untilFN: (elapsedMS: DOMHighResTimeStamp) => boolean) {
+	while (state.winningTeam == null && elapsedMS < 30000 && !untilFN(elapsedMS)) {
+		playNextFrame()
+	}
+}
+
 export function cancelLoop() {
 	startedAtMS = 0
 	if (frameID !== null) {
