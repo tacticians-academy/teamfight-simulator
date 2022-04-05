@@ -2,6 +2,7 @@
 	"name": "teamfight-simulator",
 	"version": "0.1.0",
 	"license": "ISC",
+	"type": "module",
 	"engines": {
 		"node": ">=16",
 		"pnpm": ">=6"
@@ -10,7 +11,9 @@
 		"dev": "vite",
 		"lint": "eslint './src/**/*.{ts,vue}' && vue-tsc --noEmit",
 		"build": "vite build",
-		"preview": "vite build && vite preview"
+		"preview": "vite build && vite preview",
+		"test": "vitest",
+		"coverage": "vitest run --coverage && open coverage/index.html"
 	},
 	"dependencies": {
 		"@babel/types": "^7.17.0",
@@ -21,18 +24,21 @@
 		"tailwindcss": "^3.0.23",
 		"typescript": "^4.6.3",
 		"vite": "^2.9.1",
-		"vite-plugin-checker": "^0.4.4",
+		"vite-plugin-checker": "^0.4.5",
 		"vite-tsconfig-paths": "^3.4.1",
 		"vue": "^3.2.31",
 		"vue-tsc": "^0.33.9"
 	},
 	"devDependencies": {
-		"@ky-is/eslint-config": "^2.3.6",
+		"@ky-is/eslint-config": "^2.4.0",
 		"@vue/eslint-config-typescript": "^10.0.0",
 		"autoprefixer": "^10.4.4",
+		"c8": "^7.11.0",
 		"eslint": "^8.12.0",
 		"eslint-plugin-vue": "^8.5.0",
-		"postcss": "^8.4.12"
+		"happy-dom": "^2.55.0",
+		"postcss": "^8.4.12",
+		"vitest": "^0.8.4"
 	},
 	"eslintConfig": {
 		"extends": "@ky-is/eslint-config/vue-typescript",
@@ -43,7 +49,6 @@
 			]
 		},
 		"rules": {
-			"@typescript-eslint/strict-boolean-expressions": "error",
 			"vue/component-tags-order": [
 				"error",
 				{

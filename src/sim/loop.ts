@@ -59,7 +59,7 @@ function frameRequestCallback(frameMS: DOMHighResTimeStamp) {
 	}
 }
 
-function initGame(frameMS: DOMHighResTimeStamp) {
+export function initGame(frameMS: DOMHighResTimeStamp) {
 	delays.clear()
 	startedAtMS = frameMS
 	elapsedMS = 0
