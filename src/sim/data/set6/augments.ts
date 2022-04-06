@@ -66,12 +66,11 @@ export const baseAugmentEffects = {
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.StandBehindMe, [BonusKey.Armor, bodyguardArmor * bodyguardPercent / 100]))
 			const sampleBodyguard = bodyguards[0]
 			if (sampleBodyguard != null) {
-				window.setTimeout(() => {
-					sampleBodyguard.queueHexEffect(0, undefined, {
-						targetTeam: sampleBodyguard.team,
-						hexes: behindHexes,
-					})
+				const sampleEffect = sampleBodyguard.queueHexEffect(0, undefined, {
+					targetTeam: sampleBodyguard.team,
+					hexes: behindHexes,
 				})
+				sampleEffect.started.value = true
 			}
 		},
 	},

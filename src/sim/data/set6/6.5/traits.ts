@@ -36,12 +36,11 @@ export const traitEffects = {
 			getUnitsOfTeam(unit.team)
 				.filter(unit => unit.isIn(hexesInFront))
 				.forEach(unit => unit.setBonusesFor(TraitKey.Mastermind, [BonusKey.Mana, manaGrant]))
-			window.setTimeout(() => { //TODO remove
-				unit.queueHexEffect(0, undefined, {
-					targetTeam: unit.team,
-					hexes: hexesInFront,
-				})
+			const sampleEffect = unit.queueHexEffect(0, undefined, {
+				targetTeam: unit.team,
+				hexes: hexesInFront,
 			})
+			sampleEffect.started.value = true
 		},
 	},
 
