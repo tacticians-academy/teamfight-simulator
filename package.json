@@ -25,6 +25,7 @@
 		"vite": "^2.9.1",
 		"vite-plugin-checker": "0.4.4",
 		"vite-tsconfig-paths": "^3.4.1",
+		"vitest": "^0.8.4",
 		"vue": "^3.2.31",
 		"vue-tsc": "^0.33.9"
 	},
@@ -37,8 +38,7 @@
 		"eslint": "^8.12.0",
 		"eslint-plugin-vue": "^8.5.0",
 		"happy-dom": "^2.55.0",
-		"postcss": "^8.4.12",
-		"vitest": "^0.8.4"
+		"postcss": "^8.4.12"
 	},
 	"eslintConfig": {
 		"extends": "@ky-is/eslint-config/vue-typescript",

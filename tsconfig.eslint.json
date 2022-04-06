@@ -1,12 +1,14 @@
 {
-	"extends": "./tsconfig.json",
+	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
 		"paths": {
 			"#/*": ["./src/*"],
+			"#test/*": ["./test/*"],
 		},
 	},
 	"include": [
 		"./**/*.ts",
 		"./**/*.vue",
+		"./vite.config.ts",
 	],
 }

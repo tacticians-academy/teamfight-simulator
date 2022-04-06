@@ -1,21 +1,18 @@
 {
+	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"target": "esnext",
-		"useDefineForClassFields": true,
-		"module": "esnext",
-		"moduleResolution": "node",
-		"strict": true,
-		"sourceMap": true,
-		"noImplicitAny": true,
-		"resolveJsonModule": true,
-		"esModuleInterop": true,
-		"lib": ["esnext", "dom"],
 		"paths": {
 			"#/*": ["./src/*"],
-			"#test/*": ["./test/*"],
-			// "@tacticians-academy/academy-library/*": ["../academy-library/*"], //SAMPLE
-			// "@tacticians-academy/academy-library": ["../academy-library/dist/index.ts"], //SAMPLE
 		},
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"]
+	"include": [
+		"./src/**/*.ts",
+		"./src/**/*.vue",
+		"./test/**/*.ts",
+		"./vite*.config.ts",
+	],
+	"exclude": [
+		"node_modules",
+		"./**/*.test.ts",
+	],
 }
