@@ -26,7 +26,7 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 			const durationMS = stunSeconds * 1000
-			const target = getDistanceUnitOfTeam(true, champion, champion.opposingTeam()) //TODO Blitz pulls Blitz
+			const target = getDistanceUnitOfTeam(true, champion, champion.opposingTeam()) //TODO Blitz pulls Blitz should swap hexes
 			champion.setTarget(target)
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
@@ -39,7 +39,7 @@ export const baseChampionEffects = {
 					champion.performActionUntilMS = 0
 					const adjacentHex = withUnit.projectHexFrom(champion, false, 1)
 					if (adjacentHex) {
-						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, false, (elapsedMS, withUnit) => { //TODO travel time
+						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, false, (elapsedMS, withUnit) => {
 							withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, durationMS)
 						})
 						if (!champion.checkInRangeOfTarget()) {
@@ -102,7 +102,7 @@ export const baseChampionEffects = {
 			return champion.queueTargetEffect(elapsedMS, spell, {
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit.dead) {
-						champion.increaseMaxHealthBy(champion.healthMax * hpOnKillProportion) //TODO allow setting base stacks
+						champion.increaseMaxHealthBy(champion.healthMax * hpOnKillProportion) //TODO UI to set base stacks
 					}
 				},
 			})
@@ -136,7 +136,7 @@ export const baseChampionEffects = {
 			const expiresAfterMS = fieldSeconds * 1000
 			const shape = new ShapeEffectCircle(hotspotHex, HEX_MOVE_LEAGUEUNITS * (hexRadius + 0.2))
 			const bonusLabelKey = spell.name as BonusLabelKey
-			champion.queueShapeEffect(elapsedMS, spell, { //TODO projectile
+			champion.queueShapeEffect(elapsedMS, spell, { //TODO projectile to shape effect
 				targetTeam: champion.team,
 				shape,
 				startsAfterMS,
@@ -317,7 +317,7 @@ export const baseChampionEffects = {
 										bonuses: [spell.name as BonusLabelKey, [BonusKey.ArmorShred, shredProportion, shredExpiresAtMS], [BonusKey.MagicResistShred, shredProportion, shredExpiresAtMS]],
 									},
 									onDestination: (elapsedMS, champion) => {
-										if (!target.dead) { //TODO check if open
+										if (!target.dead) { //TODO check if target hex is open
 											champion.customMoveTo(champion.activeHex, true, undefined, true) //TODO experimentally determine
 										}
 									},
@@ -377,7 +377,7 @@ export const baseChampionEffects = {
 				},
 			})
 			if (spell.castTime != null) {
-				champion.performActionUntilMS = elapsedMS + spell.castTime //TODO lock in place, infinite range
+				champion.performActionUntilMS = elapsedMS + spell.castTime //TODO lock in place, infinite range?
 			}
 			champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
 			return true
@@ -454,7 +454,7 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target: champion,
-				moveSpeed: 4000, //TODO
+				moveSpeed: 4000, //TODO experimentally determine
 				idealDestination: (champion) => {
 					const enemies = getInteractableUnitsOfTeam(champion.opposingTeam())
 					const enemyColdMap = getBestDensityHexes(false, enemies, true, Math.min(4, champion.range()) as SurroundingHexRange)

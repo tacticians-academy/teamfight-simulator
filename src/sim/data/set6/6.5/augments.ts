@@ -183,12 +183,12 @@ export const augmentEffects = {
 			}
 			targets.forEach(unit => target.queueProjectileEffect(elapsedMS, undefined, {
 				target: unit,
-				// isAoE: true, //TODO
+				// isAoE: true, //TODO specify AoE damage
 				damageCalculation: createDamageCalculation(AugmentGroupKey.LudensEcho, magicDamage, DamageType.magic),
 				damageSourceType: DamageSourceType.bonus,
 				missile: {
 					speedInitial: 1000,
-					// travelTime: 1, //TODO
+					// travelTime: 1, //TODO fixed travel time
 				},
 			}))
 		},

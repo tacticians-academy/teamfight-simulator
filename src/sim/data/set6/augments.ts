@@ -53,7 +53,7 @@ export const baseAugmentEffects = {
 	[AugmentGroupKey.StandBehindMe]: {
 		apply: (augment, team, units) => {
 			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Bodyguard)
-			if (!synergy) { return }
+			if (!synergy) { return } //TODO works without trait active?
 
 			const [bodyguardArmor] = getVariables(synergy.activeEffect!, 'BonusArmor')
 			const [bodyguardPercent, standBehindPercent] = getVariables(augment, 'DefenseBonus', 'DefensePercent')

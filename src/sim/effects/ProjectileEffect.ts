@@ -258,7 +258,7 @@ export class ProjectileEffect extends GameEffect {
 		this.traveledDistance += diffDistance
 
 		if (this.missile.acceleration != null) {
-			this.currentSpeed = this.currentSpeed + this.missile.acceleration * diffMS / 1000 //TODO determine calculation
+			this.currentSpeed = this.currentSpeed + this.missile.acceleration * diffMS / 1000 //TODO experimentally determine
 			if (this.missile.acceleration > 0) {
 				if (this.missile.speedMax != null && this.currentSpeed > this.missile.speedMax) {
 					this.currentSpeed = this.missile.speedMax

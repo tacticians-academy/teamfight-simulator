@@ -186,13 +186,13 @@ export const championEffects = {
 			}
 			const fixedHexRange = champion.data.stats.range
 			const target = getDistanceUnitOfTeamWithinRangeTo(true, champion, fixedHexRange, getAttackableUnitsOfTeam(champion.opposingTeam()))
-			if (!target) { return true } //TODO
-			return champion.queueProjectileEffect(elapsedMS, spell, {
+			champion.queueProjectileEffect(elapsedMS, spell, {
 				target,
 				missile: boulderSpell.missile,
 				fixedHexRange,
 				destroysOnCollision: false,
 			})
+			return true
 		},
 	},
 
@@ -233,7 +233,7 @@ export const championEffects = {
 					return getBestRandomAsMax(true, bestUnits, (unit) => unit.coordDistanceSquaredTo(champion)) ?? champion.target
 				},
 				moveSpeed: jumpMS, //TODO fixed move time
-				onDestination: (elapsedMS, champion) => { //TODO verify
+				onDestination: (elapsedMS, champion) => {
 					champion.queueProjectileEffect(elapsedMS, spell, {
 						bonuses: [SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReave]],
 					})
@@ -628,7 +628,7 @@ function addDravenAxe(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, 
 		if (existingAxe.amount < 2) { //NOTE hardcoded
 			existingAxe.amount += 1
 		}
-		existingAxe.expiresAtMS = expiresAtMS //TODO the axes should technically expire individually
+		existingAxe.expiresAtMS = expiresAtMS //TODO axes should technically expire individually
 	} else {
 		champion.empoweredAutos.add({
 			id,

@@ -102,7 +102,7 @@ export class ChampionUnit {
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
 		this.coord = this.getCoord()
-		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 0 //TODO investigate
+		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 0 //TODO investigate how melee attacks work
 
 		for (const effectType in StatusEffectType) {
 			this.statusEffects[effectType as StatusEffectType] = {
@@ -347,7 +347,7 @@ export class ChampionUnit {
 					this.queueProjectileEffect(elapsedMS, undefined, {
 						startsAfterMS: windupMS,
 						missile: empoweredAuto.missile ?? this.attackMissile ?? {
-							speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO crits
+							speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO predetermine crits
 						},
 						damageSourceType,
 						damageCalculation: empoweredAuto.damageCalculation,
@@ -697,7 +697,7 @@ export class ChampionUnit {
 		this.setMana(this.mana + amount)
 	}
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
-		if (elapsedMS < this.manaLockUntilMS) { //TODO verify mana lock prevents mana gain
+		if (elapsedMS < this.manaLockUntilMS) {
 			return
 		}
 		this.addMana(amount)
@@ -860,8 +860,7 @@ export class ChampionUnit {
 			this.shields
 				.filter(shield => shield.activated === true && shield.type !== 'spellShield')
 				.forEach(shield => {
-					if (shield.amount == null) { return }
-					if (healthDamage <= 0) { //TODO prevent negative shielding
+					if (shield.amount == null || healthDamage <= 0) {
 						return
 					}
 					const protectingDamage = Math.min(shield.amount, healthDamage)

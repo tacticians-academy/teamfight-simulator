@@ -17,7 +17,7 @@ import { MutantBonus, MutantType, StatusEffectType } from '#/sim/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber } from '#/sim/helpers/types'
 import { getBestRandomAsMax, getBestUniqueAsMax } from '#/sim/helpers/utils'
 
-const BODYGUARD_DELAY_MS = 4000 //TODO experimentally determine
+const BODYGUARD_DELAY_MS = 2000 //TODO experimentally determine
 
 export const baseTraitEffects = {
 
