@@ -30,7 +30,7 @@ export const baseTraitEffects = {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: BODYGUARD_DELAY_MS,
 				hexDistanceFromSource: 1,
-				opacity: 0.5,
+				opacity: 0.2,
 				taunts: true,
 			})
 		},

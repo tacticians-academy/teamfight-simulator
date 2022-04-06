@@ -323,7 +323,7 @@ export const baseItemEffects = {
 			unit.queueHexEffect(0, undefined, {
 				startsAfterMS: 4100, //TODO determine
 				hexDistanceFromSource: 4,
-				opacity: 0.5,
+				opacity: 0.2,
 				taunts: true,
 			})
 		},
@@ -332,7 +332,7 @@ export const baseItemEffects = {
 			voidling.queueHexEffect(elapsedMS, undefined, {
 				startsAfterMS: 500, //TODO experimentally determine
 				hexDistanceFromSource: 1,
-				opacity: 0.5,
+				opacity: 0.2,
 				taunts: true,
 			})
 		},
