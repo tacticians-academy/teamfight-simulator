@@ -387,6 +387,10 @@ export class ChampionUnit {
 		}
 	}
 
+	hasAssistCreditFor(enemy: ChampionUnit) {
+		return enemy.hitBy.has(this.instanceID)
+	}
+
 	completeAutoAttack(elapsedMS: DOMHighResTimeStamp, effect: GameEffect, withUnit: ChampionUnit, damage: DamageResult | undefined, empoweredAuto: EmpoweredAuto, canReProcAttack: boolean) {
 		if (!effect.collidedWith.length) {
 			const effects = this.championEffects

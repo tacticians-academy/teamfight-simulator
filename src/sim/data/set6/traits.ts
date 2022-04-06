@@ -50,14 +50,14 @@ export const baseTraitEffects = {
 	[TraitKey.Challenger]: {
 		disableDefaultVariables: true,
 		enemyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
-			const challengersTargeting = traitUnits.filter(unit => unit.target === dead)
-			if (!challengersTargeting.length) {
+			const takedownChallengers = traitUnits.filter(unit => unit.hasAssistCreditFor(dead))
+			if (!takedownChallengers.length) {
 				return
 			}
 			const [durationSeconds, bonusAS] = getVariables(activeEffect, 'BurstDuration', 'BonusAS')
 			const bonusMoveSpeed = 500 //TODO determine
 			const expiresAtMS = elapsedMS + durationSeconds * 1000
-			challengersTargeting.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], [BonusKey.MoveSpeed, bonusMoveSpeed, expiresAtMS]))
+			takedownChallengers.forEach(unit => unit.setBonusesFor(TraitKey.Challenger, [BonusKey.AttackSpeed, bonusAS, expiresAtMS], [BonusKey.MoveSpeed, bonusMoveSpeed, expiresAtMS]))
 		},
 	},
 
