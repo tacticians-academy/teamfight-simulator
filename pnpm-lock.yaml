@@ -33,6 +33,7 @@ dependencies:
   '@types/babel__code-frame': 7.0.3
   '@types/eslint': 8.4.1
   '@types/node': 16.11.26
+  '@types/ws': 8.5.3
   '@vitejs/plugin-vue': 2.3.1_vite@2.9.1+vue@3.2.31
   tailwindcss: 3.0.23_autoprefixer@10.4.4
   typescript: 4.6.3
@@ -45,7 +46,6 @@ dependencies:
 
 devDependencies:
   '@ky-is/eslint-config': 2.4.0_eslint@8.12.0
-  '@types/ws': 8.5.3
   '@vue/eslint-config-typescript': 10.0.0_472ac59a1665d7276ffa7649fe6f1d6e
   autoprefixer: 10.4.4_postcss@8.4.12
   c8: 7.11.0
@@ -246,7 +246,7 @@ packages:
     resolution: {integrity: sha512-6YOoWjruKj1uLf3INHH7D3qTXwFfEsg1kf3c0uDdSBJwfa/llkwIjrAGV7j7mVgGNbzTQ3HiHKKDXl6bJPD97w==}
     dependencies:
       '@types/node': 16.11.26
-    dev: true
+    dev: false
 
   /@typescript-eslint/eslint-plugin/5.18.0_a07dca3bdfc4bfa60f4dda0c1f9e3287:
     resolution: {integrity: sha512-tzrmdGMJI/uii9/V6lurMo4/o+dMTKDH82LkNjhJ3adCW22YQydoRs5MwTiqxGF9CSYxPxQ7EYb4jLNlIs+E+A==}
