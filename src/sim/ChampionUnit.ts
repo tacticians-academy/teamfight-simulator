@@ -1087,10 +1087,10 @@ export class ChampionUnit {
 		return spell?.missile
 	}
 
-	getSpellVariableIfExists(spell: ChampionSpellData | undefined, key: SpellKey) {
+	getSpellVariableIfExists(spell: ChampionSpellData | undefined, key: string) {
 		return spell?.variables[key]?.[this.starLevel]
 	}
-	getSpellVariable(spell: ChampionSpellData | undefined, key: SpellKey, forceAsVariable?: boolean) {
+	getSpellVariable(spell: ChampionSpellData | undefined, key: string, forceAsVariable?: boolean) {
 		if (forceAsVariable !== true && spell?.calculations[key]) {
 			console.warn('Requested variable that has a calculation, using instead!', spell.name, key)
 			return this.getSpellCalculationResult(spell, key)
@@ -1102,11 +1102,11 @@ export class ChampionUnit {
 		}
 		return value
 	}
-	getSpellCalculationResult(spell: ChampionSpellData | undefined, key: SpellKey) {
+	getSpellCalculationResult(spell: ChampionSpellData | undefined, key: string) {
 		const calculation = this.getSpellCalculation(spell, key)
 		return calculation ? solveSpellCalculationFrom(this, undefined, calculation)[0] : 0
 	}
-	getSpellCalculation(spell: ChampionSpellData | undefined, key: SpellKey, silent: boolean = false) {
+	getSpellCalculation(spell: ChampionSpellData | undefined, key: string, silent: boolean = false) {
 		if (!spell) {
 			console.log('ERR', 'No spell', this.name, key)
 			return undefined

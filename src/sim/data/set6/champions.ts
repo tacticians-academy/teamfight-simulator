@@ -98,7 +98,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.ChoGath]: {
 		cast: (elapsedMS, spell, champion) => {
-			const hpOnKillProportion = champion.getSpellVariable(spell, 'BonusHealthOnKill' as SpellKey)
+			const hpOnKillProportion = champion.getSpellVariable(spell, 'BonusHealthOnKill')
 			return champion.queueTargetEffect(elapsedMS, spell, {
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit.dead) {
@@ -123,15 +123,15 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Ekko]: {
 		cast: (elapsedMS, spell, champion) => {
-			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
+			const hexRadius = champion.getSpellVariable(spell, 'HexRadius')
 			const hotspotHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, hexRadius as SurroundingHexRange))
 			if (!hotspotHex) { return false }
-			const delaySeconds = champion.getSpellVariable(spell, 'FieldDelay' as SpellKey)
-			const fieldSeconds = champion.getSpellVariable(spell, 'FieldDuration' as SpellKey)
-			const allyASProportion = champion.getSpellCalculationResult(spell, 'BonusAS' as SpellKey)
-			const enemyASProportion = champion.getSpellVariable(spell, 'ASSlow' as SpellKey)
-			const allySeconds = champion.getSpellVariable(spell, 'BuffDuration' as SpellKey)
-			const enemySeconds = champion.getSpellVariable(spell, 'SlowDuration' as SpellKey)
+			const delaySeconds = champion.getSpellVariable(spell, 'FieldDelay')
+			const fieldSeconds = champion.getSpellVariable(spell, 'FieldDuration')
+			const allyASProportion = champion.getSpellCalculationResult(spell, 'BonusAS')
+			const enemyASProportion = champion.getSpellVariable(spell, 'ASSlow')
+			const allySeconds = champion.getSpellVariable(spell, 'BuffDuration')
+			const enemySeconds = champion.getSpellVariable(spell, 'SlowDuration')
 			const startsAfterMS = delaySeconds * 1000
 			const expiresAfterMS = fieldSeconds * 1000
 			const shape = new ShapeEffectCircle(hotspotHex, HEX_MOVE_LEAGUEUNITS * (hexRadius + 0.2))
@@ -179,14 +179,14 @@ export const baseChampionEffects = {
 			if (damage && damage.didCrit) {
 				champion.queueHexEffect(elapsedMS, undefined, {
 					hexes: getHexRing(target.activeHex),
-					damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
+					damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage'),
 					opacity: 0.5,
 				})
 			}
 		},
 		cast: (elapsedMS, spell, champion) => {
-			const hexRadius = champion.getSpellVariable(spell, 'HexRadius' as SpellKey)
-			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+			const hexRadius = champion.getSpellVariable(spell, 'HexRadius')
+			const stunSeconds = champion.getSpellVariable(spell, 'StunDuration')
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target: champion,
 				idealDestination: (champion) => randomItem(getBestDensityHexes(true, getAttackableUnitsOfTeam(champion.opposingTeam()), true, Math.min(4, hexRadius) as SurroundingHexRange)),
@@ -218,7 +218,7 @@ export const baseChampionEffects = {
 			const target = champion.target
 			if (!target) { return false }
 			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
-			const healingProportion = champion.getSpellVariable(spell, 'PercentHealing' as SpellKey)
+			const healingProportion = champion.getSpellVariable(spell, 'PercentHealing')
 			return champion.queueTargetEffect(elapsedMS, spell, {
 				sourceTargets: [[champion, target]],
 				onActivate: (elapsedMS, champion) => {
@@ -247,8 +247,8 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
 			if (spell.variables['RangedASBoost'] != null) {
-				const attackSpeedDuration = champion.getSpellVariable(spell, 'RangedASDuration' as SpellKey)
-				const attackSpeedProportion = champion.getSpellCalculationResult(spell, 'RangedASBoost' as SpellKey)
+				const attackSpeedDuration = champion.getSpellVariable(spell, 'RangedASDuration')
+				const attackSpeedProportion = champion.getSpellCalculationResult(spell, 'RangedASBoost')
 				const durationMS = attackSpeedDuration * 1000
 				champion.queueHexEffect(elapsedMS, spell, {
 					targetTeam: champion.team,
@@ -289,8 +289,8 @@ export const baseChampionEffects = {
 				champion.queueHexEffect(elapsedMS, spell, {
 					hexes,
 					onActivate: (elapsedMS, champion) => {
-						const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
-						const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
+						const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration')
+						const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount')
 						const expiresAfterMS = shieldSeconds * 1000
 						champion.applyStatusEffect(elapsedMS, StatusEffectType.unstoppable, expiresAfterMS)
 						champion.queueShield(elapsedMS, champion, {
@@ -302,8 +302,8 @@ export const baseChampionEffects = {
 						champion.queueHexEffect(elapsedMS, spell, {
 							hexes,
 							onActivate: (elapsedMS, champion) => {
-								const shredProportion = champion.getSpellVariable(spell, 'MeleeShred' as SpellKey)
-								const shredSeconds = champion.getSpellVariable(spell, 'MeleeShredDuration' as SpellKey)
+								const shredProportion = champion.getSpellVariable(spell, 'MeleeShred')
+								const shredSeconds = champion.getSpellVariable(spell, 'MeleeShredDuration')
 								const shredExpiresAtMS = elapsedMS + shredSeconds * 1000
 								champion.queueMoveUnitEffect(elapsedMS, undefined, {
 									target: champion,
@@ -333,7 +333,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Jhin]: {
 		cast: (elapsedMS, spell, champion) => {
-			const falloffProportion = champion.getSpellVariable(spell, 'DamageFalloff' as SpellKey)
+			const falloffProportion = champion.getSpellVariable(spell, 'DamageFalloff')
 			const stackingDamageModifier: DamageModifier = {
 				multiplier: -falloffProportion,
 			}
@@ -401,9 +401,9 @@ export const baseChampionEffects = {
 					champion.addBonuses(spell.name as BonusLabelKey, [BonusKey.HexRangeIncrease, MAX_HEX_COUNT])
 
 					const centerHex = champion.activeHex
-					const innerRadius = champion.getSpellVariable(spell, 'InnerRadius' as SpellKey)
-					const outerRadius = champion.getSpellVariable(spell, 'OuterRadius' as SpellKey)
-					const damageFalloffProportion = champion.getSpellVariable(spell, 'FalloffPercent' as SpellKey)
+					const innerRadius = champion.getSpellVariable(spell, 'InnerRadius')
+					const outerRadius = champion.getSpellVariable(spell, 'OuterRadius')
+					const damageFalloffProportion = champion.getSpellVariable(spell, 'FalloffPercent')
 					const innerHexes = getHexesSurroundingWithin(centerHex, innerRadius as SurroundingHexRange, false)
 					const outerHexes = getHexesSurroundingWithin(centerHex, Math.min(4, outerRadius) as SurroundingHexRange, false) //TODO support 5 range
 					const magicDamage = champion.getSpellVariable(spell, SpellKey.Damage, true)
@@ -426,8 +426,8 @@ export const baseChampionEffects = {
 					})
 
 					const burnHexes = getHexesSurroundingWithin(centerHex, 2, true) //NOTE Hardcoded
-					const burnPercent = champion.getSpellVariable(spell, 'PercentBurn' as SpellKey)
-					const burnHexSeconds = champion.getSpellVariable(spell, 'HexDuration' as SpellKey)
+					const burnPercent = champion.getSpellVariable(spell, 'PercentBurn')
+					const burnHexSeconds = champion.getSpellVariable(spell, 'HexDuration')
 					const burnTickMS = 1000 //NOTE hardcoded
 					champion.queueHexEffect(elapsedMS, undefined, {
 						targetTeam: null,
@@ -462,8 +462,8 @@ export const baseChampionEffects = {
 				},
 				onDestination: (elapsedMS, champion) => {
 					const attackableEnemies = getAttackableUnitsOfTeam(champion.opposingTeam())
-					const missileCount = champion.getSpellVariable(spell, 'NumMissiles' as SpellKey) + champion.basicAttackCount
-					const castSeconds = champion.getSpellVariable(spell, 'FakeCastTime' as SpellKey)
+					const missileCount = champion.getSpellVariable(spell, 'NumMissiles') + champion.basicAttackCount
+					const castSeconds = champion.getSpellVariable(spell, 'FakeCastTime')
 					getProjectileSpread(missileCount, toRadians(5)).forEach((changeRadians, index) => {
 						champion.queueProjectileEffect(elapsedMS, spell, {
 							startsAfterMS: (castSeconds + castSeconds * index / missileCount) * 1000,
@@ -494,10 +494,10 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Leona]: {
 		cast: (elapsedMS, spell, champion) => {
-			const shieldAmount = champion.getSpellCalculationResult(spell, 'Shielding' as SpellKey)
+			const shieldAmount = champion.getSpellCalculationResult(spell, 'Shielding')
 			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
-			const bonusStats = champion.getSpellVariable(spell, 'BonusStats' as SpellKey)
-			// const vip = champion.getSpellVariable(spell, 'T1DebutantBonus' as SpellKey) //TODO VIP
+			const bonusStats = champion.getSpellVariable(spell, 'BonusStats')
+			// const vip = champion.getSpellVariable(spell, 'T1DebutantBonus') //TODO VIP
 			const expiresAfterMS = durationSeconds * 1000
 			champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.team,
@@ -521,9 +521,9 @@ export const baseChampionEffects = {
 	[ChampionKey.Lulu]: {
 		cast: (elapsedMS, spell, champion) => {
 			const alliesByLowestHP = getBestSortedAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
-			const allyCount = champion.getSpellVariable(spell, 'NumAllies' as SpellKey)
-			const stunSeconds = champion.getSpellVariable(spell, 'CCDuration' as SpellKey)
-			const healAmount = champion.getSpellCalculationResult(spell, 'BonusHealth' as SpellKey)
+			const allyCount = champion.getSpellVariable(spell, 'NumAllies')
+			const stunSeconds = champion.getSpellVariable(spell, 'CCDuration')
+			const healAmount = champion.getSpellCalculationResult(spell, 'BonusHealth')
 			alliesByLowestHP
 				.slice(0, allyCount)
 				.forEach(unit => {
@@ -556,10 +556,10 @@ export const baseChampionEffects = {
 					target = newTarget
 				}
 			}
-			const mrShredProportion = champion.getSpellVariable(spell, 'MRShred' as SpellKey)
+			const mrShredProportion = champion.getSpellVariable(spell, 'MRShred')
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)!
 			const durationMS = champion.getSpellVariable(spell, SpellKey.Duration) * 1000
-			const repeatsEveryMS = champion.getSpellVariable(spell, 'TickRate' as SpellKey) * 1000
+			const repeatsEveryMS = champion.getSpellVariable(spell, 'TickRate') * 1000
 			const iterationCount = durationMS / repeatsEveryMS
 			const bleed: BleedData = {
 				sourceID,
@@ -572,7 +572,7 @@ export const baseChampionEffects = {
 				repeatsEveryMS,
 				remainingIterations: iterationCount,
 				onDeath: (elapsedMS, oldTarget) => {
-					const spreadCount = champion.getSpellVariable(spell, 'SpreadTargets' as SpellKey)
+					const spreadCount = champion.getSpellVariable(spell, 'SpreadTargets')
 					getBestSortedAsMax(false, getInteractableUnitsOfTeam(oldTarget.team), (unit) => unit.coordDistanceSquaredTo(oldTarget) + (unit.getBleed(sourceID) ? 1 : 0)) //TODO attackable only?
 						.slice(0, spreadCount)
 						.forEach(newTarget => {
@@ -589,9 +589,9 @@ export const baseChampionEffects = {
 	[ChampionKey.MalzaharVoidling]: {
 		cast: (elapsedMS, spell, champion) => {
 			delayUntil(elapsedMS, spell.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
-				const shieldSeconds = champion.getSpellVariable(spell, 'DamageReducedDuration' as SpellKey)
-				const damageReductionProportion = champion.getSpellVariable(spell, 'DamageReducedPercent' as SpellKey)
-				const shieldDamageCalculation = champion.getSpellCalculation(spell, 'DamageAmount' as SpellKey)
+				const shieldSeconds = champion.getSpellVariable(spell, 'DamageReducedDuration')
+				const damageReductionProportion = champion.getSpellVariable(spell, 'DamageReducedPercent')
+				const shieldDamageCalculation = champion.getSpellCalculation(spell, 'DamageAmount')
 
 				const shielding = [champion]
 				const enemies = getUnitsOfTeam(champion.opposingTeam())
@@ -615,9 +615,9 @@ export const baseChampionEffects = {
 		passiveCasts: true,
 		passive: (elapsedMS, spell, target, champion, damage) => {
 			delayUntil(elapsedMS, spell?.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
-				const buffSeconds = champion.getSpellCalculationResult(spell, 'BuffDuration' as SpellKey)
-				const bonusADProportion = champion.getSpellVariable(spell, 'PercentAD' as SpellKey)
-				const allyADAP = champion.getSpellVariable(spell, 'AllyADAPBuff' as SpellKey)
+				const buffSeconds = champion.getSpellCalculationResult(spell, 'BuffDuration')
+				const bonusADProportion = champion.getSpellVariable(spell, 'PercentAD')
+				const allyADAP = champion.getSpellVariable(spell, 'AllyADAPBuff')
 				const expiresAtMS = elapsedMS + buffSeconds * 1000
 				const bonusKey = spell!.name as BonusLabelKey
 				champion.setBonusesFor(bonusKey, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
@@ -629,8 +629,8 @@ export const baseChampionEffects = {
 	},
 	[ChampionKey.HexTechDragon]: {
 		innate: (spell, champion) => {
-			const damageCalculation = champion.getSpellCalculation(spell, 'BonusLightningDamage' as SpellKey)
-			const chainCount = champion.getSpellVariable(spell, 'NumEnemies' as SpellKey)
+			const damageCalculation = champion.getSpellCalculation(spell, 'BonusLightningDamage')
+			const chainCount = champion.getSpellVariable(spell, 'NumEnemies')
 			champion.statusEffects.ccImmune.active = true
 			champion.statusEffects.ccImmune.expiresAtMS = Number.MAX_SAFE_INTEGER
 			champion.empoweredAutos.add({
@@ -644,8 +644,8 @@ export const baseChampionEffects = {
 			})
 		},
 		cast: (elapsedMS, spell, champion) => {
-			const fearHexRange = champion.getSpellVariable(spell, 'FearHexRange' as SpellKey)
-			const fearSeconds = champion.getSpellVariable(spell, 'FearDuration' as SpellKey)
+			const fearHexRange = champion.getSpellVariable(spell, 'FearHexRange')
+			const fearSeconds = champion.getSpellVariable(spell, 'FearDuration')
 			return champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.opposingTeam(),
 				hexDistanceFromSource: Math.min(4, fearHexRange) as SurroundingHexRange, //TODO support 5 hex range
@@ -660,7 +660,7 @@ export const baseChampionEffects = {
 					withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, fearSeconds * 1000)
 				},
 				onActivate: (elapsedMS, champion) => {
-					const energizedSeconds = champion.getSpellVariable(spell, 'EnergizedDuration' as SpellKey)
+					const energizedSeconds = champion.getSpellVariable(spell, 'EnergizedDuration')
 					const expiresAtMS = elapsedMS + energizedSeconds * 1000
 					champion.alliedUnits(true).forEach(alliedUnit => {
 						alliedUnit.empoweredAutos.add({
@@ -679,9 +679,9 @@ export const baseChampionEffects = {
 	[ChampionKey.MissFortune]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.target) { return false }
-			const damageCalculation = champion.getSpellCalculation(spell, 'MagicDamage' as SpellKey)
-			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'HealingReductionDuration' as SpellKey)
-			const grievousWoundsPercent = champion.getSpellVariable(spell, 'HealingReduction' as SpellKey)
+			const damageCalculation = champion.getSpellCalculation(spell, 'MagicDamage')
+			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'HealingReductionDuration')
+			const grievousWoundsPercent = champion.getSpellVariable(spell, 'HealingReduction')
 			const wavesCount = 4 //NOTE hardcoded
 			const hexRadius = 2 //TODO experimentally determine
 			const castMS = 1000
@@ -709,8 +709,8 @@ export const baseChampionEffects = {
 			const hotspotHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, hexRange))
 			if (!hotspotHex) { return false }
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount' as SpellKey)
-			const shieldSeconds = champion.getSpellVariable(spell, 'Duration' as SpellKey)
+			const shieldAmount = champion.getSpellCalculationResult(spell, 'ShieldAmount')
+			const shieldSeconds = champion.getSpellVariable(spell, 'Duration')
 			const hexes = getHexesSurroundingWithin(hotspotHex, hexRange, true)
 			champion.queueHexEffect(elapsedMS, spell, {
 				hexes,
@@ -742,7 +742,7 @@ export const baseChampionEffects = {
 				returnMissile: spell!.missile,
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit !== champion) { return }
-					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield' as SpellKey)
+					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield')
 					champion.queueShield(elapsedMS, champion, {
 						id: ChampionKey.Poppy,
 						amount: shieldAmount,
@@ -755,7 +755,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Quinn]: {
 		cast: (elapsedMS, spell, champion) => {
 			const highestASEnemy = getBestRandomAsMax(true, getAttackableUnitsOfTeam(champion.opposingTeam()), (unit) => unit.attackSpeed())
-			const disarmSeconds = champion.getSpellVariable(spell, 'DisarmDuration' as SpellKey)
+			const disarmSeconds = champion.getSpellVariable(spell, 'DisarmDuration')
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: highestASEnemy,
 				hexEffect: {
@@ -772,8 +772,8 @@ export const baseChampionEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHex = randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(null), true, 1)) //TODO experimentally determine
 			if (!densestEnemyHex) { return false }
-			const bonusASProportion = champion.getSpellVariable(spell, 'ASBonus' as SpellKey)
-			const bonusSeconds = champion.getSpellVariable(spell, 'ASBonusDuration' as SpellKey)
+			const bonusASProportion = champion.getSpellVariable(spell, 'ASBonus')
+			const bonusSeconds = champion.getSpellVariable(spell, 'ASBonusDuration')
 			champion.queueProjectileEffect(elapsedMS, spell, {
 				target: densestEnemyHex,
 				targetTeam: champion.team,
@@ -799,7 +799,7 @@ export const baseChampionEffects = {
 	[ChampionKey.Singed]: {
 		cast: (elapsedMS, spell, champion) => {
 			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			const aoeStunSeconds = champion.getSpellVariable(spell, 'AoEStunDuration' as SpellKey)
+			const aoeStunSeconds = champion.getSpellVariable(spell, 'AoEStunDuration')
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				moveSpeed: 1000, //TODO experimentally determine
 				idealDestination: (target) => randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(target.team).filter(unit => unit !== target), false, 2)),
@@ -824,7 +824,7 @@ export const baseChampionEffects = {
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCone(champion, false, target, HEX_MOVE_LEAGUEUNITS * 2, arcRadians),
 				onCollided: (elapsedMS, effect, withUnit) => {
-					const heal = champion.getSpellCalculationResult(spell, 'Healing' as SpellKey)
+					const heal = champion.getSpellCalculationResult(spell, 'Healing')
 					champion.gainHealth(elapsedMS, champion, heal, true)
 				},
 			})
@@ -836,7 +836,7 @@ export const baseChampionEffects = {
 			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
 			if (!target) { return false }
 			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			// const aoeStunSeconds = champion.getSpellVariable(spell, 'VIPDebutantBonus' as SpellKey) //TODO VIP
+			// const aoeStunSeconds = champion.getSpellVariable(spell, 'VIPDebutantBonus') //TODO VIP
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target,
 				moveSpeed: 1000, //TODO experimentally determine
@@ -850,8 +850,8 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Talon]: {
 		passive: (elapsedMS, spell, target, source, damage) => {
-			const bleedSeconds = source.getSpellVariable(spell, 'BleedDuration' as SpellKey)
-			// const vip = source.getSpellVariable(spell, 'VIPBleedDurationBonus' as SpellKey) //TODO VIP
+			const bleedSeconds = source.getSpellVariable(spell, 'BleedDuration')
+			// const vip = source.getSpellVariable(spell, 'VIPBleedDurationBonus') //TODO VIP
 			const repeatsEveryMS = 1000 //TODO experimentally determine
 			const iterationsCount = bleedSeconds * 1000 / repeatsEveryMS
 			const sourceID = source.instanceID
@@ -880,15 +880,15 @@ export const baseChampionEffects = {
 			delayUntil(elapsedMS, spell.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
 				const spellShield = target.consumeSpellShield()
 				const ignoresCC = spellShield != null || target.isUnstoppable()
-				const bellySeconds = champion.getSpellVariable(spell, 'BellyDuration' as SpellKey)
-				const damageCalculation = ignoresCC ? champion.getSpellCalculation(spell, 'ReducedDamageToCC' as SpellKey) : champion.getSpellCalculation(spell, SpellKey.Damage)
+				const bellySeconds = champion.getSpellVariable(spell, 'BellyDuration')
+				const damageCalculation = ignoresCC ? champion.getSpellCalculation(spell, 'ReducedDamageToCC') : champion.getSpellCalculation(spell, SpellKey.Damage)
 				if (damageCalculation) {
 					if (!ignoresCC) {
 						target.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, bellySeconds * 1000)
 						target.collides = false
 					}
 					const sourceID = ChampionKey.TahmKench
-					const tickSeconds = champion.getSpellVariable(spell, 'TickRate' as SpellKey)
+					const tickSeconds = champion.getSpellVariable(spell, 'TickRate')
 					const tickCount = bellySeconds / tickSeconds
 					target.addBleedIfStrongerThan(sourceID, {
 						sourceID,
@@ -907,7 +907,7 @@ export const baseChampionEffects = {
 						target.collides = true
 						if (!target.dead) {
 							const farthestEnemy = getDistanceUnitOfTeam(true, champion, champion.opposingTeam())
-							const impactStunSeconds = champion.getSpellVariable(spell, 'StunDuration' as SpellKey)
+							const impactStunSeconds = champion.getSpellVariable(spell, 'StunDuration')
 							champion.queueMoveUnitEffect(elapsedMS, undefined, {
 								target,
 								targetTeam: target.team,
@@ -928,8 +928,8 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Twitch]: {
 		cast: (elapsedMS, spell, champion) => {
-			const grievousWoundsProportion = champion.getSpellVariable(spell, 'GWStrength' as SpellKey)
-			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'GWDuration' as SpellKey)
+			const grievousWoundsProportion = champion.getSpellVariable(spell, 'GWStrength')
+			const grievousWoundsSeconds = champion.getSpellVariable(spell, 'GWDuration')
 			const durationMS = grievousWoundsSeconds * 1000
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				destroysOnCollision: false,
@@ -943,7 +943,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Veigar]: {
 		cast: (elapsedMS, spell, champion) => {
-			const strikeCount = champion.getSpellVariable(spell, 'NumStrikes' as SpellKey)
+			const strikeCount = champion.getSpellVariable(spell, 'NumStrikes')
 			const enemies = getAttackableUnitsOfTeam(champion.opposingTeam())
 			shuffle(enemies)
 			const castSeconds = 3 //TODO experimentally determine
@@ -963,13 +963,13 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Viktor]: {
 		passive: (elapsedMS, spell, target, source, damage) => {
-			const armorShredProportion = source.getSpellVariable(spell, 'ArmorReduction' as SpellKey)
-			const armorShredSeconds = source.getSpellVariable(spell, 'ShredDuration' as SpellKey)
+			const armorShredProportion = source.getSpellVariable(spell, 'ArmorReduction')
+			const armorShredSeconds = source.getSpellVariable(spell, 'ShredDuration')
 			target.applyStatusEffect(elapsedMS, StatusEffectType.armorReduction, armorShredSeconds * 1000, armorShredProportion)
 		},
 		cast: (elapsedMS, spell, champion) => {
 			delayUntil(elapsedMS, spell.castTime!).then(elapsedMS => {
-				const laserCount = champion.getSpellVariable(spell, 'NumLasers' as SpellKey)
+				const laserCount = champion.getSpellVariable(spell, 'NumLasers')
 				const droneMissile = champion.getMissileWithSuffix('EDroneMis')
 				const laserMissile = champion.getMissileWithSuffix('EDamageMis')
 				const droneHexes = randomItems(laserCount, getEdgeHexes()) //TODO distributed random
@@ -987,7 +987,7 @@ export const baseChampionEffects = {
 								destroysOnCollision: false,
 								fixedHexRange: MAX_HEX_COUNT,
 								onModifyDamage: (elapsedMS, withUnit, damage) => {
-									const shieldDestructionProportion = champion.getSpellVariable(spell, 'ShieldDestructionPercent' as SpellKey)
+									const shieldDestructionProportion = champion.getSpellVariable(spell, 'ShieldDestructionPercent')
 									withUnit.shields.forEach(shield => {
 										if (shield.amount != null) {
 											shield.amount *= (1 - shieldDestructionProportion)
@@ -1006,9 +1006,9 @@ export const baseChampionEffects = {
 	[ChampionKey.Vex]: {
 		cast: (elapsedMS, spell, champion) => {
 			const shieldKey = 'VexShieldMultiplier' as BonusKey
-			const shieldAmount = champion.getSpellVariable(spell, 'ShieldAmount' as SpellKey)
-			const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration' as SpellKey)
-			const shieldAmp = champion.getSpellVariable(spell, 'ShieldAmp' as SpellKey)
+			const shieldAmount = champion.getSpellVariable(spell, 'ShieldAmount')
+			const shieldSeconds = champion.getSpellVariable(spell, 'ShieldDuration')
+			const shieldAmp = champion.getSpellVariable(spell, 'ShieldAmp')
 			const shieldTotalAmp = champion.getBonuses(shieldKey)
 			const expiresAfterMS = shieldSeconds * 1000
 			champion.queueShield(elapsedMS, champion, {
@@ -1023,7 +1023,7 @@ export const baseChampionEffects = {
 					if (shield.amount != null && shield.amount > 0) {
 						champion.queueHexEffect(elapsedMS, undefined, {
 							hexDistanceFromSource,
-							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage' as SpellKey),
+							damageCalculation: champion.getSpellCalculation(spell, 'BonusDamage'),
 						})
 					} else {
 						champion.addBonuses(spell.name as BonusLabelKey, [shieldKey, shieldAmp])
@@ -1102,8 +1102,8 @@ export const baseChampionEffects = {
 	[ChampionKey.Zilean]: {
 		cast: (elapsedMS, spell, champion) => {
 			const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			const slowProportion = champion.getSpellVariable(spell, 'Slow' as SpellKey)
-			const slowSeconds = champion.getSpellVariable(spell, 'SlowDuration' as SpellKey)
+			const slowProportion = champion.getSpellVariable(spell, 'Slow')
+			const slowSeconds = champion.getSpellVariable(spell, 'SlowDuration')
 			const missile = modifyMissile(spell, { width: 30 })
 			const durationMS = stunSeconds * 1000
 			return champion.queueProjectileEffect(elapsedMS, spell, {
