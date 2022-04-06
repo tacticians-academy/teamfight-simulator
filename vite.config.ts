@@ -14,5 +14,9 @@ export default defineConfig(({ mode }) => {
 		server: {
 			open: true,
 		},
+		test: {
+			setupFiles: 'test/setup.ts',
+			environment: 'happy-dom',
+		},
 	}
 })
