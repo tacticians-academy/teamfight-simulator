@@ -71,7 +71,7 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.CyberneticShell]: {
 		apply: (augment, team, units) => {
-			const [hp, armor] = getVariables(augment, 'Health', 'Resists') //TODO normalize 'Health'
+			const [hp, armor] = getVariables(augment, BonusKey.Health, 'Resists')
 			units
 				.filter(unit => unit.items.length)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.CyberneticImplants, [BonusKey.Health, hp], [BonusKey.Armor, armor]))
@@ -79,7 +79,7 @@ export const augmentEffects = {
 	},
 	[AugmentGroupKey.CyberneticUplink]: {
 		apply: (augment, team, units) => {
-			const [hp, manaRegen] = getVariables(augment, 'Health', 'ManaRegen') //TODO normalize 'Health'
+			const [hp, manaRegen] = getVariables(augment, BonusKey.Health, 'ManaRegen')
 			units
 				.filter(unit => unit.items.length)
 				.forEach(unit => {
@@ -159,7 +159,7 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Keepers]: {
 		apply: (augment, team, units) => {
-			const [amount, durationSeconds] = getVariables(augment, 'ShieldHealth', 'ShieldDuration')
+			const [amount, durationSeconds] = getVariables(augment, 'ShieldHP', 'ShieldDuration')
 			units.forEach(source => {
 				const adjacentHexes = getHexRing(source.startHex)
 				units
@@ -271,7 +271,7 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.TriForce]: {
 		apply: (augment, team, units) => {
-			const [hp, attackSpeed, startingMana] = getVariables(augment, 'Health', 'AttackSpeed', 'Mana')
+			const [hp, attackSpeed, startingMana] = getVariables(augment, BonusKey.Health, BonusKey.AttackSpeed, BonusKey.Mana)
 			units
 				.filter(unit => unit.data.cost === 3)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.TriForce, [BonusKey.Health, hp], [BonusKey.AttackSpeed, attackSpeed], [BonusKey.Mana, startingMana]))
@@ -281,7 +281,7 @@ export const augmentEffects = {
 	[AugmentGroupKey.TrueJustice]: {
 		modifyDamageByHolder: (augment, target, source, damage) => {
 			if (!source.hasTrait(TraitKey.Enforcer)) { return }
-			const [thresholdPercent] = getVariables(augment, 'HealthThreshold')
+			const [thresholdPercent] = getVariables(augment, 'HPThreshold')
 			if (target.healthProportion() < thresholdPercent / 100) {
 				damage.damageType = DamageType.true
 			}

@@ -173,7 +173,7 @@ export class GameEffect extends GameEffectChild {
 
 	checkCollision(elapsedMS: DOMHighResTimeStamp, units: ChampionUnit[]) {
 		const targetingUnits = units.filter(unit => {
-			if (this.targetTeam != null && (unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID))) {
+			if ((this.targetTeam != null && unit.team !== this.targetTeam) || this.collidedWith.includes(unit.instanceID)) {
 				return false
 			}
 			return unit.isInteractable() && this.intersects(unit)

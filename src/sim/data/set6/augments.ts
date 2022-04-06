@@ -141,7 +141,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.Duet]: {
 		apply: (augment, team, units) => {
-			const [bonusHealth] = getVariables(augment, 'BonusHealth')
+			const [bonusHealth] = getVariables(augment, 'BonusHP')
 			getUnitsInSocialiteHexes(team, units).forEach(([multiplier, units]) => units.forEach(unit => unit.addBonuses(AugmentGroupKey.Duet, [BonusKey.Health, bonusHealth])))
 		},
 	},
@@ -161,7 +161,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.Exiles]: {
 		apply: (augment, team, units) => {
-			const [durationSeconds, maxHPPercentMultiplier] = getVariables(augment, 'ShieldDuration', 'MaxHealthShield')
+			const [durationSeconds, maxHPPercentMultiplier] = getVariables(augment, 'ShieldDuration', 'MaxHShield')
 			units
 				.filter(unit => {
 					const adjacentHexes = getHexRing(unit.startHex)
@@ -176,7 +176,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.Featherweights]: {
 		apply: (augment, team, units) => {
-			const [attackSpeed, moveSpeed] = getVariables(augment, 'AttackSpeed', BonusKey.MoveSpeed) //TODO normalize 'AttackSpeed'
+			const [attackSpeed, moveSpeed] = getVariables(augment, BonusKey.AttackSpeed, BonusKey.MoveSpeed)
 			units
 				.filter(unit => unit.data.cost != null && unit.data.cost <= 2)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.Featherweights, [BonusKey.AttackSpeed, attackSpeed], [BonusKey.MoveSpeed, moveSpeed]))
@@ -247,7 +247,7 @@ export const baseAugmentEffects = {
 				return
 			}
 			if (getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Innovator).length) {
-				const [resurrectSeconds] = getVariables(augment, '{357f0e55}') //TODO rename
+				const [resurrectSeconds] = getVariables(augment, 'RepairDuration')
 				dead.resurrecting = true
 				await delayUntil(elapsedMS, resurrectSeconds)
 				dead.resurrecting = false
@@ -357,7 +357,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.TitanicForce]: {
 		startOfFight: (augment, team, units) => {
-			const [hpThreshold, hpMultiplier] = getVariables(augment, 'HealthThreshold', 'HealthPercent')
+			const [hpThreshold, hpMultiplier] = getVariables(augment, 'HPThreshold', 'HPPercent')
 			units
 				.filter(unit => unit.healthMax >= hpThreshold)
 				.forEach(unit => unit.addBonuses(AugmentGroupKey.TitanicForce, [BonusKey.AttackDamage, unit.healthMax * hpMultiplier]))
