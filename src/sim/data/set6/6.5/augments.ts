@@ -4,7 +4,7 @@ import type { AugmentEffects } from '#/sim/data/types'
 
 import { getHexRing, isInBackLines } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
-import { checkCooldownFor, getDistanceUnitOfTeam, getFirstVariableOf, getStageScalingIndex, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
+import { checkCooldownFor, getDistanceUnitOfTeam, getFirstVariableOf, getStageScalingIndex, getUnitsOfTeam, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/sim/helpers/types'
 
 import { baseAugmentEffects } from '../augments'
@@ -305,6 +305,16 @@ export const augmentEffects = {
 				type: 'spellShield',
 				expiresAfterMS: durationSeconds * 1000,
 			}))
+		},
+	},
+
+	[AugmentGroupKey.VeryVIP]: {
+		allyDeath: (augment, elapsedMS, dead, source) => {
+			const vip = getUnitsOfTeam(dead.team).find(unit => unit.stacks.Debonair?.amount)
+			if (vip) {
+				const [maxHPPercent] = getVariables(augment, 'MaxHP')
+				vip.increaseMaxHealthBy(dead.healthMax * maxHPPercent / 100)
+			}
 		},
 	},
 
