@@ -57,7 +57,7 @@ export class HexEffect extends GameEffect {
 
 	apply = (elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit, isFinalTarget: boolean) => {
 		const wasSpellShielded = this.applySuper(elapsedMS, unit)
-		if (this.taunts && this.source.isAttackable()) {
+		if (this.taunts && unit.team !== this.source.team && this.source.isAttackable()) {
 			unit.setTarget(this.source)
 		}
 		return true
