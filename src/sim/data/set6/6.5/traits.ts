@@ -6,7 +6,7 @@ import type { TraitEffects } from '#/sim/data/types'
 
 import { getFrontBehindHexes } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
-import { getUnitsOfTeam, getVariables } from '#/sim/helpers/effectUtils'
+import { getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables } from '#/sim/helpers/effectUtils'
 import type { BonusVariable } from '#/sim/helpers/types'
 
 import { baseTraitEffects } from '../traits'
@@ -14,6 +14,26 @@ import { baseTraitEffects } from '../traits'
 export const traitEffects = {
 
 	...baseTraitEffects,
+
+	[TraitKey.Debonair]: {
+		innate: (unit, innateEffect) => {
+			const key = TraitKey.Debonair
+			unit.initStack(key, {
+				icon: '💎',
+				isBoolean: true,
+				onAfterUpdate: (unit) => {
+					getAliveUnitsOfTeamWithTrait(unit.team, key).forEach(ally => {
+						if (ally !== unit) {
+							const stack = ally.stacks[key]
+							if (stack) {
+								stack.amount = 0
+							}
+						}
+					})
+				},
+			})
+		},
+	},
 
 	[TraitKey.Hextech]: {
 		solo: (unit, activeEffect) => {
