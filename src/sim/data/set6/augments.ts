@@ -210,6 +210,18 @@ export const baseAugmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.LifelongLearning]: {
+		apply: (augment, team, units) => {
+			const [ap, bonusAP] = getVariables(augment, BonusKey.AbilityPower, 'BonusAP')
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Scholar))
+				.forEach(unit => {
+					const roundsFought = unit.initStack(AugmentGroupKey.LifelongLearning, {})
+					unit.setBonusesFor(AugmentGroupKey.LifelongLearning, [BonusKey.AbilityPower, roundsFought * ap])
+				})
+		},
+	},
+
 	[AugmentGroupKey.MakeshiftArmor]: {
 		apply: (augment, team, units) => {
 			const [resists] = getVariables(augment, 'Resists')
