@@ -62,18 +62,18 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
 		<div class="h-full bg-blue-500" :style="{ width: `${100 * unit.mana / unit.manaMax()}%`, opacity: unit.getBonuses(BonusKey.ManaReductionPercent) < 0 ? 0.6 : 1 }" />
 	</div>
-	<div class="pointer-events-auto  flex">
+	<div class="flex">
 		<div
 			v-for="item in unit.items" :key="item.name"
-			class="w-1/3" :class="state.didStart ? 'pointer-events-none' : null"
+			class="w-1/3 pointer-events-auto" :class="state.didStart ? 'pointer-events-none' : null"
 			:draggable="!state.didStart" @dragstart="startDragging($event, 'item', item.name, unit)"
 		>
 			<img :src="getIconURLFor(state, item)" :alt="item.name">
 		</div>
 	</div>
-	<div class="pointer-events-auto  flex items-center">
+	<div class="flex items-center">
 		<template v-for="(stack, key) in unit.stacks" :key="key">
-			<div v-if="stack" class="w-9 h-5 z-10  flex items-center">
+			<div v-if="stack" class="w-9 h-5 z-10 pointer-events-auto  flex items-center">
 				<button v-if="stack.isBoolean" :class="stack.amount ? undefined : 'opacity-50'" @click="stack.onUpdate">
 					{{ stack.icon }}
 				</button>
