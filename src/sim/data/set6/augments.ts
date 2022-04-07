@@ -303,12 +303,13 @@ export const baseAugmentEffects = {
 	[AugmentGroupKey.SnipersNest]: {
 		apply: (augment, team, units) => {
 			const [damageAmpPerRound, maxAmp] = getVariables(augment, 'DamageAmp', 'MaxAmp')
+			const maxStacks = maxAmp / damageAmpPerRound
 			units
 				.filter(unit => unit.hasTrait(TraitKey.Sniper))
 				.forEach(unit => {
-					const roundsFromSameHex = 4 //NOTE custom UI
-					const damageAmp = Math.min(maxAmp, damageAmpPerRound * roundsFromSameHex)
-					unit.addBonuses(AugmentGroupKey.SoSmall, [BonusKey.DamageIncrease, damageAmp / 100])
+					const roundsFromSameHex = unit.initStack(AugmentGroupKey.SnipersNest, { max: maxStacks })
+					const damageAmp = damageAmpPerRound * roundsFromSameHex
+					unit.addBonuses(AugmentGroupKey.SnipersNest, [BonusKey.DamageIncrease, damageAmp / 100])
 				})
 		},
 	},
