@@ -190,6 +190,15 @@ export const baseAugmentEffects = {
 		},
 	},
 
+	[AugmentGroupKey.GoldReserves]: {
+		apply: (augment, team, units) => {
+			const [maxDamagePercent] = getVariables(augment, 'DamageCap') //NOTE hardcoded to max, but this is virtually always the case for relevant tests
+			units
+				.filter(unit => unit.hasTrait(TraitKey.Mercenary))
+				.forEach(unit => unit.addBonuses(AugmentGroupKey.GoldReserves, [BonusKey.DamageIncrease, maxDamagePercent / 100]))
+		},
+	},
+
 	[AugmentGroupKey.InstantInjection]: {
 		apply: (augment, team, units) => {
 			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Chemtech)
