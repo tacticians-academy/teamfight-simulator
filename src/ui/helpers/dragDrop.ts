@@ -1,3 +1,9 @@
+import { useStore } from '#/store/store'
+
+import type { ChampionUnit } from '#/sim/ChampionUnit'
+
+const { state, copyItem, moveItem, dropUnit } = useStore()
+
 export type DraggableType = 'unit' | 'item'
 
 export function onDragOver(event: DragEvent) {
@@ -21,4 +27,22 @@ export function getDragNameOf(type: DraggableType, event: DragEvent) {
 		return null
 	}
 	return getDragName(event)
+}
+
+export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
+	const type = getDragType(event)
+	const name = getDragName(event)
+	if (type == null || name == null) {
+		return
+	}
+	event.preventDefault()
+	if (type === 'item') {
+		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
+			copyItem(name, onUnit)
+		} else {
+			moveItem(name, onUnit, state.dragUnit)
+		}
+	} else {
+		dropUnit(event, name, onUnit.startHex)
+	}
 }

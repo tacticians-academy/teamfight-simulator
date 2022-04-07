@@ -4,6 +4,7 @@ import ProjectileEffect from '#/ui/components/Effects/ProjectileEffect.vue'
 import ShapeEffect from '#/ui/components/Effects/ShapeEffect.vue'
 import TargetEffect from '#/ui/components/Effects/TargetEffect.vue'
 import Unit from '#/ui/components/Unit.vue'
+import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, ref } from 'vue'
 
@@ -15,6 +16,7 @@ import type { HexCoord } from '#/sim/helpers/types'
 
 import { HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragNameOf, onDragOver } from '#/ui/helpers/dragDrop'
+import { UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
@@ -50,6 +52,8 @@ function onClearHexMenu(event?: Event) {
 	event?.preventDefault()
 	hexForMenu.value = null
 }
+
+const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 </script>
 
 <template>
@@ -72,6 +76,9 @@ function onClearHexMenu(event?: Event) {
 		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
 				<Unit v-if="unit.hasCollision()" :unit="unit" />
+			</template>
+			<template v-for="unit in state.units" :key="unit.instanceID">
+				<UnitOverlay v-if="unit.hasCollision()" :unit="unit" />
 			</template>
 			<transition-group name="fade">
 				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">
@@ -112,6 +119,11 @@ function onClearHexMenu(event?: Event) {
 	width: v-bind(HEX_VW);
 	height: v-bind(HEX_VW);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
+}
+.hex-unit {
+	@apply absolute z-20;
+	width: v-bind(unitSize);
+	height: v-bind(unitSize);
 }
 .hex-overlay {
 	transform: translate(-50%, -50%);
