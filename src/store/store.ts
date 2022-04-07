@@ -289,6 +289,7 @@ function getItemFrom(name: string) {
 }
 
 function repositionUnit(unit: ChampionUnit, hex: HexCoord) {
+	if (isSameHex(unit.startHex, hex)) return
 	unit.startHex = [...hex]
 	unit.updateTeam()
 }

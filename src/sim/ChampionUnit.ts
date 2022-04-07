@@ -116,7 +116,10 @@ export class ChampionUnit {
 	}
 
 	updateTeam() {
-		this.team = this.startHex[1] < state.rowsPerSide ? 0 : 1
+		const newTeam = this.startHex[1] < state.rowsPerSide ? 0 : 1
+		if (this.team === newTeam) return
+		this.team = newTeam
+		Object.keys(this.stacks).forEach(key => delete this.stacks[key as BonusLabelKey])
 	}
 
 	genericReset() {
