@@ -18,8 +18,8 @@ export interface MoveUnitEffectData extends GameEffectData {
 	target?: ChampionUnit
 	/** If the source should move with the `target`. */
 	movesWithTarget?: boolean
-	/** If the `target` should be not be updated after moving. */
-	keepsTarget?: boolean
+	/** If the `target`'s  attack target should be not be updated after moving. */
+	keepsAttackTarget?: boolean
 	/** The speed the `target` moves to the destination at. Defaults to the `target`'s move speed if undefined. */
 	moveSpeed: number | undefined
 	/** Ignore collision when setting a destination hex. */
@@ -37,7 +37,7 @@ export interface MoveUnitEffectData extends GameEffectData {
 export class MoveUnitEffect extends GameEffect {
 	target: ChampionUnit
 	movesWithTarget: boolean
-	keepsTarget: boolean
+	keepsAttackTarget: boolean
 	moveSpeed: number | undefined
 	ignoresDestinationCollision: boolean
 	idealDestination: CalculateDestinationFn
@@ -55,7 +55,7 @@ export class MoveUnitEffect extends GameEffect {
 
 		this.target = data.target!
 		this.movesWithTarget = data.movesWithTarget ?? false
-		this.keepsTarget = data.keepsTarget ?? false
+		this.keepsAttackTarget = data.keepsAttackTarget ?? false
 		this.moveSpeed = data.moveSpeed
 		this.ignoresDestinationCollision = data.ignoresDestinationCollision ?? false
 		this.idealDestination = data.idealDestination
@@ -73,9 +73,9 @@ export class MoveUnitEffect extends GameEffect {
 			const destination = this.idealDestination(this.target)
 			if (destination) {
 				const moveSpeed = this.moveSpeed ?? this.target.moveSpeed()
-				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, moveSpeed, this.keepsTarget, this.apply)
+				this.target.customMoveTo(destination, !this.ignoresDestinationCollision, moveSpeed, this.keepsAttackTarget, this.apply)
 				if (this.movesWithTarget) {
-					this.source.customMoveTo(destination, true, moveSpeed, this.keepsTarget)
+					this.source.customMoveTo(destination, true, moveSpeed, this.keepsAttackTarget)
 				}
 			}
 		}

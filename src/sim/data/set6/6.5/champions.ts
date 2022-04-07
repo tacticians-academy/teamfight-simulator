@@ -571,7 +571,7 @@ export const championEffects = {
 								target: champion,
 								idealDestination: () => getDistanceHex(true, target, getHexesSurroundingWithin(champion.activeHex, 2, false)), //TODO experimentally determine
 								moveSpeed: 2000, //TODO experimentally determine
-								keepsTarget: true,
+								keepsAttackTarget: true,
 							})
 						}
 					},

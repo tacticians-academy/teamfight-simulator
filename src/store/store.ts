@@ -316,7 +316,7 @@ const store = {
 			console.log('Spawns cannot hold items')
 			return false
 		}
-		if (item.unique && champion.items.find(existingItem => existingItem.name === item.name) != null) {
+		if (item.unique && champion.items.some(existingItem => existingItem.name === item.name)) {
 			console.log('Unique item per champion', item.name)
 			return false
 		}
@@ -326,8 +326,7 @@ const store = {
 		}
 		if (item.name.endsWith('Emblem')) {
 			const emblemTrait = item.name.replace(' Emblem', '') as TraitKey
-			const trait = setData.traits.find(trait => trait.name === emblemTrait)
-			if (trait == null) {
+			if (!setData.traits.some(trait => trait.name === emblemTrait)) {
 				console.log('ERR: No trait for emblem', item)
 			} else {
 				if (champion.hasTrait(emblemTrait)) {
@@ -346,7 +345,7 @@ const store = {
 	},
 	addItemName(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
-		if (!!item && store._addItem(item, champion)) {
+		if (item && store._addItem(item, champion)) {
 			resetUnitsAfterUpdating()
 			return true
 		}

@@ -1056,7 +1056,7 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, keepsTarget: boolean, onMovementComplete?: ActivateFn) {
+	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, keepsAttackTarget: boolean, onMovementComplete?: ActivateFn) {
 		const isUnitTarget = 'activeHex' in target
 		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
 		if (checkHexAvailable) {
@@ -1066,7 +1066,7 @@ export class ChampionUnit {
 			this.moving = true
 			this.customMoveSpeed = customSpeed
 			this.onMovementComplete = (elapsedMS, unit) => {
-				if (!keepsTarget) {
+				if (!keepsAttackTarget) {
 					unit.setTarget(isUnitTarget && target.team !== this.team && target.isAttackable() ? target : null)
 				}
 				onMovementComplete?.(elapsedMS, unit)
@@ -1198,13 +1198,13 @@ export class ChampionUnit {
 	}
 
 	hasActive(name: BonusLabelKey) {
-		return !!this.bonuses.find(bonus => bonus[0] === name)
+		return this.bonuses.some(bonus => bonus[0] === name)
 	}
 	hasItem(key: ItemKey) {
-		return !!this.items.find(item => item.name === key)
+		return this.items.some(item => item.name === key)
 	}
 	hasTrait(key: TraitKey) {
-		return !!this.traits.find(trait => trait.name === key) || getters.activeAugmentEffectsByTeam.value[this.team].some(([_, effects]) => effects.teamWideTrait === key)
+		return this.traits.some(trait => trait.name === key) || getters.activeAugmentEffectsByTeam.value[this.team].some(([_, effects]) => effects.teamWideTrait === key)
 	}
 	jumpsToBackline() {
 		return this.hasTrait(TraitKey.Assassin)
