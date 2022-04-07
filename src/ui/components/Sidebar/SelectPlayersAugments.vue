@@ -23,14 +23,14 @@ function onAugment(augment: AugmentData | null) {
 }
 
 const augmentGroups = computed(() => {
-	let augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
+	const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
 	setData.activeAugments.forEach(augment => {
+		if (augment.tier - 1 !== selectAugment.value?.[0]) return
 		const groupID = augment.groupID as AugmentGroupKey
 		const index = setData.emptyImplementationAugments.includes(groupID) || groupID.endsWith('Crest') || groupID.endsWith('Crown') ? 2 : (setData.augmentEffects[groupID] || groupID.endsWith('Heart') || groupID.endsWith('Soul') ? 0 : 1)
 		augmentGroups[index][1].push(augment)
 	})
-	augmentGroups = augmentGroups.filter(group => group[1].length)
-	return augmentGroups
+	return augmentGroups.filter(group => group[1].length)
 })
 </script>
 
@@ -69,7 +69,7 @@ const augmentGroups = computed(() => {
 				<div class="ml-1 text-gray-300">{{ label }}</div>
 				<div class="flex flex-wrap justify-center">
 					<button
-						v-for="augment in augments.filter(a => a.tier - 1 === selectAugment![0])" :key="augment.name"
+						v-for="augment in augments" :key="augment.name"
 						class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
 						@click="onAugment(augment)"
 					>
