@@ -1203,6 +1203,9 @@ export class ChampionUnit {
 	hasItem(key: ItemKey) {
 		return this.items.some(item => item.name === key)
 	}
+	hasInnateTrait(key: TraitKey) {
+		return this.data.traits.includes(key)
+	}
 	hasTrait(key: TraitKey) {
 		return this.traits.some(trait => trait.name === key) || getters.activeAugmentEffectsByTeam.value[this.team].some(([_, effects]) => effects.teamWideTrait === key)
 	}

@@ -18,6 +18,7 @@ export const traitEffects = {
 	[TraitKey.Debonair]: {
 		innate: (unit, innateEffect) => {
 			const key = TraitKey.Debonair
+			if (!unit.hasInnateTrait(key)) return // Only innate Debonairs can be VIP
 			unit.initStack(key, {
 				icon: '💎',
 				isBoolean: true,
