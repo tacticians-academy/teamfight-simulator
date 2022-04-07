@@ -3,7 +3,8 @@ import { markRaw } from 'vue'
 import { AugmentGroupKey, ChampionKey, ItemKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 
-import { gameOver, getters, state, setData } from '#/store/store'
+import { gameOver, getters, state, setData, resetUnitsAfterUpdating } from '#/store/store'
+import { saveUnits } from '#/store/storage'
 
 import type { ChampionFns } from '#/sim/data/types'
 import { HexEffect } from '#/sim/effects/HexEffect'
@@ -34,6 +35,14 @@ let instanceIndex = 0
 export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds, StatusEffectType.magicResistReduction, StatusEffectType.stunned]
 export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]
 
+interface StackData {
+	amount: number
+	icon?: string
+	max?: number
+	isBoolean?: boolean
+	onUpdate?: (event: Event) => void
+}
+
 export class ChampionUnit {
 	instanceID: string
 	name: string
@@ -59,6 +68,7 @@ export class ChampionUnit {
 	instantAttack: boolean
 	attackMissile: ChampionSpellMissileData | undefined
 	wasSpawnedDuringFight = false
+	stacks: {[key in BonusLabelKey]?: StackData} = {}
 
 	hitBy = new Set<string>()
 	basicAttackSourceIDs: string[] = []
@@ -216,6 +226,27 @@ export class ChampionUnit {
 				this.movesBeforeDroppingTarget = 3
 			}
 		}
+	}
+
+	initStack(key: BonusLabelKey, data: Partial<StackData>) {
+		const stack: StackData = this.stacks[key] ?? { amount: data.amount ?? 0 }
+		if (!(key in this.stacks)) {
+			this.stacks[key] = stack
+		}
+		if (!stack.onUpdate) {
+			stack.onUpdate = (event) => {
+				const amount = parseInt((event.target as any)!.value)
+				stack.amount = isNaN(amount) ? 0 : Math.max(0, stack.max != null ? Math.min(amount, stack.max) : amount)
+				saveUnits(state.setNumber)
+				resetUnitsAfterUpdating()
+			}
+		}
+		stack.icon = data.icon ?? '🥞'
+		stack.max = data.max
+		if (data.max != null) {
+			stack.amount = Math.min(stack.amount, data.max)
+		}
+		return stack.amount
 	}
 
 	isNthBasicAttack(n: number, remainder: number = 1) {

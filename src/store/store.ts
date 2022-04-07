@@ -23,7 +23,7 @@ import { BOARD_MAX_ROW_COUNT } from '#/sim/helpers/constants'
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
-import type { HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
+import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 
 import type { DraggableType } from '#/ui/helpers/dragDrop'
 
@@ -476,6 +476,13 @@ function loadUnitsForSet() {
 			champion.updateTeam()
 			champion.items = championItems
 			champion.resetPre(synergiesByTeam)
+			if (storageChampion.stacks) {
+				for (const [key, amount] of storageChampion.stacks) {
+					champion.stacks[key as BonusLabelKey] = {
+						amount,
+					}
+				}
+			}
 			return champion
 		})
 	state.units = units

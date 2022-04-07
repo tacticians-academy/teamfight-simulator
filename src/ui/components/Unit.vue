@@ -96,7 +96,7 @@ function onInfo(event: Event) {
 						/>
 					</template>
 				</div>
-				<span class="ml-px relative z-50">{{ Math.ceil(unit.health) }}</span>
+				<span class="ml-px relative z-50">{{ Math.round(unit.health) }}</span>
 			</div>
 		</div>
 		<div v-if="unit.data.stats.mana > 0" class="bar bar-small  bg-white">
@@ -111,7 +111,17 @@ function onInfo(event: Event) {
 				<img :src="getIconURLFor(state, item)" :alt="item.name">
 			</div>
 		</div>
-		<div class="flex">
+		<div class="flex items-center">
+			<template v-for="(stack, key) in unit.stacks" :key="key">
+				<div v-if="stack" class="w-9 h-5 z-10  flex items-center">
+					{{ stack.icon }}
+					<input
+						:value="stack.amount" :disabled="state.didStart" type="number" :max="stack.max"
+						class="status-effect  block text-sm font-medium p-0 w-9 h-full bg-transparent border-transparent"
+						@input="stack.onUpdate"
+					>
+				</div>
+			</template>
 			<template v-for="(effect, effectType) in unit.statusEffects" :key="effectType">
 				<div v-if="effect.active" class="status-effect">{{ statusEffectSymbols[effectType] }}</div>
 			</template>

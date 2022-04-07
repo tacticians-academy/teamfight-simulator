@@ -12,6 +12,7 @@ interface StorageChampion {
 	hex: HexCoord
 	starLevel: StarLevel
 	items: number[]
+	stacks?: [string, number][]
 }
 
 export const enum StorageKey {
@@ -101,6 +102,7 @@ export function saveUnits(set: SetNumber) {
 			hex: unit.startHex,
 			starLevel: unit.starLevel,
 			items: unit.items.map(item => item.id),
+			stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1].amount]),
 		}))
 	if (output.length) {
 		window.localStorage.setItem(keyToSet(StorageKey.Units, set), JSON.stringify(output))
