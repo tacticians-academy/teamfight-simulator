@@ -38,6 +38,7 @@ export interface DamageModifier {
 	increase?: number
 	multiplier?: number
 	critChance?: number
+	damageType?: DamageType
 	alwaysCrits?: boolean
 	ignoresInvulnerability?: boolean
 	onModifyDamage?: DamageFn

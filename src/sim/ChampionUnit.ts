@@ -808,7 +808,7 @@ export class ChampionUnit {
 		const damage: DamageResult = {
 			isOriginalSource,
 			sourceType,
-			damageType: calculatedDamageType,
+			damageType: damageModifier?.damageType ?? calculatedDamageType,
 			rawDamage: calculatedDamage,
 			takingDamage: 0,
 			didCrit: false,
