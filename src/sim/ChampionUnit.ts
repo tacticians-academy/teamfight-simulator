@@ -27,21 +27,13 @@ import { MOVE_LOCKOUT_JUMPERS_MS, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROP
 import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/sim/helpers/effectUtils'
 import { containsHex, isSameHex } from '#/sim/helpers/hexes'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/sim/helpers/types'
-import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
+import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StackData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 import { getBestRandomAsMax, uniqueIdentifier } from '#/sim/helpers/utils'
 
 let instanceIndex = 0
 
 export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds, StatusEffectType.magicResistReduction, StatusEffectType.stunned]
 export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]
-
-interface StackData {
-	amount: number
-	icon?: string
-	max?: number
-	isBoolean?: boolean
-	onUpdate?: (event: Event) => void
-}
 
 export class ChampionUnit {
 	instanceID: string
@@ -233,16 +225,21 @@ export class ChampionUnit {
 		if (!(key in this.stacks)) {
 			this.stacks[key] = stack
 		}
-		if (!stack.onUpdate) {
-			stack.onUpdate = (event) => {
+		stack.onUpdate = (event) => {
+			if (stack.isBoolean === true) {
+				stack.amount = stack.amount === 1 ? 0 : 1
+			} else {
 				const amount = parseInt((event.target as any)!.value)
 				stack.amount = isNaN(amount) ? 0 : Math.max(0, stack.max != null ? Math.min(amount, stack.max) : amount)
-				saveUnits(state.setNumber)
-				resetUnitsAfterUpdating()
 			}
+			stack.onAfterUpdate?.(this)
+			saveUnits(state.setNumber)
+			resetUnitsAfterUpdating()
 		}
 		stack.icon = data.icon ?? '🥞'
 		stack.max = data.max
+		stack.isBoolean = data.isBoolean
+		stack.onAfterUpdate = data.onAfterUpdate
 		if (data.max != null) {
 			stack.amount = Math.min(stack.amount, data.max)
 		}

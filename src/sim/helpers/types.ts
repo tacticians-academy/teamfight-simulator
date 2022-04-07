@@ -198,3 +198,12 @@ export interface EmpoweredAuto {
 	onActivate?: ActivateFn
 	onCollided?: CollisionFn
 }
+
+export interface StackData {
+	amount: number
+	icon?: string
+	max?: number
+	isBoolean?: boolean
+	onUpdate?: (event: Event) => void
+	onAfterUpdate?: (unit: ChampionUnit) => void
+}

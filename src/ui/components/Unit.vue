@@ -114,8 +114,12 @@ function onInfo(event: Event) {
 		<div class="flex items-center">
 			<template v-for="(stack, key) in unit.stacks" :key="key">
 				<div v-if="stack" class="w-9 h-5 z-10  flex items-center">
-					{{ stack.icon }}
+					<button v-if="stack.isBoolean" :class="stack.amount ? undefined : 'opacity-50'" @click="stack.onUpdate">
+						{{ stack.icon }}
+					</button>
+					<span v-else>{{ stack.icon }}</span>
 					<input
+						v-if="!stack.isBoolean"
 						:value="stack.amount" :disabled="state.didStart" type="number" :max="stack.max"
 						class="status-effect  block text-sm font-medium p-0 w-9 h-full bg-transparent border-transparent"
 						@input="stack.onUpdate"
