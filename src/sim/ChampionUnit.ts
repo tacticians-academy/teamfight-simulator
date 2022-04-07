@@ -122,6 +122,7 @@ export class ChampionUnit {
 		this.resetPost()
 	}
 	resetPre(synergiesByTeam: SynergyData[][]) {
+		this.bonuses = []
 		this.championEffects = setData.championEffects[this.name as ChampionKey]
 		this.pendingBonuses.clear()
 		this.bleeds.clear()
@@ -170,14 +171,14 @@ export class ChampionUnit {
 	}
 	resetPost() {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
-		this.health = this.baseHP() + this.getBonusVariants(BonusKey.Health)
+		this.health = this.baseHP() * (1 + this.getBonuses('HPMultiplier' as BonusKey))
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellVariableIfExists(this.getCurrentSpell(), SpellKey.AttackSpeed)
 	}
 
 	baseHP() {
 		const hpStat = this.data.stats.hp ?? [1500, 1800, 2100, 2500][getStageScalingIndex()] // ??TFT_VoidSpawn
-		return hpStat * this.starMultiplier
+		return hpStat * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
@@ -685,7 +686,15 @@ export class ChampionUnit {
 		return overheal > 0 ? overheal : 0
 	}
 
-	increaseMaxHealthBy(amount: number) { //TODO interaction with bonus health
+	increaseMaxHealthByProportion(key: BonusLabelKey, proportion: number) {
+		this.addBonuses(key, ['HPMultiplier' as BonusKey, proportion])
+		const newMax = this.baseHP() * (1 + this.getBonuses('HPMultiplier' as BonusKey))
+		const amount = newMax - this.healthMax
+		this.health += amount
+		this.healthMax += amount
+	}
+	increaseMaxHealthBy(amount: number) {
+		amount *= 1 + this.getBonuses('HPMultiplier' as BonusKey)
 		this.health += amount
 		this.healthMax += amount
 	}

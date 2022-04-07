@@ -102,7 +102,7 @@ export const baseChampionEffects = {
 			return champion.queueTargetEffect(elapsedMS, spell, {
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit.dead) {
-						champion.increaseMaxHealthBy(champion.healthMax * hpOnKillProportion) //TODO UI to set base stacks
+						champion.increaseMaxHealthByProportion(spell.name as BonusLabelKey, hpOnKillProportion)
 					}
 				},
 			})
