@@ -1,4 +1,4 @@
-import { AugmentGroupKey, ChampionKey } from '@tacticians-academy/academy-library'
+import { AugmentGroupKey, ChampionKey, TraitKey } from '@tacticians-academy/academy-library'
 
 import { getters, state } from '#/store/store'
 
@@ -28,4 +28,8 @@ export function getUnitsInSocialiteHexes(team: TeamNumber, units: ChampionUnit[]
 			return socialiteHexes.some(hex => isSameHex(hex, mirrorHex))
 		})]
 	})
+}
+
+export function isVIPActiveFor(unit: ChampionUnit) {
+	return unit.stacks.Debonair?.amount === 1 && unit.activeSynergies.some(synergy => synergy.key === TraitKey.Debonair)
 }

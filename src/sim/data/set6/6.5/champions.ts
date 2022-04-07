@@ -6,6 +6,7 @@ import { state } from '#/store/store'
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { delayUntil } from '#/sim/loop'
 
+import { isVIPActiveFor } from '#/sim/data/set6/utils'
 import type { ChampionEffects } from '#/sim/data/types'
 import { ShapeEffectCircle, ShapeEffectCone } from '#/sim/effects/ShapeEffect'
 
@@ -15,7 +16,7 @@ import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { DEFAULT_CAST_SECONDS, HEX_MOVE_LEAGUEUNITS, MAX_HEX_COUNT } from '#/sim/helpers/constants'
 import { getAttackableUnitsOfTeam, getDistanceHex, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getProjectileSpread } from '#/sim/helpers/effectUtils'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/sim/helpers/types'
-import type { BonusLabelKey, HexCoord, ShieldData } from '#/sim/helpers/types'
+import type { BonusLabelKey, DamageModifier, HexCoord, ShieldData } from '#/sim/helpers/types'
 import { getBestArrayAsMax, getBestRandomAsMax, getBestSortedAsMax, randomItem } from '#/sim/helpers/utils'
 
 import { baseChampionEffects } from '../champions'
@@ -118,26 +119,16 @@ export const championEffects = {
 	[ChampionKey.Brand]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
-			if (!target) { return false }
-			const blazeSeconds = champion.getSpellVariable(spell, 'BlazeDuration')
-			// const vip = champion.getSpellVariable(spell, 'VIPBonusReducedDamage') //TODO VIP
-			return champion.queueProjectileEffect(elapsedMS, spell, {
-				target,
-				destroysOnCollision: true,
-				onCollided: (elapsedMS, effect, withUnit) => {
-					if (withUnit.statusEffects.ablaze.active) {
-						withUnit.statusEffects.ablaze.active = false
-						const bonusCalculation = champion.getSpellCalculation(spell, 'BonusDamage')
-						if (bonusCalculation) {
-							withUnit.takeBonusDamage(elapsedMS, champion, bonusCalculation, false)
-						}
-						const secondProcStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-						withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, secondProcStunSeconds * 1000)
-					} else {
-						withUnit.applyStatusEffect(elapsedMS, StatusEffectType.ablaze, blazeSeconds * 1000)
-					}
-				},
-			})
+			if (!target) return false
+			if (isVIPActiveFor(champion)) {
+				const alternativeTargets = getAttackableUnitsOfTeam(champion.opposingTeam()).filter(unit => unit !== target)
+				const secondTarget = getBestRandomAsMax(false, alternativeTargets, (unit) => unit.coordDistanceSquaredTo(champion) + (unit.statusEffects.ablaze.active ? 0 : 1))
+				const reducedDamagePercent = champion.getSpellVariable(spell, 'VIPBonusReducedDamage')
+				if (secondTarget) {
+					queueBrandFireball(elapsedMS, spell, champion, secondTarget, { multiplier: -reducedDamagePercent / 100 })
+				}
+			}
+			return queueBrandFireball(elapsedMS, spell, champion, target)
 		},
 	},
 
@@ -154,8 +145,13 @@ export const championEffects = {
 
 	[ChampionKey.Draven]: {
 		innate: (spell, champion) => {
-			const armorPenPercent = champion.getSpellVariable(spell, 'ArmorPenPercent')
-			// const vip = champion.getSpellVariable(spell, 'PassiveArmorPenPercent') //TODO VIP
+			const armorPenPercent = champion.getSpellVariable(spell, 'PassiveArmorPenPercent')
+			if (isVIPActiveFor(champion)) {
+				return [
+					[BonusKey.ArmorShred, (armorPenPercent + champion.getSpellVariable(spell, 'ArmorPenPercent')) / 100],
+					[BonusKey.HexRangeIncrease, MAX_HEX_COUNT],
+				]
+			}
 			return [
 				[BonusKey.ArmorShred, armorPenPercent / 100],
 			]
@@ -461,6 +457,32 @@ export const championEffects = {
 		},
 	},
 
+	[ChampionKey.Syndra]: {
+		cast: (elapsedMS, spell, champion) => {
+			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
+			if (!target) { return false }
+			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+			const aoeStunSeconds = champion.getSpellVariable(spell, 'VIPDebutantBonus')
+			const isVIP = isVIPActiveFor(champion)
+			return champion.queueMoveUnitEffect(elapsedMS, spell, {
+				target,
+				moveSpeed: 1000, //TODO experimentally determine
+				hexEffect: {
+					hexDistanceFromSource: !isVIP ? 1 : 2,
+					statusEffects: !isVIP
+						? undefined
+						: [
+							[StatusEffectType.stunned, { durationMS: aoeStunSeconds * 1000 }],
+						],
+				},
+				idealDestination: (target) => getDistanceUnitOfTeam(true, champion, champion.opposingTeam())?.activeHex,
+				statusEffects: [
+					[StatusEffectType.stunned, { durationMS: targetStunSeconds * 1000 }],
+				],
+			})
+		},
+	},
+
 	[ChampionKey.Tryndamere]: {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getBestDensityHexes(true, getInteractableUnitsOfTeam(champion.opposingTeam()), true, 1)
@@ -542,7 +564,6 @@ export const championEffects = {
 			const missile = champion.getMissileWithSuffix('QMis')
 			const fixedHexRange = champion.range()
 			const radiansBetween = Math.PI / 128 //TODO experimentally determine
-			const isEmpowered = champion.statusEffects.empowered.active
 
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
 			const bonusCalculations = empoweredAuto.bonusCalculations ?? []
@@ -555,7 +576,7 @@ export const championEffects = {
 					startsAfterMS: windupMS,
 					damageSourceType: DamageSourceType.attack,
 					missile,
-					destroysOnCollision: !isEmpowered,
+					destroysOnCollision: !champion.statusEffects.empowered.active,
 					changeRadians,
 					fixedHexRange,
 					damageCalculation,
@@ -566,7 +587,7 @@ export const championEffects = {
 					bonuses: empoweredAuto.bonuses,
 					opacity: 1 / 3,
 					onActivate: (elapsedMS, champion) => {
-						if (bulletIndex === 0) {
+						if (bulletIndex === 0 && champion.statusEffects.empowered.active) {
 							champion.queueMoveUnitEffect(elapsedMS, undefined, {
 								target: champion,
 								idealDestination: () => getDistanceHex(true, target, getHexesSurroundingWithin(champion.activeHex, 2, false)), //TODO experimentally determine
@@ -586,9 +607,9 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const castSeconds = 1 //TODO experimentally determine
 			delayUntil(elapsedMS, castSeconds).then(elapsedMS => {
-				const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
-				// const vip = champion.getSpellVariable(spell, 'VIPTotalDuration') //TODO VIP
+				const durationSeconds = isVIPActiveFor(champion) ? champion.getSpellVariable(spell, 'VIPTotalDuration') : champion.getSpellVariable(spell, SpellKey.Duration)
 				champion.applyStatusEffect(elapsedMS, StatusEffectType.empowered, durationSeconds * 1000)
+				champion.manaLockUntilMS = elapsedMS + durationSeconds * 1000
 			})
 			champion.performActionUntilMS = elapsedMS + castSeconds * 1000
 			return true
@@ -643,4 +664,26 @@ function addDravenAxe(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, 
 			},
 		})
 	}
+}
+
+function queueBrandFireball(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit, target: ChampionUnit, damageModifier?: DamageModifier) {
+	champion.queueProjectileEffect(elapsedMS, spell, {
+		target,
+		destroysOnCollision: true,
+		damageModifier,
+		onCollided: (elapsedMS, effect, withUnit) => {
+			if (withUnit.statusEffects.ablaze.active) {
+				withUnit.statusEffects.ablaze.active = false
+				const bonusCalculation = champion.getSpellCalculation(spell, 'BonusDamage')
+				if (bonusCalculation) {
+					withUnit.takeBonusDamage(elapsedMS, champion, bonusCalculation, false)
+				}
+				const secondProcStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
+				withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, secondProcStunSeconds * 1000)
+			} else {
+				const blazeSeconds = champion.getSpellVariable(spell, 'BlazeDuration')
+				withUnit.applyStatusEffect(elapsedMS, StatusEffectType.ablaze, blazeSeconds * 1000)
+			}
+		},
+	})
 }

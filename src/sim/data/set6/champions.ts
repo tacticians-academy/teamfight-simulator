@@ -5,8 +5,8 @@ import { state } from '#/store/store'
 
 import { delayUntil } from '#/sim/loop'
 
+import { isVIPActiveFor } from '#/sim/data/set6/utils'
 import type { ChampionEffects } from '#/sim/data/types'
-
 import { ShapeEffectCircle, ShapeEffectCone } from '#/sim/effects/ShapeEffect'
 
 import { toRadians } from '#/sim/helpers/angles'
@@ -501,11 +501,27 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.Leona]: {
+		innate: (spell, champion) => {
+			if (isVIPActiveFor(champion)) {
+				const maxHPPerSecondPercent = champion.getSpellVariable(spell, 'T1DebutantBonus')
+				champion.scalings.add({
+					source: champion,
+					sourceID: ChampionKey.Leona,
+					activatedAtMS: 0,
+					stats: [BonusKey.Health],
+					intervalSeconds: 1, //NOTE hardcoded
+					calculateAmount: (elapsedMS) => {
+						const targetedByCount = getUnitsOfTeam(champion.opposingTeam()).filter(unit => unit.target === champion).length
+						console.log(targetedByCount)
+						return targetedByCount * maxHPPerSecondPercent / 100 * champion.healthMax
+					},
+				})
+			}
+		},
 		cast: (elapsedMS, spell, champion) => {
 			const shieldAmount = champion.getSpellCalculationResult(spell, 'Shielding')
 			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
 			const bonusStats = champion.getSpellVariable(spell, 'BonusStats')
-			// const vip = champion.getSpellVariable(spell, 'T1DebutantBonus') //TODO VIP
 			const expiresAfterMS = durationSeconds * 1000
 			champion.queueHexEffect(elapsedMS, spell, {
 				targetTeam: champion.team,
@@ -839,42 +855,30 @@ export const baseChampionEffects = {
 		},
 	},
 
-	[ChampionKey.Syndra]: {
-		cast: (elapsedMS, spell, champion) => {
-			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
-			if (!target) { return false }
-			const targetStunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
-			// const aoeStunSeconds = champion.getSpellVariable(spell, 'VIPDebutantBonus') //TODO VIP
-			return champion.queueMoveUnitEffect(elapsedMS, spell, {
-				target,
-				moveSpeed: 1000, //TODO experimentally determine
-				idealDestination: (target) => getDistanceUnitOfTeam(true, champion, champion.opposingTeam())?.activeHex,
-				statusEffects: [
-					[StatusEffectType.stunned, { durationMS: targetStunSeconds * 1000 }],
-				],
-			})
-		},
-	},
-
 	[ChampionKey.Talon]: {
 		passive: (elapsedMS, spell, target, source, damage) => {
 			const bleedSeconds = source.getSpellVariable(spell, 'BleedDuration')
-			// const vip = source.getSpellVariable(spell, 'VIPBleedDurationBonus') //TODO VIP
+			const bonusBleedTimePercent = source.getSpellVariable(spell, 'VIPBleedDurationBonus')
 			const repeatsEveryMS = 1000 //TODO experimentally determine
 			const iterationsCount = bleedSeconds * 1000 / repeatsEveryMS
 			const sourceID = source.instanceID
 			const basicAttacksOnTarget = target.basicAttackSourceIDs.filter(basicAttackSourceID => basicAttackSourceID === sourceID).length
+			const isVIP = isVIPActiveFor(source)
+			const remainingIterations = isVIP
+				? iterationsCount * Math.ceil(1 + bonusBleedTimePercent / 100)
+				: iterationsCount
 			if (basicAttacksOnTarget % 3 === 0) { //NOTE hardcoded
 				target.bleeds.add({
 					sourceID,
 					source,
 					damageCalculation: source.getSpellCalculation(spell, SpellKey.Damage)!,
 					damageModifier: {
+						damageType: isVIP ? DamageType.true : undefined,
 						multiplier: -(1 - 1 / iterationsCount),
 					},
 					activatesAtMS: elapsedMS,
 					repeatsEveryMS,
-					remainingIterations: iterationsCount,
+					remainingIterations,
 				})
 			}
 			return true
