@@ -5,12 +5,12 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig(({ mode }) => {
-	const vuePlugin = vue()
-	const tsconfigPlugin = tsconfigPaths({ loose: true })
+	const plugins = [tsconfigPaths({ loose: true }), vue()]
+	if (mode === 'development') {
+		plugins.push(checker({ vueTsc: true }))
+	}
 	return {
-		plugins: mode === 'production'
-			? [tsconfigPlugin, vuePlugin]
-			: [tsconfigPlugin, checker({ vueTsc: true }), vuePlugin],
+		plugins,
 		server: {
 			open: true,
 		},
