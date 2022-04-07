@@ -97,6 +97,14 @@ export const baseChampionEffects = {
 	},
 
 	[ChampionKey.ChoGath]: {
+		innate: (spell, champion) => {
+			const maxStacks = champion.getSpellVariable(spell, 'MaxFeastStacks')
+			const hpOnKillProportion = champion.getSpellVariable(spell, 'BonusHealthOnKill')
+			const stackCount = champion.initStack(ChampionKey.ChoGath, { max: maxStacks })
+			return [
+				['HPMultiplier' as BonusKey, hpOnKillProportion * stackCount],
+			]
+		},
 		cast: (elapsedMS, spell, champion) => {
 			const hpOnKillProportion = champion.getSpellVariable(spell, 'BonusHealthOnKill')
 			return champion.queueTargetEffect(elapsedMS, spell, {
