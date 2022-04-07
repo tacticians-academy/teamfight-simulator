@@ -190,6 +190,7 @@ export interface EmpoweredAuto {
 	bonuses?: [BonusLabelKey, ...BonusVariable[]]
 	missile?: ChampionSpellMissileData
 	returnMissile?: ChampionSpellMissileData
+	returnDoesNotTrack?: boolean
 	stackingDamageModifier?: DamageModifier
 	destroysOnCollision?: boolean
 	statusEffects?: StatusEffectData[]

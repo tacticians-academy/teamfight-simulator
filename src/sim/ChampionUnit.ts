@@ -339,6 +339,7 @@ export class ChampionUnit {
 				if (empower.returnMissile) {
 					if (empoweredAuto.returnMissile) { console.warn('empoweredAutos multiple returnMissile not supported') }
 					empoweredAuto.returnMissile = empower.returnMissile
+					empoweredAuto.returnDoesNotTrack = empower.returnDoesNotTrack
 				}
 				if (empower.onCollided) {
 					if (empoweredAuto.onCollided) { console.warn('empoweredAutos multiple onCollided not supported') }
@@ -392,6 +393,7 @@ export class ChampionUnit {
 						stackingDamageModifier: empoweredAuto.stackingDamageModifier,
 						bonuses: empoweredAuto.bonuses,
 						returnMissile: empoweredAuto.returnMissile,
+						projectileStartsFrom: empoweredAuto.returnDoesNotTrack === true ? this.activeHex : undefined,
 						hexEffect: empoweredAuto.hexEffect,
 						onCollided: (elapsedMS, effect, target, damage) => {
 							this.completeAutoAttack(elapsedMS, effect, target, damage, empoweredAuto, canReProcAttack)

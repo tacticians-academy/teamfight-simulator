@@ -635,6 +635,7 @@ function addDravenAxe(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, 
 			amount: 1,
 			expiresAtMS,
 			returnMissile, //TODO fixed 2s travel time
+			returnDoesNotTrack: true,
 			onCollided: (elapsedMS, effect, withUnit) => {
 				if (withUnit === champion && effect.intersects(champion)) {
 					addDravenAxe(elapsedMS, spell, champion)
