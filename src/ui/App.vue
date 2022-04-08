@@ -45,7 +45,6 @@ function onSetNumber(set: SetNumber) {
 
 <style scoped lang="postcss">
 footer {
-	padding-right: 4vw;
-	margin-top: -10vw;
+	margin-top: -11vw;
 }
 </style>

@@ -1,6 +1,3 @@
-import { ref } from 'vue'
-import type { Ref } from 'vue'
-
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
