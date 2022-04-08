@@ -132,6 +132,7 @@ export const baseTraitEffects = {
 				if (innovationHex != null) {
 					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
 					innovation.genericReset()
+					innovation.team = teamNumber
 					state.units.push(innovation)
 				} else {
 					return console.log('ERR', 'No available hex', TraitKey.Innovator)
