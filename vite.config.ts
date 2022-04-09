@@ -18,5 +18,8 @@ export default defineConfig(({ mode }) => {
 			setupFiles: 'test/setup.ts',
 			environment: 'happy-dom',
 		},
+		define: {
+			__VUE_OPTIONS_API__: false,
+		},
 	}
 })
