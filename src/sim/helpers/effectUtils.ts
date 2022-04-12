@@ -54,8 +54,11 @@ export function applyGrievousBurn(itemAugment: ItemAugmentCompatible, elapsedMS:
 	if (ticksPerSecond <= 0) { ticksPerSecond = 1 }
 	const variables = itemAugment.variables ?? itemAugment.effects!
 	const [grievousWounds] = getVariables(itemAugment, 'GrievousWoundsPercent')
-	const durationSeconds = variables['BurnDuration'] ?? variables['Duration']!
-	const totalBurn = variables['BurnPercent'] ?? variables['TotalBurnPercent']!
+	const durationSeconds = variables['BurnDuration'] ?? variables['Duration']
+	const totalBurn = variables['BurnPercent'] ?? variables['TotalBurnPercent']
+	if (durationSeconds == null || totalBurn == null) {
+		return console.warn('Invalid burn', variables)
+	}
 	target.applyStatusEffect(elapsedMS, StatusEffectType.grievousWounds, durationSeconds * 1000, grievousWounds / 100)
 
 	const existing = Array.from(target.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)

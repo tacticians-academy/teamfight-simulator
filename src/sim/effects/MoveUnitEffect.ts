@@ -46,6 +46,7 @@ export class MoveUnitEffect extends GameEffect {
 	onDestination: ActivateFn | undefined
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: MoveUnitEffectData) {
+		if (!data.target) throw 'Target must be provided'
 		super(source, spell, data)
 
 		this.startsAtMS = elapsedMS + (data.startsAfterMS ?? ((spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)))
@@ -53,7 +54,7 @@ export class MoveUnitEffect extends GameEffect {
 		this.activatesAtMS = this.startsAtMS + this.activatesAfterMS
 		this.expiresAtMS = this.activatesAtMS + (data.expiresAfterMS != null ? data.expiresAfterMS : 60 * 1000)
 
-		this.target = data.target!
+		this.target = data.target
 		this.movesWithTarget = data.movesWithTarget ?? false
 		this.keepsAttackTarget = data.keepsAttackTarget ?? false
 		this.moveSpeed = data.moveSpeed

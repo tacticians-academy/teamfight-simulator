@@ -48,7 +48,11 @@ export class HexEffect extends GameEffect {
 		if (!this.hexes) {
 			const source = this.hexSource ?? this.source
 			const sourceHex = 'activeHex' in source ? source.activeHex : source
-			this.hexes = getHexesSurroundingWithin(sourceHex, this.hexDistanceFromSource!, true)
+			if (this.hexDistanceFromSource) {
+				this.hexes = getHexesSurroundingWithin(sourceHex, this.hexDistanceFromSource, true)
+			} else {
+				console.warn('Must provide `hexes` or `hexDistanceFromSource`')
+			}
 		}
 	}
 

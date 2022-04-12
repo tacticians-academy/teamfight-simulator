@@ -73,6 +73,7 @@ export class ProjectileEffect extends GameEffect {
 	fixedDeltaY: number | undefined
 
 	constructor(source: ChampionUnit, elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, data: ProjectileEffectData) {
+		if (!data.target || !data.missile) throw 'Target must be provided'
 		super(source, spell, data)
 
 		const startsAfterMS = data.startsAfterMS != null ? data.startsAfterMS : (spell ? (spell.castTime ?? DEFAULT_CAST_SECONDS) * 1000 : 0)
@@ -84,11 +85,11 @@ export class ProjectileEffect extends GameEffect {
 
 		this.projectileStartsFrom = data.projectileStartsFrom ?? source
 		this.coord = ref([...('coord' in this.projectileStartsFrom ? this.projectileStartsFrom.coord : getCoordFrom(this.projectileStartsFrom))] as HexCoord) // Destructure to avoid mutating source
-		this.missile = data.missile!
+		this.missile = data.missile
 		this.currentSpeed = Math.min(10000, this.missile.speedInitial!) //TODO high speeds miss collisions, derive from .travelTime
-		this.target = data.target!
+		this.target = data.target
 		this.targetCoord = [0, 0]
-		this.setTarget(data.target!)
+		this.setTarget(data.target)
 		this.hexEffect = data.hexEffect
 		this.destroysOnCollision = data.destroysOnCollision
 		this.stackingDamageModifier = data.stackingDamageModifier
@@ -135,18 +136,19 @@ export class ProjectileEffect extends GameEffect {
 				}
 				this.source.queueHexEffect(elapsedMS, undefined, this.hexEffect)
 			}
-			if (this.bounce) {
-				const bounceTarget = getNextBounceFrom(this.target as ChampionUnit, this.bounce)
+			const bounce = this.bounce
+			if (bounce) {
+				const bounceTarget = getNextBounceFrom(this.target as ChampionUnit, bounce)
 				if (bounceTarget) {
 					if (this.damageModifier) {
-						Object.assign(this.damageModifier, this.bounce!.damageModifier)
+						Object.assign(this.damageModifier, bounce.damageModifier)
 					} else {
 						this.damageModifier = this.bounce?.damageModifier
 					}
-					if (this.bounce.damageCalculation) {
-						this.damageCalculation = this.bounce.damageCalculation
+					if (bounce.damageCalculation) {
+						this.damageCalculation = bounce.damageCalculation
 					}
-					this.bounce.bouncesRemaining -= 1
+					bounce.bouncesRemaining -= 1
 					this.setTarget(bounceTarget)
 					return false
 				}

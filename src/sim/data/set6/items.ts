@@ -279,7 +279,7 @@ export const baseItemEffects = {
 				if (bestTargets.length) {
 					bestTarget = getDistanceUnitFromUnits(false, holder, bestTargets)
 				} else {
-					bestTarget = getBestRandomAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)!.remainingIterations)
+					bestTarget = getBestRandomAsMax(false, units, (unit) => Array.from(unit.bleeds).find(bleed => bleed.sourceID === GRIEVOUS_BURN_ID)?.remainingIterations)
 				}
 				if (bestTarget) {
 					applyGrievousBurn(item, elapsedMS, bestTarget, holder, 1) //NOTE ticksPerSecond is hardcoded to match Morellonomicon since it is currently unspecified

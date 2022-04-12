@@ -30,7 +30,7 @@ export interface ChampionFns {
 	cast?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) => GameEffect | boolean
 	customAuto?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, target: ChampionUnit, source: ChampionUnit, empoweredAuto: EmpoweredAuto, windupMS: DOMHighResTimeStamp) => void
 	passiveCasts?: boolean
-	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData | undefined, target: ChampionUnit, source: ChampionUnit, damage: DamageResult | undefined) => void
+	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit, source: ChampionUnit, damage: DamageResult | undefined) => void
 }
 export type ChampionEffects = {[key in string]?: ChampionFns}
 

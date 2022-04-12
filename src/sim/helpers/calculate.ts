@@ -38,7 +38,7 @@ export function solveSpellCalculationFrom(source: ChampionUnit | undefined, targ
 						damageType = DamageType.magic
 					}
 				}
-				value *= (subpart.statFromTarget === true ? target : source)!.getStat(subpart.stat as BonusKey) * subpart.ratio!
+				value *= (subpart.statFromTarget === true ? target : source)!.getStat(subpart.stat as BonusKey) * (subpart.ratio ?? 1)
 			}
 			if (subpart.max != null) {
 				value = Math.min(subpart.max, value)

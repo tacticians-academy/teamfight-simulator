@@ -123,7 +123,8 @@ export const baseChampionEffects = {
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS * 1.125),
 				onCollided: (elapsedMS, effect, withUnit) => {
-					champion.gainHealth(elapsedMS, champion, champion.getSpellCalculationResult(spell, SpellKey.Heal)!, true)
+					const healCalculation = champion.getSpellCalculationResult(spell, SpellKey.Heal)
+					if (healCalculation) champion.gainHealth(elapsedMS, champion, healCalculation, true)
 				},
 			})
 		},
@@ -638,12 +639,12 @@ export const baseChampionEffects = {
 	[ChampionKey.Tibbers]: {
 		passiveCasts: true,
 		passive: (elapsedMS, spell, target, champion, damage) => {
-			delayUntil(elapsedMS, spell?.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
+			delayUntil(elapsedMS, spell.castTime ?? DEFAULT_CAST_SECONDS).then(elapsedMS => {
 				const buffSeconds = champion.getSpellCalculationResult(spell, 'BuffDuration')
 				const bonusADProportion = champion.getSpellVariable(spell, 'PercentAD')
 				const allyADAP = champion.getSpellVariable(spell, 'AllyADAPBuff')
 				const expiresAtMS = elapsedMS + buffSeconds * 1000
-				const bonusKey = spell!.name as BonusLabelKey
+				const bonusKey = spell.name as BonusLabelKey
 				champion.setBonusesFor(bonusKey, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
 				champion
 					.alliedUnits(false)
@@ -763,7 +764,7 @@ export const baseChampionEffects = {
 			if (!mostDistantEnemy) { return false }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: mostDistantEnemy,
-				returnMissile: spell!.missile,
+				returnMissile: spell.missile,
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit !== champion) { return }
 					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield')

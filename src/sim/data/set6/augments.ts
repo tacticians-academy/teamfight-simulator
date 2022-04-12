@@ -53,9 +53,9 @@ export const baseAugmentEffects = {
 	[AugmentGroupKey.StandBehindMe]: {
 		apply: (augment, team, units) => {
 			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Bodyguard)
-			if (!synergy) { return } //TODO works without trait active?
+			if (!synergy?.activeEffect) { return }
 
-			const [bodyguardArmor] = getVariables(synergy.activeEffect!, 'BonusArmor')
+			const [bodyguardArmor] = getVariables(synergy.activeEffect, 'BonusArmor')
 			const [bodyguardPercent, standBehindPercent] = getVariables(augment, 'DefenseBonus', 'DefensePercent')
 			const bodyguards = units.filter(unit => unit.hasTrait(TraitKey.Bodyguard))
 			const behindHexes = bodyguards.flatMap(unit => getFrontBehindHexes(unit, false))
@@ -201,11 +201,11 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.InstantInjection]: {
 		apply: (augment, team, units) => {
-			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Chemtech)
-			if (synergy?.activeEffect) {
+			const activeEffect = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Chemtech)?.activeEffect
+			if (activeEffect) {
 				units
 					.filter(unit => unit.hasTrait(TraitKey.Chemtech))
-					.forEach(unit => applyChemtech(0, synergy.activeEffect!, unit))
+					.forEach(unit => applyChemtech(0, activeEffect, unit))
 			}
 		},
 	},

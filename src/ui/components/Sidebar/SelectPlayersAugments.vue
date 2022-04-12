@@ -17,9 +17,11 @@ function onAugmentTeamIndex(teamNumber: TeamNumber, augmentIndex: number) {
 	selectAugment.value = [0, teamNumber, augmentIndex]
 }
 function onAugment(augment: AugmentData | null) {
-	const [tier, teamIndex, augmentIndex] = selectAugment.value!
-	setAugmentFor(teamIndex, augmentIndex, augment)
-	selectAugment.value = null
+	if (selectAugment.value) {
+		const [tier, teamIndex, augmentIndex] = selectAugment.value
+		setAugmentFor(teamIndex, augmentIndex, augment)
+		selectAugment.value = null
+	}
 }
 
 const augmentGroups = computed(() => {
@@ -58,13 +60,13 @@ const augmentGroups = computed(() => {
 			<button
 				v-for="(tier, tierIndex) in ['Silver', 'Gold', 'Prismatic']" :key="tierIndex"
 				class="w-20 h-16 text-white"
-				@click="selectAugment![0] = tierIndex"
+				@click="selectAugment[0] = tierIndex"
 			>
 				{{ tier }}
 			</button>
 			<button class="w-20 h-16 text-gray-400" @click="onAugment(null)">Clear</button>
 		</div>
-		<div v-if="selectAugment[0] != null" class="mb-8 space-y-4">
+		<div v-if="selectAugment[0]" class="mb-8 space-y-4">
 			<div v-for="[label, augments] in augmentGroups" :key="label">
 				<div class="ml-1 text-gray-300">{{ label }}</div>
 				<div class="flex flex-wrap justify-center">

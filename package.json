@@ -22,29 +22,27 @@
 		"vite": "^2.9.1",
 		"vite-plugin-checker": "0.4.3",
 		"vite-tsconfig-paths": "^3.4.1",
-		"vue": "^3.2.31"
+		"vue": "^3.2.32"
 	},
 	"devDependencies": {
-		"@ky-is/eslint-config": "^2.4.0",
-		"@vue/eslint-config-typescript": "^10.0.0",
+		"@ky-is/eslint-config": "^2.5.1",
+		"@typescript-eslint/eslint-plugin": "^5.19.0",
+		"@typescript-eslint/parser": "^5.19.0",
 		"autoprefixer": "^10.4.4",
 		"c8": "^7.11.0",
-		"eslint": "^8.12.0",
+		"eslint": "^8.13.0",
 		"eslint-plugin-vue": "^8.6.0",
 		"happy-dom": "^2.55.0",
 		"postcss": "^8.4.12",
 		"typescript": "^4.6.3",
-		"vitest": "^0.9.0",
+		"vitest": "^0.9.3",
+		"vue-eslint-parser": "^8.3.0",
 		"vue-tsc": "^0.33.9"
 	},
 	"eslintConfig": {
-		"extends": "@ky-is/eslint-config/vue-typescript",
-		"parserOptions": {
-			"sourceType": "module",
-			"project": [
-				"tsconfig.eslint.json"
-			]
-		},
+		"extends": [
+			"@ky-is/eslint-config/vue-typescript"
+		],
 		"rules": {
 			"vue/component-tags-order": [
 				"error",
@@ -56,13 +54,6 @@
 						],
 						"style"
 					]
-				}
-			],
-			"vue/html-indent": [
-				"error",
-				"tab",
-				{
-					"baseIndent": 0
 				}
 			],
 			"vue/no-v-html": "off"

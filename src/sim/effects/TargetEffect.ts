@@ -105,15 +105,16 @@ export class TargetEffect extends GameEffect {
 			})
 		}
 		if (this.activated) {
-			if (this.bounce && this.bounce.bouncesRemaining > 0) {
+			const bounce = this.bounce
+			if (bounce && bounce.bouncesRemaining > 0) {
 				const newTargets = new Set<ChampionUnit>()
 				this.currentTargets.forEach(target => {
-					const bounceTarget = getNextBounceFrom(target, this.bounce!)
+					const bounceTarget = getNextBounceFrom(target, bounce)
 					if (bounceTarget) {
 						if (this.damageModifier) {
-							Object.assign(this.damageModifier, this.bounce!.damageModifier)
+							Object.assign(this.damageModifier, bounce.damageModifier)
 						} else {
-							this.damageModifier = this.bounce?.damageModifier
+							this.damageModifier = bounce.damageModifier
 						}
 						if (this.apply(elapsedMS, bounceTarget, isFirst)) {
 							newTargets.add(bounceTarget)
@@ -121,7 +122,7 @@ export class TargetEffect extends GameEffect {
 						}
 					}
 				})
-				this.bounce.bouncesRemaining -= 1
+				bounce.bouncesRemaining -= 1
 				this.currentTargets = newTargets
 			}
 		} else if (applies) {

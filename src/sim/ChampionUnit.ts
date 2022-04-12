@@ -232,7 +232,7 @@ export class ChampionUnit {
 			if (stack.isBoolean === true) {
 				stack.amount = stack.amount === 1 ? 0 : 1
 			} else {
-				const amount = parseInt((event.target as any)!.value)
+				const amount = parseInt((event.target as any).value)
 				stack.amount = isNaN(amount) ? 0 : Math.max(0, stack.max != null ? Math.min(amount, stack.max) : amount)
 			}
 			stack.onAfterUpdate?.(this)
@@ -429,7 +429,7 @@ export class ChampionUnit {
 		if (!effect.collidedWith.length) {
 			const effects = this.championEffects
 			if (effects?.passive && (effects.passiveCasts !== true || this.readyToCast(elapsedMS))) {
-				effects.passive(elapsedMS, this.data.passive ?? this.getCurrentSpell(), withUnit, this, damage)
+				effects.passive(elapsedMS, this.data.passive ?? this.getCurrentSpell() ?? this.data.spells[0], withUnit, this, damage)
 				if (effects.passiveCasts === true) {
 					this.postCast(elapsedMS, canReProcAttack)
 				}
@@ -486,19 +486,23 @@ export class ChampionUnit {
 				return
 			}
 			scaling.activatedAtMS = elapsedMS
-			const bonuses: BonusVariable[] = []
-			for (const stat of scaling.stats) {
-				const amount = scaling.intervalAmount ?? scaling.calculateAmount!(elapsedMS)
-				if (stat === BonusKey.Health) {
-					this.gainHealth(elapsedMS, scaling.source, amount, false)
-				} else if (stat === BonusKey.Mana) {
-					this.gainMana(elapsedMS, amount)
-				} else {
-					bonuses.push([stat, amount])
+			const amount = scaling.intervalAmount ?? scaling.calculateAmount?.(elapsedMS)
+			if (amount != null) {
+				const bonuses: BonusVariable[] = []
+				for (const stat of scaling.stats) {
+					if (stat === BonusKey.Health) {
+						this.gainHealth(elapsedMS, scaling.source, amount, false)
+					} else if (stat === BonusKey.Mana) {
+						this.gainMana(elapsedMS, amount)
+					} else {
+						bonuses.push([stat, amount])
+					}
 				}
-			}
-			if (bonuses.length) {
-				this.addBonuses(scaling.sourceID, ...bonuses)
+				if (bonuses.length) {
+					this.addBonuses(scaling.sourceID, ...bonuses)
+				}
+			} else {
+				console.warn('No amount for scaling', scaling)
 			}
 		})
 	}
@@ -860,7 +864,11 @@ export class ChampionUnit {
 			reduction += (this.getStatusEffect(elapsedMS, StatusEffectType.magicResistReduction) ?? 0) + damage[BonusKey.MagicResistShred]
 		}
 		if (reduction > 0) {
-			defenseStat! *= (1 - Math.min(1, reduction))
+			if (defenseStat != null) {
+				defenseStat *= (1 - Math.min(1, reduction))
+			} else {
+				console.warn('No defense stat for reduction')
+			}
 		}
 		let didCrit = false
 		if (source && (damage.damageType !== DamageType.magic || source.canDamageCrit(damage))) {
@@ -975,10 +983,10 @@ export class ChampionUnit {
 		})
 		this.activeSynergies.forEach(({ key, activeEffect }) => {
 			const effects = setData.traitEffects[key]
-			if (effects) {
+			if (effects && activeEffect) {
 				const hpThresholdFn = effects.hpThreshold
-				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect!.variables, originalHealth, healthDamage)) {
-					hpThresholdFn(activeEffect!, elapsedMS, this)
+				if (hpThresholdFn && this.checkHPThreshold(key, activeEffect.variables, originalHealth, healthDamage)) {
+					hpThresholdFn(activeEffect, elapsedMS, this)
 				}
 			}
 		})

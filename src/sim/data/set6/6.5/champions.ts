@@ -338,7 +338,8 @@ export const championEffects = {
 			if (!bestHex) { return false }
 			const attackSpeedReducePercent = champion.getSpellVariable(spell, 'ASReduction')
 			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
-			const damageCalculation = champion.getSpellCalculation(spell, 'DamagePerSecond')!
+			const damageCalculation = champion.getSpellCalculation(spell, 'DamagePerSecond')
+			if (!damageCalculation) return true
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: bestHex,
 				fixedHexRange,
@@ -370,7 +371,7 @@ export const championEffects = {
 				target.damage(elapsedMS, false, champion, DamageSourceType.spell, damageCalculation, false)
 			}
 			const expiresAtMS = elapsedMS + statsSeconds * 1000
-			champion.addBonuses(spell!.name as BonusLabelKey, [BonusKey.Armor, statsAmount, expiresAtMS], [BonusKey.MagicResist, statsAmount, expiresAtMS])
+			champion.addBonuses(spell.name as BonusLabelKey, [BonusKey.Armor, statsAmount, expiresAtMS], [BonusKey.MagicResist, statsAmount, expiresAtMS])
 		},
 	},
 
@@ -386,7 +387,7 @@ export const championEffects = {
 					const lowestHPAlly = getBestRandomAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
 						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing')
-						lowestHPAlly.gainHealth(elapsedMS, champion, damage!.takingDamage * percentHealing / 100, true)
+						lowestHPAlly.gainHealth(elapsedMS, champion, damage.takingDamage * percentHealing / 100, true)
 					}
 				},
 			})
