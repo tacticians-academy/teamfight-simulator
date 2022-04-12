@@ -221,7 +221,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.LifelongLearning]: {
 		apply: (augment, team, units) => {
-			const [ap, bonusAP] = getVariables(augment, BonusKey.AbilityPower, 'BonusAP')
+			const [ap, bonusAP] = getVariables(augment, BonusKey.AbilityPower, 'BonusAP') //TODO wins vs losses
 			units
 				.filter(unit => unit.hasTrait(TraitKey.Scholar))
 				.forEach(unit => {

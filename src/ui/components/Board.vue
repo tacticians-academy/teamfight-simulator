@@ -20,8 +20,6 @@ import { UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
-const hexContainer = ref<HTMLElement | null>(null)
-
 const { getters, state, dropUnit } = useStore()
 
 const showingSocialite = computed(() => !state.didStart && Math.floor(state.setNumber) === 6)
@@ -59,7 +57,7 @@ const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 <template>
 <div class="board">
 	<div class="relative">
-		<div ref="hexContainer" class="overflow-x-hidden aspect-square">
+		<div class="overflow-x-hidden aspect-square">
 			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
 				<div
 					v-for="colRow in row" v-show="rowIndex < state.rowsTotal" :key="colRow.hex[1]"
