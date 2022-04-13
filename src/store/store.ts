@@ -193,14 +193,22 @@ export const getters = {
 
 // Watch
 
-watch([getters.mutantType], () => {
-	setStorage(state.setNumber, StorageKey.Mutant, state.mutantType)
+watch(getters.mutantType, (mutantType) => {
+	console.log(mutantType)
+	setStorage(state.setNumber, StorageKey.Mutant, mutantType)
 	resetUnitsAfterUpdating()
 })
 watchEffect(() => {
 	setStorage(state.setNumber, StorageKey.StageNumber, state.stageNumber)
 })
-watch([getters.augmentCount], () => {
+watch(getters.augmentCount, (augmentCount) => {
+	state.augmentsByTeam.forEach(teamAugments => {
+		teamAugments.forEach((augment, index) => {
+			if (index >= augmentCount) {
+				teamAugments[index] = null
+			}
+		})
+	})
 	resetUnitsAfterUpdating()
 })
 

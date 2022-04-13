@@ -34,6 +34,8 @@ const augmentGroups = computed(() => {
 	})
 	return augmentGroups.filter(group => group[1].length)
 })
+
+const maxAugmentCount = computed(() => Math.max(1, Math.min(3, state.stageNumber - 1)))
 </script>
 
 <template>
@@ -42,15 +44,17 @@ const augmentGroups = computed(() => {
 	<div class="flex justify-between">
 		<div v-for="(augments, teamNumber) in state.augmentsByTeam" :key="teamNumber" class="w-1/2 flex flex-col items-center">
 			<div class="w-full text-secondary">{{ teamNumber === 0 ? 'Blue' : 'Red' }}:</div>
-			<button
-				v-for="(augment, augmentIndex) in augments" :key="augmentIndex"
-				class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
-				:disabled="state.didStart"
-				@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
-			>
-				<span v-if="augment" class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
-				<span v-else class="w-full h-full rounded text-secondary text-xl font-medium font-serif border border-gray-400  flex justify-center items-center">{{ Array(augmentIndex + 1).fill('I').join('') }}</span>
-			</button>
+			<template v-for="(augment, augmentIndex) in augments" :key="augmentIndex">
+				<button
+					v-if="augmentIndex < maxAugmentCount"
+					class="sidebar-icon  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
+					:disabled="state.didStart"
+					@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
+				>
+					<span v-if="augment" class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
+					<span v-else class="w-full h-full rounded text-secondary text-xl font-medium font-serif border border-gray-400  flex justify-center items-center">{{ Array(augmentIndex + 1).fill('I').join('') }}</span>
+				</button>
+			</template>
 		</div>
 	</div>
 </div>
