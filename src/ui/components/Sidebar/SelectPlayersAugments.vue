@@ -70,7 +70,7 @@ const maxAugmentCount = computed(() => Math.max(1, Math.min(3, state.stageNumber
 			</button>
 			<button class="w-20 h-16 text-gray-400" @click="onAugment(null)">Clear</button>
 		</div>
-		<div v-if="selectAugment[0]" class="mb-8 space-y-4">
+		<div class="mb-8 space-y-4">
 			<div v-for="[label, augments] in augmentGroups" :key="label">
 				<div class="ml-1 text-gray-300">{{ label }}</div>
 				<div class="flex flex-wrap justify-center">
