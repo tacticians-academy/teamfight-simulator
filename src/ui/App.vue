@@ -38,7 +38,7 @@ function onSetNumber(set: SetNumber) {
 			<div class="mt-2 text-tertiary  flex justify-center space-x-1">
 				<a href="https://github.com/tacticians-academy/teamfight-simulator" target="_blank">GitHub</a>
 				<span>・</span>
-				<a href="https://github.com/tacticians-academy/teamfight-simulator/milestone/1" target="_blank">6.5 progress</a>
+				<a href="https://github.com/tacticians-academy/teamfight-simulator/milestone/1?closed=1" target="_blank">6.5 progress</a>
 				<span>・</span>
 				<a :href="`mailto:tacticians.academy@gmail.com?subject=${encodeURIComponent('Teamfight Simulator Feedback')}`" target="_blank">Send feedback</a>
 			</div>

@@ -66,8 +66,12 @@ export function getBestRandomAsMax<T>(isMaximum: boolean, entries: T[], valueFn:
 
 // Random
 
+export function randomBool() {
+	return Math.random() < 0.5
+}
+
 export function randomSign() {
-	return Math.random() < 0.5 ? -1 : 1
+	return randomBool() ? -1 : 1
 }
 
 export function randomItem<T>(array: T[]) {
