@@ -13,12 +13,12 @@ import { applyGrievousBurn, getChainFrom, getInteractableUnitsOfTeam, getVariabl
 import { getInverseHex } from '#/sim/helpers/hexes'
 import { DamageSourceType, SpellKey, StatusEffectType } from '#/sim/helpers/types'
 import type { BonusLabelKey, BonusVariable, HexCoord } from '#/sim/helpers/types'
-import { getBestRandomAsMax } from '#/sim/helpers/utils'
+import { getBestRandomAsMax, randomBool } from '#/sim/helpers/utils'
 
 export const baseItemEffects = {
 
 	[ItemKey.ArchangelsStaff]: {
-		innate: (item, unit) => {
+		innate: (item, uniqueID, unit) => {
 			const [intervalAmount, intervalSeconds] = getVariables(item, 'APPerInterval', 'IntervalSeconds')
 			unit.scalings.add({
 				source: unit,
@@ -125,18 +125,29 @@ export const baseItemEffects = {
 	},
 
 	[ItemKey.HandOfJustice]: {
+		innate: (item, uniqueID, unit) => {
+			const key = uniqueID as BonusLabelKey
+			delete unit.stacks[key]
+			const isHealing = unit.initStack(key, {
+				icon: '⛑',
+				isBoolean: true,
+				amount: randomBool() ? 1 : 0,
+			}) === 1
+			if (!isHealing) {
+				const [additionalADAP] = getVariables(item, 'AdditionalADAP')
+				return [
+					[BonusKey.AbilityPower, additionalADAP], [BonusKey.AttackDamage, additionalADAP],
+				]
+			}
+		},
 		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { sourceType, takingDamage }) => {
 			if (sourceType === DamageSourceType.attack || sourceType === DamageSourceType.spell) {
 				const [baseHeal, increaseEffect] = getVariables(item, 'BaseHeal', 'AdditionalHeal')
-				holder.gainHealth(elapsedMS, holder, takingDamage * (baseHeal + increaseEffect / 2) / 100, true) //TODO averaged increaseEffect
+				const isHealing = holder.stacks[itemID as BonusLabelKey]?.amount === 1
+				console.log(holder.stacks[itemID as BonusLabelKey]?.amount)
+				const healPercent = isHealing ? baseHeal + increaseEffect : baseHeal
+				holder.gainHealth(elapsedMS, holder, takingDamage * healPercent / 100, true) //TODO averaged increaseEffect
 			}
-		},
-		innate: (item, unit) => {
-			const [increaseEffect] = getVariables(item, 'AdditionalADAP')
-			const increase = increaseEffect / 2 //TODO averaged increaseEffect
-			return [
-				[BonusKey.AbilityPower, increase], [BonusKey.AttackDamage, increase],
-			]
 		},
 	},
 
@@ -196,7 +207,7 @@ export const baseItemEffects = {
 	},
 
 	[ItemKey.Quicksilver]: {
-		innate: (item, holder) => {
+		innate: (item, uniqueID, holder) => {
 			const [shieldSeconds] = getVariables(item, 'SpellShieldDuration')
 			holder.queueShield(0, holder, {
 				type: 'spellShield',
