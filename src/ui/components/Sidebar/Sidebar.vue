@@ -17,7 +17,7 @@ const SIDEBAR_VW = `${SIDEBAR_UNITS}vw`
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
-	return state.didStart || (state.loaded.set && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
+	return state.didStart || (state.loadedSet && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
 })
 
 function onFight() {

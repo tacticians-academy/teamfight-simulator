@@ -1,6 +1,6 @@
 import { computed, reactive, shallowReactive, watch, watchEffect } from 'vue'
 
-import { ChampionKey, ItemKey, TraitKey, removeFirstFromArrayWhere } from '@tacticians-academy/academy-library'
+import { ChampionKey, ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS } from '@tacticians-academy/academy-library'
 import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
 import { importAugments, importChampions, importItems, importTraits } from '@tacticians-academy/academy-library/dist/imports'
 
@@ -29,6 +29,8 @@ import type { DraggableType } from '#/ui/helpers/dragDrop'
 
 type TraitAndUnits = [TraitData, string[]]
 
+export const DEFAULT_SET = SET_NUMBERS[SET_NUMBERS.length - 1]
+
 // State
 
 export const setData = shallowReactive({
@@ -48,14 +50,10 @@ export const setData = shallowReactive({
 
 const setNumber = getSetNumber()
 export const state = reactive({
+	loadedSet: false,
 	setNumber,
 	rowsPerSide: BOARD_MAX_ROW_COUNT / 2,
 	rowsTotal: BOARD_MAX_ROW_COUNT,
-
-	loaded: {
-		set: false,
-		units: false,
-	},
 
 	elapsedSeconds: 0,
 	didStart: false,
@@ -77,42 +75,46 @@ export const state = reactive({
 setSetNumber(setNumber)
 
 export async function setSetNumber(set: SetNumber) {
-	state.loaded.set = false
-	state.loaded.units = false
-	const { activeAugments, emptyImplementationAugments } = await importAugments(set)
-	const { augmentEffects } = await importAugmentEffects(set)
-	const { championEffects } = await importChampionEffects(set)
-	const { itemEffects } = await importItemEffects(set)
-	const { traitEffects } = await importTraitEffects(set)
+	state.loadedSet = false
 
-	const { champions } = await importChampions(set)
-	const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
-	const { traits } = await importTraits(set)
+	try {
+		const { activeAugments, emptyImplementationAugments } = await importAugments(set)
+		const { augmentEffects } = await importAugmentEffects(set)
+		const { championEffects } = await importChampionEffects(set)
+		const { itemEffects } = await importItemEffects(set)
+		const { traitEffects } = await importTraitEffects(set)
 
-	state.augmentsByTeam = loadTeamAugments(set, activeAugments)
-	state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
-	state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
-	state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
+		const { champions } = await importChampions(set)
+		const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
+		const { traits } = await importTraits(set)
 
-	setData.activeAugments = activeAugments ?? []
-	setData.emptyImplementationAugments = emptyImplementationAugments ?? []
-	setData.champions = champions ?? []
-	setData.currentItems = currentItems ?? []
-	setData.completedItems = completedItems ?? []
-	setData.componentItems = componentItems ?? []
-	setData.spatulaItems = spatulaItems ?? []
-	setData.traits = traits ?? []
-	setData.augmentEffects = augmentEffects ?? {}
-	setData.championEffects = championEffects ?? {}
-	setData.itemEffects = itemEffects ?? {}
-	setData.traitEffects = traitEffects ?? {}
-	state.setNumber = set
-	state.rowsPerSide = set < 2 ? 3 : 4
-	state.rowsTotal = state.rowsPerSide * 2
+		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
+		state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
+		state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
+		state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
 
-	state.loaded.set = true
-	loadUnitsForSet()
-	saveSetNumber(set)
+		setData.activeAugments = activeAugments ?? []
+		setData.emptyImplementationAugments = emptyImplementationAugments ?? []
+		setData.champions = champions ?? []
+		setData.currentItems = currentItems ?? []
+		setData.completedItems = completedItems ?? []
+		setData.componentItems = componentItems ?? []
+		setData.spatulaItems = spatulaItems ?? []
+		setData.traits = traits ?? []
+		setData.augmentEffects = augmentEffects ?? {}
+		setData.championEffects = championEffects ?? {}
+		setData.itemEffects = itemEffects ?? {}
+		setData.traitEffects = traitEffects ?? {}
+		state.setNumber = set
+		state.rowsPerSide = set < 2 ? 3 : 4
+		state.rowsTotal = state.rowsPerSide * 2
+
+		loadUnitsForSet()
+		saveSetNumber(set)
+	} catch (error) {
+		console.log(error)
+	}
+	state.loadedSet = true
 }
 
 // Getters
@@ -470,9 +472,6 @@ export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augm
 }
 
 function loadUnitsForSet() {
-	if (state.loaded.units || !state.loaded.set) {
-		return
-	}
 	const synergiesByTeam = [[], []]
 	const units = getSavedUnits(state.setNumber)
 		.map(storageChampion => {
@@ -494,5 +493,4 @@ function loadUnitsForSet() {
 		})
 	state.units = units
 	resetUnitsAfterUpdating()
-	state.loaded.units = true
 }

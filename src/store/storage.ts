@@ -1,9 +1,7 @@
 import { SET_DATA } from '@tacticians-academy/academy-library'
 import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library'
 
-const DEFAULT_SET: SetNumber = 6.5
-
-import { state } from '#/store/store'
+import { DEFAULT_SET, state } from '#/store/store'
 
 import type { HexCoord, StarLevel } from '#/sim/helpers/types'
 

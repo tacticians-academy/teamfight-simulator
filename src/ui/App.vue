@@ -4,10 +4,14 @@ import '#/ui/assets/main.postcss'
 import Board from '#/ui/components/Board.vue'
 import Sidebar from '#/ui/components/Sidebar/Sidebar.vue'
 
-import { SET_NUMBERS } from '@tacticians-academy/academy-library'
 import type { SetNumber } from '@tacticians-academy/academy-library'
 
-import { state, setSetNumber } from '#/store/store'
+import { DEFAULT_SET, state, setSetNumber } from '#/store/store'
+
+const selectableSetNumbers: SetNumber[] = [1, 6, 6.5]
+if (!selectableSetNumbers.includes(DEFAULT_SET)) {
+	selectableSetNumbers.push(DEFAULT_SET)
+}
 
 function onSetNumber(set: SetNumber) {
 	setSetNumber(set)
@@ -23,9 +27,9 @@ function onSetNumber(set: SetNumber) {
 			<div class="flex justify-center items-center space-x-2">
 				<span class="text-secondary uppercase font-light">set</span>
 				<button
-					v-for="set in SET_NUMBERS" :key="set"
+					v-for="set in selectableSetNumbers" :key="set"
 					class="w-8 h-8 rounded-lg font-bold" :class="state.setNumber === set ? 'bg-gray-400 text-white' : 'text-secondary border-2 border-gray-300'"
-					:disabled="state.didStart || !state.loaded.set"
+					:disabled="state.didStart || !state.loadedSet"
 					@click="onSetNumber(set)"
 				>
 					{{ set }}
