@@ -174,7 +174,8 @@ function playNextFrame() {
 		}
 	}
 
-	([state.hexEffects, state.moveUnitEffects, state.projectileEffects, state.shapeEffects, state.targetEffects] as Set<GameEffect>[]).forEach(effects => {
+	const effectsByType: Set<GameEffect>[] = [state.hexEffects, state.moveUnitEffects, state.projectileEffects, state.shapeEffects, state.targetEffects]
+	effectsByType.forEach(effects => {
 		effects.forEach(effect => {
 			if (effect.update(elapsedMS, GAME_TICK_MS, state.units) === false) {
 				effects.delete(effect)

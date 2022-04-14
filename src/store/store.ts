@@ -194,7 +194,6 @@ export const getters = {
 // Watch
 
 watch(getters.mutantType, (mutantType) => {
-	console.log(mutantType)
 	setStorage(state.setNumber, StorageKey.Mutant, mutantType)
 	resetUnitsAfterUpdating()
 })

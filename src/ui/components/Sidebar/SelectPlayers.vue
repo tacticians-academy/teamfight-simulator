@@ -36,7 +36,7 @@ function onReset() {
 			</div>
 			<SelectPlayersAugments v-if="state.setNumber >= 6" />
 			<div v-if="!state.didStart && state.units.length">
-				<button class="px-3 h-8 mt-1 mb-2 bg-quaternary rounded-full" @click="onReset">Reset board...</button>
+				<button class="block ml-auto mt-1 mb-2 px-3 h-8 bg-quaternary rounded-full" @click="onReset">Reset board...</button>
 			</div>
 		</fieldset>
 	</form>

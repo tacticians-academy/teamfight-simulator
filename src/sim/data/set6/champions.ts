@@ -395,7 +395,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Jinx]: {
 		passive: (elapsedMS, spell, target, source, damage) => {
-			if (source.castCount > 0) {
+			if (state.setNumber >= 6.5 && source.castCount > 0) {
 				const otherEnemies = getAttackableUnitsOfTeam(source.opposingTeam()).filter(unit => unit !== target)
 				source.setTarget(randomItem(otherEnemies))
 			}

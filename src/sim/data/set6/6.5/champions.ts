@@ -558,6 +558,7 @@ export const championEffects = {
 
 	[ChampionKey.Zeri]: {
 		customAuto: (elapsedMS, spell, target, champion, empoweredAuto, windupMS) => {
+			//TODO target farthest enemy
 			if (empoweredAuto.damageCalculation != null || empoweredAuto.destroysOnCollision != null || empoweredAuto.stackingDamageModifier != null || empoweredAuto.missile != null || empoweredAuto.hexEffect != null) {
 				console.warn('empoweredAuto cannot modify', empoweredAuto)
 			}
