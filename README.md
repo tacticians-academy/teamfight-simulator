@@ -15,12 +15,12 @@ _Unplanned features are listed in the [Nice-To-Have's project](https://github.co
 ## Capabilities
 
 ### Data gathering
-- Automatically generates champion/trait/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library?ts=2)).
+- Generates champion/trait/augment/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library?ts=2)).
 
 ### Units setup
 - Place/move any units onto 2 teams
 - Equip/move any valid items, and adjust star levels
-- Augment/item/trait effects are applied to relevant units
+- Set augment(s) for each team
 
 ### Play a fight
 - Assassins jump to backline
@@ -42,9 +42,9 @@ It would be fantastic to train a ML model to select a team composition, allocate
 
 ## Unimplemented
 
-Each Set adds new champion abilities, traits, and augments to be implemented. See [Current Set support](#current-set-support) to track this progress.
+Each Set adds new Champion abilities, traits, and augments to be implemented. See [Current Set support](#current-set-support) to track this progress.
 
-- Engine refinements (i.e. 30 second overtime limit/pathfinding improvements/experimentally determining undocumented values) so that gameplay resembles TFT enough to accurately reproduce fights
+- Engine refinements (i.e. 30 second overtime limit/pathfinding improvements/experimentally determining undocumented values) so that gameplay resembles the original closely enough to accurately reproduce fights.
 - Some features are too niche or can be accomplished by other means, and thus are not prioritized for implementation (PR's are welcome though!). See the [Nice-To-Have's project](https://github.com/orgs/tacticians-academy/projects/2) for a current list.
 
 ## Out of scope
