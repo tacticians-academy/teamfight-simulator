@@ -24,6 +24,7 @@ import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
 import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
+import { uniqueIdentifier } from '#/sim/helpers/utils'
 
 import type { DraggableType } from '#/ui/helpers/dragDrop'
 
@@ -313,9 +314,16 @@ const store = {
 		resetUnitsAfterUpdating()
 		saveUnits(state.setNumber)
 	},
-	deleteItem(itemName: string, fromUnit: ChampionUnit) {
+	_deleteItem(itemName: string, fromUnit: ChampionUnit) {
+		fromUnit.items.forEach((item, index) => {
+			const key = uniqueIdentifier(index, item) as BonusLabelKey
+			delete fromUnit.stacks[key]
+		})
 		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
+	},
+	deleteItem(itemName: string, fromUnit: ChampionUnit) {
 		state.dragUnit = null
+		store._deleteItem(itemName, fromUnit)
 		fromUnit.genericReset()
 		saveUnits(state.setNumber)
 		resetUnitsAfterUpdating()
@@ -345,7 +353,7 @@ const store = {
 			}
 		}
 		if (champion.items.length >= 3) {
-			champion.items.shift()
+			this._deleteItem(champion.items[0].name, champion)
 		}
 		champion.items.push(item)
 		champion.genericReset()

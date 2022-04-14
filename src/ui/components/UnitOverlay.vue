@@ -64,7 +64,7 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	</div>
 	<div class="flex">
 		<div
-			v-for="item in unit.items" :key="item.name"
+			v-for="(item, index) in unit.items" :key="index"
 			class="w-1/3 pointer-events-auto" :class="state.didStart ? 'pointer-events-none' : null"
 			:draggable="!state.didStart" @dragstart="startDragging($event, 'item', item.name, unit)"
 		>
