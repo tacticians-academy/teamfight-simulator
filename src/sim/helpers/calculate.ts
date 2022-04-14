@@ -6,6 +6,7 @@ import { setData } from '#/store/store'
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
 import type { BonusEntry, BonusLabelKey, BonusVariable, SynergyData } from '#/sim/helpers/types'
+import { uniqueIdentifier } from '#/sim/helpers/utils'
 
 export function createDamageCalculation(variable: string, value: number, damageType: DamageType | undefined, stat?: BonusKey, statFromTarget?: boolean, ratio?: number, asPercent?: boolean, maximum?: number): SpellCalculation {
 	return {
@@ -133,7 +134,7 @@ export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: Syner
 
 export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
 	const bonuses: BonusEntry[] = []
-	items.forEach(item => {
+	items.forEach((item, index) => {
 		const disableDefaultVariables = setData.itemEffects[item.name]?.disableDefaultVariables
 		const bonusVariables: BonusVariable[] = []
 		for (const effectKey in item.effects) {
@@ -148,7 +149,7 @@ export function calculateItemBonuses(unit: ChampionUnit, items: ItemData[]) {
 
 		const itemFn = setData.itemEffects[item.name]?.innate
 		if (itemFn != null) {
-			const variables = itemFn(item, unit) ?? []
+			const variables = itemFn(item, uniqueIdentifier(index, item), unit) ?? []
 			bonusVariables.push(...variables)
 		}
 		if (bonusVariables.length) {

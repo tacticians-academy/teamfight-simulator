@@ -38,7 +38,7 @@ interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void
 	apply?: (item: ItemData, unit: ChampionUnit) => void
 	disableDefaultVariables?: true | BonusKey[]
-	innate?: (item: ItemData, unit: ChampionUnit) => EffectResults
+	innate?: (item: ItemData, uniqueID: string, unit: ChampionUnit) => EffectResults
 	update?: (elapsedMS: DOMHighResTimeStamp, item: ItemData, itemID: string, unit: ChampionUnit) => void
 	damageDealtByHolder?: (item: ItemData, itemID: string, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, holder: ChampionUnit, damage: DamageResult) => void
 	modifyDamageByHolder?: (item: ItemData, target: ChampionUnit, holder: ChampionUnit, damage: DamageResult) => void
