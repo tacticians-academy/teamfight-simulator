@@ -16,14 +16,14 @@
 		"coverage": "vitest run --coverage && open coverage/index.html"
 	},
 	"dependencies": {
-		"@tacticians-academy/academy-library": "^0.20.0",
+		"@tacticians-academy/academy-library": "^0.21.1",
 		"@tailwindcss/forms": "^0.5.0",
 		"@vitejs/plugin-vue": "^2.3.1",
 		"tailwindcss": "^3.0.24",
-		"vite": "^2.9.3",
-		"vite-plugin-checker": "^0.4.5",
+		"vite": "^2.9.5",
+		"vite-plugin-checker": "^0.4.6",
 		"vite-tsconfig-paths": "^3.4.1",
-		"vue": "^3.2.32"
+		"vue": "^3.2.33"
 	},
 	"devDependencies": {
 		"@ky-is/eslint-config": "^2.5.1",

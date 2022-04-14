@@ -28,7 +28,7 @@ export const championEffects = {
 	[ChampionKey.Ahri]: {
 		cast: (elapsedMS, spell, champion) => {
 			if (!champion.wasInRangeOfTarget) { return false }
-			const missileSpell = champion.getSpellWithSuffix('OrbMissile')
+			const missile = champion.getMissileWithSuffix('OrbMissile')
 			const degreesBetweenOrbs = champion.getSpellVariable(spell, 'AngleBetweenOrbs')
 			const radiansBetweenOrbs = toRadians(degreesBetweenOrbs)
 			const multiOrbProportion = champion.getSpellVariable(spell, 'MultiOrbDamage')
@@ -44,8 +44,8 @@ export const championEffects = {
 						multiplier: multiOrbProportion - 1,
 					},
 					changeRadians,
-					missile: missileSpell?.missile,
-					returnMissile: champion.getSpellWithSuffix('OrbReturn')?.missile ?? missileSpell?.missile,
+					missile,
+					returnMissile: champion.getMissileWithSuffix('OrbReturn') ?? missile,
 					targetDeathAction: 'continue',
 				})
 			})
@@ -644,7 +644,7 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 function addDravenAxe(elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, champion: ChampionUnit) {
 	const id = ChampionKey.Draven
 	const existingAxe = Array.from(champion.empoweredAutos).find(empoweredAuto => empoweredAuto.id === id)
-	const returnMissile = champion.getSpellWithSuffix('SpinningReturn')?.missile
+	const returnMissile = champion.getMissileWithSuffix('SpinningReturn')
 	const durationSeconds = champion.getSpellVariable(spell, 'BuffDuration')
 	const expiresAtMS = elapsedMS + durationSeconds * 1000
 	if (existingAxe) {
