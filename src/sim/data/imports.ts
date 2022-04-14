@@ -1,7 +1,9 @@
 import type { SetNumber } from '@tacticians-academy/academy-library'
 
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+
 export async function importAugmentEffects(set: SetNumber) {
-	type AugmentEffects = typeof import('./set6/6.0/augments.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	type AugmentEffects = typeof import('./set6/6.0/augments.js')
 	if (set === 1) {
 		return {} as AugmentEffects
 	}
@@ -15,7 +17,7 @@ export async function importAugmentEffects(set: SetNumber) {
 }
 
 export async function importChampionEffects(set: SetNumber) {
-	type ChampionEffects = typeof import('./set6/6.0/champions.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	type ChampionEffects = typeof import('./set6/6.0/champions.js')
 	if (set === 1) {
 		return {} as ChampionEffects
 	}
@@ -29,7 +31,7 @@ export async function importChampionEffects(set: SetNumber) {
 }
 
 export async function importItemEffects(set: SetNumber) {
-	type ItemEffects = typeof import('./set6/6.0/items.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	type ItemEffects = typeof import('./set6/6.0/items.js')
 	try {
 		if (set === 1) {
 			return {} as ItemEffects
@@ -47,7 +49,7 @@ export async function importItemEffects(set: SetNumber) {
 }
 
 export async function importTraitEffects(set: SetNumber) {
-	type TraitEffects = typeof import('./set6/6.0/traits.js') // eslint-disable-line @typescript-eslint/consistent-type-imports
+	type TraitEffects = typeof import('./set6/6.0/traits.js')
 	if (set === 1) {
 		return {} as TraitEffects
 	}

@@ -16,7 +16,7 @@
 		"coverage": "vitest run --coverage && open coverage/index.html"
 	},
 	"dependencies": {
-		"@tacticians-academy/academy-library": "^0.21.1",
+		"@tacticians-academy/academy-library": "^0.22.2",
 		"@tailwindcss/forms": "^0.5.0",
 		"@vitejs/plugin-vue": "^2.3.1",
 		"tailwindcss": "^3.0.24",
