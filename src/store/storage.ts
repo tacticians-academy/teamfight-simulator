@@ -1,11 +1,13 @@
 import { SET_DATA } from '@tacticians-academy/academy-library'
 import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library'
 
-import { DEFAULT_SET, state } from '#/store/store'
+import { DEFAULT_SET, setCompForTeam, setData, state } from '#/store/store'
 
+import type{ ChampionUnit } from '#/sim/ChampionUnit'
+import type { CustomComps } from '#/sim/data/types'
 import type { HexCoord, StarLevel } from '#/sim/helpers/types'
 
-interface StorageChampion {
+export interface StorageChampion {
 	name: string
 	hex: HexCoord
 	starLevel: StarLevel
@@ -15,6 +17,7 @@ interface StorageChampion {
 
 export const enum StorageKey {
 	Augments = 'TFTSIM_augments',
+	Comps = 'TFTSIM_comps',
 	Mutant = 'TFTSIM_mutant',
 	StageNumber = 'TFTSIM_stage',
 	SocialiteHexes = 'TFTSIM_socialites',
@@ -92,16 +95,17 @@ export function clearBoardStorage(set: SetNumber) {
 	removeStorage(set, StorageKey.Augments)
 }
 
+export function toStorage(units: ChampionUnit[]): StorageChampion[] {
+	return units.map(unit => ({
+		name: unit.name,
+		hex: unit.startHex,
+		starLevel: unit.starLevel,
+		items: unit.items.map(item => item.id),
+		stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1].amount]),
+	}))
+}
 export function saveUnits(set: SetNumber) {
-	const output: StorageChampion[] = state.units
-		.filter(unit => !unit.wasSpawnedDuringFight)
-		.map(unit => ({
-			name: unit.name,
-			hex: unit.startHex,
-			starLevel: unit.starLevel,
-			items: unit.items.map(item => item.id),
-			stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1].amount]),
-		}))
+	const output = toStorage(state.units.filter(unit => !unit.wasSpawnedDuringFight))
 	if (output.length) {
 		window.localStorage.setItem(keyToSet(StorageKey.Units, set), JSON.stringify(output))
 	}
@@ -111,8 +115,10 @@ export function getSavedUnits(set: SetNumber) {
 	return (getStorageJSON(set, StorageKey.Units) ?? []) as StorageChampion[]
 }
 
-//SEED
-if (window.localStorage.getItem('TFTSIM_v') == null) {
-	window.localStorage.setItem('TFTSIM_v', '1')
-	window.localStorage.setItem(keyToSet(StorageKey.Units, DEFAULT_SET), `[{"name":"Zyra","hex":[0,0],"starLevel":2,"items":[]},{"name":"Zyra","hex":[5,4],"starLevel":1,"items":[]},{"name":"Caitlyn","hex":[1,5],"starLevel":1,"items":[44]}]`)
+export function saveComps(set: SetNumber) {
+	window.localStorage.setItem(keyToSet(StorageKey.Comps, set), JSON.stringify(setData.compsUser))
+}
+
+export function getSavedComps(set: SetNumber) {
+	return (getStorageJSON(set, StorageKey.Comps) ?? {}) as CustomComps
 }

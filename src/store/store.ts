@@ -4,11 +4,11 @@ import { ChampionKey, ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS 
 import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
 import { importAugments, importChampions, importItems, importTraits } from '@tacticians-academy/academy-library/dist/imports'
 
-import { clearBoardStorage, getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveSetNumber, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/store/storage'
-import type { AugmentList } from '#/store/storage'
+import { clearBoardStorage, getSavedComps, getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveSetNumber, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/store/storage'
+import type { AugmentList, StorageChampion } from '#/store/storage'
 
-import { importAugmentEffects, importChampionEffects, importItemEffects, importTraitEffects } from '#/sim/data/imports'
-import type { AugmentEffects, AugmentFns, ChampionEffects, ItemEffects, TraitEffects } from '#/sim/data/types'
+import { importDefaultComps, importAugmentEffects, importChampionEffects, importItemEffects, importTraitEffects } from '#/sim/data/imports'
+import type { AugmentEffects, AugmentFns, ChampionEffects, CustomComp, CustomComps, ItemEffects, TraitEffects } from '#/sim/data/types'
 
 import { ChampionUnit } from '#/sim/ChampionUnit'
 import { cancelLoop, delayUntil } from '#/sim/loop'
@@ -18,9 +18,9 @@ import type { ProjectileEffect } from '#/sim/effects/ProjectileEffect'
 import type { ShapeEffect } from '#/sim/effects/ShapeEffect'
 import type { TargetEffect } from '#/sim/effects/TargetEffect'
 
-import { boardRowsCols, getAdjacentRowUnitsTo } from '#/sim/helpers/board'
+import { getAdjacentRowUnitsTo } from '#/sim/helpers/board'
 import { BOARD_MAX_ROW_COUNT } from '#/sim/helpers/constants'
-import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
+import { getInverseHex, getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
 import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
@@ -43,6 +43,8 @@ export const setData = shallowReactive({
 	completedItems: [] as ItemData[],
 	componentItems: [] as ItemData[],
 	spatulaItems: [] as ItemData[],
+	compsDefault: {} as CustomComps,
+	compsUser: {} as CustomComps,
 	augmentEffects: {} as AugmentEffects,
 	championEffects: {} as ChampionEffects,
 	itemEffects: {} as ItemEffects,
@@ -80,6 +82,7 @@ export async function setSetNumber(set: SetNumber) {
 
 	try {
 		const { activeAugments, emptyImplementationAugments } = await importAugments(set)
+		const { defaultComps } = await importDefaultComps(set)
 		const { augmentEffects } = await importAugmentEffects(set)
 		const { championEffects } = await importChampionEffects(set)
 		const { itemEffects } = await importItemEffects(set)
@@ -102,6 +105,8 @@ export async function setSetNumber(set: SetNumber) {
 		setData.componentItems = componentItems ?? []
 		setData.spatulaItems = spatulaItems ?? []
 		setData.traits = traits ?? []
+		setData.compsDefault = defaultComps ?? {}
+		setData.compsUser = getSavedComps(set)
 		setData.augmentEffects = augmentEffects ?? {}
 		setData.championEffects = championEffects ?? {}
 		setData.itemEffects = itemEffects ?? {}
@@ -110,8 +115,20 @@ export async function setSetNumber(set: SetNumber) {
 		state.rowsPerSide = set < 2 ? 3 : 4
 		state.rowsTotal = state.rowsPerSide * 2
 
-		loadUnitsForSet()
+		state.units = []
+		loadStorageUnits(getSavedUnits(state.setNumber))
 		saveSetNumber(set)
+
+		//SEED
+		const latestVersion = '2'
+		if (window.localStorage.getItem('TFTSIM_v') !== latestVersion) {
+			window.localStorage.setItem('TFTSIM_v', latestVersion)
+			const comps = Object.values(defaultComps)
+			if (comps.length >= 2) {
+				setCompForTeam(comps[0], 0)
+				setCompForTeam(comps[1], 1)
+			}
+		}
 	} catch (error) {
 		console.log(error)
 	}
@@ -479,19 +496,19 @@ export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augm
 	resetUnitsAfterUpdating()
 }
 
-function loadUnitsForSet() {
+export function loadStorageUnits(storageUnits: StorageChampion[]) {
 	const synergiesByTeam = [[], []]
-	const units = getSavedUnits(state.setNumber)
-		.map(storageChampion => {
-			const championItems = storageChampion.items
+	const units = storageUnits
+		.map(storageUnit => {
+			const championItems = storageUnit.items
 				.map(id => setData.currentItems.find(item => item.id === id))
 				.filter((item): item is ItemData => !!item)
-			const champion = new ChampionUnit(storageChampion.name, storageChampion.hex, storageChampion.starLevel)
+			const champion = new ChampionUnit(storageUnit.name, storageUnit.hex, storageUnit.starLevel)
 			champion.updateTeam()
 			champion.items = championItems
 			champion.resetPre(synergiesByTeam)
-			if (storageChampion.stacks) {
-				for (const [key, amount] of storageChampion.stacks) {
+			if (storageUnit.stacks) {
+				for (const [key, amount] of storageUnit.stacks) {
 					champion.stacks[key as BonusLabelKey] = {
 						amount,
 					}
@@ -499,6 +516,19 @@ function loadUnitsForSet() {
 			}
 			return champion
 		})
-	state.units = units
+	state.units.push(...units)
 	resetUnitsAfterUpdating()
+}
+
+export function setCompForTeam(comp: CustomComp, team: TeamNumber) {
+	const teamAugments = state.augmentsByTeam[team]
+	teamAugments.forEach((augment, index) => teamAugments[index] = null)
+	state.units = state.units.filter(unit => unit.team !== team)
+	if (team === 0) {
+		comp.units.forEach(unit => unit.hex = getInverseHex(unit.hex))
+	}
+	comp.augments.forEach((augmentName, index) => teamAugments[index] = setData.activeAugments.find(augment => augment.name === augmentName) ?? null)
+	loadStorageUnits(comp.units)
+	saveUnits(state.setNumber)
+	saveTeamAugments(state.setNumber)
 }

@@ -95,14 +95,18 @@ export function getHexRing([col, row]: HexCoord, atDistance: SurroundingHexRange
 
 // Board hexes/coords
 
+export function calculateCoordForHex(colIndex: number, rowIndex: number): HexCoord {
+	const hexInset = HEX_PROPORTION / 2
+	const rowInset = rowIndex % 2 === 1 ? hexInset : 0
+	return [(colIndex + 0.5) * HEX_PROPORTION + rowInset, (rowIndex + 0.5) * HEX_PROPORTION - rowIndex * hexInset / 2]
+}
+
 export const boardRowsCols: HexRowCol[][] = createEmptyBoard(BOARD_MAX_ROW_COUNT)
 	.map((row, rowIndex) => {
 		return row.map((col, colIndex) => {
-			const hexInset = HEX_PROPORTION / 2
-			const rowInset = rowIndex % 2 === 1 ? hexInset : 0
 			return {
 				hex: [colIndex, rowIndex],
-				coord: [(colIndex + 0.5) * HEX_PROPORTION + rowInset, (rowIndex + 0.5) * HEX_PROPORTION - rowIndex * hexInset / 2],
+				coord: calculateCoordForHex(colIndex, rowIndex),
 			}
 		})
 	})

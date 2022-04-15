@@ -1,5 +1,7 @@
 import type { AugmentData, BonusKey, ChampionSpellData, ItemData, TraitEffectData, TraitKey } from '@tacticians-academy/academy-library'
 
+import type { StorageChampion } from '#/store/storage'
+
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { AttackEffectData, GameEffect } from '#/sim/effects/GameEffect'
 
@@ -70,3 +72,6 @@ interface TraitFns {
 	cast?: (activeEffect: TraitEffectData, elapsedMS: DOMHighResTimeStamp, unit: ChampionUnit) => void
 }
 export type TraitEffects = { [key in string]?: TraitFns }
+
+export type CustomComp = { augments: (string | null)[], units: StorageChampion[]}
+export type CustomComps = Record<string, CustomComp>

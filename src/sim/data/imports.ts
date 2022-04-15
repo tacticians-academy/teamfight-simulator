@@ -2,6 +2,17 @@ import type { SetNumber } from '@tacticians-academy/academy-library'
 
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
+export async function importDefaultComps(set: SetNumber) {
+	type DefaultComps = typeof import('./set6/6.5/defaultComps.js')
+	if (set !== 6.5) {
+		return {} as DefaultComps
+	}
+	if (set === 6.5) {
+		return await import('./set6/6.5/defaultComps.js')
+	}
+	throw 'Unsupported set:' + set
+}
+
 export async function importAugmentEffects(set: SetNumber) {
 	type AugmentEffects = typeof import('./set6/6.0/augments.js')
 	if (set === 1) {
