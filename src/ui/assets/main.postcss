@@ -49,6 +49,16 @@
 	select {
 		@apply bg-faint text-primary;
 	}
+
+	.segmented-control {
+		@apply flex justify-around;
+	}
+	.segmented-control button {
+		@apply my-0.5 mx-px flex-grow text-sm rounded-full;
+	}
+	.segmented-control button:disabled {
+		@apply bg-quaternary;
+	}
 }
 
 @layer base {
