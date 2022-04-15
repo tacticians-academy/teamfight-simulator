@@ -8,15 +8,19 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, ref } from 'vue'
 
-import { useStore, getSocialiteHexStrength, setSocialiteHex } from '#/store/store'
+import { useStore, getSocialiteHexStrength, setSocialiteHex, setData, loadStorageUnits } from '#/store/store'
+import { saveComps } from '#/store/storage'
 
-import { boardRowsCols, getCoordFrom } from '#/sim/helpers/board'
+import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
 
 import { HEX_SIZE_UNITS } from '#/ui/helpers/constants'
-import { getDragNameOf, onDragOver } from '#/ui/helpers/dragDrop'
-import { UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/dragDrop'
+import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import { toStorage } from '#/store/storage'
+import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
+import type { CustomComp } from '#/sim/data/types'
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
@@ -25,12 +29,17 @@ const { getters, state, dropUnit } = useStore()
 const showingSocialite = computed(() => !state.didStart && Math.floor(state.setNumber) === 6)
 
 function onDrop(event: DragEvent, hex: HexCoord) {
-	const championName = getDragNameOf('unit', event)
-	if (championName == null) {
+	const type = getDragType(event)
+	const name = getDragName(event)
+	if (name == null) {
 		return
 	}
 	event.preventDefault()
-	dropUnit(event, championName, hex)
+	if (type === 'unit') {
+		dropUnit(event, name, hex)
+	} else if (type === 'comp') {
+		onDropComp(name, hex)
+	}
 }
 
 const hexForMenu = ref<HexCoord | null>(null)
@@ -52,6 +61,22 @@ function onClearHexMenu(event?: Event) {
 }
 
 const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
+
+const saveCompCoord = computed(() => calculateCoordForHex(BOARD_COL_COUNT - 1, state.rowsTotal))
+
+function onSaveComp() {
+	const name = window.prompt('Enter a name for this comp:')?.trim()
+	if (name != null && name.length) {
+		const units = toStorage(getUnitsOfTeam(1))
+		setData.compsUser[name] = {
+			augments: state.augmentsByTeam[1].map(augmentData => augmentData?.name ?? null),
+			units,
+		}
+		saveComps(state.setNumber)
+	}
+}
+
+const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).length < 1)
 </script>
 
 <template>
@@ -70,6 +95,11 @@ const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</template>
+			<button v-if="!state.didStart" :disabled="hasCompToSave" class="hex team-b hex-outline" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
+				<div class="text-secondary  flex justify-center items-center">
+					Save<br>Comp
+				</div>
+			</button>
 		</div>
 		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
@@ -113,7 +143,7 @@ const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 </template>
 
 <style lang="postcss">
-.hex {
+.hex, .hex-outline::before {
 	width: v-bind(HEX_VW);
 	height: v-bind(HEX_VW);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
@@ -137,6 +167,14 @@ const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 }
 .text-team-b {
 	@apply text-rose-300;
+}
+.hex-outline::before {
+	content: '';
+	transform: translate(-50%, -50%);
+	@apply absolute bg-primary w-[94%] h-[94%];
+}
+.hex-outline > * {
+	@apply absolute inset-0 z-50;
 }
 </style>
 
@@ -167,5 +205,11 @@ const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 .hex-button {
 	@apply mx-1 rounded-full;
 	font-size: 1.3vw;
+}
+.hex-outline {
+	font-size: 1.7vw;
+}
+.hex-outline:disabled {
+	@apply opacity-25;
 }
 </style>

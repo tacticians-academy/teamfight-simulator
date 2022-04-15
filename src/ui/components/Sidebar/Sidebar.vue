@@ -36,13 +36,16 @@ function onDrop(event: DragEvent) {
 	if (!dragUnit) {
 		return
 	}
-	if (getDragType(event) === 'unit') {
+	const dragType = getDragType(event)
+	if (dragType === 'unit') {
 		deleteUnit(dragUnit.startHex)
-	} else {
+	} else if (dragType === 'item') {
 		const name = getDragName(event)
 		if (name != null) {
 			deleteItem(name, dragUnit)
 		}
+	} else {
+		console.log('ERR', 'Unknown drag type', dragType, dragUnit)
 	}
 }
 </script>

@@ -58,8 +58,8 @@ const maxAugmentCount = computed(() => Math.max(1, Math.min(3, state.stageNumber
 		</div>
 	</div>
 </div>
-<div v-if="selectAugment" class=" absolute inset-0 z-50">
-	<div class="overflow-y-scroll bg-gray-600/90  flex flex-col justify-center items-center">
+<div v-if="selectAugment" class=" absolute inset-0 z-50 overflow-y-scroll">
+	<div class="min-h-[100%] bg-gray-600/90   flex flex-col justify-center items-center">
 		<div>
 			<button
 				v-for="(tier, tierIndex) in ['Silver', 'Gold', 'Prismatic']" :key="tierIndex"

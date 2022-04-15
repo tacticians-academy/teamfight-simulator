@@ -119,14 +119,15 @@ export async function setSetNumber(set: SetNumber) {
 		loadStorageUnits(getSavedUnits(state.setNumber))
 		saveSetNumber(set)
 
-		//SEED
-		const latestVersion = '2'
-		if (window.localStorage.getItem('TFTSIM_v') !== latestVersion) {
-			window.localStorage.setItem('TFTSIM_v', latestVersion)
-			const comps = Object.values(defaultComps)
-			if (comps.length >= 2) {
-				setCompForTeam(comps[0], 0)
-				setCompForTeam(comps[1], 1)
+		if (set === DEFAULT_SET) { // Load sample data first run
+			const latestVersion = '2'
+			if (window.localStorage.getItem('TFTSIM_v') !== latestVersion) {
+				window.localStorage.setItem('TFTSIM_v', latestVersion)
+				const comps = Object.values(defaultComps)
+				if (comps.length >= 2) {
+					setCompForTeam(comps[0], 0)
+					setCompForTeam(comps[1], 1)
+				}
 			}
 		}
 	} catch (error) {
