@@ -42,7 +42,7 @@ export const traitEffects = {
 			const repeatsEveryMS = frequency * 1000
 			unit.queueShield(0, unit, {
 				amount: shieldAmount,
-				activatesAfterMS: repeatsEveryMS,
+				activatesAfterMS: 0,
 				repeatsEveryMS,
 				expiresAfterMS: durationSeconds * 1000,
 				bonusDamage: createDamageCalculation(TraitKey.Hextech, damage, DamageType.magic),
