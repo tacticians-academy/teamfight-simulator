@@ -104,7 +104,7 @@ export class ChampionUnit {
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
 		this.coord = this.getCoord()
-		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 0 //TODO investigate how melee attacks work
+		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 20 //TODO investigate how melee attacks work
 
 		for (const effectType in StatusEffectType) {
 			this.statusEffects[effectType as StatusEffectType] = {
