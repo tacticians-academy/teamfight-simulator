@@ -37,7 +37,6 @@ function onInfo(event: Event) {
 	:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.name, unit)"
 	@dragover="onDragOver" @drop="onDropOnUnit($event, unit)" @contextmenu="onInfo"
 >
-	<!-- <div class="circle" :class="unit.team === 0 ? 'bg-violet-500' : 'bg-rose-500'"> -->
 	<div class="circle" :style="{ backgroundImage: `url(${getIconURLFor(state, props.unit.data)})` }" :class="unit.team === 0 ? 'border-violet-500' : 'border-rose-500'">
 		<span class="group-hover-visible">{{ unit.name }}</span>
 	</div>
