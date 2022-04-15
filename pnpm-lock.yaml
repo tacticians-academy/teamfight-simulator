@@ -4,6 +4,7 @@ specifiers:
   '@ky-is/eslint-config': ^2.5.1
   '@tacticians-academy/academy-library': ^0.22.2
   '@tailwindcss/forms': ^0.5.0
+  '@types/tailwindcss': ^3.0.10
   '@typescript-eslint/eslint-plugin': ^5.19.0
   '@typescript-eslint/parser': ^5.19.0
   '@vitejs/plugin-vue': ^2.3.1
@@ -35,6 +36,7 @@ dependencies:
 
 devDependencies:
   '@ky-is/eslint-config': 2.5.1_eslint@8.13.0
+  '@types/tailwindcss': 3.0.10
   '@typescript-eslint/eslint-plugin': 5.19.0_f34adc8488d2e4f014fe61432d70cbf2
   '@typescript-eslint/parser': 5.19.0_eslint@8.13.0+typescript@4.6.3
   autoprefixer: 10.4.4_postcss@8.4.12
@@ -204,6 +206,10 @@ packages:
 
   /@types/qs/6.9.7:
     resolution: {integrity: sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==}
+    dev: true
+
+  /@types/tailwindcss/3.0.10:
+    resolution: {integrity: sha512-1UnZIHO0NOPyPlPFV0HuMjki2SHkvG9uBA1ZehWj/OQMSROk503nuNyyfmJSIT289yewxTbKoPG+KLxYRvfIIg==}
     dev: true
 
   /@typescript-eslint/eslint-plugin/5.19.0_f34adc8488d2e4f014fe61432d70cbf2:

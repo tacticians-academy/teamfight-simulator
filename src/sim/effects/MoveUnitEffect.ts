@@ -18,7 +18,7 @@ export interface MoveUnitEffectData extends GameEffectData {
 	target?: ChampionUnit
 	/** If the source should move with the `target`. */
 	movesWithTarget?: boolean
-	/** If the `target`'s  attack target should be not be updated after moving. */
+	/** If the `target`'s attack target should be not be updated after moving. */
 	keepsAttackTarget?: boolean
 	/** The speed the `target` moves to the destination at. Defaults to the `target`'s move speed if undefined. */
 	moveSpeed: number | undefined
