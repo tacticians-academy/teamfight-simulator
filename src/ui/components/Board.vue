@@ -95,8 +95,8 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</template>
-			<button v-if="!state.didStart" :disabled="hasCompToSave" class="hex team-b hex-outline" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
-				<div class="text-secondary  flex justify-center items-center">
+			<button v-if="!state.didStart" :disabled="hasCompToSave" class="hex team-b" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
+				<div class="hex-outline  bg-primary text-secondary  flex justify-center items-center">
 					Save<br>Comp
 				</div>
 			</button>
@@ -143,8 +143,10 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 </template>
 
 <style lang="postcss">
-.hex, .hex-outline::before {
+.hex {
 	width: v-bind(HEX_VW);
+}
+.hex, .hex-outline {
 	height: v-bind(HEX_VW);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
@@ -168,10 +170,8 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 .text-team-b {
 	@apply text-rose-300;
 }
-.hex-outline::before {
-	content: '';
-	transform: translate(-50%, -50%);
-	@apply absolute bg-primary w-[94%] h-[94%];
+.hex-outline {
+	@apply absolute inset-0 w-[94%] h-[94%] m-auto;
 }
 .hex-outline > * {
 	@apply absolute inset-0 z-50;
@@ -209,7 +209,7 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 .hex-outline {
 	font-size: 1.7vw;
 }
-.hex-outline:disabled {
+.hex:disabled {
 	@apply opacity-25;
 }
 </style>
