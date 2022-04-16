@@ -1,3 +1,5 @@
+![Sample simulated fight between Yordle and Hextech comps in Set 6.5](screenshots/6_5-1.jpg)
+
 # `teamfight-simulator`
 
 Simulate fights from [Teamfight Tactics](https://teamfighttactics.leagueoflegends.com/en-us/) (TFT). The goal is to assist in theorycrafting better team compositions, unit positioning, and item builds through statistical analysis, and perhaps create a "puzzle mode" to improve players' board strength intuition.
