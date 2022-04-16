@@ -25,10 +25,10 @@ function onSetNumber(set: SetNumber) {
 		<Board />
 		<footer class="relative z-10">
 			<div class="flex justify-center items-center space-x-2">
-				<span class="text-secondary uppercase font-light">set</span>
+				<span class="text-tertiary uppercase font-light">set</span>
 				<button
 					v-for="set in selectableSetNumbers" :key="set"
-					class="w-8 h-8 rounded-lg font-bold" :class="state.setNumber === set ? 'bg-gray-400 text-white' : 'text-secondary border-2 border-gray-300'"
+					class="w-8 h-8 rounded-lg font-bold" :class="state.setNumber === set ? 'bg-quaternary text-inverted' : 'text-tertiary border-2 border-quaternary'"
 					:disabled="state.didStart || !state.loadedSet"
 					@click="onSetNumber(set)"
 				>

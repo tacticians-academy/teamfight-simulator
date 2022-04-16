@@ -211,6 +211,7 @@ export const championEffects = {
 				targetTeam: champion.team,
 				hexDistanceFromSource: hexRadius as SurroundingHexRange,
 				bonuses: [spell.name as BonusLabelKey, [BonusKey.AttackSpeed, attackSpeedProportion * 100, elapsedMS + durationSeconds * 1000]],
+				opacity: 0.5,
 			})
 		},
 	},
