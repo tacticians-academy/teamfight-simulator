@@ -26,7 +26,7 @@ const maxOpacity = (props.effect.opacity ?? 1) * 0.75
 
 <template>
 <div
-	class="target-effect" :class="effect.source.team === 0 ? 'bg-violet-700' : 'bg-rose-700'"
+	class="target-effect" :class="effect.source.team === 0 ? 'bg-team-a' : 'bg-team-b'"
 	:style="{ left: `${data[0] * 100}%`, top: `${data[1] * 100}%`, width: `${data[2] * 100}%`, height: '1vw', opacity: maxOpacity, transformOrigin: '0 calc(100% - 0.5vw)', transform: `translate(0, -0.5vw) rotate(${data[3]}rad)`, transitionDuration: target.dead || effect.source.dead ? '100ms' : undefined }"
 />
 </template>

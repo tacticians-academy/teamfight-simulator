@@ -164,11 +164,29 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 .hex.team-b {
 	@apply bg-rose-300/90;
 }
-.text-team-a {
+.bg-team-a {
+	@apply bg-violet-700;
+}
+.bg-team-b {
+	@apply bg-rose-700;
+}
+.border-team-a {
+	@apply border-violet-500;
+}
+.border-team-b {
+	@apply border-rose-500;
+}
+.fill-team-a {
 	@apply text-violet-300;
 }
-.text-team-b {
+.fill-team-b {
 	@apply text-rose-300;
+}
+.text-team-a {
+	@apply text-violet-500;
+}
+.text-team-b {
+	@apply text-rose-500;
 }
 .hex-outline {
 	@apply absolute inset-0 w-[94%] h-[94%] m-auto;
