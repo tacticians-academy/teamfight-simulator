@@ -39,10 +39,14 @@ export function runLoop(animated: boolean) {
 	}
 }
 
-export function fastForwardUntil(untilFN: (elapsedMS: DOMHighResTimeStamp) => boolean) {
-	while (state.winningTeam == null && elapsedMS < 30000 && !untilFN(elapsedMS)) {
+export function fastForwardUntil(untilFn: (elapsedMS: DOMHighResTimeStamp) => boolean) {
+	while (state.winningTeam == null && !untilFn(elapsedMS)) {
+		if (elapsedMS >= 30000) {
+			throw `Time limit exceeded (${elapsedMS}) ${untilFn}`
+		}
 		playNextFrame()
 	}
+	return elapsedMS
 }
 
 export function cancelLoop() {

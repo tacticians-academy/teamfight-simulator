@@ -142,11 +142,30 @@ export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: Champio
 }
 
 export function getCoordFrom([col, row]: HexCoord): HexCoord {
-	// const borderSize = HEX_BORDER_PROPORTION / 100
-	// return [(col + 0.5 + (row % 2 === 1 ? 0.5 : 0)) * HEX_PROPORTION + borderSize * (col - 0.5), (row + 1) * HEX_PROPORTION * 0.75 + borderSize * (row - 0.5)]
-	return [...boardRowsCols[row][col].coord]
+	const hex = boardRowsCols[row]?.[col] as HexRowCol | undefined
+	// return hex ? [...hex.coord] : calculateCoordForHex(col, row)
+	if (hex) {
+		return [...hex.coord]
+	}
+	console.warn('Coord for hex outside board', col, row)
+	return calculateCoordForHex(col, row)
 }
 
+export function getOuterHexes() {
+	const outerHexes: HexCoord[] = []
+	const lastOuterRow = state.rowsTotal
+	const lastOuterCol = BOARD_COL_COUNT
+	for (let rowIndex = -1; rowIndex <= lastOuterRow; rowIndex += 1) {
+		if (rowIndex === -1 || rowIndex === lastOuterRow) {
+			for (let colIndex = -1; colIndex <= lastOuterCol; colIndex += 1) {
+				outerHexes.push([colIndex, rowIndex])
+			}
+		} else {
+			outerHexes.push([-1, rowIndex], [lastOuterCol, rowIndex])
+		}
+	}
+	return outerHexes
+}
 export function getEdgeHexes() {
 	const edgeHexes: HexCoord[] = []
 	boardRowsCols.forEach((row, rowIndex) => {
