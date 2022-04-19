@@ -377,11 +377,18 @@ export class ChampionUnit {
 					})
 					this.attackStartAtMS = elapsedMS
 				} else {
+					const missile = empoweredAuto.missile ?? this.attackMissile ?? {
+						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO predetermine crits
+					}
+					if (missile.speedInitial != null && missile.speedInitial > 5000) {
+						this.queueTargetEffect(elapsedMS, undefined, {
+							activatesAfterMS: windupMS,
+							opacity: 1 / 3,
+						})
+					}
 					this.queueProjectileEffect(elapsedMS, undefined, {
 						startsAfterMS: windupMS,
-						missile: empoweredAuto.missile ?? this.attackMissile ?? {
-							speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO predetermine crits
-						},
+						missile,
 						damageSourceType,
 						damageCalculation: empoweredAuto.damageCalculation,
 						bonusCalculations: empoweredAuto.bonusCalculations,
