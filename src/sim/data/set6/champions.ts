@@ -764,7 +764,7 @@ export const baseChampionEffects = {
 			if (!mostDistantEnemy) { return false }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: mostDistantEnemy,
-				returnMissile: spell.missile,
+				returnMissile: champion.getMissileWithSuffix('PBounce'),
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit !== champion) { return }
 					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield')
@@ -1098,15 +1098,20 @@ export const baseChampionEffects = {
 			if (!targetHex) { return false }
 			const centerHexes = [targetHex]
 			const outerHexes = getHexesSurroundingWithin(targetHex, 1, false)
-			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: centerHexes,
-			})
-			champion.queueHexEffect(elapsedMS, spell, {
-				hexes: outerHexes,
-				damageModifier: {
-					multiplier: -0.5,
+			champion.queueProjectileEffect(elapsedMS, spell, {
+				width: 40,
+				hexEffect: {
+					hexes: centerHexes,
 				},
-				opacity: 0.5,
+			})
+			champion.queueProjectileEffect(elapsedMS, spell, {
+				hexEffect: {
+					hexes: outerHexes,
+					damageModifier: {
+						multiplier: -0.5,
+					},
+					opacity: 0.5,
+				},
 			})
 			return true
 		},

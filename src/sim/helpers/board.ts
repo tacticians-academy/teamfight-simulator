@@ -3,7 +3,7 @@ import { state } from '#/store/store'
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
 import { doesLineInterceptCircle } from '#/sim/helpers/angles'
-import { BOARD_COL_COUNT, BOARD_MAX_ROW_COUNT, HEX_PROPORTION, MAX_HEX_COUNT } from '#/sim/helpers/constants'
+import { BOARD_COL_COUNT, BOARD_MAX_ROW_COUNT, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/sim/helpers/constants'
 import { containsHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord, HexRowCol } from '#/sim/helpers/types'
 import { getBestRandomAsMax } from '#/sim/helpers/utils'
@@ -233,6 +233,10 @@ export function coordinateDistanceSquared([startX, startY]: HexCoord, [destX, de
 	const diffX = destX - startX
 	const diffY = destY - startY
 	return diffX * diffX + diffY * diffY
+}
+
+export function radiusToHexProportion(radius: number) {
+	return radius * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
 }
 
 export function hexDistanceFrom(startHex: HexCoord, destHex: HexCoord) {

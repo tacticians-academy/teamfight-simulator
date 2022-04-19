@@ -10,7 +10,7 @@ import { GameEffect } from '#/sim/effects/GameEffect'
 import type { AttackBounce, AttackEffectData } from '#/sim/effects/GameEffect'
 import type { HexEffectData } from '#/sim/effects/HexEffect'
 
-import { coordinateDistanceSquared, getCoordFrom } from '#/sim/helpers/board'
+import { coordinateDistanceSquared, getCoordFrom, radiusToHexProportion } from '#/sim/helpers/board'
 import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, SAFE_HEX_PROPORTION_PER_UPDATE, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 import { applyStackingModifier, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/sim/helpers/effectUtils'
 import type { DamageModifier } from '#/sim/helpers/types'
@@ -30,6 +30,8 @@ export interface ProjectileEffectData extends AttackEffectData {
 	changeRadians?: number
 	/** Only include if not passed with a `SpellCalculation`. */
 	missile?: ChampionSpellMissileData
+	/** Custom missile width */
+	width?: number
 	/** Defaults to the source unit's attack target unit, or the unit's hex at cast time if `fixedHexRange` is set. */
 	target?: ChampionUnit | HexCoord
 	/** Origin point for the Projectile. Defaults to the queuing source. */
@@ -51,7 +53,7 @@ function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
 export class ProjectileEffect extends GameEffect {
 	coord: Ref<HexCoord>
 	missile: ChampionSpellMissileData
-	currentSpeed: number
+	currentSpeed = 0
 	target: ChampionUnit | HexCoord
 	projectileStartsFrom: ChampionUnit | HexCoord
 	targetCoord: HexCoord
@@ -86,10 +88,13 @@ export class ProjectileEffect extends GameEffect {
 		this.projectileStartsFrom = data.projectileStartsFrom ?? source
 		this.coord = ref([...('coord' in this.projectileStartsFrom ? this.projectileStartsFrom.coord : getCoordFrom(this.projectileStartsFrom))] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile
-		this.currentSpeed = this.missile.speedInitial! //TODO option to derive from .travelTime
+		if (data.width != null) {
+			this.width = radiusToHexProportion(data.width)
+		}
 		this.target = data.target
 		this.targetCoord = [0, 0]
 		this.setTarget(data.target)
+		this.resetSpeed()
 		this.hexEffect = data.hexEffect
 		this.destroysOnCollision = data.destroysOnCollision
 		this.stackingDamageModifier = data.stackingDamageModifier
@@ -113,7 +118,9 @@ export class ProjectileEffect extends GameEffect {
 	}
 
 	updateWidth() {
-		this.width = (this.missile.width ?? 10) * 2 * HEX_PROPORTION_PER_LEAGUEUNIT
+		if (this.missile.width != null) {
+			this.width = radiusToHexProportion(this.missile.width)
+		}
 		const collisionRadius = (this.width + UNIT_SIZE_PROPORTION) / 2
 		this.collisionRadiusSquared = collisionRadius * collisionRadius
 	}
@@ -157,6 +164,16 @@ export class ProjectileEffect extends GameEffect {
 		return true
 	}
 
+	resetSpeed() {
+		if (this.missile.speedInitial != null) {
+			this.currentSpeed = this.missile.speedInitial
+		} else if (this.missile.travelTime != null) {
+			this.currentSpeed = this.source.getSpeedForTravelTime(this.missile.travelTime * 1000, this.target)
+		} else {
+			console.error('Unknown speed for missile', this)
+		}
+	}
+
 	checkIfDies(elapsedMS: DOMHighResTimeStamp) {
 		const returnIDSuffix = 'Returns'
 		if (this.returnMissile) {
@@ -166,7 +183,7 @@ export class ProjectileEffect extends GameEffect {
 				this.missile = this.returnMissile
 				this.updateWidth()
 				this.opacity = 0.5
-				this.currentSpeed = this.missile.speedInitial!
+				this.resetSpeed()
 				this.instanceID += returnIDSuffix
 				this.hitID += returnIDSuffix //TODO if damage is unique to outward direction
 				this.isReturning = true

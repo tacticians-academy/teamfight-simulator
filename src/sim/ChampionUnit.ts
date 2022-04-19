@@ -20,7 +20,7 @@ import { TargetEffect } from '#/sim/effects/TargetEffect'
 import type { TargetEffectData } from '#/sim/effects/TargetEffect'
 
 import { getAngleBetween } from '#/sim/helpers/angles'
-import { coordinateDistanceSquared, getClosestHexAvailableTo, getCoordFrom, getHexRing, getOccupiedHexes, getHexesSurroundingWithin, hexDistanceFrom, recursivePathTo } from '#/sim/helpers/board'
+import { coordinateDistanceSquared, getClosestHexAvailableTo, getCoordFrom, getHexRing, getOccupiedHexes, getHexesSurroundingWithin, hexDistanceFrom, recursivePathTo, radiusToHexProportion } from '#/sim/helpers/board'
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/sim/helpers/calculate'
 import { MOVE_LOCKOUT_JUMPERS_MS, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/sim/helpers/constants'
@@ -652,10 +652,11 @@ export class ChampionUnit {
 		if (spell) {
 			const castResult = this.championEffects?.cast?.(elapsedMS, spell, this)
 			if (castResult === false || castResult == null) {
-				return false
+				return undefined
 			}
 		}
 		this.postCast(elapsedMS, initialCast)
+		return spell
 	}
 
 	postCast(elapsedMS: DOMHighResTimeStamp, isInitialCast: boolean) {
@@ -1071,6 +1072,10 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
+	getSpeedForTravelTime(travelMS: number, target: ChampionUnit | HexCoord) {
+		return Math.sqrt(this.coordDistanceSquaredTo(target)) / HEX_PROPORTION_PER_LEAGUEUNIT / (travelMS / 1000)
+	}
+
 	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, moveDurationMS: number | undefined, keepsAttackTarget: boolean, onMovementComplete?: ActivateFn) {
 		const isUnitTarget = 'activeHex' in target
 		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
@@ -1080,7 +1085,7 @@ export class ChampionUnit {
 		if (hex) {
 			this.moving = true
 			if (moveDurationMS != null) {
-				this.customMoveSpeed = Math.sqrt(this.coordDistanceSquaredTo(hex)) / HEX_PROPORTION_PER_LEAGUEUNIT / (moveDurationMS / 1000)
+				this.customMoveSpeed = this.getSpeedForTravelTime(moveDurationMS, hex)
 			} else {
 				this.customMoveSpeed = customSpeed
 			}
@@ -1396,7 +1401,7 @@ export class ChampionUnit {
 		if (spell && data.hasBackingVisual === true) {
 			const angle = this.angleTo(data.target) + (data.changeRadians ?? 0)
 			this.queueShapeEffect(elapsedMS, undefined, {
-				shape: new ShapeEffectVisualRectangle(this, angle, [spell.missile!.width! * 2 * HEX_PROPORTION_PER_LEAGUEUNIT, HEX_PROPORTION * MAX_HEX_COUNT]),
+				shape: new ShapeEffectVisualRectangle(this, angle, [radiusToHexProportion(spell.missile!.width!), HEX_PROPORTION * MAX_HEX_COUNT]),
 				expiresAfterMS: 1000,
 				opacity: 0.5,
 			})
