@@ -490,7 +490,7 @@ export const championEffects = {
 			const densestEnemyHexes = getBestDensityHexes(true, getInteractableUnitsOfTeam(champion.opposingTeam()), true, 1)
 			const farthestDenseHex = getDistanceHex(true, champion, densestEnemyHexes)
 			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
-			const projectedHex = champion.projectHexFromHex(farthestDenseHex ?? champion.activeHex, true, 1)
+			const projectedHex = champion.projectHexFrom(farthestDenseHex ?? champion.activeHex, true, 1)
 			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
