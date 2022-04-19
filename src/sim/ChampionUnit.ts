@@ -679,7 +679,7 @@ export class ChampionUnit {
 	jumpToBackline() {
 		const [col, row] = this.startHex
 		const targetHex: HexCoord = [col, this.team === 0 ? state.rowsTotal - 1 : 0]
-		this.customMoveTo(targetHex, true, 1500, false) // MOVE_LOCKOUT_JUMPERS_MS //TODO adjust speed for fixed duration
+		this.customMoveTo(targetHex, true, undefined, MOVE_LOCKOUT_JUMPERS_MS, false)
 		this.applyStatusEffect(0, StatusEffectType.stealth, MOVE_LOCKOUT_JUMPERS_MS)
 	}
 
@@ -1064,7 +1064,7 @@ export class ChampionUnit {
 		return containsHex(this.activeHex, hexes)
 	}
 
-	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, keepsAttackTarget: boolean, onMovementComplete?: ActivateFn) {
+	customMoveTo(target: ChampionUnit | HexCoord, checkHexAvailable: boolean, customSpeed: number | undefined, moveDurationMS: number | undefined, keepsAttackTarget: boolean, onMovementComplete?: ActivateFn) {
 		const isUnitTarget = 'activeHex' in target
 		let hex: HexCoord | undefined = isUnitTarget ? target.activeHex : target
 		if (checkHexAvailable) {
@@ -1072,7 +1072,11 @@ export class ChampionUnit {
 		}
 		if (hex) {
 			this.moving = true
-			this.customMoveSpeed = customSpeed
+			if (moveDurationMS != null) {
+				this.customMoveSpeed = Math.sqrt(this.coordDistanceSquaredTo(hex)) / HEX_PROPORTION_PER_LEAGUEUNIT / (moveDurationMS / 1000)
+			} else {
+				this.customMoveSpeed = customSpeed
+			}
 			this.onMovementComplete = (elapsedMS, unit) => {
 				if (!keepsAttackTarget) {
 					unit.setTarget(isUnitTarget && target.team !== this.team && target.isAttackable() ? target : null)

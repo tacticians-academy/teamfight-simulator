@@ -76,7 +76,7 @@ export const championEffects = {
 				onCollided: (elapsedMS, effect, withUnit) => {
 					if (withUnit === target) {
 						if (targetHex) {
-							target.customMoveTo(targetHex ?? target, true, moveSpeed, false, (elapsedMS, target) => {
+							target.customMoveTo(targetHex ?? target, true, moveSpeed, undefined, false, (elapsedMS, target) => {
 								const stunSeconds = champion.getSpellVariable(spell, SpellKey.StunDuration)
 								target.applyStatusEffect(elapsedMS, StatusEffectType.stunned, stunSeconds * 1000)
 							})
@@ -176,7 +176,7 @@ export const championEffects = {
 				if (champion.target) {
 					const jumpToHex = champion.projectHexFrom(champion.target, false, 1)
 					if (jumpToHex) {
-						champion.customMoveTo(jumpToHex, false, 1000, false) //TODO travel time
+						champion.customMoveTo(jumpToHex, false, 1000, undefined, false) //TODO travel time
 					}
 				}
 			}
@@ -229,7 +229,7 @@ export const championEffects = {
 					const bestUnits = getBestArrayAsMax(false, validUnits, (unit) => unit.health)
 					return getBestRandomAsMax(true, bestUnits, (unit) => unit.coordDistanceSquaredTo(champion)) ?? champion.target
 				},
-				moveSpeed: jumpMS, //TODO fixed move time
+				moveDurationMS: jumpMS,
 				onDestination: (elapsedMS, champion) => {
 					champion.queueProjectileEffect(elapsedMS, spell, {
 						bonuses: [SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReave]],
@@ -496,7 +496,7 @@ export const championEffects = {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO calculate
 				onActivate: (elapsedMS, champion) => {
-					champion.customMoveTo(projectedHex ?? champion, false, 2000, false) //TODO experimentally determine
+					champion.customMoveTo(projectedHex ?? champion, false, 2000, undefined, false) //TODO experimentally determine
 					champion.empoweredAutos.add({
 						amount: 3, //NOTE hardcoded
 						damageModifier: {
@@ -622,7 +622,7 @@ export const championEffects = {
 } as ChampionEffects
 
 function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, moveSpeed: number, target: ChampionUnit) {
-	champion.customMoveTo(target, false, moveSpeed, false, (elapsedMS, champion) => {
+	champion.customMoveTo(target, false, moveSpeed, undefined, false, (elapsedMS, champion) => {
 		if (target.isAttackable()) {
 			const damageCalculation = champion.getSpellCalculation(spell, SpellKey.Damage)
 			if (damageCalculation) {
@@ -635,7 +635,7 @@ function ireliaResetRecursive(spell: ChampionSpellData, champion: ChampionUnit, 
 				}
 			}
 		}
-		champion.customMoveTo(target, true, moveSpeed, false, (elapsedMS, champion) => {
+		champion.customMoveTo(target, true, moveSpeed, undefined, false, (elapsedMS, champion) => {
 			champion.manaLockUntilMS = 0
 		})
 	})

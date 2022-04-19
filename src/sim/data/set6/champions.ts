@@ -39,7 +39,7 @@ export const baseChampionEffects = {
 					champion.performActionUntilMS = 0
 					const adjacentHex = withUnit.projectHexFrom(champion, false, 1)
 					if (adjacentHex) {
-						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, false, (elapsedMS, withUnit) => {
+						withUnit.customMoveTo(adjacentHex, false, spell.missile?.speedInitial, undefined, false, (elapsedMS, withUnit) => {
 							withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, durationMS)
 						})
 						if (!champion.checkInRangeOfTarget()) {
@@ -205,7 +205,7 @@ export const baseChampionEffects = {
 						[StatusEffectType.stunned, { durationMS: stunSeconds * 1000 }],
 					],
 				},
-				moveSpeed: 2000, //TODO experimentally determine
+				moveDurationMS: 600, //TODO experimentally determine
 				onActivate: (elapsedMS, champion) => {
 					champion.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, 5000) //TODO time
 				},
@@ -327,7 +327,7 @@ export const baseChampionEffects = {
 									},
 									onDestination: (elapsedMS, champion) => {
 										if (!target.dead) { //TODO check if target hex is open
-											champion.customMoveTo(champion.activeHex, true, undefined, true) //TODO experimentally determine
+											champion.customMoveTo(champion.activeHex, true, undefined, undefined, true) //TODO experimentally determine
 										}
 									},
 								})
@@ -404,7 +404,7 @@ export const baseChampionEffects = {
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target: champion,
 				idealDestination: (champion) => randomItem(getBestDensityHexes(true, getInteractableUnitsOfTeam(champion.opposingTeam()), true, 4)),
-				moveSpeed: 1000, //TODO experimentally determine
+				moveDurationMS: 1000, //TODO experimentally determine
 				onDestination: (elapsedMS, champion) => {
 					champion.manaLockUntilMS = Number.MAX_SAFE_INTEGER
 					champion.addBonuses(spell.name as BonusLabelKey, [BonusKey.HexRangeIncrease, MAX_HEX_COUNT])
@@ -680,7 +680,7 @@ export const baseChampionEffects = {
 						target: withUnit,
 						idealDestination: (target) => getBestRandomAsMax(true, getHexesSurroundingWithin(target.activeHex, 1, true), (hex) => (containsHex(hex, occupiedHexes) ? undefined : champion.coordDistanceSquaredTo(hex))),
 						ignoresDestinationCollision: true,
-						moveSpeed: HEX_MOVE_LEAGUEUNITS / 2, //TODO fixed fearSeconds duration
+						moveDurationMS: fearSeconds / 1000,
 					})
 					withUnit.applyStatusEffect(elapsedMS, StatusEffectType.stunned, fearSeconds * 1000)
 				},
@@ -1076,7 +1076,7 @@ export const baseChampionEffects = {
 								champion.queueMoveUnitEffect(elapsedMS, undefined, {
 									target,
 									idealDestination: (target) => champion.projectHexFrom(target, false, 2),
-									moveSpeed: 600, //TODO fixed time
+									moveDurationMS: 600,
 									onDestination: (elapsedMS, unit) => {
 										champion.performActionUntilMS = 0
 									},
