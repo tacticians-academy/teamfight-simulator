@@ -23,6 +23,9 @@ export function createEmptyBoard(rowCount: number) {
 
 export function getClosestHexAvailableTo(startHex: HexCoord, units: ChampionUnit[]) {
 	const unitHexes = getOccupiedHexes(units)
+	if (!containsHex(startHex, unitHexes)) {
+		return startHex
+	}
 	for (let distance = 1; distance <= 4; distance += 1) { //TODO recurse to unlimited distance
 		for (const checkHex of getHexRing(startHex, distance as SurroundingHexRange)) {
 			if (!containsHex(checkHex, unitHexes)) { //TODO random
