@@ -11,7 +11,7 @@ import type { AttackBounce, AttackEffectData } from '#/sim/effects/GameEffect'
 import type { HexEffectData } from '#/sim/effects/HexEffect'
 
 import { coordinateDistanceSquared, getCoordFrom } from '#/sim/helpers/board'
-import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import { DEFAULT_CAST_SECONDS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, SAFE_HEX_PROPORTION_PER_UPDATE, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 import { applyStackingModifier, getDistanceUnitOfTeam, getInteractableUnitsOfTeam, getNextBounceFrom } from '#/sim/helpers/effectUtils'
 import type { DamageModifier } from '#/sim/helpers/types'
 
@@ -86,7 +86,7 @@ export class ProjectileEffect extends GameEffect {
 		this.projectileStartsFrom = data.projectileStartsFrom ?? source
 		this.coord = ref([...('coord' in this.projectileStartsFrom ? this.projectileStartsFrom.coord : getCoordFrom(this.projectileStartsFrom))] as HexCoord) // Destructure to avoid mutating source
 		this.missile = data.missile
-		this.currentSpeed = Math.min(10000, this.missile.speedInitial!) //TODO high speeds miss collisions, derive from .travelTime
+		this.currentSpeed = this.missile.speedInitial! //TODO option to derive from .travelTime
 		this.target = data.target
 		this.targetCoord = [0, 0]
 		this.setTarget(data.target)
@@ -231,22 +231,15 @@ export class ProjectileEffect extends GameEffect {
 				this.targetCoord = this.target.coord
 			}
 		}
-		const diffDistance = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
-		let angleX: number, angleY: number
+
+		const totalDistanceForUpdate = diffMS / 1000 * this.currentSpeed * HEX_PROPORTION_PER_LEAGUEUNIT
+		let angleX, angleY
 		if (this.maxDistance != null) {
-			if (this.traveledDistance >= this.maxDistance) {
-				if (!this.isReturning && isUnit(this.target)) {
-					if (this.apply(elapsedMS, this.target, true) === false) {
-						return true
-					}
-				}
-				return this.checkIfDies(elapsedMS)
-			}
 			angleX = this.fixedDeltaX!
 			angleY = this.fixedDeltaY!
 		} else {
 			const [deltaX, deltaY, distanceX, distanceY] = this.getDelta()
-			if (Math.abs(distanceX) <= diffDistance && Math.abs(distanceY) <= diffDistance) {
+			if (Math.abs(distanceX) <= totalDistanceForUpdate && Math.abs(distanceY) <= totalDistanceForUpdate) {
 				if (!this.isReturning && isUnit(this.target) && !this.collidedWith.includes(this.target.instanceID)) {
 					if (this.apply(elapsedMS, this.target, true) === false) {
 						return true
@@ -257,7 +250,46 @@ export class ProjectileEffect extends GameEffect {
 			angleX = deltaX
 			angleY = deltaY
 		}
-		this.traveledDistance += diffDistance
+
+		const checksForUpdate = Math.ceil(totalDistanceForUpdate / SAFE_HEX_PROPORTION_PER_UPDATE)
+		if (checksForUpdate > 1) {
+			console.log('checksForUpdate', this.source.name, checksForUpdate)
+		}
+		const diffDistance = totalDistanceForUpdate / checksForUpdate
+		for (let check = 1; check <= checksForUpdate; check += 1) {
+			if (this.destroysOnCollision != null && this.targetTeam !== undefined) {
+				for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
+					if (!this.collidedWith.includes(unit.instanceID) && this.intersects(unit)) {
+						if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
+							if (this.destroysOnCollision) {
+								return this.checkIfDies(elapsedMS)
+							}
+							if (this.stackingDamageModifier) {
+								if (!this.damageModifier) {
+									this.damageModifier = {}
+								}
+								applyStackingModifier(this.damageModifier, this.stackingDamageModifier)
+							}
+						}
+					}
+				}
+			}
+
+			if (this.maxDistance != null) {
+				this.traveledDistance += diffDistance
+				if (this.traveledDistance >= this.maxDistance) {
+					if (!this.isReturning && isUnit(this.target)) {
+						if (this.apply(elapsedMS, this.target, true) === false) {
+							return true
+						}
+					}
+					return this.checkIfDies(elapsedMS)
+				}
+			}
+			const position = this.coord.value
+			position[0] += angleX * diffDistance
+			position[1] += angleY * diffDistance
+		}
 
 		if (this.missile.acceleration != null) {
 			this.currentSpeed = this.currentSpeed + this.missile.acceleration * diffMS / 1000 //TODO experimentally determine
@@ -271,27 +303,5 @@ export class ProjectileEffect extends GameEffect {
 				}
 			}
 		}
-
-		if (this.destroysOnCollision != null && this.targetTeam !== undefined) {
-			for (const unit of getInteractableUnitsOfTeam(this.targetTeam)) {
-				if (!this.collidedWith.includes(unit.instanceID) && this.intersects(unit)) {
-					if (this.apply(elapsedMS, unit, this.destroysOnCollision) === true) {
-						if (this.destroysOnCollision) {
-							return this.checkIfDies(elapsedMS)
-						}
-						if (this.stackingDamageModifier) {
-							if (!this.damageModifier) {
-								this.damageModifier = {}
-							}
-							applyStackingModifier(this.damageModifier, this.stackingDamageModifier)
-						}
-					}
-				}
-			}
-		}
-
-		const position = this.coord.value
-		position[0] += angleX * diffDistance
-		position[1] += angleY * diffDistance
 	}
 }
