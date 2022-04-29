@@ -16,11 +16,11 @@
 		"coverage": "vitest run --coverage && open coverage/index.html"
 	},
 	"dependencies": {
-		"@tacticians-academy/academy-library": "^0.22.2",
+		"@tacticians-academy/academy-library": "^0.22.3",
 		"@tailwindcss/forms": "^0.5.0",
 		"@vitejs/plugin-vue": "^2.3.1",
 		"tailwindcss": "^3.0.24",
-		"vite": "^2.9.5",
+		"vite": "^2.9.6",
 		"vite-plugin-checker": "^0.4.6",
 		"vite-tsconfig-paths": "^3.4.1",
 		"vue": "^3.2.33"
@@ -28,18 +28,18 @@
 	"devDependencies": {
 		"@ky-is/eslint-config": "^2.5.1",
 		"@types/tailwindcss": "^3.0.10",
-		"@typescript-eslint/eslint-plugin": "^5.20.0",
-		"@typescript-eslint/parser": "^5.20.0",
-		"autoprefixer": "^10.4.4",
-		"c8": "^7.11.0",
-		"eslint": "^8.13.0",
-		"eslint-plugin-vue": "^8.6.0",
+		"@typescript-eslint/eslint-plugin": "^5.21.0",
+		"@typescript-eslint/parser": "^5.21.0",
+		"autoprefixer": "^10.4.5",
+		"c8": "^7.11.2",
+		"eslint": "^8.14.0",
+		"eslint-plugin-vue": "^8.7.1",
 		"happy-dom": "^2.55.0",
 		"postcss": "^8.4.12",
-		"typescript": "^4.6.3",
-		"vitest": "^0.9.3",
+		"typescript": "^4.6.4",
+		"vitest": "^0.9.4",
 		"vue-eslint-parser": "^8.3.0",
-		"vue-tsc": "^0.34.7"
+		"vue-tsc": "^0.34.11"
 	},
 	"eslintConfig": {
 		"extends": [
