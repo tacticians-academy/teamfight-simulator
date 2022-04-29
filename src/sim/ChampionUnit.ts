@@ -1017,7 +1017,7 @@ export class ChampionUnit {
 
 	checkHPThreshold(uniqueID: string, effects: EffectVariables, originalHealth: number, healthDamage: number) {
 		uniqueID += this.instanceID
-		const hpThreshold = effects['HPThreshold'] ?? effects['HPThreshold1'] //TODO normalize Health
+		const hpThreshold = effects['HPThreshold'] ?? effects['HPThreshold1']
 		if (hpThreshold != null) {
 			const previousActivationThreshold = thresholdCheck[uniqueID]
 			if (hpThreshold !== previousActivationThreshold && this.healthProportion() <= hpThreshold / 100) {

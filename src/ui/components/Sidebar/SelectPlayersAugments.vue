@@ -15,6 +15,12 @@ const { state } = useStore()
 
 const selectAugment = ref<[tierIndex: number, teamNumber: TeamNumber, augmentIndex: number] | null>(null)
 
+function onTier(tier: number) {
+	if (selectAugment.value) {
+		selectAugment.value[0] = tier
+	}
+}
+
 function onAugmentTeamIndex(teamNumber: TeamNumber, augmentIndex: number) {
 	selectAugment.value = [0, teamNumber, augmentIndex]
 }
@@ -112,7 +118,7 @@ function onSearchEnter() {
 			<button
 				v-for="(tier, tierIndex) in ['Silver', 'Gold', 'Prismatic']" :key="tierIndex"
 				class="w-20 h-16 text-white"
-				@click="selectAugment[0] = tierIndex"
+				@click="onTier(tierIndex)"
 			>
 				{{ tier }}
 			</button>
