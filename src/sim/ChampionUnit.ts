@@ -379,6 +379,7 @@ export class ChampionUnit {
 				} else {
 					const missile = empoweredAuto.missile ?? this.attackMissile ?? {
 						speedInitial: this.data.basicAttackMissileSpeed ?? this.data.critAttackMissileSpeed ?? 1000, //TODO predetermine crits
+						width: 15,
 					}
 					if (missile.speedInitial != null && missile.speedInitial > 5000) {
 						this.queueTargetEffect(elapsedMS, undefined, {
