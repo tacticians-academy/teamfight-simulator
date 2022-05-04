@@ -3,12 +3,12 @@ import HexEffect from '#/ui/components/Effects/HexEffect.vue'
 import ProjectileEffect from '#/ui/components/Effects/ProjectileEffect.vue'
 import ShapeEffect from '#/ui/components/Effects/ShapeEffect.vue'
 import TargetEffect from '#/ui/components/Effects/TargetEffect.vue'
-import Unit from '#/ui/components/Unit.vue'
+import UnitCircle from '#/ui/components/UnitCircle.vue'
 import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, ref } from 'vue'
 
-import { useStore, getSocialiteHexStrength, setSocialiteHex, setData, loadStorageUnits } from '#/store/store'
+import { useStore, getSocialiteHexStrength, setSocialiteHex, setData } from '#/store/store'
 import { saveComps } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
@@ -20,7 +20,6 @@ import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/d
 import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 import { toStorage } from '#/store/storage'
 import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
-import type { CustomComp } from '#/sim/data/types'
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
@@ -103,7 +102,7 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 		</div>
 		<div class="absolute inset-0 pointer-events-none">
 			<template v-for="unit in state.units" :key="unit.instanceID">
-				<Unit v-if="unit.hasCollision()" :unit="unit" />
+				<UnitCircle v-if="unit.hasCollision()" :unit="unit" />
 			</template>
 			<template v-for="unit in state.units" :key="unit.instanceID">
 				<UnitOverlay v-if="unit.hasCollision()" :unit="unit" />

@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import '#/ui/assets/main.postcss'
 
-import Board from '#/ui/components/Board.vue'
-import Sidebar from '#/ui/components/Sidebar/Sidebar.vue'
-import FooterVue from '#/ui/components/Footer.vue'
+import HexBoard from '#/ui/components/HexBoard.vue'
+import SidebarContainer from '#/ui/components/Sidebar/SidebarContainer.vue'
+import SetsFooter from '#/ui/components/SetsFooter.vue'
 </script>
 
 <template>
 <div class="h-full  flex">
-	<Sidebar />
+	<SidebarContainer />
 	<div class="relative w-full h-full overflow-y-scroll">
-		<Board />
-		<FooterVue />
+		<HexBoard />
+		<SetsFooter />
 	</div>
 </div>
 </template>
