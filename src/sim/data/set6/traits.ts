@@ -92,23 +92,12 @@ export const baseTraitEffects = {
 		onceForTeam: (activeEffect, teamNumber, units) => {
 			const [detainCount] = getVariables(activeEffect, 'DetainCount')
 			let stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
-			if (detainCount >= 1) {
-				const bestUnit = getBestRandomAsMax(true, stunnableUnits, (unit) => unit.healthMax)
-				if (bestUnit) {
-					applyEnforcerDetain(activeEffect, bestUnit)
+			for (let count = 1; count <= detainCount; count += 1) {
+				const bestUnit = getBestRandomAsMax(true, stunnableUnits.filter(unit => !unit.statusEffects.stunned.active), (unit) => unit.healthMax)
+				if (!bestUnit) {
+					break
 				}
-			}
-			if (detainCount >= 2) { //NOTE option for user to target
-				stunnableUnits = stunnableUnits.filter(unit => !unit.statusEffects.stunned.active)
-				const bestUnit = getBestUniqueAsMax(true, stunnableUnits, (unit) => {
-					const attackDPS = unit.attackDamage() * unit.attackSpeed()
-					const starCostItems = (unit.data.cost ?? 1) * unit.starMultiplier + Math.pow(unit.items.length, 2)
-					const magicDPSScore = (unit.abilityPower() - 90) / 10
-					return starCostItems + attackDPS / 20 + magicDPSScore
-				})
-				if (bestUnit) {
-					applyEnforcerDetain(activeEffect, bestUnit)
-				}
+				applyEnforcerDetain(activeEffect, bestUnit)
 			}
 		},
 	},
