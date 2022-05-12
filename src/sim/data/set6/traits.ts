@@ -91,7 +91,7 @@ export const baseTraitEffects = {
 	[TraitKey.Enforcer]: {
 		onceForTeam: (activeEffect, teamNumber, units) => {
 			const [detainCount] = getVariables(activeEffect, 'DetainCount')
-			let stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
+			const stunnableUnits = getAttackableUnitsOfTeam(1 - teamNumber as TeamNumber)
 			for (let count = 1; count <= detainCount; count += 1) {
 				const bestUnit = getBestRandomAsMax(true, stunnableUnits.filter(unit => !unit.statusEffects.stunned.active), (unit) => unit.healthMax)
 				if (!bestUnit) {
