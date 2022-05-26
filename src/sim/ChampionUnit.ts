@@ -334,7 +334,7 @@ export class ChampionUnit {
 					empoweredAuto.statusEffects!.push(...empower.statusEffects)
 				}
 				if (empower.bounce) {
-					empoweredAuto.bounce = Object.assign(empoweredAuto.bounce, empower.bounce)
+					empoweredAuto.bounce = Object.assign(empoweredAuto.bounce!, empower.bounce)
 				}
 				if (empower.returnMissile) {
 					if (empoweredAuto.returnMissile) { console.warn('empoweredAutos multiple returnMissile not supported') }

@@ -25,7 +25,7 @@ function onReset() {
 			<div>
 				<label for="select-stage" class="mr-1">Stage:</label>
 				<select id="select-stage" v-model="state.stageNumber">
-					<option v-for="stageNumber in 9" :key="stageNumber">{{ stageNumber }}</option>
+					<option v-for="stageIndex in 8" :key="stageIndex" :value="stageIndex + 1">{{ stageIndex + 1 }}</option>
 				</select>
 			</div>
 			<div v-if="Math.floor(state.setNumber) === 6">

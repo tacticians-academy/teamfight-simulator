@@ -24,13 +24,13 @@ function onDrag(event: DragEvent) {
 		<div class="title  mr-1">{{ name }}</div>
 		<div
 			v-for="augmentName in comp.augments.filter(a => a)" :key="augmentName!"
-			class="sidebar-icon  -mr-1 last:mr-0 max-w-[16.7%]" :style="{ backgroundImage: `url(${getIconURLFor(state, setData.activeAugments.find(a => a.name === augmentName))})` }"
+			class="sidebar-icon  -mr-1 last:mr-0 max-w-[16.7%]" :style="{ backgroundImage: `url(${getIconURLFor(state, setData.activeAugments.find(a => a.name === augmentName)!)})` }"
 		/>
 	</div>
 	<div class="flex">
 		<div
 			v-for="unit in comp.units" :key="unit.name"
-			class="sidebar-icon  -mr-1 last:mr-0" :style="{ backgroundImage: `url(${getIconURLFor(state, setData.champions.find(c => c.name === unit.name))})` }"
+			class="sidebar-icon  -mr-1 last:mr-0" :style="{ backgroundImage: `url(${getIconURLFor(state, setData.champions.find(c => c.name === unit.name)!)})` }"
 		/>
 	</div>
 </div>

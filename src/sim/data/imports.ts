@@ -24,6 +24,9 @@ export async function importAugmentEffects(set: SetNumber) {
 	if (set === 6.5) {
 		return await import('./set6/6.5/augments.js')
 	}
+	if (set === 7) {
+		return {} as AugmentEffects
+	}
 	throw 'Unsupported set:' + set
 }
 
@@ -37,6 +40,9 @@ export async function importChampionEffects(set: SetNumber) {
 	}
 	if (set === 6.5) {
 		return await import('./set6/6.5/champions.js')
+	}
+	if (set === 7) {
+		return {} as ChampionEffects
 	}
 	throw 'Unsupported set:' + set
 }
@@ -52,6 +58,9 @@ export async function importItemEffects(set: SetNumber) {
 		}
 		if (set === 6.5) {
 			return await import('./set6/6.5/items.js')
+		}
+		if (set === 7) {
+			return {} as ItemEffects
 		}
 	} catch (error) {
 		console.log(error)
@@ -69,6 +78,9 @@ export async function importTraitEffects(set: SetNumber) {
 	}
 	if (set === 6.5) {
 		return await import('./set6/6.5/traits.js')
+	}
+	if (set === 7) {
+		return {} as TraitEffects
 	}
 	throw 'Unsupported set:' + set
 }
