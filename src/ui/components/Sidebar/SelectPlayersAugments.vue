@@ -7,7 +7,7 @@ import type { AugmentData, AugmentGroupKey } from '@tacticians-academy/academy-l
 
 import { useStore, setAugmentFor, setData } from '#/store/store'
 
-import { TeamNumber } from '#/sim/helpers/types'
+import type { TeamNumber } from '#/sim/helpers/types'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

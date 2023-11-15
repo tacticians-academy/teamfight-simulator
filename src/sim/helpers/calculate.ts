@@ -35,7 +35,7 @@ export function solveSpellCalculationFrom(source: ChampionUnit | undefined, targ
 				if (damageType !== DamageType.true) {
 					if (subpart.stat === BonusKey.AttackDamage) {
 						damageType = DamageType.physical
-					} else if (!damageType && subpart.stat === BonusKey.AbilityPower) {
+					} else if (damageType == null && subpart.stat === BonusKey.AbilityPower) {
 						damageType = DamageType.magic
 					}
 				}

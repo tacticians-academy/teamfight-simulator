@@ -79,7 +79,7 @@ export const traitEffects = {
 		},
 		enemyDeath: (activeEffect, elapsedMS, deadEnemy, [unit]) => {
 			if (unit == null) { return }
-			if (unit.name === ChampionKey.Jinx) {
+			if (unit?.name === ChampionKey.Jinx) {
 				if (!unit.hasAssistCreditFor(deadEnemy)) {
 					return
 				}
