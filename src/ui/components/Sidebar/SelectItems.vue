@@ -9,10 +9,8 @@ import { getIconURLFor } from '#/ui/helpers/utils'
 
 const { startDragging } = useStore()
 
-const IGNORE_ITEMS = [88]
-
 const itemGroups = computed(() => {
-	const itemGroups: [string, ItemData[]][] = [['Combined', setData.completedItems.filter(item => !IGNORE_ITEMS.includes(item.id))], ['Emblems', setData.spatulaItems], ['Components', setData.componentItems]]
+	const itemGroups: [string, ItemData[]][] = [['Combined', setData.completedItems], ['Emblems', setData.spatulaItems], ['Components', setData.componentItems]]
 	itemGroups.forEach(group => group[1].sort((a, b) => a.name.localeCompare(b.name)))
 	return itemGroups
 })

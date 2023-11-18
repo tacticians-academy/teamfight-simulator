@@ -1,5 +1,5 @@
 import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionKey, ItemData, ItemKey, SpellCalculation, TraitKey } from '@tacticians-academy/academy-library'
+import type { ItemData, ItemKey, SpellCalculation, TraitKey } from '@tacticians-academy/academy-library'
 
 import { setData } from '#/store/store'
 
@@ -164,7 +164,7 @@ export function calculateChampionBonuses(unit: ChampionUnit) {
 	const spell = unit.getCurrentSpell()
 	const variables = unit.championEffects?.innate?.(spell, unit)
 	if (variables) {
-		bonuses.push([(spell?.name as BonusLabelKey) ?? (unit.name as ChampionKey), variables])
+		bonuses.push([(spell?.name as BonusLabelKey) ?? unit.data.apiName, variables])
 	}
 	return bonuses
 }

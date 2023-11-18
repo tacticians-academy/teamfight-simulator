@@ -1,7 +1,8 @@
 import { markRaw } from 'vue'
 
-import { AugmentGroupKey, ChampionKey, ItemKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { AugmentGroupKey, ItemKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { gameOver, getters, state, setData, resetUnitsAfterUpdating } from '#/store/store'
 import { saveUnits } from '#/store/storage'
@@ -37,7 +38,6 @@ export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffect
 
 export class ChampionUnit {
 	instanceID: string
-	name: string
 	startHex: HexCoord
 	team: TeamNumber = 0
 	starLevel: StarLevel
@@ -54,7 +54,8 @@ export class ChampionUnit {
 	mana = 0
 	health = 0
 	healthMax = 0
-	starMultiplier = 1
+	baseHP = 1
+	baseAD = 1
 	isStarLocked: boolean
 	fixedAS: number | undefined
 	instantAttack: boolean
@@ -94,12 +95,11 @@ export class ChampionUnit {
 
 	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
 
-	constructor(name: string, hex: HexCoord, starLevel: StarLevel) {
+	constructor(apiName: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
-		const stats = setData.champions.find(unit => unit.name === name) ?? setData.champions.find(unit => unit.apiName === 'TFT_TrainingDummy') ?? setData.champions[0]
-		this.isStarLocked = stats.isSpawn && name !== ChampionKey.TrainingDummy
+		const stats = setData.champions.find(unit => unit.apiName === apiName) ?? setData.champions.find(unit => unit.apiName === ChampionKey.TrainingDummy) ?? setData.champions[0]
+		this.isStarLocked = stats.isSpawn && apiName !== ChampionKey.TrainingDummy
 		this.data = markRaw(stats)
-		this.name = name
 		this.starLevel = starLevel
 		this.startHex = [...hex]
 		this.activeHex = [...hex]
@@ -128,7 +128,8 @@ export class ChampionUnit {
 	}
 	resetPre(synergiesByTeam: SynergyData[][]) {
 		this.bonuses = []
-		this.championEffects = setData.championEffects[this.name as ChampionKey]
+		this.championEffects = setData.championEffects[this.data.apiName!]
+		this.baseHP = (this.data.stats.hp ?? [1500, 1800, 2100, 2500][getStageScalingIndex()]) * Math.pow(1.8, this.starLevel - 1) //TODO fallback TFT_VoidSpawn
 		this.pendingBonuses.clear()
 		this.bleeds.clear()
 		this.damageCallbacks.clear()
@@ -143,7 +144,8 @@ export class ChampionUnit {
 			statusEffect.expiresAtMS = 0
 		})
 
-		this.starMultiplier = Math.pow(1.8, this.starLevel - 1)
+		const scaleADFactor = state.setNumber < 7 ? 1.8 : 1.5
+		this.baseAD = (this.data.stats.damage == 0 ? [100, 100, 125, 140][getStageScalingIndex()] : this.data.stats.damage) * Math.pow(scaleADFactor, this.starLevel - 1) //TODO fallback ?
 		this.collides = true
 		this.dead = false
 		this.resurrecting = false
@@ -176,14 +178,9 @@ export class ChampionUnit {
 	}
 	resetPost() {
 		this.setMana(this.data.stats.initialMana + this.getBonuses(BonusKey.Mana))
-		this.health = this.baseHP() * (1 + this.getBonuses('HPMultiplier' as BonusKey))
+		this.health = (this.baseHP + this.getBonusVariants(BonusKey.Health)) * (1 + this.getBonuses('HPMultiplier' as BonusKey))
 		this.healthMax = this.health
 		this.fixedAS = this.getSpellVariableIfExists(this.getCurrentSpell(), SpellKey.AttackSpeed)
-	}
-
-	baseHP() {
-		const hpStat = this.data.stats.hp ?? [1500, 1800, 2100, 2500][getStageScalingIndex()] // ??TFT_VoidSpawn
-		return hpStat * this.starMultiplier + this.getBonusVariants(BonusKey.Health)
 	}
 
 	addBonuses(key: BonusLabelKey, ...bonuses: BonusVariable[]) {
@@ -200,7 +197,6 @@ export class ChampionUnit {
 		if (unit) {
 			this.movesBeforeDroppingTarget = 3
 		}
-		// console.log(this.name, this.team, 'targets at', this.cachedTargetDistance, 'hexes', this.target.name, this.target.team)
 	}
 	checkInRangeOfTarget() {
 		return this.target ? this.hexDistanceTo(this.target) <= this.range() : false
@@ -734,7 +730,7 @@ export class ChampionUnit {
 
 	increaseMaxHealthByProportion(key: BonusLabelKey, proportion: number) {
 		this.addBonuses(key, ['HPMultiplier' as BonusKey, proportion])
-		const newMax = this.baseHP() * (1 + this.getBonuses('HPMultiplier' as BonusKey))
+		const newMax = this.baseHP * (1 + this.getBonuses('HPMultiplier' as BonusKey))
 		const amount = newMax - this.healthMax
 		this.health += amount
 		this.healthMax += amount
@@ -760,7 +756,7 @@ export class ChampionUnit {
 
 	die(elapsedMS: DOMHighResTimeStamp, source: ChampionUnit | undefined) {
 		if (this.dead) {
-			return console.warn('Already dead', this.name, this.instanceID)
+			return console.warn('Already dead', this.data.name, this.instanceID)
 		}
 		this.health = 0
 		this.dead = true
@@ -1164,7 +1160,7 @@ export class ChampionUnit {
 		}
 		const value = this.getSpellVariableIfExists(spell, key)
 		if (value == null) {
-			console.log('ERR', this.name, spell?.name, key)
+			console.log('ERR', this.data.name, spell?.name, key)
 			return 0
 		}
 		return value
@@ -1175,7 +1171,7 @@ export class ChampionUnit {
 	}
 	getSpellCalculation(spell: ChampionSpellData | undefined, key: string, silent: boolean = false) {
 		if (!spell) {
-			console.log('ERR', 'No spell', this.name, key)
+			console.log('ERR', 'No spell', this.data.name, key)
 			return undefined
 		}
 		const calculation = spell.calculations[key]
@@ -1239,16 +1235,12 @@ export class ChampionUnit {
 	}
 
 	attackDamage() {
-		let baseAD = this.data.stats.damage
-		if (baseAD === 0) {
-			baseAD = [100, 100, 125, 140][getStageScalingIndex()]
-		}
-		const ad = baseAD * this.starMultiplier + this.getBonusVariants(BonusKey.AttackDamage)
 		const multiplyAttackSpeed = this.getSpellVariableIfExists(this.getCurrentSpell(), SpellKey.ADFromAttackSpeed)
+		const attackDamage = this.baseAD + this.getBonusVariants(BonusKey.AttackDamage)
 		if (multiplyAttackSpeed != null) {
-			return ad + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
+			return attackDamage + this.bonusAttackSpeed() * 100 * multiplyAttackSpeed
 		}
-		return ad
+		return attackDamage
 	}
 	abilityPower() {
 		return 100 + this.getBonusVariants(BonusKey.AbilityPower)
@@ -1375,7 +1367,7 @@ export class ChampionUnit {
 		if (data.target == null) {
 			const target = this.target
 			if (!target) {
-				console.error('ERR', 'No target for projectile', this.name, spell?.name)
+				console.error('ERR', 'No target for projectile', this.data.name, spell?.name)
 				return undefined
 			}
 			data.target = data.fixedHexRange != null || data.missile?.tracksTarget === false ? target.activeHex : target
@@ -1440,7 +1432,7 @@ export class ChampionUnit {
 		}
 		if (!data.target) {
 			if (!this.target) {
-				console.log('ERR', 'No target', this.name, spell?.name)
+				console.log('ERR', 'No target', this.data.name, spell?.name)
 				return undefined
 			}
 			data.target = this.target
@@ -1493,7 +1485,7 @@ export class ChampionUnit {
 		}
 		if (!data.sourceTargets && data.targetsInHexRange == null) {
 			if (!this.target) {
-				console.log('ERR', 'No target', this.name, spell?.name)
+				console.log('ERR', 'No target', this.data.name, spell?.name)
 				return undefined
 			}
 			data.sourceTargets = [[this, this.target]]

@@ -1,8 +1,9 @@
 import { computed, reactive, shallowReactive, watch, watchEffect } from 'vue'
 
-import { ChampionKey, ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS } from '@tacticians-academy/academy-library'
+import { ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS } from '@tacticians-academy/academy-library'
 import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
 import { importAugments, importChampions, importItems, importTraits } from '@tacticians-academy/academy-library/dist/imports'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { clearBoardStorage, getSavedComps, getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveSetNumber, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/store/storage'
 import type { AugmentList, StorageChampion } from '#/store/storage'
@@ -24,7 +25,7 @@ import { getInverseHex, getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
 import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
-import { uniqueIdentifier } from '#/sim/helpers/utils'
+import { getItemByIdentifier, uniqueIdentifier } from '#/sim/helpers/utils'
 
 import type { DraggableType } from '#/ui/helpers/dragDrop'
 
@@ -152,8 +153,8 @@ export const getters = {
 					entry = [trait, []]
 					traitsAndUnits.push(entry)
 				}
-				if (!entry[1].includes(unit.name)) {
-					entry[1].push(unit.name)
+				if (!entry[1].includes(unit.data.apiName)) {
+					entry[1].push(unit.data.apiName)
 				}
 			}
 		})
@@ -248,7 +249,7 @@ export function resetUnitsAfterUpdating() {
 		if (unit.wasSpawnedDuringFight) {
 			return false
 		}
-		if (!unit.data.isSpawn || unit.name === ChampionKey.TrainingDummy) {
+		if (!unit.data.isSpawn || unit.data.apiName === ChampionKey.TrainingDummy) {
 			return true
 		}
 		return synergiesByTeam[unit.team].some(({ activeEffect, key }) => activeEffect && setData.traitEffects[key]?.shouldKeepSpawn?.(unit))
@@ -425,18 +426,18 @@ const store = {
 		store._deleteUnit(hex)
 		resetUnitsAfterUpdating()
 	},
-	addUnit(name: string, hex: HexCoord, starLevel: StarLevel) {
-		const unit = new ChampionUnit(name, hex, starLevel)
+	addUnit(apiName: string, hex: HexCoord, starLevel: StarLevel) {
+		const unit = new ChampionUnit(apiName, hex, starLevel)
 		unit.updateTeam()
 		state.units.push(unit)
 		unit.genericReset()
 		resetUnitsAfterUpdating()
 	},
-	dropUnit(event: DragEvent, name: string, hex: HexCoord) {
+	dropUnit(event: DragEvent, apiName: string, hex: HexCoord) {
 		const unit = state.dragUnit
 		if (unit && event.dataTransfer?.effectAllowed === 'copy') {
 			store._deleteUnit(hex)
-			store.addUnit(name, hex, unit.starLevel)
+			store.addUnit(apiName, hex, unit.starLevel)
 			//TODO copy items?
 			state.dragUnit = null
 		} else {
@@ -450,7 +451,7 @@ const store = {
 				state.dragUnit = null
 			} else {
 				store._deleteUnit(hex)
-				store.addUnit(name, hex, 1)
+				store.addUnit(apiName, hex, 1)
 			}
 		}
 		saveUnits(state.setNumber)
@@ -502,9 +503,9 @@ export function loadStorageUnits(storageUnits: StorageChampion[]) {
 	const units = storageUnits
 		.map(storageUnit => {
 			const championItems = storageUnit.items
-				.map(id => setData.currentItems.find(item => item.id === id))
+				.map(id => getItemByIdentifier(id, setData.currentItems))
 				.filter((item): item is ItemData => !!item)
-			const champion = new ChampionUnit(storageUnit.name, storageUnit.hex, storageUnit.starLevel)
+			const champion = new ChampionUnit(storageUnit.id, storageUnit.hex, storageUnit.starLevel)
 			champion.updateTeam()
 			champion.items = championItems
 			champion.resetPre(synergiesByTeam)

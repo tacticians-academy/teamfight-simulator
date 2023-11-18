@@ -47,7 +47,7 @@ export interface ProjectileEffectData extends AttackEffectData {
 }
 
 function isUnit(target: ChampionUnit | HexCoord): target is ChampionUnit {
-	return 'name' in target
+	return 'data' in target
 }
 
 export class ProjectileEffect extends GameEffect {
@@ -270,7 +270,7 @@ export class ProjectileEffect extends GameEffect {
 
 		const checksForUpdate = Math.ceil(totalDistanceForUpdate / SAFE_HEX_PROPORTION_PER_UPDATE)
 		if (checksForUpdate > 1) {
-			console.log('checksForUpdate', this.source.name, checksForUpdate)
+			console.log('checksForUpdate', this.source.data.name, checksForUpdate)
 		}
 		const diffDistance = totalDistanceForUpdate / checksForUpdate
 		for (let check = 1; check <= checksForUpdate; check += 1) {

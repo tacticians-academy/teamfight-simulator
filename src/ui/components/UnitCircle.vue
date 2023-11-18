@@ -34,11 +34,11 @@ function onInfo(event: Event) {
 <div
 	class="hex-unit hex-overlay  group" :class="!unit.isInteractable() ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
-	:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.name, unit)"
+	:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.data.apiName!, unit)"
 	@dragover="onDragOver" @drop="onDropOnUnit($event, unit)" @contextmenu="onInfo"
 >
 	<div class="circle" :style="{ backgroundImage: `url(${getIconURLFor(state, props.unit.data)})` }" :class="unit.team === 0 ? 'border-team-a' : 'border-team-b'">
-		<span class="group-hover-visible">{{ unit.name }}</span>
+		<span class="group-hover-visible">{{ unit.data.name }}</span>
 	</div>
 	<div class="stars">
 		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart" @click="onStar(starLevel)">

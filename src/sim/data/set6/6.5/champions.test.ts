@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest'
 
-import { ChampionKey } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { setSetNumber } from '#/store/store'
 

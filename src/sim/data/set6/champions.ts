@@ -1,5 +1,6 @@
-import { BonusKey, ChampionKey, DamageType } from '@tacticians-academy/academy-library'
+import { BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { SpellCalculation } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6/champions'
 
 import { state } from '#/store/store'
 
@@ -459,7 +460,7 @@ export const baseChampionEffects = {
 		},
 	},
 
-	[ChampionKey.KaiSa]: {
+	[ChampionKey.Kaisa]: {
 		cast: (elapsedMS, spell, champion) => {
 			return champion.queueMoveUnitEffect(elapsedMS, spell, {
 				target: champion,
@@ -625,7 +626,7 @@ export const baseChampionEffects = {
 
 				shielding.forEach(unit => {
 					unit.queueShield(elapsedMS, champion, {
-						id: champion.name,
+						id: champion.data.apiName,
 						type: 'barrier',
 						damageReduction: damageReductionProportion,
 						expiresAfterMS: shieldSeconds * 1000,

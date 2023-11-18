@@ -1,5 +1,6 @@
-import { BonusKey, ChampionKey } from '@tacticians-academy/academy-library'
+import { BonusKey } from '@tacticians-academy/academy-library'
 import type { ChampionSpellData } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { state } from '#/store/store'
 
@@ -489,9 +490,9 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const densestEnemyHexes = getBestDensityHexes(true, getInteractableUnitsOfTeam(champion.opposingTeam()), true, 1)
 			const farthestDenseHex = getDistanceHex(true, champion, densestEnemyHexes)
-			if (!farthestDenseHex) { console.log('ERR', champion.name, spell.name, densestEnemyHexes) }
+			if (!farthestDenseHex) { console.log('ERR', champion.data.name, spell.name, densestEnemyHexes) }
 			const projectedHex = champion.projectHexFrom(farthestDenseHex ?? champion.activeHex, true, 1)
-			if (!projectedHex) { console.log('ERR', champion.name, spell.name, farthestDenseHex) }
+			if (!projectedHex) { console.log('ERR', champion.data.name, spell.name, farthestDenseHex) }
 			return champion.queueShapeEffect(elapsedMS, spell, {
 				shape: new ShapeEffectCircle(champion, HEX_MOVE_LEAGUEUNITS),
 				expiresAfterMS: 0.5 * 1000, //TODO calculate

@@ -1,4 +1,5 @@
-import { ChampionKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { getters } from '#/store/store'
 
@@ -67,26 +68,26 @@ export const traitEffects = {
 
 	[TraitKey.Rivals]: {
 		solo: (unit, activeEffect) => {
-			if (unit.name === ChampionKey.Vi) {
+			if (unit.data.apiName === ChampionKey.Vi) {
 				const [manaReduction] = getVariables(activeEffect, 'ViManaReduction')
 				return [
 					[BonusKey.ManaReduction, manaReduction],
 				]
 			}
-			if (unit.name !== ChampionKey.Jinx) {
-				console.log('ERR', TraitKey.Rivals, unit.name)
+			if (unit.data.apiName !== ChampionKey.Jinx) {
+				console.log('ERR', TraitKey.Rivals, unit.data.name)
 			}
 		},
 		enemyDeath: (activeEffect, elapsedMS, deadEnemy, [unit]) => {
 			if (unit == null) { return }
-			if (unit?.name === ChampionKey.Jinx) {
+			if (unit.data.apiName === ChampionKey.Jinx) {
 				if (!unit.hasAssistCreditFor(deadEnemy)) {
 					return
 				}
 				const [empoweredSeconds, empoweredAS] = getVariables(activeEffect, 'JinxASDuration', 'JinxEmpoweredAS')
 				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.AttackSpeed, empoweredAS * 100, elapsedMS + empoweredSeconds * 1000])
-			} else if (unit.name !== ChampionKey.Vi) {
-				console.log('ERR', TraitKey.Rivals, unit.name)
+			} else if (unit.data.apiName !== ChampionKey.Vi) {
+				console.log('ERR', TraitKey.Rivals, unit.data.name)
 			}
 		},
 	},

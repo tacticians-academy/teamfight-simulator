@@ -1,4 +1,4 @@
-import type { AugmentGroupKey, ChampionKey, ChampionSpellMissileData, ItemKey, TraitKey } from '@tacticians-academy/academy-library'
+import type { AugmentGroupKey, ChampionSpellMissileData, ItemKey, TraitKey } from '@tacticians-academy/academy-library'
 import type { BonusKey, DamageType, SpellCalculation, TraitData, TraitEffectData } from '@tacticians-academy/academy-library'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
@@ -121,7 +121,7 @@ export const enum SpellKey {
 	StunDuration = 'StunDuration',
 }
 
-export type BonusLabelKey = AugmentGroupKey | ChampionKey | TraitKey | ItemKey | SpellKey | MutantType
+export type BonusLabelKey = AugmentGroupKey | string | TraitKey | ItemKey | SpellKey | MutantType
 
 export type BonusVariable = [key: string, value: number | null, expiresAtMS?: DOMHighResTimeStamp]
 

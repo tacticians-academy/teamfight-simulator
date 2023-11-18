@@ -29,8 +29,8 @@ function onDrag(event: DragEvent) {
 	</div>
 	<div class="flex">
 		<div
-			v-for="unit in comp.units" :key="unit.name"
-			class="sidebar-icon  -mr-1 last:mr-0" :style="{ backgroundImage: `url(${getIconURLFor(state, setData.champions.find(c => c.name === unit.name)!)})` }"
+			v-for="unit in comp.units" :key="unit.id"
+			class="sidebar-icon  -mr-1 last:mr-0" :style="{ backgroundImage: `url(${getIconURLFor(state, setData.champions.find(c => c.apiName === unit.id)!)})` }"
 		/>
 	</div>
 </div>

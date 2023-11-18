@@ -1,5 +1,6 @@
-import { ChampionKey, ItemKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
+import { ItemKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
 import type { ItemData } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { ItemEffects } from '#/sim/data/types'

@@ -1,4 +1,13 @@
+import type { ItemData } from '@tacticians-academy/academy-library'
+
 export const TESTING = process.env.NODE_ENV !== 'production'
+
+export function getItemByIdentifier(identifier: number | string | null, items: ItemData[]) {
+	if (typeof identifier === 'number') {
+		return items.find(item => item.id === identifier)
+	}
+	return items.find(item => item.apiName === identifier)
+}
 
 export function uniqueIdentifier(index: number, entity: {name: string}) {
 	return `${index}+${entity.name}`

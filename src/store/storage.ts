@@ -1,27 +1,27 @@
 import { SET_DATA } from '@tacticians-academy/academy-library'
 import type { AugmentData, SetNumber } from '@tacticians-academy/academy-library'
 
-import { DEFAULT_SET, setCompForTeam, setData, state } from '#/store/store'
+import { DEFAULT_SET, setData, setDataReactive, state } from '#/store/store'
 
 import type{ ChampionUnit } from '#/sim/ChampionUnit'
 import type { CustomComps } from '#/sim/data/types'
 import type { HexCoord, StarLevel } from '#/sim/helpers/types'
 
 export interface StorageChampion {
-	name: string
+	id: string
 	hex: HexCoord
 	starLevel: StarLevel
-	items: number[]
+	items: (number | string)[]
 	stacks?: [string, number][]
 }
 
 export const enum StorageKey {
 	Augments = 'TFTSIM_augments',
-	Comps = 'TFTSIM_comps',
+	Comps = 'TFTSIM_compsV2',
 	Mutant = 'TFTSIM_mutant',
 	StageNumber = 'TFTSIM_stage',
 	SocialiteHexes = 'TFTSIM_socialites',
-	Units = 'TFTSIM_units',
+	Units = 'TFTSIM_unitsV2',
 }
 
 export function getSetNumber(): SetNumber {
@@ -85,7 +85,7 @@ export function saveTeamAugments(set: SetNumber) {
 
 export function loadTeamAugments(set: SetNumber, activeAugments: AugmentData[]): [AugmentList, AugmentList] {
 	const json = getStorageJSON(set, StorageKey.Augments)
-	return json != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
+	return json != null && activeAugments != null && Array.isArray(json[0]) ? (json as string[][]).map(augmentNames => augmentNames.map(augmentName => activeAugments.find(augment => augment.name === augmentName) ?? null)) as [AugmentList, AugmentList] : [[null, null, null], [null, null, null]]
 }
 
 // Units
@@ -97,10 +97,10 @@ export function clearBoardStorage(set: SetNumber) {
 
 export function toStorage(units: ChampionUnit[]): StorageChampion[] {
 	return units.map(unit => ({
-		name: unit.name,
+		id: unit.data.apiName,
 		hex: unit.startHex,
 		starLevel: unit.starLevel,
-		items: unit.items.map(item => item.id),
+		items: unit.items.map(item => item.apiName ?? item.id ?? -1),
 		stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1].amount]),
 	}))
 }
@@ -116,7 +116,7 @@ export function getSavedUnits(set: SetNumber) {
 }
 
 export function saveComps(set: SetNumber) {
-	window.localStorage.setItem(keyToSet(StorageKey.Comps, set), JSON.stringify(setData.compsUser))
+	window.localStorage.setItem(keyToSet(StorageKey.Comps, set), JSON.stringify(setDataReactive.compsUser))
 }
 
 export function getSavedComps(set: SetNumber) {

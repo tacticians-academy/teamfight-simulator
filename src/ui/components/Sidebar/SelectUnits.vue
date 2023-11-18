@@ -16,7 +16,7 @@ const unitGroups = computed(() => {
 	let unitGroups: ['Supported' | 'Unimplemented', ChampionData[]][] = [['Supported', []], ['Unimplemented', []]]
 	setData.champions.forEach(champion => {
 		if (champion.teamSize === 0 || champion.stats.hp == null) { return }
-		const groupIndex = !champion.traits.length || setData.championEffects[champion.name] != null ? 0 : 1
+		const groupIndex = !champion.traits.length || setData.championEffects[champion.apiName!] != null ? 0 : 1
 		unitGroups[groupIndex][1].push(champion)
 	})
 	unitGroups = unitGroups.filter(group => group[1].length)
@@ -51,9 +51,9 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 		<div v-if="unitGroups.length > 1 || title !== 'Supported'" class="font-semibold">{{ title }}</div>
 		<div class="sidebar-icons-container">
 			<div
-				v-for="unit in group" :key="unit.name"
+				v-for="unit in group" :key="unit.apiName"
 				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
-				:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.name, null)"
+				:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.apiName!, null)"
 			>
 				<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
 			</div>

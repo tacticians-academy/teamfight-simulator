@@ -1,11 +1,11 @@
 import { TraitKey, BonusKey, COMPONENT_ITEM_IDS, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionKey, TraitEffectData } from '@tacticians-academy/academy-library'
+import type { TraitEffectData } from '@tacticians-academy/academy-library'
 
-import { getters, state } from '#/store/store'
+import { getters, setData, state } from '#/store/store'
 
 import { ChampionUnit } from '#/sim/ChampionUnit'
 
-import { getSocialiteHexesFor, INNOVATION_NAMES } from '#/sim/data/set6/utils'
+import { getSocialiteHexesFor, INNOVATION_IDS } from '#/sim/data/set6/utils'
 import type { TraitEffects } from '#/sim/data/types'
 
 import { getClosestHexAvailableTo, isInBackLines } from '#/sim/helpers/board'
@@ -15,7 +15,7 @@ import { getAttackableUnitsOfTeam, getUnitsOfTeam, getVariables } from '#/sim/he
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { MutantBonus, MutantType, StatusEffectType } from '#/sim/helpers/types'
 import type { BonusVariable, StarLevel, TeamNumber } from '#/sim/helpers/types'
-import { getBestRandomAsMax, getBestUniqueAsMax } from '#/sim/helpers/utils'
+import { getBestRandomAsMax, getBestUniqueAsMax, getItemByIdentifier } from '#/sim/helpers/utils'
 
 const BODYGUARD_DELAY_MS = 2000 //TODO experimentally determine
 
@@ -108,18 +108,18 @@ export const baseTraitEffects = {
 
 	[TraitKey.Innovator]: {
 		shouldKeepSpawn: (spawnedUnit) => {
-			return INNOVATION_NAMES.includes(spawnedUnit.name as ChampionKey)
+			return INNOVATION_IDS.includes(spawnedUnit.data.apiName)
 		},
 		onceForTeam: (activeEffect, teamNumber, units) => {
 			const [starLevelMultiplier, starLevel] = getVariables(activeEffect, 'InnovatorStarLevelMultiplier', 'InnovationStarLevel')
-			const innovationName = INNOVATION_NAMES[starLevel - 1]
-			const innovations = state.units.filter(unit => unit.team === teamNumber && INNOVATION_NAMES.includes(unit.name as ChampionKey))
-			let innovation = innovations.find(unit => unit.name === innovationName)
-			state.units = state.units.filter(unit => unit.team !== teamNumber || !INNOVATION_NAMES.includes(unit.name as ChampionKey) || unit === innovation)
-			if (!innovation || innovation.name !== innovationName) {
+			const innovationKey = INNOVATION_IDS[starLevel - 1]
+			const innovations = state.units.filter(unit => unit.team === teamNumber && INNOVATION_IDS.includes(unit.data.apiName))
+			let innovation = innovations.find(unit => unit.data.apiName === innovationKey)
+			state.units = state.units.filter(unit => unit.team !== teamNumber || !INNOVATION_IDS.includes(unit.data.apiName) || unit === innovation)
+			if (!innovation || innovation.data.apiName !== innovationKey) {
 				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [BOARD_COL_COUNT - 1, 0] : [0, state.rowsTotal - 1], state.units)
 				if (innovationHex != null) {
-					innovation = new ChampionUnit(innovationName, innovationHex, starLevel as StarLevel)
+					innovation = new ChampionUnit(innovationKey, innovationHex, starLevel as StarLevel)
 					innovation.genericReset()
 					innovation.team = teamNumber
 					state.units.push(innovation)
@@ -129,7 +129,7 @@ export const baseTraitEffects = {
 			}
 			const totalInnovatorsStarLevel = units.reduce((totalStarLevel, unit) => totalStarLevel + unit.starLevel, 0)
 			const innovationMultiplier = starLevelMultiplier * totalInnovatorsStarLevel
-			innovation.setBonusesFor(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.baseHP() * innovationMultiplier])
+			innovation.setBonusesFor(TraitKey.Innovator, [BonusKey.AttackDamage, innovation.attackDamage() * innovationMultiplier], [BonusKey.Health, innovation.baseHP * innovationMultiplier])
 		},
 	},
 
@@ -231,10 +231,11 @@ export const baseTraitEffects = {
 
 	[TraitKey.Scrap]: {
 		team: (unit, activeEffect) => {
+
 			const [amountPerComponent] = getVariables(activeEffect, 'HPShieldAmount')
 			const amount = getUnitsOfTeam(unit.team)
 				.reduce((unitAcc, unit) => {
-					return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (COMPONENT_ITEM_IDS.includes(item.id) ? 1 : 2), 0)
+					return unitAcc + unit.items.reduce((itemAcc, item) => itemAcc + amountPerComponent * (getItemByIdentifier(item.apiName ?? item.id, setData.componentItems) ? 1 : 2), 0)
 				}, 0)
 			unit.queueShield(0, unit, { amount })
 		},

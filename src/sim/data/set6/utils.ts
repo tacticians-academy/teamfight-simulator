@@ -1,4 +1,5 @@
-import { AugmentGroupKey, ChampionKey, TraitKey } from '@tacticians-academy/academy-library'
+import { AugmentGroupKey, TraitKey } from '@tacticians-academy/academy-library'
+import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { getters, state } from '#/store/store'
 
@@ -9,7 +10,7 @@ import { getVariables } from '#/sim/helpers/effectUtils'
 import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord, TeamNumber } from '#/sim/helpers/types'
 
-export const INNOVATION_NAMES = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
+export const INNOVATION_IDS: string[] = [ChampionKey.MalzaharVoidling, ChampionKey.Tibbers, ChampionKey.HexTechDragon]
 
 export function getSocialiteHexesFor(team: TeamNumber): [statMultiplier: number, hexes: HexCoord[]][] {
 	const teamAugments = getters.activeAugmentEffectsByTeam.value[team]

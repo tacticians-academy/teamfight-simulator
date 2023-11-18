@@ -12,9 +12,9 @@ import { StatusEffectType } from '#/sim/helpers/types'
 import type { DamageModifier, HexCoord, StarLevel, TeamNumber } from '#/sim/helpers/types'
 import { getArrayValueCounts, getBestRandomAsMax, getBestSortedAsMax, getBestUniqueAsMax, randomItem } from '#/sim/helpers/utils'
 
-export function spawnUnit(fromUnit: ChampionUnit, name: string, starLevel: StarLevel) {
+export function spawnUnit(fromUnit: ChampionUnit, apiName: string, starLevel: StarLevel) {
 	const hex = fromUnit.activeHex
-	const spawn = new ChampionUnit(name, getClosestHexAvailableTo(hex, state.units) ?? hex, starLevel)
+	const spawn = new ChampionUnit(apiName, getClosestHexAvailableTo(hex, state.units) ?? hex, starLevel)
 	spawn.wasSpawnedDuringFight = true
 	spawn.genericReset()
 	spawn.team = fromUnit.team
@@ -183,7 +183,7 @@ export function spawnClones(cloneCount: number, augment: AugmentData, units: Cha
 	if (bestUnit) {
 		const [cloneHealth] = getVariables(augment, 'CloneHealth')
 		for (let index = 0; index < cloneCount; index += 1) {
-			const clone = spawnUnit(bestUnit, bestUnit.name, bestUnit.starLevel)
+			const clone = spawnUnit(bestUnit, bestUnit.data.apiName, bestUnit.starLevel)
 			clone.health = cloneHealth
 			clone.healthMax = cloneHealth
 			clone.traits = [] //TODO verify what bonuses apply to clones

@@ -1,10 +1,9 @@
 import { AugmentGroupKey, TraitKey, BonusKey, DamageType } from '@tacticians-academy/academy-library'
-import type { ChampionKey } from '@tacticians-academy/academy-library'
 
 import { getters, state } from '#/store/store'
 
 import type { AugmentEffects } from '#/sim/data/types'
-import { getUnitsInSocialiteHexes, INNOVATION_NAMES } from '#/sim/data/set6/utils'
+import { getUnitsInSocialiteHexes, INNOVATION_IDS } from '#/sim/data/set6/utils'
 import { applyChemtech } from '#/sim/data/set6/traits'
 
 import { applyGrievousBurn, checkCooldownFor, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, spawnClones } from '#/sim/helpers/effectUtils'
@@ -264,7 +263,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.SelfRepair]: {
 		allyDeath: async (augment, elapsedMS, dead, source) => {
-			if (!INNOVATION_NAMES.includes(dead.name as ChampionKey)) {
+			if (!INNOVATION_IDS.includes(dead.data.apiName)) {
 				return
 			}
 			if (getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Innovator).length) {

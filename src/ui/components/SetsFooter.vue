@@ -5,7 +5,7 @@ import type { SetNumber } from '@tacticians-academy/academy-library'
 
 import { DEFAULT_SET, state, setSetNumber } from '#/store/store'
 
-const selectableSetNumbers: SetNumber[] = [1, 6, 6.5, 7] //SAMPLE
+const selectableSetNumbers: SetNumber[] = [1, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10] //SAMPLE
 if (!selectableSetNumbers.includes(DEFAULT_SET)) {
 	selectableSetNumbers.push(DEFAULT_SET)
 }
