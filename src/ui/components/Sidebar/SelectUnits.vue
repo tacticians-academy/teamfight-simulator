@@ -5,7 +5,7 @@ import { computed, ref } from 'vue'
 
 import type { ChampionData } from '@tacticians-academy/academy-library'
 
-import { useStore, state, setData } from '#/store/store'
+import { useStore, state, setData, setDataReactive } from '#/store/store'
 
 import type { CustomComps } from '#/sim/data/types'
 import { getIconURLFor } from '#/ui/helpers/utils'
@@ -33,7 +33,7 @@ function onToggle(name: SectionName) {
 
 const compsByGroup = computed<[string, CustomComps][]>(() => [
 	['Defaults', setData.compsDefault],
-	['Yours', setData.compsUser],
+	['Yours', setDataReactive.compsUser],
 ])
 </script>
 
@@ -65,7 +65,7 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 		<div v-if="Object.keys(comps).length" class="space-y-1">
 			<div class="mt-1 mx-1 text-secondary uppercase text-sm">{{ title }}:</div>
 			<template v-for="(comp, name) in comps" :key="name">
-				<SelectUnitsComp :name="name" :comp="comp" class="mx-1" />
+				<SelectUnitsComp :name="name" :comp="comp" :canDelete="title !== 'Defaults'" class="mx-1" />
 			</template>
 		</div>
 	</template>

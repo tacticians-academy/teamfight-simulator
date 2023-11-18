@@ -8,7 +8,7 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, ref } from 'vue'
 
-import { useStore, getSocialiteHexStrength, setSocialiteHex, setData } from '#/store/store'
+import { useStore, getSocialiteHexStrength, setSocialiteHex, setDataReactive } from '#/store/store'
 import { saveComps } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
@@ -67,7 +67,7 @@ function onSaveComp() {
 	const name = window.prompt('Enter a name for this comp:')?.trim()
 	if (name != null && name.length) {
 		const units = toStorage(getUnitsOfTeam(1))
-		setData.compsUser[name] = {
+		setDataReactive.compsUser[name] = {
 			augments: state.augmentsByTeam[1].map(augmentData => augmentData?.name ?? null),
 			units,
 		}
@@ -75,7 +75,7 @@ function onSaveComp() {
 	}
 }
 
-const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).length < 1)
+const canSaveComp = computed(() => state.units.filter(u => u.team === 1).length > 1)
 </script>
 
 <template>
@@ -94,7 +94,7 @@ const hasCompToSave = computed(() => state.units.filter(u => u.team === 1).lengt
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</template>
-			<button v-if="!state.didStart" :disabled="hasCompToSave" class="hex team-b" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
+			<button v-if="!state.didStart" :disabled="!canSaveComp" class="hex team-b" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
 				<div class="hex-outline  bg-primary text-secondary  flex justify-center items-center">
 					Save<br>Comp
 				</div>

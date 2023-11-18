@@ -45,11 +45,13 @@ export const setData = shallowReactive({
 	componentItems: [] as ItemData[],
 	spatulaItems: [] as ItemData[],
 	compsDefault: {} as CustomComps,
-	compsUser: {} as CustomComps,
 	augmentEffects: {} as AugmentEffects,
 	championEffects: {} as ChampionEffects,
 	itemEffects: {} as ItemEffects,
 	traitEffects: {} as TraitEffects,
+})
+export const setDataReactive = reactive({
+	compsUser: {} as CustomComps,
 })
 
 const setNumber = getSetNumber()
@@ -107,7 +109,7 @@ export async function setSetNumber(set: SetNumber) {
 		setData.spatulaItems = spatulaItems ?? []
 		setData.traits = traits ?? []
 		setData.compsDefault = defaultComps ?? {}
-		setData.compsUser = getSavedComps(set)
+		setDataReactive.compsUser = getSavedComps(set)
 		setData.augmentEffects = augmentEffects ?? {}
 		setData.championEffects = championEffects ?? {}
 		setData.itemEffects = itemEffects ?? {}
