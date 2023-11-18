@@ -2,6 +2,7 @@
 import { defineProps } from 'vue'
 
 import type { ProjectileEffect } from '#/sim/effects/ProjectileEffect'
+import type { HexCoord } from '#/sim/helpers/types'
 
 const props = defineProps<{
 	effect: ProjectileEffect
@@ -11,7 +12,7 @@ const props = defineProps<{
 <template>
 <div
 	class="projectile hex-overlay" :class="effect.source.team === 0 ? 'bg-team-a' : 'bg-team-b'"
-	:style="{ left: `${effect.coord[0] * 100}%`, top: `${effect.coord[1] * 100}%`, width: `${effect.width * 100}%`, height: `${effect.width * 100}%`, opacity: effect.opacity ?? 1 }"
+	:style="{ left: `${(effect.coord as unknown as HexCoord)[0] * 100}%`, top: `${(effect.coord as unknown as HexCoord)[1] * 100}%`, width: `${effect.width * 100}%`, height: `${effect.width * 100}%`, opacity: effect.opacity ?? 1 }"
 />
 </template>
 

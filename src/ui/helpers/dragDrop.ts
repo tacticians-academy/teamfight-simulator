@@ -1,10 +1,8 @@
-import { loadStorageUnits, useStore, setData, setCompForTeam } from '#/store/store'
+import { useStore, setCompForTeam } from '#/store/store'
 
-import { getInverseHex } from '#/sim/helpers/hexes'
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { CustomComp } from '#/sim/data/types'
 import type { HexCoord } from '#/sim/helpers/types'
-import { saveTeamAugments, saveUnits } from '#/store/storage'
 
 const { state, copyItem, moveItem, dropUnit } = useStore()
 

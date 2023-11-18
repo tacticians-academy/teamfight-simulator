@@ -99,9 +99,9 @@ export const enum MutantBonus {
 	VoidborneExecuteThreshold = 'ExecuteThreshold',
 	AdrenalineAD = 'AD',
 	SynapticManaCost = 'ManaCost',
-	MetamorphosisADAP = 'ADAP',
+	MetamorphosisADAP = 'ADAP', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 	VoidborneTrueDamagePercent = 'TrueDamagePercent',
-	CyberAD = 'AD',
+	CyberAD = 'AD', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 	AdrenalineProcChance = 'ProcChance',
 	SynapticAP = 'AP',
 }
