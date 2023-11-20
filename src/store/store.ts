@@ -44,6 +44,11 @@ export const setData = shallowReactive({
 	completedItems: [] as ItemData[],
 	componentItems: [] as ItemData[],
 	spatulaItems: [] as ItemData[],
+	shadowItems: [] as ItemData[],
+	radiantItems: [] as ItemData[],
+	ornnItems: [] as ItemData[],
+	shimmerscaleItems: [] as ItemData[],
+	supportItems: [] as ItemData[],
 	compsDefault: {} as CustomComps,
 	augmentEffects: {} as AugmentEffects,
 	championEffects: {} as ChampionEffects,
@@ -92,7 +97,7 @@ export async function setSetNumber(set: SetNumber) {
 		const { traitEffects } = await importTraitEffects(set)
 
 		const { champions } = await importChampions(set)
-		const { currentItems, completedItems, componentItems, spatulaItems } = await importItems(set)
+		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, spatulaItems } = await importItems(set)
 		const { traits } = await importTraits(set)
 
 		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
@@ -103,10 +108,15 @@ export async function setSetNumber(set: SetNumber) {
 		setData.activeAugments = activeAugments ?? []
 		setData.emptyImplementationAugments = emptyImplementationAugments ?? []
 		setData.champions = champions ?? []
-		setData.currentItems = currentItems ?? []
-		setData.completedItems = completedItems ?? []
-		setData.componentItems = componentItems ?? []
-		setData.spatulaItems = spatulaItems ?? []
+		setData.currentItems = currentItems
+		setData.completedItems = completedItems
+		setData.componentItems = componentItems
+		setData.spatulaItems = spatulaItems
+		setData.shadowItems = shadowItems
+		setData.radiantItems = radiantItems
+		setData.ornnItems = ornnItems
+		setData.shimmerscaleItems = shimmerscaleItems
+		setData.supportItems = supportItems
 		setData.traits = traits ?? []
 		setData.compsDefault = defaultComps ?? {}
 		setDataReactive.compsUser = getSavedComps(set)
