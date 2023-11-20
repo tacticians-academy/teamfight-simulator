@@ -69,6 +69,9 @@ const searchAugments = computed(() => {
 	const searched = searchText.value.trim().toLowerCase().replaceAll(/\s+/g, ' ')
 	if (searched.length <= 1) return undefined
 	const searchWords = searched.split(' ')
+	if (searchWords.length > 1) {
+		searchWords.push(searchWords.join(''))
+	}
 	const augmentScores = setData.activeAugments
 		.map(augment => {
 			let score = getSearchScore(searched, searchWords, augment.name)
