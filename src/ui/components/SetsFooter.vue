@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import '#/ui/assets/main.postcss'
 
-import type { SetNumber } from '@tacticians-academy/academy-library'
+import { SET_NUMBERS, type SetNumber } from '@tacticians-academy/academy-library'
 
-import { DEFAULT_SET, state, setSetNumber } from '#/store/store'
+import { state, setSetNumber } from '#/store/store'
 
-const selectableSetNumbers: SetNumber[] = [1, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10] //SAMPLE
-if (!selectableSetNumbers.includes(DEFAULT_SET)) {
-	selectableSetNumbers.push(DEFAULT_SET)
-}
+const implementedSetNumbers: SetNumber[] = [6.5]
 
 function onSetNumber(set: SetNumber) {
 	setSetNumber(set)
@@ -17,11 +14,11 @@ function onSetNumber(set: SetNumber) {
 
 <template>
 <footer class="w-fit m-auto relative z-10">
-	<div class="flex justify-center items-center space-x-2">
-		<span class="text-tertiary uppercase font-light">set</span>
+	<div class="flex justify-center items-center">
+		<span class="text-tertiary uppercase font-light mr-1 max-lg:text-xs">set</span>
 		<button
-			v-for="set in selectableSetNumbers" :key="set"
-			class="w-8 h-8 rounded-lg font-bold" :class="state.setNumber === set ? 'bg-quaternary text-inverted' : 'text-tertiary border-2 border-quaternary'"
+			v-for="set in SET_NUMBERS" :key="set"
+			class="set-button" :class="state.setNumber === set ? 'bg-quaternary text-inverted' : 'text-tertiary' + (!implementedSetNumbers.includes(set) ? ' opacity-50' : '')"
 			:disabled="state.didStart || !state.loadedSet"
 			@click="onSetNumber(set)"
 		>
@@ -41,5 +38,9 @@ function onSetNumber(set: SetNumber) {
 <style scoped lang="postcss">
 footer {
 	margin-top: -11vw;
+}
+.set-button {
+	@apply w-8 h-8 font-semibold rounded-lg;
+	@apply max-lg:w-5 max-lg:h-5 max-lg:text-xs max-lg:rounded-md;
 }
 </style>

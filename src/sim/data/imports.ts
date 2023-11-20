@@ -15,9 +15,10 @@ export async function importDefaultComps(set: SetNumber) {
 
 export async function importAugmentEffects(set: SetNumber) {
 	type AugmentEffects = typeof import('./set6/6.0/augments.js')
-	if (set === 1) {
+	if (set < 6) {
 		return {} as AugmentEffects
 	}
+
 	if (set === 6) {
 		return await import('./set6/6.0/augments.js')
 	}
@@ -33,6 +34,9 @@ export async function importAugmentEffects(set: SetNumber) {
 export async function importChampionEffects(set: SetNumber) {
 	type ChampionEffects = typeof import('./set6/6.0/champions.js')
 	if (set === 1) {
+		return {} as ChampionEffects
+	}
+	if (set < 6) {
 		return {} as ChampionEffects
 	}
 	if (set === 6) {
@@ -53,6 +57,9 @@ export async function importItemEffects(set: SetNumber) {
 		if (set === 1) {
 			return {} as ItemEffects
 		}
+		if (set < 6) {
+			return {} as ItemEffects
+		}
 		if (set === 6) {
 			return await import('./set6/6.0/items.js')
 		}
@@ -71,6 +78,9 @@ export async function importItemEffects(set: SetNumber) {
 export async function importTraitEffects(set: SetNumber) {
 	type TraitEffects = typeof import('./set6/6.0/traits.js')
 	if (set === 1) {
+		return {} as TraitEffects
+	}
+	if (set < 6) {
 		return {} as TraitEffects
 	}
 	if (set === 6) {
