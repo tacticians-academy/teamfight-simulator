@@ -43,7 +43,7 @@ export const setData = shallowReactive({
 	currentItems: [] as ItemData[],
 	completedItems: [] as ItemData[],
 	componentItems: [] as ItemData[],
-	spatulaItems: [] as ItemData[],
+	emblemItems: [] as ItemData[],
 	shadowItems: [] as ItemData[],
 	radiantItems: [] as ItemData[],
 	ornnItems: [] as ItemData[],
@@ -97,7 +97,7 @@ export async function setSetNumber(set: SetNumber) {
 		const { traitEffects } = await importTraitEffects(set)
 
 		const { champions } = await importChampions(set)
-		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, spatulaItems } = await importItems(set)
+		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
 		const { traits } = await importTraits(set)
 
 		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
@@ -111,7 +111,7 @@ export async function setSetNumber(set: SetNumber) {
 		setData.currentItems = currentItems
 		setData.completedItems = completedItems
 		setData.componentItems = componentItems
-		setData.spatulaItems = spatulaItems
+		setData.emblemItems = emblemItems
 		setData.shadowItems = shadowItems
 		setData.radiantItems = radiantItems
 		setData.ornnItems = ornnItems

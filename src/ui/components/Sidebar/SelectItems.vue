@@ -10,7 +10,11 @@ import { getIconURLFor } from '#/ui/helpers/utils'
 const { startDragging } = useStore()
 
 const itemGroups = computed(() => {
-	const itemGroups: [string, ItemData[]][] = [['Combined', setData.completedItems], ['Emblems', setData.spatulaItems], ['Components', setData.componentItems]]
+	const itemGroups: [string, ItemData[]][] = [
+		['Combined', setData.completedItems],
+		[state.setNumber > 1 ? 'Emblems' : 'Spatula', setData.emblemItems.filter(item => item.name !== 'Force of Nature')],
+		['Components', setData.componentItems],
+	]
 	if (state.setNumber === 4.5 || (setData.ornnItems.length && state.setNumber >= 6)) {
 		itemGroups.splice(2, 0, [state.setNumber >= 9.5 ? 'Artifacts' : 'Ornn', setData.ornnItems])
 	}
