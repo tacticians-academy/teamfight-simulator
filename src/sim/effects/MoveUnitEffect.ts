@@ -70,9 +70,8 @@ export class MoveUnitEffect extends GameEffect {
 	}
 
 	start = () => {
-		if (!this.target.isInteractable()) {
-			return
-		}
+		if (!this.target.isInteractable()) return
+
 		const spellShield = this.target.consumeSpellShield()
 		if (spellShield == null) {
 			const destination = this.idealDestination(this.target)

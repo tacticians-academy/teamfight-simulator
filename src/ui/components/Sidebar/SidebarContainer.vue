@@ -33,9 +33,8 @@ function onFight() {
 
 function onDrop(event: DragEvent) {
 	const dragUnit = state.dragUnit
-	if (!dragUnit) {
-		return
-	}
+	if (!dragUnit) return
+
 	const dragType = getDragType(event)
 	if (dragType === 'unit') {
 		deleteUnit(dragUnit.startHex)

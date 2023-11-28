@@ -36,6 +36,7 @@ const augmentGroups = computed(() => {
 	const augmentGroups: [string, AugmentData[]][] = [['Supported', []], ['Unimplemented', []], ['Inert', []]]
 	setData.activeAugments.forEach(augment => {
 		if (augment.tier - 1 !== selectAugment.value?.[0]) return
+
 		const groupID = augment.groupID as AugmentGroupKey
 		const index = setData.emptyImplementationAugments.includes(groupID) || groupID.endsWith('Crest') || groupID.endsWith('Crown') ? 2 : (setData.augmentEffects[groupID] || groupID.endsWith('Heart') || groupID.endsWith('Soul') ? 0 : 1)
 		augmentGroups[index][1].push(augment)
@@ -67,7 +68,9 @@ function getSearchScore(searchWhole: string, searchWords: string[], testAgainst:
 
 const searchAugments = computed(() => {
 	const searched = searchText.value.trim().toLowerCase().replaceAll(/\s+/g, ' ')
-	if (searched.length <= 1) return undefined
+	if (searched.length <= 1) {
+		return undefined
+	}
 	const searchWords = searched.split(' ')
 	if (searchWords.length > 1) {
 		searchWords.push(searchWords.join(''))

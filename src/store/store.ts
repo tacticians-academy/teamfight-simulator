@@ -331,6 +331,7 @@ function getItemFrom(name: string) {
 
 function repositionUnit(unit: ChampionUnit, hex: HexCoord) {
 	if (isSameHex(unit.startHex, hex)) return
+
 	unit.startHex = [...hex]
 	unit.updateTeam()
 }
@@ -401,9 +402,8 @@ const store = {
 	},
 	copyItem(itemName: string, champion: ChampionUnit) {
 		const item = getItemFrom(itemName)
-		if (!item) {
-			return
-		}
+		if (!item) return
+
 		if (store._addItem(item, champion)) {
 			resetUnitsAfterUpdating()
 		}

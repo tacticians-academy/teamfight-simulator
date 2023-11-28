@@ -209,7 +209,8 @@ export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], i
 	if (!isMaximum) {
 		densityBoard.forEach((rowScores, rowIndex) => {
 			rowScores.forEach((rowColScore, colIndex) => {
-				if (rowColScore === 0) { return }
+				if (rowColScore === 0) return
+
 				const hex: HexCoord = [colIndex, rowIndex]
 				if (rowColScore < bestHexValue) {
 					bestHexValue = rowColScore

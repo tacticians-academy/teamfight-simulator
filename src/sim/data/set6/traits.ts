@@ -51,9 +51,8 @@ export const baseTraitEffects = {
 		disableDefaultVariables: true,
 		enemyDeath: (activeEffect, elapsedMS, dead, traitUnits) => {
 			const takedownChallengers = traitUnits.filter(unit => unit.hasAssistCreditFor(dead))
-			if (!takedownChallengers.length) {
-				return
-			}
+			if (!takedownChallengers.length) return
+
 			const [durationSeconds, bonusAS] = getVariables(activeEffect, 'BurstDuration', 'BonusAS')
 			const bonusMoveSpeed = 500 //TODO determine
 			const expiresAtMS = elapsedMS + durationSeconds * 1000

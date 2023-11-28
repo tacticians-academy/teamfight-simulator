@@ -31,8 +31,9 @@ export function getBestSortedAsMax<T>(isMaximum: boolean, entries: T[], valueFn:
 	const results: [number, T][] = []
 	entries.forEach(entry => {
 		const value = valueFn(entry)
-		if (value == null) { return }
-		results.push([value, entry])
+		if (value != null) {
+			results.push([value, entry])
+		}
 	})
 	return results
 		.sort((a, b) => (b[0] - a[0]) * (isMaximum ? 1 : -1))
@@ -44,7 +45,8 @@ export function getBestUniqueAsMax<T>(isMaximum: boolean, entries: T[], valueFn:
 	let bestResult: T | undefined
 	entries.forEach(entry => {
 		const value = valueFn(entry)
-		if (value == null) { return }
+		if (value == null) return
+
 		if (bestValue == null || (isMaximum ? value > bestValue : value < bestValue)) {
 			bestValue = value
 			bestResult = entry
@@ -58,7 +60,8 @@ export function getBestArrayAsMax<T>(isMaximum: boolean, entries: T[], valueFn: 
 	let bestResults: T[] = []
 	entries.forEach(entry => {
 		const value = valueFn(entry)
-		if (value == null) { return }
+		if (value == null) return
+
 		if (bestValue == null || (isMaximum ? value > bestValue : value < bestValue)) {
 			bestValue = value
 			bestResults = [entry]

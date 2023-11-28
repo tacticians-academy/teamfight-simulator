@@ -20,6 +20,7 @@ export const traitEffects = {
 		innate: (unit, innateEffect) => {
 			const key = TraitKey.Debonair
 			if (!unit.hasInnateTrait(key)) return // Only innate Debonairs can be VIP
+
 			unit.initStack(key, {
 				icon: '💎',
 				isBoolean: true,
@@ -79,11 +80,11 @@ export const traitEffects = {
 			}
 		},
 		enemyDeath: (activeEffect, elapsedMS, deadEnemy, [unit]) => {
-			if (unit == null) { return }
+			if (unit == null) return
+
 			if (unit.data.apiName === ChampionKey.Jinx) {
-				if (!unit.hasAssistCreditFor(deadEnemy)) {
-					return
-				}
+				if (!unit.hasAssistCreditFor(deadEnemy)) return
+
 				const [empoweredSeconds, empoweredAS] = getVariables(activeEffect, 'JinxASDuration', 'JinxEmpoweredAS')
 				unit.setBonusesFor(TraitKey.Rivals, [BonusKey.AttackSpeed, empoweredAS * 100, elapsedMS + empoweredSeconds * 1000])
 			} else if (unit.data.apiName !== ChampionKey.Vi) {

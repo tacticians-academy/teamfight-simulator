@@ -34,7 +34,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.ArmorPlating]: {
 		hpThreshold: (augment, elapsedMS, unit) => {
-			if (!unit.hasTrait(TraitKey.Colossus)) { return }
+			if (!unit.hasTrait(TraitKey.Colossus)) return
+
 			const [invulnerabilitySeconds] = getVariables(augment, 'InvulnDuration')
 			unit.applyStatusEffect(elapsedMS, StatusEffectType.invulnerable, invulnerabilitySeconds * 1000)
 		},
@@ -52,7 +53,7 @@ export const baseAugmentEffects = {
 	[AugmentGroupKey.StandBehindMe]: {
 		apply: (augment, team, units) => {
 			const synergy = getters.synergiesByTeam.value[team].find(({ key, activeEffect }) => !!activeEffect && key === TraitKey.Bodyguard)
-			if (!synergy?.activeEffect) { return }
+			if (!synergy?.activeEffect) return
 
 			const [bodyguardArmor] = getVariables(synergy.activeEffect, 'BonusArmor')
 			const [bodyguardPercent, standBehindPercent] = getVariables(augment, 'DefenseBonus', 'DefensePercent')
@@ -85,9 +86,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.CelestialBlessing]: {
 		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType, takingDamage }) => {
-			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) {
-				return
-			}
+			if (!isOriginalSource || (sourceType !== DamageSourceType.attack && sourceType !== DamageSourceType.spell)) return
+
 			const [omnivamp, maxShield] = getVariables(augment, 'Omnivamp', 'MaxShield')
 			const heal = takingDamage * omnivamp / 100
 			const overheal = holder.gainHealth(elapsedMS, holder, heal, true)
@@ -109,7 +109,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.ChemicalOverload]: {
 		allyDeath: (augment, elapsedMS, dead, source) => {
-			if (!dead.hasTrait(TraitKey.Chemtech)) { return }
+			if (!dead.hasTrait(TraitKey.Chemtech)) return
 
 			const [hpPercent] = getVariables(augment, BonusKey.Health)
 			dead.queueHexEffect(elapsedMS, undefined, {
@@ -121,7 +121,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.Cutthroat]: {
 		damageDealtByHolder: (augment, elapsedMS, target, holder, damage) => {
-			if (!holder.hasTrait(TraitKey.Assassin)) { return }
+			if (!holder.hasTrait(TraitKey.Assassin)) return
+
 			if (holder.basicAttackCount === 1) {
 				const [manaReductionPercent] = getVariables(augment, 'ManaReavePercent')
 				target.addBonuses(SpellKey.ManaReave, [BonusKey.ManaReductionPercent, -manaReductionPercent])
@@ -150,7 +151,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.EnGarde]: {
 		damageDealtByHolder: (augment, elapsedMS, target, holder, damage) => {
-			if (!holder.hasTrait(TraitKey.Challenger)) { return }
+			if (!holder.hasTrait(TraitKey.Challenger)) return
+
 			if (!target.hitBy.has(holder.instanceID)) {
 				const [disarmSeconds] = getVariables(augment, 'DisarmDuration')
 				target.applyStatusEffect(elapsedMS, StatusEffectType.disarm, disarmSeconds * 1000)
@@ -241,7 +243,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.OneForAll]: {
 		allyDeath: (augment, elapsedMS, dead, source) => {
-			if (!dead.hasTrait(TraitKey.Syndicate)) { return }
+			if (!dead.hasTrait(TraitKey.Syndicate)) return
+
 			const [stats] = getVariables(augment, 'Stats')
 			getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Syndicate).forEach(unit => {
 				unit.addBonuses(AugmentGroupKey.OneForAll, [BonusKey.AttackDamage, stats], [BonusKey.AbilityPower, stats])
@@ -263,9 +266,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.SelfRepair]: {
 		allyDeath: async (augment, elapsedMS, dead, source) => {
-			if (!INNOVATION_IDS.includes(dead.data.apiName)) {
-				return
-			}
+			if (!INNOVATION_IDS.includes(dead.data.apiName)) return
+
 			if (getAliveUnitsOfTeamWithTrait(dead.team, TraitKey.Innovator).length) {
 				const [resurrectSeconds] = getVariables(augment, 'RepairDuration')
 				dead.resurrecting = true
@@ -313,7 +315,8 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.SmokeBomb]: {
 		hpThreshold: (augment, elapsedMS, unit) => {
-			if (!unit.hasTrait(TraitKey.Assassin)) { return }
+			if (!unit.hasTrait(TraitKey.Assassin)) return
+
 			const stealthMS = 1 * 1000 //TODO experimentally determine
 			unit.clearNegativeEffects()
 			unit.applyStatusEffect(elapsedMS, StatusEffectType.stealth, stealthMS)
@@ -345,7 +348,7 @@ export const baseAugmentEffects = {
 
 	[AugmentGroupKey.SpellBlade]: {
 		cast: (augment, elapsedMS, unit) => {
-			if (!unit.hasTrait(TraitKey.Arcanist)) { return }
+			if (!unit.hasTrait(TraitKey.Arcanist)) return
 
 			const [apMultiplier] = getVariables(augment, 'PercentAbilityPower')
 			unit.empoweredAutos.add({

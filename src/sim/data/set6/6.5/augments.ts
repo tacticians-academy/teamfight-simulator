@@ -98,9 +98,8 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Disintegrator]: {
 		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType }) => {
-			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
-				return
-			}
+			if (!isOriginalSource || sourceType !== DamageSourceType.attack) return
+
 			const [maxHPPercent] = getVariables(augment, 'MaxHPDamage')
 			const bonusCalculation = createDamageCalculation(AugmentGroupKey.Disintegrator, maxHPPercent, DamageType.magic, BonusKey.Health, true, 0.01)
 			target.takeBonusDamage(elapsedMS, holder, bonusCalculation, false)
@@ -131,7 +130,8 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Hexnova]: {
 		hpThreshold: (augment, elapsedMS, unit) => {
-			if (!unit.hasTrait(TraitKey.Hextech)) { return }
+			if (!unit.hasTrait(TraitKey.Hextech)) return
+
 			const [manaReave] = getVariables(augment, 'PercentManaReave')
 			const hexRange = 2 //NOTE hardcoded
 			unit.queueHexEffect(elapsedMS, undefined, {
@@ -174,7 +174,8 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.LudensEcho]: {
 		onFirstEffectTargetHit: (augment, elapsedMS, target, source, { damageType }) => {
-			if (damageType !== DamageType.magic) { return }
+			if (damageType !== DamageType.magic) return
+
 			const magicDamage = getFirstVariableOf(augment, `MagicDamage${getStageScalingIndex() + 1}`, 'MagicDamage')
 			const targets = [target]
 			const nearestToTarget = getDistanceUnitOfTeam(false, target, target.team)
@@ -212,10 +213,9 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.Overpower]: {
 		damageDealtByHolder: (augment, elapsedMS, target, holder, { isOriginalSource, sourceType }) => {
-			if (!holder.hasTrait(TraitKey.Striker)) { return }
-			if (!isOriginalSource || sourceType !== DamageSourceType.attack) {
-				return
-			}
+			if (!holder.hasTrait(TraitKey.Striker)) return
+			if (!isOriginalSource || sourceType !== DamageSourceType.attack) return
+
 			const [critChance] = getVariables(augment, BonusKey.CritChance)
 			const id = AugmentGroupKey.Overpower
 			if (holder.basicAttackCount % 3 === 0 && !Array.from(holder.empoweredAutos).some(empoweredAuto => empoweredAuto.id === id)) {
@@ -280,7 +280,8 @@ export const augmentEffects = {
 
 	[AugmentGroupKey.TrueJustice]: {
 		modifyDamageByHolder: (augment, target, source, damage) => {
-			if (!source.hasTrait(TraitKey.Enforcer)) { return }
+			if (!source.hasTrait(TraitKey.Enforcer)) return
+
 			const [thresholdPercent] = getVariables(augment, 'HPThreshold')
 			if (target.healthProportion() < thresholdPercent / 100) {
 				damage.damageType = DamageType.true

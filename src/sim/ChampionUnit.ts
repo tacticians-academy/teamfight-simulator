@@ -122,6 +122,7 @@ export class ChampionUnit {
 	updateTeam() {
 		const newTeam = this.startHex[1] < state.rowsPerSide ? 0 : 1
 		if (this.team === newTeam) return
+
 		this.team = newTeam
 		Object.keys(this.stacks).forEach(key => delete this.stacks[key as BonusLabelKey])
 	}
@@ -254,18 +255,16 @@ export class ChampionUnit {
 	}
 
 	updateAttack(elapsedMS: DOMHighResTimeStamp) {
-		if (this.target == null) {
-			return
-		}
+		if (this.target == null) return
+
 		let attackSpeed = this.attackSpeed()
 		const attackSpeedSlow = this.getStatusEffect(elapsedMS, StatusEffectType.attackSpeedSlow)
 		if (attackSpeedSlow != null) {
 			attackSpeed *= 1 - attackSpeedSlow / 100
 		}
 		const msBetweenAttacks = 1000 / attackSpeed
-		if (elapsedMS < this.attackStartAtMS + msBetweenAttacks) {
-			return
-		}
+		if (elapsedMS < this.attackStartAtMS + msBetweenAttacks) return
+
 		if (this.attackStartAtMS <= 0) {
 			this.attackStartAtMS = elapsedMS
 		} else {
@@ -451,9 +450,8 @@ export class ChampionUnit {
 	addBleedIfStrongerThan(sourceID: string, bleed: BleedData) {
 		const oldBleed = this.getBleed(sourceID)
 		if (oldBleed) {
-			if (oldBleed.remainingIterations >= bleed.remainingIterations) {
-				return
-			}
+			if (oldBleed.remainingIterations >= bleed.remainingIterations) return
+
 			this.bleeds.delete(oldBleed)
 		}
 		this.bleeds.add({...bleed})
@@ -605,12 +603,9 @@ export class ChampionUnit {
 		return undefined
 	}
 	applyStatusEffect(elapsedMS: DOMHighResTimeStamp, effectType: StatusEffectType, durationMS: DOMHighResTimeStamp, amount: number = 1) {
-		if (effectType === StatusEffectType.stunned && this.isUnstoppable()) {
-			return
-		}
-		if (this.statusEffects.ccImmune.active && CC_STATUS_EFFECTS.includes(effectType)) {
-			return
-		}
+		if (effectType === StatusEffectType.stunned && this.isUnstoppable()) return
+		if (this.statusEffects.ccImmune.active && CC_STATUS_EFFECTS.includes(effectType)) return
+
 		if (effectType === StatusEffectType.unstoppable) {
 			this.statusEffects.stunned.active = false
 		} else if (effectType === StatusEffectType.ccImmune) {
@@ -662,7 +657,8 @@ export class ChampionUnit {
 
 	postCast(elapsedMS: DOMHighResTimeStamp, isInitialCast: boolean) {
 		state.units.forEach(unit => {
-			if (unit === this) { return }
+			if (unit === this) return
+
 			unit.items.forEach((item, index) => {
 				const effectFn = setData.itemEffects[item.name]?.castWithinHexRange
 				if (effectFn) {
@@ -752,9 +748,8 @@ export class ChampionUnit {
 		this.setMana(this.mana + amount)
 	}
 	gainMana(elapsedMS: DOMHighResTimeStamp, amount: number) {
-		if (elapsedMS < this.manaLockUntilMS) {
-			return
-		}
+		if (elapsedMS < this.manaLockUntilMS) return
+
 		this.addMana(amount)
 	}
 
@@ -919,9 +914,8 @@ export class ChampionUnit {
 			this.shields
 				.filter(shield => shield.activated === true && shield.type !== 'spellShield')
 				.forEach(shield => {
-					if (shield.amount == null || healthDamage <= 0) {
-						return
-					}
+					if (shield.amount == null || healthDamage <= 0) return
+
 					const protectingDamage = Math.min(shield.amount, healthDamage)
 					if (protectingDamage >= shield.amount) {
 						shield.amount = 0

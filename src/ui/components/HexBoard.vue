@@ -30,9 +30,8 @@ const showingSocialite = computed(() => !state.didStart && Math.floor(state.setN
 function onDrop(event: DragEvent, hex: HexCoord) {
 	const type = getDragType(event)
 	const name = getDragName(event)
-	if (name == null) {
-		return
-	}
+	if (name == null) return
+
 	event.preventDefault()
 	if (type === 'unit') {
 		dropUnit(event, name, hex)
@@ -50,7 +49,8 @@ function onHexMenu(hex: HexCoord) {
 }
 
 function setSocialite(socialiteIndex: number) {
-	if (!sourceHexForMenu.value) { return }
+	if (!sourceHexForMenu.value) return
+
 	setSocialiteHex(socialiteIndex, isSameHex(state.socialiteHexes[socialiteIndex], sourceHexForMenu.value) ? null : sourceHexForMenu.value)
 }
 

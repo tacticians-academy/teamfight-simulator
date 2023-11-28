@@ -36,7 +36,8 @@ export const baseChampionEffects = {
 					[StatusEffectType.stunned, { durationMS }],
 				],
 				onCollided: (elapsedMS, effect, withUnit) => {
-					if (withUnit === champion) { return }
+					if (withUnit === champion) return
+
 					champion.performActionUntilMS = 0
 					const adjacentHex = withUnit.projectHexFrom(champion, false, 1)
 					if (adjacentHex) {
@@ -767,7 +768,8 @@ export const baseChampionEffects = {
 				target: mostDistantEnemy,
 				returnMissile: champion.getMissileWithSuffix('PBounce'),
 				onCollided: (elapsedMS, effect, withUnit) => {
-					if (withUnit !== champion) { return }
+					if (withUnit !== champion) return
+
 					const shieldAmount = champion.getSpellCalculationResult(spell, 'Shield')
 					champion.queueShield(elapsedMS, champion, {
 						id: ChampionKey.Poppy,
@@ -992,7 +994,8 @@ export const baseChampionEffects = {
 					hexes: droneHexes,
 					onActivate: (elapsedMS) => {
 						const validTargets = shuffle(getAttackableUnitsOfTeam(champion.opposingTeam()))
-						if (!validTargets.length) { return }
+						if (!validTargets.length) return
+
 						droneHexes.forEach((droneHex, laserIndex) => {
 							champion.queueProjectileEffect(elapsedMS, spell, {
 								projectileStartsFrom: droneHex,

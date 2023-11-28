@@ -53,9 +53,7 @@ export function solveSpellCalculationFrom(source: ChampionUnit | undefined, targ
 export function calculateSynergyBonuses(unit: ChampionUnit, teamSynergies: SynergyData[], unitTraitKeys: TraitKey[]) {
 	const bonuses: BonusEntry[] = []
 	teamSynergies.forEach(({ key: traitKey, activeEffect }) => {
-		if (activeEffect == null) {
-			return
-		}
+		if (activeEffect == null) return
 
 		const unitHasTrait = unitTraitKeys.includes(traitKey)
 		const bonusVariables: BonusVariable[] = []

@@ -9,9 +9,8 @@ const { state, copyItem, moveItem, dropUnit } = useStore()
 export type DraggableType = 'unit' | 'item' | 'comp'
 
 export function onDragOver(event: DragEvent) {
-	if (!event.dataTransfer || event.dataTransfer.items.length < 2) {
-		return
-	}
+	if (!event.dataTransfer || event.dataTransfer.items.length < 2) return
+
 	event.preventDefault()
 }
 
@@ -34,9 +33,8 @@ export function getDragNameOf(type: DraggableType, event: DragEvent) {
 export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
 	const type = getDragType(event)
 	const name = getDragName(event)
-	if (type == null || name == null) {
-		return
-	}
+	if (type == null || name == null) return
+
 	event.preventDefault()
 	if (type === 'unit') {
 		dropUnit(event, name, onUnit.startHex)

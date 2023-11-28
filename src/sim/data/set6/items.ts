@@ -172,7 +172,8 @@ export const baseItemEffects = {
 			affectedUnits.forEach(unit => unit.applyStatusEffect(elapsedMS, StatusEffectType.magicResistReduction, durationSeconds * 1000, mrShred / 100))
 		},
 		castWithinHexRange: (elapsedMS, item, itemID, caster, holder) => {
-			if (caster.team === holder.team) { return }
+			if (caster.team === holder.team) return
+
 			const [manaRatio] = getVariables(item, 'ManaRatio')
 			const damageCalculation = createDamageCalculation(item.name, manaRatio / 100 * caster.manaMax(), DamageType.magic)
 			caster.takeBonusDamage(elapsedMS, holder, damageCalculation, false)
@@ -270,7 +271,8 @@ export const baseItemEffects = {
 
 	[ItemKey.StatikkShiv]: {
 		basicAttack: (elapsedMS, item, itemID, target, holder, canReProc) => {
-			if (!holder.isNthBasicAttack(3)) { return }
+			if (!holder.isNthBasicAttack(3)) return
+
 			const [totalUnits, damage, mrShred, shredDurationSeconds] = getVariables(item, `${holder.starLevel}StarBounces`, 'Damage', 'MRShred', 'MRShredDuration')
 			const units = getChainFrom(target, totalUnits)
 			const damageCalculation = createDamageCalculation(itemID, damage, DamageType.magic)

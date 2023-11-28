@@ -120,7 +120,7 @@ export const championEffects = {
 	[ChampionKey.Brand]: {
 		cast: (elapsedMS, spell, champion) => {
 			const target = getDistanceUnitOfTeam(false, champion, champion.opposingTeam())
-			if (!target) return false
+			if (!target) { return false }
 			if (isVIPActiveFor(champion)) {
 				const alternativeTargets = getAttackableUnitsOfTeam(champion.opposingTeam()).filter(unit => unit !== target)
 				const secondTarget = getBestRandomAsMax(false, alternativeTargets, (unit) => unit.coordDistanceSquaredTo(champion) + (unit.statusEffects.ablaze.active ? 0 : 1))
@@ -341,7 +341,7 @@ export const championEffects = {
 			const attackSpeedReducePercent = champion.getSpellVariable(spell, 'ASReduction')
 			const durationSeconds = champion.getSpellVariable(spell, SpellKey.Duration)
 			const damageCalculation = champion.getSpellCalculation(spell, 'DamagePerSecond')
-			if (!damageCalculation) return true
+			if (!damageCalculation) { return true }
 			return champion.queueProjectileEffect(elapsedMS, spell, {
 				target: bestHex,
 				fixedHexRange,
@@ -385,7 +385,8 @@ export const championEffects = {
 				fixedHexRange: MAX_HEX_COUNT,
 				hasBackingVisual: true,
 				onCollided: (elapsedMS, effect, withUnit, damage) => {
-					if (damage == null) { return }
+					if (damage == null) return
+
 					const lowestHPAlly = getBestRandomAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
 						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing')

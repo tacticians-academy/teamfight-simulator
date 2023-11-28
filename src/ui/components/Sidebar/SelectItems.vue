@@ -69,7 +69,9 @@ function getSearchScore(searchWhole: string, searchWords: string[], testAgainst:
 const searchText = ref('')
 const searchItems = computed(() => {
 	const searched = searchText.value.trim().toLowerCase().replaceAll(/\s+/g, ' ')
-	if (searched.length <= 0) return undefined
+	if (searched.length <= 0) {
+		return undefined
+	}
 	const searchWords = searched.split(' ')
 	if (searchWords.length > 1) {
 		searchWords.push(searchWords.join(''))
