@@ -261,7 +261,7 @@ export function resetUnitsAfterUpdating() {
 		if (unit.wasSpawnedDuringFight) {
 			return false
 		}
-		if (!unit.data.isSpawn || unit.data.apiName === ChampionKey.TrainingDummy) {
+		if (!unit.isStarLocked) {
 			return true
 		}
 		return synergiesByTeam[unit.team].some(({ activeEffect, key }) => activeEffect && setData.traitEffects[key]?.shouldKeepSpawn?.(unit))
@@ -360,7 +360,7 @@ const store = {
 		resetUnitsAfterUpdating()
 	},
 	_addItem(item: ItemData, champion: ChampionUnit) {
-		if (!champion.traits.length) {
+		if (!champion.traits.length && (setNumber < 10 || champion.data.apiName !== ChampionKey.TrainingDummy)) {
 			console.log('Spawns cannot hold items')
 			return false
 		}

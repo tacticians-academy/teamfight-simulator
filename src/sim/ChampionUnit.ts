@@ -36,6 +36,10 @@ let instanceIndex = 0
 export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusEffectType.attackSpeedSlow, StatusEffectType.grievousWounds, StatusEffectType.magicResistReduction, StatusEffectType.stunned]
 export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]
 
+export function isPlaceable(unitData: ChampionData) {
+	return !unitData.isSpawn || unitData.apiName === ChampionKey.TrainingDummy
+}
+
 export class ChampionUnit {
 	instanceID: string
 	startHex: HexCoord
@@ -98,7 +102,7 @@ export class ChampionUnit {
 	constructor(apiName: string, hex: HexCoord, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = setData.champions.find(unit => unit.apiName === apiName) ?? setData.champions.find(unit => unit.apiName === ChampionKey.TrainingDummy) ?? setData.champions[0]
-		this.isStarLocked = stats.isSpawn && apiName !== ChampionKey.TrainingDummy
+		this.isStarLocked = !isPlaceable(stats)
 		this.data = markRaw(stats)
 		this.starLevel = starLevel
 		this.startHex = [...hex]

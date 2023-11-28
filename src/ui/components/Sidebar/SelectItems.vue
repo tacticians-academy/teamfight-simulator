@@ -12,7 +12,7 @@ const { startDragging } = useStore()
 const itemGroups = computed(() => {
 	const itemGroups: [string, ItemData[]][] = [
 		['Combined', setData.completedItems],
-		[state.setNumber > 1 ? 'Emblems' : 'Spatula', setData.emblemItems.filter(item => item.name !== 'Force of Nature')],
+		[state.setNumber > 1 ? 'Emblems' : 'Spatula', setData.emblemItems.filter(item => (state.setNumber < 5 ? item.name !== 'Force of Nature' : item.apiName !== 'TFT_Item_ForceOfNature'))],
 		['Components', setData.componentItems],
 	]
 	if (state.setNumber === 4.5 || (setData.ornnItems.length && state.setNumber >= 6)) {

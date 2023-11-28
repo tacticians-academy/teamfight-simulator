@@ -7,6 +7,7 @@ import type { ChampionData } from '@tacticians-academy/academy-library'
 
 import { useStore, state, setData, setDataReactive } from '#/store/store'
 
+import { isPlaceable } from '#/sim/ChampionUnit'
 import type { CustomComps } from '#/sim/data/types'
 import { getIconURLFor } from '#/ui/helpers/utils'
 
@@ -14,11 +15,12 @@ const { startDragging } = useStore()
 
 const unitGroups = computed(() => {
 	let unitGroups: ['Supported' | 'Unimplemented', ChampionData[]][] = [['Supported', []], ['Unimplemented', []]]
-	setData.champions.forEach(champion => {
-		if (champion.teamSize === 0 || champion.stats.hp == null) { return }
-		const groupIndex = !champion.traits.length || setData.championEffects[champion.apiName!] != null ? 0 : 1
-		unitGroups[groupIndex][1].push(champion)
-	})
+	setData.champions
+		.filter(unit => isPlaceable(unit))
+		.forEach(unit => {
+			const groupIndex = !unit.traits.length || setData.championEffects[unit.apiName!] != null ? 0 : 1
+			unitGroups[groupIndex][1].push(unit)
+		})
 	unitGroups = unitGroups.filter(group => group[1].length)
 	return unitGroups
 })
