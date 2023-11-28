@@ -25,7 +25,7 @@ export interface AugmentFns {
 	damageDealtByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, target: ChampionUnit, source: ChampionUnit, damage: DamageResult) => void
 	damageTakenByHolder?: (augment: AugmentData, elapsedMS: DOMHighResTimeStamp, holder: ChampionUnit, source: ChampionUnit | undefined, damage: DamageResult) => void
 }
-export type AugmentEffects = {[key in string]?: AugmentFns}
+export type AugmentEffects = Partial<Record<string, AugmentFns>>
 
 export interface ChampionFns {
 	innate?: (spell: ChampionSpellData | undefined, champion: ChampionUnit) => EffectResults
@@ -34,7 +34,7 @@ export interface ChampionFns {
 	passiveCasts?: boolean
 	passive?: (elapsedMS: DOMHighResTimeStamp, spell: ChampionSpellData, target: ChampionUnit, source: ChampionUnit, damage: DamageResult | undefined) => void
 }
-export type ChampionEffects = {[key in string]?: ChampionFns}
+export type ChampionEffects = Partial<Record<string, ChampionFns>>
 
 interface ItemFns {
 	adjacentHexBuff?: (item: ItemData, unit: ChampionUnit, adjacentUnits: ChampionUnit[]) => void

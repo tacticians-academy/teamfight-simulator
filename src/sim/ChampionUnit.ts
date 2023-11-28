@@ -65,7 +65,7 @@ export class ChampionUnit {
 	instantAttack: boolean
 	attackMissile: ChampionSpellMissileData | undefined
 	wasSpawnedDuringFight = false
-	stacks: {[key in BonusLabelKey]?: StackData} = {}
+	stacks: Partial<Record<BonusLabelKey, StackData>> = {}
 
 	hitBy = new Set<string>()
 	basicAttackSourceIDs: string[] = []

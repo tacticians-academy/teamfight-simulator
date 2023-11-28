@@ -14,10 +14,10 @@ export function uniqueIdentifier(index: number, entity: {name: string}) {
 }
 
 export function getArrayValueCounts<T extends string | number | symbol>(array: T[]): [string, number][] {
-	const result: {[index in T]: number} = {} as any
+	const result: Partial<Record<T, number>> = {}
 	array.forEach(el => {
 		if (result[el] != null) {
-			result[el] += 1
+			result[el]! += 1 //NOTE TS limitation
 		} else {
 			result[el] = 1
 		}

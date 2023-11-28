@@ -101,7 +101,7 @@ export function toStorage(units: ChampionUnit[]): StorageChampion[] {
 		hex: unit.startHex,
 		starLevel: unit.starLevel,
 		items: unit.items.map(item => item.apiName ?? item.id ?? -1),
-		stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1].amount]),
+		stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1]!.amount]),
 	}))
 }
 export function saveUnits(set: SetNumber) {
