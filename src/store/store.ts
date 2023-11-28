@@ -59,10 +59,10 @@ export const setDataReactive = reactive({
 	compsUser: {} as CustomComps,
 })
 
-const setNumber = getSetNumber()
+const initSetNumber = getSetNumber()
 export const state = reactive({
 	loadedSet: false,
-	setNumber,
+	setNumber: initSetNumber,
 	rowsPerSide: BOARD_MAX_ROW_COUNT / 2,
 	rowsTotal: BOARD_MAX_ROW_COUNT,
 
@@ -77,13 +77,13 @@ export const state = reactive({
 	targetEffects: new Set<TargetEffect>(),
 
 	augmentsByTeam: [[null, null, null], [null, null, null]] as [AugmentList, AugmentList],
-	socialiteHexes: (getStorageJSON(setNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
-	stageNumber: getStorageInt(setNumber, StorageKey.StageNumber, 3),
-	mutantType: (getStorageString(setNumber, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic,
+	socialiteHexes: (getStorageJSON(initSetNumber, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[],
+	stageNumber: getStorageInt(initSetNumber, StorageKey.StageNumber, 3),
+	mutantType: (getStorageString(initSetNumber, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic,
 
 	dragUnit: null as ChampionUnit | null,
 })
-setSetNumber(setNumber)
+setSetNumber(initSetNumber)
 
 export async function setSetNumber(set: SetNumber) {
 	state.loadedSet = false
@@ -361,9 +361,21 @@ const store = {
 		resetUnitsAfterUpdating()
 	},
 	_addItem(item: ItemData, champion: ChampionUnit) {
-		if (!champion.traits.length && (setNumber < 10 || champion.data.apiName !== ChampionKey.TrainingDummy)) {
-			console.log('Spawns cannot hold items')
-			return false
+		if (champion.data.isSpawn) {
+			let canSpawnHoldItems = false
+			if (champion.data.apiName === ChampionKey.TrainingDummy) {
+				if (state.setNumber >= 9) {
+					if (state.setNumber < 10) {
+						canSpawnHoldItems = getItemByIdentifier(item.apiName ?? item.id, setData.emblemItems) != null
+					} else {
+						canSpawnHoldItems = true
+					}
+				}
+			}
+			if (!canSpawnHoldItems) {
+				console.log(champion.data.name, 'cannot hold', item.name)
+				return false
+			}
 		}
 		if (item.unique && champion.items.some(existingItem => existingItem.name === item.name)) {
 			console.log('Unique item per champion', item.name)
