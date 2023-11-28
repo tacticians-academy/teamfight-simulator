@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
+import type { AugmentData } from '@tacticians-academy/academy-library'
 
-import type { AugmentData, AugmentGroupKey } from '@tacticians-academy/academy-library'
-
-import { useStore, setAugmentFor, setData } from '#/store/store'
+import { useStore } from '#/store/store'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 

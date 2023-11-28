@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import { setData, setDataReactive, state, useStore } from '#/store/store'
 import { saveComps } from '#/store/storage'
 

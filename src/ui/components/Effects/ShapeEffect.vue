@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import type { ShapeEffect } from '#/sim/effects/ShapeEffect'
 
 const props = defineProps<{

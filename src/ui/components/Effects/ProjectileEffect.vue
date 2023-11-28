@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 import type { ProjectileEffect } from '#/sim/effects/ProjectileEffect'
 import type { HexCoord } from '#/sim/helpers/types'
 

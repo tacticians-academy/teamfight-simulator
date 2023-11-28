@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineProps, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { onDragOver, onDropOnUnit } from '#/ui/helpers/dragDrop'
 import { useStore } from '#/store/store'
