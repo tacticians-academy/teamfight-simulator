@@ -1514,4 +1514,11 @@ export class ChampionUnit {
 		const bestHex = getBestRandomAsMax(pastTarget, getHexRing(targetHex, distance), (hex) => this.coordDistanceSquaredTo(hex))
 		return bestHex && isSameHex(bestHex, this.activeHex) ? bestHex : getClosestHexAvailableTo(bestHex ?? targetHex, state.units)
 	}
+
+	getCountFromPool() {
+		return this.starLevel === 1 ? 1 : Math.pow(3, this.starLevel - 1)
+	}
+	getTotalValue() {
+		return (this.data.cost ?? 0) * this.getCountFromPool()
+	}
 }

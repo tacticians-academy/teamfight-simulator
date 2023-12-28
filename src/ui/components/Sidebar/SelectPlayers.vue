@@ -42,7 +42,10 @@ function onReset() {
 	</form>
 	<template v-if="state.units.length">
 		<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
-			<div class="font-semibold">Team {{ getTeamName(teamIndex) }}</div>
+			<div>
+				<span class="font-semibold">Team {{ getTeamName(teamIndex) }}</span>
+				<span class="text-secondary"> ({{ state.units.filter(u => u.team === teamIndex).map(u => u.getTotalValue()).reduce((curr, acc) => curr + acc, 0) }} gold value)</span>
+			</div>
 			<div v-for="{ key, trait, activeStyle, activeEffect, uniqueUnitNames } in teamSynergies" :key="key">
 				<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="uniqueUnitNames" />
 			</div>
