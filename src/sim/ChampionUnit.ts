@@ -120,7 +120,7 @@ export class ChampionUnit {
 	}
 
 	updateTeam() {
-		const newTeam = this.startHex[1] < state.rowsPerSide ? 0 : 1
+		const newTeam = this.startHex[1] >= state.rowsPerSide ? 0 : 1
 		if (this.team === newTeam) return
 
 		this.team = newTeam
@@ -683,7 +683,7 @@ export class ChampionUnit {
 
 	jumpToBackline() {
 		const [col, row] = this.startHex
-		const targetHex: HexCoord = [col, this.team === 0 ? state.rowsTotal - 1 : 0]
+		const targetHex: HexCoord = [col, this.team === 0 ? 0 : state.rowsTotal - 1]
 		this.customMoveTo(targetHex, true, undefined, MOVE_LOCKOUT_JUMPERS_MS, false)
 		this.applyStatusEffect(0, StatusEffectType.stealth, MOVE_LOCKOUT_JUMPERS_MS)
 	}

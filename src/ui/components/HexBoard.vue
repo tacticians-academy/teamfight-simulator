@@ -75,7 +75,7 @@ function onSaveComp() {
 	}
 }
 
-const canSaveComp = computed(() => state.units.filter(u => u.team === 1).length > 1)
+const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length > 1)
 </script>
 
 <template>
@@ -85,7 +85,7 @@ const canSaveComp = computed(() => state.units.filter(u => u.team === 1).length 
 			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
 				<div
 					v-for="colRow in row" v-show="rowIndex < state.rowsTotal" :key="colRow.hex[1]"
-					class="hex" :class="rowIndex < state.rowsPerSide ? 'team-a' : 'team-b'"
+					class="hex" :class="rowIndex >= state.rowsPerSide ? 'team-a' : 'team-b'"
 					:style="{
 						left: `${colRow.coord[0] * 100}%`, top: `${colRow.coord[1] * 100}%`,
 						boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < state.rowsPerSide ? 0 : 1] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
@@ -94,7 +94,7 @@ const canSaveComp = computed(() => state.units.filter(u => u.team === 1).length 
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</template>
-			<button v-if="!state.didStart" :disabled="!canSaveComp" class="hex team-b" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
+			<button v-if="!state.didStart" :disabled="!canSaveComp" class="hex team-a" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
 				<div class="hex-outline  bg-primary text-secondary  flex justify-center items-center">
 					Save<br>Comp
 				</div>

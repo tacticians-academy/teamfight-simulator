@@ -226,7 +226,7 @@ export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], i
 
 export function getFrontBehindHexes(unit: ChampionUnit, inFront: boolean) {
 	const [unitCol, unitRow] = unit.activeHex
-	const projectingRowDirection = (unit.team === 0 ? 1 : -1) * (inFront ? 1 : -1)
+	const projectingRowDirection = (unit.team === 0 ? -1 : 1) * (inFront ? 1 : -1)
 	return getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
 }
 
