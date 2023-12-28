@@ -26,7 +26,7 @@ import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/sim/helpers/calculate'
 import { MOVE_LOCKOUT_JUMPERS_MS, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/sim/helpers/constants'
 import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/sim/helpers/effectUtils'
-import { containsHex, isSameHex } from '#/sim/helpers/hexes'
+import { containsHex, getTeamFor, isSameHex } from '#/sim/helpers/hexes'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/sim/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StackData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 import { getBestRandomAsMax, uniqueIdentifier } from '#/sim/helpers/utils'
@@ -120,7 +120,7 @@ export class ChampionUnit {
 	}
 
 	updateTeam() {
-		const newTeam = this.startHex[1] >= state.rowsPerSide ? 0 : 1
+		const newTeam = getTeamFor(this.startHex)
 		if (this.team === newTeam) return
 
 		this.team = newTeam

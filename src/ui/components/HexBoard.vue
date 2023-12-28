@@ -12,7 +12,7 @@ import { useStore, getSocialiteHexStrength, setSocialiteHex, setDataReactive } f
 import { saveComps } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
-import { getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
+import { getMirrorHex, getTeamForRow, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
 
 import { HEX_SIZE_UNITS } from '#/ui/helpers/constants'
@@ -85,10 +85,10 @@ const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length 
 			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
 				<div
 					v-for="colRow in row" v-show="rowIndex < state.rowsTotal" :key="colRow.hex[1]"
-					class="hex" :class="rowIndex >= state.rowsPerSide ? 'team-a' : 'team-b'"
+					class="hex" :class="getTeamForRow(rowIndex) === 0 ? 'team-a' : 'team-b'"
 					:style="{
 						left: `${colRow.coord[0] * 100}%`, top: `${colRow.coord[1] * 100}%`,
-						boxShadow: showingSocialite && getters.socialitesByTeam.value[rowIndex < state.rowsPerSide ? 0 : 1] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
+						boxShadow: showingSocialite && getters.socialitesByTeam.value[getTeamForRow(rowIndex)] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
 					}"
 					@dragover="onDragOver" @drop="onDrop($event, colRow.hex)"
 					@contextmenu.prevent="onHexMenu(colRow.hex)"

@@ -3,6 +3,7 @@ import { useStore, setCompForTeam } from '#/store/store'
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { CustomComp } from '#/sim/data/types'
 import type { HexCoord } from '#/sim/helpers/types'
+import { getTeamFor } from '#/sim/helpers/hexes'
 
 const { state, copyItem, moveItem, dropUnit } = useStore()
 
@@ -53,6 +54,6 @@ export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
 
 export function onDropComp(raw: string, hex: HexCoord) {
 	const data = JSON.parse(raw) as CustomComp
-	const team = hex[1] >= state.rowsPerSide ? 1 : 0
+	const team = getTeamFor(hex)
 	setCompForTeam(data, team)
 }

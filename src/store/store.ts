@@ -546,11 +546,11 @@ export function loadStorageUnits(storageUnits: StorageChampion[]) {
 	resetUnitsAfterUpdating()
 }
 
-export function setCompForTeam(comp: CustomComp, team: TeamNumber) {
-	const teamAugments = state.augmentsByTeam[team]
+export function setCompForTeam(comp: CustomComp, teamNumber: TeamNumber) {
+	const teamAugments = state.augmentsByTeam[teamNumber]
 	teamAugments.forEach((augment, index) => teamAugments[index] = null)
-	state.units = state.units.filter(unit => unit.team !== team)
-	if (team === 0) {
+	state.units = state.units.filter(unit => unit.team !== teamNumber)
+	if (teamNumber === 1) {
 		comp.units.forEach(unit => unit.hex = getInverseHex(unit.hex))
 	}
 	comp.augments.forEach((augmentName, index) => teamAugments[index] = setData.activeAugments.find(augment => augment.name === augmentName) ?? null)

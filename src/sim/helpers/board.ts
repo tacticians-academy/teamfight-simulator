@@ -5,7 +5,7 @@ import type { ChampionUnit } from '#/sim/ChampionUnit'
 import { doesLineInterceptCircle } from '#/sim/helpers/angles'
 import { BOARD_COL_COUNT, BOARD_MAX_ROW_COUNT, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/sim/helpers/constants'
 import { containsHex, isSameHex } from '#/sim/helpers/hexes'
-import type { HexCoord, HexRowCol } from '#/sim/helpers/types'
+import type { HexCoord, HexRowCol, TeamNumber } from '#/sim/helpers/types'
 import { getBestRandomAsMax } from '#/sim/helpers/utils'
 
 const surroundings: [HexCoord[], HexCoord[], HexCoord[], HexCoord[]] = [
@@ -289,4 +289,8 @@ export function recursivePathTo(originHex: HexCoord, destHex: HexCoord, occupied
 		}
 	}
 	return !newSearchHexes.length ? undefined : recursivePathTo(originHex, destHex, occupiedHexes, newSearchHexes, checkedHexes)
+}
+
+export function getDefaultHexFor(teamNumber: TeamNumber): HexCoord {
+	return teamNumber === 0 ? [0, state.rowsTotal - 1] : [BOARD_COL_COUNT - 1, 0]
 }

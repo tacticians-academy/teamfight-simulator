@@ -8,7 +8,7 @@ import { ChampionUnit } from '#/sim/ChampionUnit'
 import { getSocialiteHexesFor, INNOVATION_IDS } from '#/sim/data/set6/utils'
 import type { TraitEffects } from '#/sim/data/types'
 
-import { getClosestHexAvailableTo, isInBackLines } from '#/sim/helpers/board'
+import { getClosestHexAvailableTo, getDefaultHexFor, isInBackLines } from '#/sim/helpers/board'
 import { createDamageCalculation } from '#/sim/helpers/calculate'
 import { BOARD_COL_COUNT } from '#/sim/helpers/constants'
 import { getAttackableUnitsOfTeam, getUnitsOfTeam, getVariables } from '#/sim/helpers/effectUtils'
@@ -116,7 +116,7 @@ export const baseTraitEffects = {
 			let innovation = innovations.find(unit => unit.data.apiName === innovationKey)
 			state.units = state.units.filter(unit => unit.team !== teamNumber || !INNOVATION_IDS.includes(unit.data.apiName) || unit === innovation)
 			if (!innovation || innovation.data.apiName !== innovationKey) {
-				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(teamNumber === 0 ? [BOARD_COL_COUNT - 1, 0] : [0, state.rowsTotal - 1], state.units)
+				const innovationHex = (innovation ?? innovations[0])?.startHex ?? getClosestHexAvailableTo(getDefaultHexFor(teamNumber), state.units)
 				if (innovationHex != null) {
 					innovation = new ChampionUnit(innovationKey, innovationHex, starLevel as StarLevel)
 					innovation.genericReset()
