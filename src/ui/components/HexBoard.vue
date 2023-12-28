@@ -6,7 +6,7 @@ import TargetEffect from '#/ui/components/Effects/TargetEffect.vue'
 import UnitCircle from '#/ui/components/UnitCircle.vue'
 import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useStore, getSocialiteHexStrength, setSocialiteHex, setDataReactive } from '#/store/store'
 import { saveComps } from '#/store/storage'
@@ -21,7 +21,7 @@ import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 import { toStorage } from '#/store/storage'
 import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
 
-const { getters, state, dropUnit } = useStore()
+const { getters, state, dropUnit, deleteUnit } = useStore()
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
@@ -76,6 +76,31 @@ function onSaveComp() {
 }
 
 const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length > 1)
+
+function getHexUnderMouse() {
+	let n: HTMLElement | null = document.querySelector(":hover")
+	while (n) {
+		if (n.dataset.hex != null) {
+			return n.dataset.hex.split(',').map(n => parseInt(n, 10)) as HexCoord
+		}
+		n = n.querySelector(":hover")
+	}
+	return undefined
+}
+function onKey(event: KeyboardEvent) {
+	if (event.key === 'e') {
+		const hex = getHexUnderMouse()
+		if (hex) {
+			deleteUnit(hex)
+		}
+	}
+}
+onMounted(() => {
+	document.addEventListener('keyup', onKey, false)
+})
+onBeforeUnmount(() => {
+	document.removeEventListener('keyup', onKey, false)
+})
 </script>
 
 <template>

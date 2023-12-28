@@ -11,7 +11,7 @@ import type { SimMode } from '#/store/store'
 import { cancelLoop, runLoop } from '#/sim/loop'
 
 import { SIDEBAR_UNITS } from '#/ui/helpers/constants'
-import { getDragName, getDragType, onDragOver } from '#/ui/helpers/dragDrop'
+import { onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
 import { getTeamName } from '#/ui/helpers/utils'
 
 const SIDEBAR_VW = `${SIDEBAR_UNITS}vw`
@@ -34,23 +34,6 @@ function onFight() {
 	}
 }
 
-function onDrop(event: DragEvent) {
-	const dragUnit = state.dragUnit
-	if (!dragUnit) return
-
-	const dragType = getDragType(event)
-	if (dragType === 'unit') {
-		deleteUnit(dragUnit.startHex)
-	} else if (dragType === 'item') {
-		const name = getDragName(event)
-		if (name != null) {
-			deleteItem(name, dragUnit)
-		}
-	} else {
-		console.log('ERR', 'Unknown drag type', dragType, dragUnit)
-	}
-}
-
 function onToggle(name: SimMode) {
 	state.simMode = name
 }
@@ -68,7 +51,7 @@ function onToggle(name: SimMode) {
 		</button>
 	</div>
 	<div class="flex-grow  flex first-letter:flex flex-col">
-		<div class="overflow-y-scroll" @dragover="onDragOver" @drop="onDrop">
+		<div class="overflow-y-scroll" @dragover="onDragOver" @drop="onDropSell">
 			<RolldownSetup v-if="state.simMode === 'rolldown'" class="h-full" />
 			<div v-else-if="!state.didStart" class="flex flex-col">
 				<ManageTeams />

@@ -5,7 +5,7 @@ import type { CustomComp } from '#/sim/data/types'
 import type { HexCoord } from '#/sim/helpers/types'
 import { getTeamFor } from '#/sim/helpers/hexes'
 
-const { state, copyItem, moveItem, dropUnit } = useStore()
+const { state, copyItem, moveItem, dropUnit, deleteItem, deleteUnit } = useStore()
 
 export type DraggableType = 'unit' | 'item' | 'comp'
 
@@ -29,6 +29,23 @@ export function getDragNameOf(type: DraggableType, event: DragEvent) {
 		return null
 	}
 	return getDragName(event)
+}
+
+export function onDropSell(event: DragEvent) {
+	const dragUnit = state.dragUnit
+	if (!dragUnit) return
+
+	const dragType = getDragType(event)
+	if (dragType === 'unit') {
+		deleteUnit(dragUnit.startHex)
+	} else if (dragType === 'item') {
+		const name = getDragName(event)
+		if (name != null) {
+			deleteItem(name, dragUnit)
+		}
+	} else {
+		console.log('ERR', 'Unknown drag type', dragType, dragUnit)
+	}
 }
 
 export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
