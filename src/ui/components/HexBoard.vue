@@ -15,15 +15,15 @@ import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers
 import { getMirrorHex, getTeamForRow, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
 
-import { HEX_SIZE_UNITS } from '#/ui/helpers/constants'
+import { BOARD_UNITS_RAW, HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/dragDrop'
 import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 import { toStorage } from '#/store/storage'
 import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
 
-const HEX_VW = `${HEX_SIZE_UNITS}vw`
-
 const { getters, state, dropUnit } = useStore()
+
+const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
 const showingSocialite = computed(() => !state.didStart && Math.floor(state.setNumber) === 6)
 
@@ -79,7 +79,7 @@ const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length 
 </script>
 
 <template>
-<div class="board">
+<div class="board" :class="state.simMode" :style="{ marginTop: state.simMode === 'rolldown' ? `-${BOARD_UNITS_RAW * (state.rowsPerSide / 10)}vw` : undefined }">
 	<div class="relative">
 		<div class="overflow-x-hidden aspect-square">
 			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
@@ -94,7 +94,7 @@ const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length 
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</template>
-			<button v-if="!state.didStart" :disabled="!canSaveComp" class="hex team-a" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
+			<button v-if="state.simMode === 'teamfight' && !state.didStart" :disabled="!canSaveComp" class="hex team-a" :style="{left: `${saveCompCoord[0] * 100}%`, top: `${saveCompCoord[1] * 100}%`}" @click="onSaveComp">
 				<div class="hex-outline  bg-primary text-secondary  flex justify-center items-center">
 					Save<br>Comp
 				</div>
@@ -142,6 +142,18 @@ const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length 
 </template>
 
 <style lang="postcss">
+.rolldown .hex.team-b {
+	@apply opacity-0;
+}
+.rolldown .hex-unit.team-b {
+	@apply opacity-0 !important;
+}
+
+.board, .hex, .hex-unit {
+	transition-property: margin, opacity;
+	transition-duration: 600ms;
+}
+
 .hex {
 	width: v-bind(HEX_VW);
 }

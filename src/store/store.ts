@@ -59,8 +59,11 @@ export const setDataReactive = reactive({
 	compsUser: {} as CustomComps,
 })
 
+export type SimMode = 'teamfight' | 'rolldown'
+
 const initSetNumber = getSetNumber()
 export const state = reactive({
+	simMode: 'teamfight' as SimMode,
 	loadedSet: false,
 	setNumber: initSetNumber,
 	rowsPerSide: BOARD_MAX_ROW_COUNT / 2,
@@ -246,6 +249,10 @@ watch(getters.augmentCount, (augmentCount) => {
 })
 
 // Store
+
+export function getValueOfTeam(teamNumber: number) {
+	return state.units.filter(u => u.team === teamNumber).map(u => u.getTotalValue()).reduce((curr, acc) => curr + acc, 0)
+}
 
 export function clearBoardStateAndReset() {
 	clearBoardStorage(state.setNumber)

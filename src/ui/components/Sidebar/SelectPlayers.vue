@@ -2,7 +2,7 @@
 import DisplayTrait from '#/ui/components/Sidebar/DisplayTrait.vue'
 import SelectPlayersAugments from '#/ui/components/Sidebar/SelectPlayersAugments.vue'
 
-import { useStore, clearBoardStateAndReset } from '#/store/store'
+import { getValueOfTeam, useStore, clearBoardStateAndReset } from '#/store/store'
 
 import { MutantType } from '#/sim/helpers/types'
 
@@ -44,7 +44,7 @@ function onReset() {
 		<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
 			<div>
 				<span class="font-semibold">Team {{ getTeamName(teamIndex) }}</span>
-				<span class="text-secondary"> ({{ state.units.filter(u => u.team === teamIndex).map(u => u.getTotalValue()).reduce((curr, acc) => curr + acc, 0) }} gold value)</span>
+				<span class="text-secondary"> ({{ getValueOfTeam(teamIndex) }} gold value)</span>
 			</div>
 			<div v-for="{ key, trait, activeStyle, activeEffect, uniqueUnitNames } in teamSynergies" :key="key">
 				<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="uniqueUnitNames" />

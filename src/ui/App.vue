@@ -4,6 +4,10 @@ import '#/ui/assets/main.postcss'
 import HexBoard from '#/ui/components/HexBoard.vue'
 import SidebarContainer from '#/ui/components/Sidebar/SidebarContainer.vue'
 import SetsFooter from '#/ui/components/SetsFooter.vue'
+
+import { useStore } from '#/store/store'
+
+const { state } = useStore()
 </script>
 
 <template>
@@ -11,7 +15,7 @@ import SetsFooter from '#/ui/components/SetsFooter.vue'
 	<SidebarContainer />
 	<div class="relative w-full h-full overflow-y-scroll">
 		<HexBoard />
-		<SetsFooter />
+		<SetsFooter v-if="state.simMode === 'teamfight'" />
 	</div>
 </div>
 </template>

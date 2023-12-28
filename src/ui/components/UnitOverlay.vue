@@ -40,7 +40,7 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 
 <template>
 <div
-	class="hex-unit hex-overlay  group" :class="!unit.isInteractable() ? 'opacity-50' : null"
+	class="hex-unit hex-overlay  group" :class="(unit.team === 0 ? 'team-a' : 'team-b') + (!unit.isInteractable() ? 'opacity-50' : null)"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	@dragover="onDragOver" @drop="onDropOnUnit($event, unit)"
 >

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import ManageTeams from '#/ui/components/Sidebar/ManageTeams.vue'
+import RolldownSetup from '#/ui/components/Sidebar/RolldownSetup.vue'
 import SelectPlayers from '#/ui/components/Sidebar/SelectPlayers.vue'
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import { useStore } from '#/store/store'
+import type { SimMode } from '#/store/store'
 
 import { cancelLoop, runLoop } from '#/sim/loop'
 
@@ -13,6 +15,7 @@ import { getDragName, getDragType, onDragOver } from '#/ui/helpers/dragDrop'
 import { getTeamName } from '#/ui/helpers/utils'
 
 const SIDEBAR_VW = `${SIDEBAR_UNITS}vw`
+const MODE_PANEL_VW = `${SIDEBAR_UNITS / 5}vw`
 
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
@@ -47,25 +50,41 @@ function onDrop(event: DragEvent) {
 		console.log('ERR', 'Unknown drag type', dragType, dragUnit)
 	}
 }
+
+function onToggle(name: SimMode) {
+	state.simMode = name
+}
 </script>
 
 <template>
-<div class="sidebar  bg-secondary flex-shrink-0  flex flex-col">
-	<div class="flex-grow overflow-y-scroll" @dragover="onDragOver" @drop="onDrop">
-		<div v-if="!state.didStart" class="flex flex-col">
-			<ManageTeams />
-		</div>
-		<div v-else>
-			<div class="text-center">
-				⏱ {{ state.elapsedSeconds }}
-			</div>
-			<div v-if="state.winningTeam !== null" class="flex justify-center">
-				<div :class="state.winningTeam === 0 ? 'text-team-a' : 'text-team-b'">{{ getTeamName(state.winningTeam) }} team won!</div>
-			</div>
-			<SelectPlayers />
-		</div>
+<div class="sidebar  bg-secondary flex-shrink-0  flex">
+	<div class="mode-panel  bg-tertiary  pt-4 space-y-4 flex-shrink-0  flex flex-col text-center">
+		<div class="text-secondary">TFT<br>Sim</div>
+		<button :disabled="state.simMode === 'teamfight'" class="hover:bg-quaternary disabled:bg-secondary" @click="onToggle('teamfight')">
+			Team Fight
+		</button>
+		<button :disabled="state.simMode === 'rolldown'" class="hover:bg-quaternary disabled:bg-secondary" @click="onToggle('rolldown')">
+			Roll Down
+		</button>
 	</div>
-	<button :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.didStart ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
+	<div class="flex-grow  flex first-letter:flex flex-col">
+		<div class="overflow-y-scroll" @dragover="onDragOver" @drop="onDrop">
+			<RolldownSetup v-if="state.simMode === 'rolldown'" class="h-full" />
+			<div v-else-if="!state.didStart" class="flex flex-col">
+				<ManageTeams />
+			</div>
+			<div v-else>
+				<div class="text-center">
+					⏱ {{ state.elapsedSeconds }}
+				</div>
+				<div v-if="state.winningTeam !== null" class="flex justify-center">
+					<div :class="state.winningTeam === 0 ? 'text-team-a' : 'text-team-b'">{{ getTeamName(state.winningTeam) }} team won!</div>
+				</div>
+				<SelectPlayers />
+			</div>
+		</div>
+		<button v-if="state.simMode === 'teamfight'" :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.didStart ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
+	</div>
 </div>
 </template>
 
@@ -73,6 +92,17 @@ function onDrop(event: DragEvent) {
 .sidebar {
 	width: v-bind(SIDEBAR_VW);
 	overflow: hidden;
+}
+
+.mode-panel {
+	width: v-bind(MODE_PANEL_VW);
+}
+.mode-panel > * {
+	@apply aspect-square;
+	font-size: 1.3vw;
+}
+.mode-panel button {
+	@apply  rounded-l-2xl;
 }
 
 .sidebar-icons-group {
