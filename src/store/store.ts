@@ -157,7 +157,7 @@ export async function setSetNumber(set: SetNumber) {
 			const latestVersion = '2'
 			if (window.localStorage.getItem('TFTSIM_v') !== latestVersion) {
 				window.localStorage.setItem('TFTSIM_v', latestVersion)
-				const comps = Object.values(defaultComps)
+				const comps = Object.values(setData.compsDefault)
 				if (comps.length >= 2) {
 					setCompForTeam(comps[0], 0)
 					setCompForTeam(comps[1], 1)

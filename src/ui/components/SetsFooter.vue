@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import '#/ui/assets/main.postcss'
-
 import { SET_NUMBERS, type SetNumber } from '@tacticians-academy/academy-library'
 
 import { state, setSetNumber } from '#/store/store'
