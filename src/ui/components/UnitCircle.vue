@@ -42,7 +42,7 @@ function onInfo(event: Event) {
 		<span class="group-hover-visible">{{ unit.data.name }}</span>
 	</div>
 	<div class="stars">
-		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart" @click="onStar(starLevel)">
+		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart || state.simMode === 'rolldown'" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>

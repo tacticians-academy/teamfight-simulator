@@ -165,7 +165,7 @@ export const baseAugmentEffects = {
 			const [durationSeconds, maxHPPercentMultiplier] = getVariables(augment, 'ShieldDuration', 'MaxHShield')
 			units
 				.filter(unit => {
-					const adjacentHexes = getHexRing(unit.startHex)
+					const adjacentHexes = getHexRing(unit.activeHex)
 					return !units.some(unit => unit.isIn(adjacentHexes))
 				})
 				.forEach(unit => unit.queueShield(0, unit, {

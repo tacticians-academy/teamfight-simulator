@@ -25,7 +25,7 @@ export function getSocialiteHexesFor(team: TeamNumber): [statMultiplier: number,
 export function getUnitsInSocialiteHexes(team: TeamNumber, units: ChampionUnit[]): [statMultiplier: number, units: ChampionUnit[]][] {
 	return getSocialiteHexesFor(team).map(([statsModifier, socialiteHexes]) => {
 		return [statsModifier, units.filter(unit => {
-			const mirrorHex = getMirrorHex(unit.startHex)
+			const mirrorHex = getMirrorHex(unit.startHex!)
 			return socialiteHexes.some(hex => isSameHex(hex, mirrorHex))
 		})]
 	})

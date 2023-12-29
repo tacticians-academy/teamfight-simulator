@@ -96,13 +96,14 @@ export function clearBoardStorage(set: SetNumber) {
 }
 
 export function toStorage(units: ChampionUnit[]): StorageChampion[] {
-	return units.map(unit => ({
-		id: unit.data.apiName,
-		hex: unit.startHex,
-		starLevel: unit.starLevel,
-		items: unit.items.map(item => item.apiName ?? item.id ?? -1),
-		stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1]!.amount]),
-	}))
+	return units
+		.map(unit => ({
+			id: unit.data.apiName,
+			hex: unit.startHex!,
+			starLevel: unit.starLevel,
+			items: unit.items.map(item => item.apiName ?? item.id ?? -1),
+			stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1]!.amount]),
+		}))
 }
 export function saveUnits(set: SetNumber) {
 	const output = toStorage(state.units.filter(unit => !unit.wasSpawnedDuringFight))

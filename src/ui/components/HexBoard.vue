@@ -8,7 +8,7 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-import { useStore, getSocialiteHexStrength, setSocialiteHex, setDataReactive } from '#/store/store'
+import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive } from '#/store/store'
 import { saveComps } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
@@ -34,7 +34,7 @@ function onDrop(event: DragEvent, hex: HexCoord) {
 
 	event.preventDefault()
 	if (type === 'unit') {
-		dropUnit(event, name, hex)
+		dropUnit(event, name, hex, undefined)
 	} else if (type === 'comp') {
 		onDropComp(name, hex)
 	}
@@ -61,12 +61,12 @@ function onClearHexMenu(event?: Event) {
 
 const unitSize = `${100 * UNIT_SIZE_PROPORTION}%`
 
-const saveCompCoord = computed(() => calculateCoordForHex(BOARD_COL_COUNT - 1, state.rowsTotal))
+const saveCompCoord = computed(() => calculateCoordForHex(BOARD_COL_COUNT - 1, setData.rowsTotal))
 
 function onSaveComp() {
 	const name = window.prompt('Enter a name for this comp:')?.trim()
 	if (name != null && name.length) {
-		const units = toStorage(getUnitsOfTeam(1))
+		const units = toStorage(getUnitsOfTeam(0))
 		setDataReactive.compsUser[name] = {
 			augments: state.augmentsByTeam[1].map(augmentData => augmentData?.name ?? null),
 			units,
@@ -75,7 +75,7 @@ function onSaveComp() {
 	}
 }
 
-const canSaveComp = computed(() => state.units.filter(u => u.team === 0).length > 1)
+const canSaveComp = computed(() => getUnitsOfTeam(0).length > 1)
 
 function getHexUnderMouse() {
 	let n: HTMLElement | null = document.querySelector(":hover")
@@ -104,12 +104,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-<div class="board" :class="state.simMode" :style="{ marginTop: state.simMode === 'rolldown' ? `-${BOARD_UNITS_RAW * (state.rowsPerSide / 10)}vw` : undefined }">
+<div class="board" :class="state.simMode" :style="{ marginTop: state.simMode === 'rolldown' ? `-${BOARD_UNITS_RAW * (setData.rowsPerSide / 10)}vw` : undefined }">
 	<div class="relative">
 		<div class="overflow-x-hidden aspect-square">
+			<div v-if="state.simMode === 'rolldown'" class="available-slots  absolute inset-0 text-tertiary  flex justify-center items-center">
+				{{ getUnitsOfTeam(0).length }} / {{ getters.currentLevelData.value[0] }}
+			</div>
 			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
 				<div
-					v-for="colRow in row" v-show="rowIndex < state.rowsTotal" :key="colRow.hex[1]"
+					v-for="colRow in row" v-show="rowIndex < setData.rowsTotal" :key="colRow.hex[1]"
 					class="hex" :class="getTeamForRow(rowIndex) === 0 ? 'team-a' : 'team-b'"
 					:style="{
 						left: `${colRow.coord[0] * 100}%`, top: `${colRow.coord[1] * 100}%`,
@@ -174,6 +177,10 @@ onBeforeUnmount(() => {
 	@apply opacity-0 !important;
 }
 
+.available-slots {
+	font-size: 12vw;
+}
+
 .board, .hex, .hex-unit {
 	transition-property: margin, opacity;
 	transition-duration: 600ms;
@@ -186,19 +193,15 @@ onBeforeUnmount(() => {
 	height: v-bind(HEX_VW);
 	clip-path: polygon(0% 25%, 0% 75%, 50% 100%, 100% 75%, 100% 25%, 50% 0%);
 }
-.hex-unit {
+.board .hex-unit {
 	@apply absolute z-20;
+}
+.hex-unit {
 	width: v-bind(unitSize);
 	height: v-bind(unitSize);
 }
-.hex-overlay {
+.board .hex-overlay {
 	transform: translate(-50%, -50%);
-}
-.hex.team-a {
-	@apply bg-violet-300/90;
-}
-.hex.team-b {
-	@apply bg-rose-300/90;
 }
 .bg-team-a {
 	@apply bg-violet-700;
@@ -230,18 +233,19 @@ onBeforeUnmount(() => {
 .hex-outline > * {
 	@apply absolute inset-0 z-50;
 }
+
+.hex.team-a, .bench-space {
+	@apply bg-violet-300/25;
+}
+.hex.team-b {
+	@apply bg-rose-300/25;
+}
 </style>
 
 <style scoped lang="postcss">
 .hex {
 	@apply absolute;
 	transform: translate(-50%, -50%)
-}
-.hex.team-a {
-	@apply bg-violet-300/25;
-}
-.hex.team-b {
-	@apply bg-rose-300/25;
 }
 
 .fade-leave-active {

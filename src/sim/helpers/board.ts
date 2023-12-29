@@ -1,4 +1,4 @@
-import { state } from '#/store/store'
+import { setData } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 
@@ -46,6 +46,7 @@ export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, 
 	const [targetCol, targetRow] = targetHex
 	return units
 		.filter(unit => {
+			if (!unit.startHex) return false
 			const [unitCol, unitRow] = unit.startHex
 			return unitRow === targetRow && unitCol !== targetCol && Math.abs(targetCol - unitCol) <= maxDistance
 		})
@@ -53,13 +54,13 @@ export function getAdjacentRowUnitsTo(maxDistance: number, targetHex: HexCoord, 
 
 export function isInBackLines(unit: ChampionUnit) {
 	const row = unit.activeHex[1]
-	return row < 2 || row >= state.rowsTotal - 2
+	return row < 2 || row >= setData.rowsTotal - 2
 }
 
 export function getOccupiedHexes(units: ChampionUnit[]) {
 	return units
 		.filter(unit => unit.hasCollision())
-		.map(unit => unit.activeHex)
+		.map(unit => unit.activeHex!)
 }
 
 export function getHexesSurroundingWithin(hex: HexCoord, maxDistance: SurroundingHexRange, includingOrigin: boolean): HexCoord[] {
@@ -80,7 +81,7 @@ export function getHexRing([col, row]: HexCoord, atDistance: SurroundingHexRange
 	const isOffsetRow = row % 2 === 1
 	const validHexes: HexCoord[] = []
 	const lastColIndex = BOARD_COL_COUNT - 1
-	const lastRowIndex = state.rowsTotal - 1
+	const lastRowIndex = setData.rowsTotal - 1
 	for (let mirror = 0; mirror < 2; mirror += 1) {
 		const rowMultiplier = mirror === 0 ? 1 : -1
 		for (const [colDelta, rowDelta] of surroundings[atDistance - 1]) {
@@ -144,11 +145,15 @@ export function getProjectedHexAtAngleTo(target: ChampionUnit, fromUnit: Champio
 	return bestHexRowCol?.hex
 }
 
-export function getCoordFrom([col, row]: HexCoord): HexCoord {
-	const hex = boardRowsCols[row]?.[col] as HexRowCol | undefined
+export function getCoordFrom(hex: HexCoord | undefined): HexCoord {
+	if (!hex) {
+		return [0, 0]
+	}
+	const [col, row] = hex
+	const hexRowCol = boardRowsCols[row]?.[col] as HexRowCol | undefined
 	// return hex ? [...hex.coord] : calculateCoordForHex(col, row)
-	if (hex) {
-		return [...hex.coord]
+	if (hexRowCol) {
+		return [...hexRowCol.coord]
 	}
 	console.warn('Coord for hex outside board', col, row)
 	return calculateCoordForHex(col, row)
@@ -156,7 +161,7 @@ export function getCoordFrom([col, row]: HexCoord): HexCoord {
 
 export function getOuterHexes() {
 	const outerHexes: HexCoord[] = []
-	const lastOuterRow = state.rowsTotal
+	const lastOuterRow = setData.rowsTotal
 	const lastOuterCol = BOARD_COL_COUNT
 	for (let rowIndex = -1; rowIndex <= lastOuterRow; rowIndex += 1) {
 		if (rowIndex === -1 || rowIndex === lastOuterRow) {
@@ -172,7 +177,7 @@ export function getOuterHexes() {
 export function getEdgeHexes() {
 	const edgeHexes: HexCoord[] = []
 	boardRowsCols.forEach((row, rowIndex) => {
-		if (rowIndex === 0 || rowIndex === state.rowsTotal - 1) {
+		if (rowIndex === 0 || rowIndex === setData.rowsTotal - 1) {
 			edgeHexes.push(...row.map(rowCol => rowCol.hex))
 		} else {
 			edgeHexes.push(row[0].hex, row[BOARD_COL_COUNT - 1].hex)
@@ -186,7 +191,7 @@ export function getHexRow(row: number) {
 }
 
 export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], includingUnderTargetUnit: boolean, maxDistance: SurroundingHexRange) {
-	const densityBoard = createEmptyBoard(state.rowsTotal)
+	const densityBoard = createEmptyBoard(setData.rowsTotal)
 	let results: HexCoord[] = []
 	let bestHexValue = isMaximum ? 0 : Number.MAX_SAFE_INTEGER
 	units.forEach(unit => {
@@ -227,7 +232,7 @@ export function getBestDensityHexes(isMaximum: boolean, units: ChampionUnit[], i
 export function getFrontBehindHexes(unit: ChampionUnit, inFront: boolean) {
 	const [unitCol, unitRow] = unit.activeHex
 	const projectingRowDirection = (unit.team === 0 ? -1 : 1) * (inFront ? 1 : -1)
-	return getHexRing(unit.startHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
+	return getHexRing(unit.activeHex).filter(([col, row]) => row - unitRow === projectingRowDirection)
 }
 
 export function coordinateDistanceSquared([startX, startY]: HexCoord, [destX, destY]: HexCoord) {
@@ -292,5 +297,5 @@ export function recursivePathTo(originHex: HexCoord, destHex: HexCoord, occupied
 }
 
 export function getDefaultHexFor(teamNumber: TeamNumber): HexCoord {
-	return teamNumber === 0 ? [0, state.rowsTotal - 1] : [BOARD_COL_COUNT - 1, 0]
+	return teamNumber === 0 ? [0, setData.rowsTotal - 1] : [BOARD_COL_COUNT - 1, 0]
 }

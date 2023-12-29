@@ -2,7 +2,7 @@ import { computed, reactive, shallowReactive, watch, watchEffect } from 'vue'
 
 import { ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS } from '@tacticians-academy/academy-library'
 import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
-import { importAugments, importChampions, importItems, importTraits } from '@tacticians-academy/academy-library/dist/imports'
+import { importAugments, importChampions, importItems, importTraits, importSetData } from '@tacticians-academy/academy-library/dist/imports'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { clearBoardStorage, getSavedComps, getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveSetNumber, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/store/storage'
@@ -22,7 +22,7 @@ import type { TargetEffect } from '#/sim/effects/TargetEffect'
 import { getAdjacentRowUnitsTo } from '#/sim/helpers/board'
 import { BOARD_MAX_ROW_COUNT } from '#/sim/helpers/constants'
 import { getInverseHex, getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
-import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
+import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
 import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 import { getItemByIdentifier, uniqueIdentifier } from '#/sim/helpers/utils'
@@ -36,6 +36,9 @@ export const DEFAULT_SET = SET_NUMBERS[SET_NUMBERS.length - 1]
 // State
 
 export const setData = shallowReactive({
+	rowsPerSide: BOARD_MAX_ROW_COUNT / 2,
+	rowsTotal: BOARD_MAX_ROW_COUNT,
+
 	activeAugments: [] as AugmentData[],
 	emptyImplementationAugments: [] as string[],
 	champions: [] as ChampionData[],
@@ -54,6 +57,10 @@ export const setData = shallowReactive({
 	championEffects: {} as ChampionEffects,
 	itemEffects: {} as ItemEffects,
 	traitEffects: {} as TraitEffects,
+
+	levelShopOdds: [[0, 0, 0, 0, 0]] as number[][],
+	levelXP: [] as number[],
+	unitCostPoolSizes: [] as number[],
 })
 export const setDataReactive = reactive({
 	compsUser: {} as CustomComps,
@@ -63,16 +70,20 @@ export type SimMode = 'teamfight' | 'rolldown'
 
 const initSetNumber = getSetNumber()
 export const state = reactive({
-	simMode: 'teamfight' as SimMode,
+	simMode: 'rolldown' as SimMode, //SAMPLE
+	// simMode: 'teamfight' as SimMode,
 	loadedSet: false,
 	setNumber: initSetNumber,
-	rowsPerSide: BOARD_MAX_ROW_COUNT / 2,
-	rowsTotal: BOARD_MAX_ROW_COUNT,
+
+	gold: 80,
+	xp: 78,
 
 	elapsedSeconds: 0,
 	didStart: false,
 	winningTeam: null as TeamNumber | null,
 	units: [] as ChampionUnit[],
+	benchUnits: [] as (ChampionUnit | undefined)[],
+
 	hexEffects: new Set<HexEffect>(),
 	moveUnitEffects: new Set<MoveUnitEffect>(),
 	projectileEffects: new Set<ProjectileEffect>(),
@@ -102,6 +113,7 @@ export async function setSetNumber(set: SetNumber) {
 		const { champions } = await importChampions(set)
 		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
 		const { traits } = await importTraits(set)
+		const { LEVEL_SHOP_ODDS, LEVEL_XP, UNIT_COST_POOL_SIZES } = await importSetData(set)
 
 		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
 		state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
@@ -127,11 +139,17 @@ export async function setSetNumber(set: SetNumber) {
 		setData.championEffects = championEffects ?? {}
 		setData.itemEffects = itemEffects ?? {}
 		setData.traitEffects = traitEffects ?? {}
-		state.setNumber = set
-		state.rowsPerSide = set < 2 ? 3 : 4
-		state.rowsTotal = state.rowsPerSide * 2
 
+		setData.levelShopOdds = LEVEL_SHOP_ODDS ?? []
+		setData.levelXP = LEVEL_XP ?? []
+		setData.unitCostPoolSizes = UNIT_COST_POOL_SIZES ?? []
+
+		setData.rowsPerSide = set < 2 ? 3 : 4
+		setData.rowsTotal = setData.rowsPerSide * 2
+
+		state.setNumber = set
 		state.units = []
+		state.benchUnits = []
 		loadStorageUnits(getSavedUnits(state.setNumber))
 		saveSetNumber(set)
 
@@ -157,6 +175,16 @@ export async function setSetNumber(set: SetNumber) {
 export const getters = {
 	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
 	mutantType: computed(() => state.mutantType),
+
+	currentLevelData: computed(() => {
+		if (state.xp <= 0 || !setData.levelXP.length) {
+			return [0, 0, 0]
+		}
+		const currentLevelIndex = setData.levelXP.findIndex(levelXP => levelXP > state.xp) - 1
+		const currentLevelXP = setData.levelXP[currentLevelIndex]
+		const nextLevelXP = setData.levelXP[currentLevelIndex + 1]
+		return [currentLevelIndex + 1, state.xp - currentLevelXP, nextLevelXP - currentLevelXP]
+	}),
 
 	synergiesByTeam: computed(() => {
 		const traitsAndUnitsByTeam: [TraitAndUnits[], TraitAndUnits[]] = [[], []]
@@ -250,8 +278,8 @@ watch(getters.augmentCount, (augmentCount) => {
 
 // Store
 
-export function getValueOfTeam(teamNumber: number) {
-	return state.units.filter(u => u.team === teamNumber).map(u => u.getTotalValue()).reduce((curr, acc) => curr + acc, 0)
+export function getValueOfTeam(teamNumber: TeamNumber) {
+	return getUnitsOfTeam(teamNumber).map(u => u.getTotalValue()).reduce((curr, acc) => curr + acc, 0)
 }
 
 export function clearBoardStateAndReset() {
@@ -281,11 +309,15 @@ export function resetUnitsAfterUpdating() {
 
 	const unitsByTeam: [ChampionUnit[], ChampionUnit[]] = [[], []]
 	state.units.forEach(unit => {
+
 		unitsByTeam[unit.team].push(unit)
 		unit.resetPre(synergiesByTeam)
 	})
 
 	state.units.forEach(unit => {
+		const startHex = unit.startHex
+		if (!startHex) return
+
 		unit.items.forEach((item, index) => {
 			const itemEffect = setData.itemEffects[item.name]
 			if (itemEffect) {
@@ -293,7 +325,7 @@ export function resetUnitsAfterUpdating() {
 				if (itemEffect.adjacentHexBuff) {
 					const hexRange = item.effects['HexRange']
 					if (hexRange != null) {
-						itemEffect.adjacentHexBuff(item, unit, getAdjacentRowUnitsTo(hexRange, unit.startHex, state.units))
+						itemEffect.adjacentHexBuff(item, unit, getAdjacentRowUnitsTo(hexRange, startHex, state.units))
 					} else {
 						console.log('ERR', 'adjacentHexBuff', item.name, item.effects)
 					}
@@ -336,10 +368,29 @@ function getItemFrom(name: string) {
 	return item
 }
 
-function repositionUnit(unit: ChampionUnit, hex: HexCoord) {
-	if (isSameHex(unit.startHex, hex)) return
+function repositionUnit(unit: ChampionUnit, hex: HexCoord | undefined, benchIndex: number | undefined) {
+	if (hex) {
+		if (unit.startHex && isSameHex(unit.startHex, hex)) return
 
-	unit.startHex = [...hex]
+		if (unit.benchIndex != null) {
+			if (state.benchUnits[unit.benchIndex] === unit) {
+				state.benchUnits[unit.benchIndex] = undefined
+			}
+			unit.benchIndex = undefined
+			state.units.push(unit)
+		}
+		unit.startHex = [...hex]
+	} else if (benchIndex != null) {
+		if (unit.startHex) {
+			removeFirstFromArrayWhere(state.units, (u) => u === unit)
+			unit.startHex = undefined
+		}
+		if (unit.benchIndex != null && state.benchUnits[unit.benchIndex] === unit) {
+			state.benchUnits[unit.benchIndex] = undefined
+		}
+		state.benchUnits[benchIndex] = unit
+		unit.benchIndex = benchIndex
+	}
 	unit.updateTeam()
 }
 
@@ -443,7 +494,7 @@ const store = {
 		if (transfer) {
 			transfer.setData('text/type', type)
 			transfer.setData('text/name', name)
-			transfer.effectAllowed = 'copyMove'
+			transfer.effectAllowed = state.simMode === 'rolldown' ? 'move' : 'copyMove'
 		}
 		state.dragUnit = dragUnit
 		event.stopPropagation()
@@ -451,9 +502,17 @@ const store = {
 	_deleteUnit(hex: HexCoord) {
 		removeFirstFromArrayWhere(state.units, (unit) => unit.isStartAt(hex))
 		state.dragUnit = null
-		saveUnits(state.setNumber)
+		if (state.simMode !== 'rolldown') {
+			saveUnits(state.setNumber)
+		}
 	},
 	deleteUnit(hex: HexCoord) {
+		if (state.simMode === 'rolldown') {
+			const unit = state.units.find(unit => unit.isStartAt(hex))
+			if (unit) {
+				state.gold += unit.getSellValue()
+			}
+		}
 		store._deleteUnit(hex)
 		resetUnitsAfterUpdating()
 	},
@@ -464,23 +523,29 @@ const store = {
 		unit.genericReset()
 		resetUnitsAfterUpdating()
 	},
-	dropUnit(event: DragEvent, apiName: string, hex: HexCoord) {
-		const unit = state.dragUnit
-		if (unit && event.dataTransfer?.effectAllowed === 'copy') {
+	dropUnit(event: DragEvent, apiName: string, hex: HexCoord | undefined, benchIndex: number | undefined) {
+		const dragUnit = state.dragUnit
+		if (dragUnit && hex && state.simMode !== 'rolldown' && event.dataTransfer?.effectAllowed === 'copy') {
 			store._deleteUnit(hex)
-			store.addUnit(apiName, hex, unit.starLevel)
+			store.addUnit(apiName, hex, dragUnit.starLevel)
 			//TODO copy items?
 			state.dragUnit = null
 		} else {
-			if (unit) {
-				const existingUnit = state.units.find(unit => unit.isStartAt(hex))
-				if (existingUnit) {
-					repositionUnit(existingUnit, unit.startHex)
+			if (dragUnit) {
+				const existingUnit = hex ? state.units.find(unit => unit.isStartAt(hex)) : (benchIndex != null ? state.benchUnits[benchIndex] : undefined)
+				if (hex && state.simMode === 'rolldown') {
+					const increaseMax = dragUnit.benchIndex != null && !existingUnit ? 0 : 1
+					if (getUnitsOfTeam(0).length >= getters.currentLevelData.value[0] + increaseMax) {
+						return
+					}
 				}
-				repositionUnit(unit, hex)
+				if (existingUnit) {
+					repositionUnit(existingUnit, dragUnit.startHex, dragUnit.benchIndex)
+				}
+				repositionUnit(dragUnit, hex, benchIndex)
 				resetUnitsAfterUpdating()
 				state.dragUnit = null
-			} else {
+			} else if (hex) {
 				store._deleteUnit(hex)
 				store.addUnit(apiName, hex, 1)
 			}

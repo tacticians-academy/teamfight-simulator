@@ -20,7 +20,13 @@ const MODE_PANEL_VW = `${SIDEBAR_UNITS / 5}vw`
 const { state, deleteItem, deleteUnit, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
-	return state.didStart || (state.loadedSet && state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1))
+	if (state.didStart) {
+		return true
+	}
+	if (!state.loadedSet) {
+		return false
+	}
+	return state.units.some(unit => unit.team === 0) && state.units.some(unit => unit.team === 1)
 })
 
 function onFight() {
@@ -35,6 +41,9 @@ function onFight() {
 }
 
 function onToggle(name: SimMode) {
+	if (state.didStart) {
+		onFight()
+	}
 	state.simMode = name
 }
 </script>

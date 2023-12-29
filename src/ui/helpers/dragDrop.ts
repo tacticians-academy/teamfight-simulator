@@ -37,7 +37,12 @@ export function onDropSell(event: DragEvent) {
 
 	const dragType = getDragType(event)
 	if (dragType === 'unit') {
-		deleteUnit(dragUnit.startHex)
+		if (dragUnit.startHex) {
+			deleteUnit(dragUnit.startHex)
+		} else if (dragUnit.benchIndex != null) {
+			state.benchUnits[dragUnit.benchIndex] = undefined
+			dragUnit.benchIndex = undefined
+		}
 	} else if (dragType === 'item') {
 		const name = getDragName(event)
 		if (name != null) {
@@ -55,7 +60,7 @@ export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
 
 	event.preventDefault()
 	if (type === 'unit') {
-		dropUnit(event, name, onUnit.startHex)
+		dropUnit(event, name, onUnit.startHex, onUnit.benchIndex)
 	} else if (type === 'item') {
 		if (state.dragUnit && event.dataTransfer?.effectAllowed === 'copy') {
 			copyItem(name, onUnit)
@@ -63,7 +68,9 @@ export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
 			moveItem(name, onUnit, state.dragUnit)
 		}
 	} else if (type === 'comp') {
-		onDropComp(name, onUnit.startHex)
+		if (onUnit.startHex) {
+			onDropComp(name, onUnit.startHex)
+		}
 	} else {
 		console.log('ERR', 'Unknown drag type', type, name)
 	}

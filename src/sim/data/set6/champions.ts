@@ -47,7 +47,7 @@ export const baseChampionEffects = {
 						if (!champion.checkInRangeOfTarget()) {
 							champion.setTarget(null)
 						}
-						champion.alliedUnits(false).forEach(unit => unit.setTarget(withUnit)) //TODO target if in range
+						champion.aliveAlliedUnits(false).forEach(unit => unit.setTarget(withUnit)) //TODO target if in range
 						champion.empoweredAutos.add({
 							amount: 1,
 							statusEffects: [
@@ -547,7 +547,7 @@ export const baseChampionEffects = {
 
 	[ChampionKey.Lulu]: {
 		cast: (elapsedMS, spell, champion) => {
-			const alliesByLowestHP = getBestSortedAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
+			const alliesByLowestHP = getBestSortedAsMax(false, champion.aliveAlliedUnits(true), (unit) => unit.health)
 			const allyCount = champion.getSpellVariable(spell, 'NumAllies')
 			const stunSeconds = champion.getSpellVariable(spell, 'CCDuration')
 			const healAmount = champion.getSpellCalculationResult(spell, 'BonusHealth')
@@ -622,7 +622,7 @@ export const baseChampionEffects = {
 
 				const shielding = [champion]
 				const enemies = getUnitsOfTeam(champion.opposingTeam())
-				const mostTargetedAlly = getBestRandomAsMax(true, champion.alliedUnits(false), (unit) => enemies.filter(enemy => enemy.target === unit).length)
+				const mostTargetedAlly = getBestRandomAsMax(true, champion.aliveAlliedUnits(false), (unit) => enemies.filter(enemy => enemy.target === unit).length)
 				if (mostTargetedAlly) { shielding.push(mostTargetedAlly) }
 
 				shielding.forEach(unit => {
@@ -649,7 +649,7 @@ export const baseChampionEffects = {
 				const bonusKey = spell.name as BonusLabelKey
 				champion.setBonusesFor(bonusKey, [BonusKey.AttackDamage, champion.attackDamage() * bonusADProportion, expiresAtMS])
 				champion
-					.alliedUnits(false)
+					.aliveAlliedUnits(false)
 					.forEach(unit => unit.setBonusesFor(bonusKey, [BonusKey.AttackDamage, allyADAP, expiresAtMS], [BonusKey.AbilityPower, allyADAP, expiresAtMS]))
 			})
 		},
@@ -689,7 +689,7 @@ export const baseChampionEffects = {
 				onActivate: (elapsedMS, champion) => {
 					const energizedSeconds = champion.getSpellVariable(spell, 'EnergizedDuration')
 					const expiresAtMS = elapsedMS + energizedSeconds * 1000
-					champion.alliedUnits(true).forEach(alliedUnit => {
+					champion.aliveAlliedUnits(true).forEach(alliedUnit => {
 						alliedUnit.empoweredAutos.add({
 							amount: 9001,
 							expiresAtMS,

@@ -105,7 +105,7 @@ export class MoveUnitEffect extends GameEffect {
 			const collisionRadius = (UNIT_SIZE_PROPORTION * (this.collisionSizeMultiplier != null ? this.collisionSizeMultiplier : 1) + UNIT_SIZE_PROPORTION) / 2
 			const collisionRadiusSquared = collisionRadius * collisionRadius
 			for (const unit of state.units) {
-				if (unit === this.target || unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID)) {
+				if (unit === this.target || !unit.hasCollision() || unit.team !== this.targetTeam || this.collidedWith.includes(unit.instanceID)) {
 					continue
 				}
 				if (coordinateDistanceSquared(unit.coord, this.target.coord) <= collisionRadiusSquared) {

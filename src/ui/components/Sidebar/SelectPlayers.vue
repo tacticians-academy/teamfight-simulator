@@ -5,6 +5,7 @@ import SelectPlayersAugments from '#/ui/components/Sidebar/SelectPlayersAugments
 import { getValueOfTeam, useStore, clearBoardStateAndReset } from '#/store/store'
 
 import { MutantType } from '#/sim/helpers/types'
+import type { TeamNumber } from '#/sim/helpers/types'
 
 import { getTeamName } from '#/ui/helpers/utils'
 
@@ -44,7 +45,7 @@ function onReset() {
 		<div v-for="(teamSynergies, teamIndex) in synergiesByTeam" :key="teamIndex">
 			<div>
 				<span class="font-semibold">Team {{ getTeamName(teamIndex) }}</span>
-				<span class="text-secondary"> ({{ getValueOfTeam(teamIndex) }} gold value)</span>
+				<span class="text-secondary"> ({{ getValueOfTeam(teamIndex as TeamNumber) }} gold value)</span>
 			</div>
 			<div v-for="{ key, trait, activeStyle, activeEffect, uniqueUnitNames } in teamSynergies" :key="key">
 				<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="uniqueUnitNames" />

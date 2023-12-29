@@ -253,7 +253,7 @@ export const baseTraitEffects = {
 	[TraitKey.Socialite]: {
 		team: (unit, activeEffect) => {
 			const variables: BonusVariable[] = []
-			const mirrorHex = getMirrorHex(unit.startHex)
+			const mirrorHex = getMirrorHex(unit.activeHex)
 			getSocialiteHexesFor(unit.team).forEach(([statsMultiplier, socialiteHexes]) => {
 				if (socialiteHexes.some(hex => isSameHex(hex, mirrorHex))) {
 					const [damagePercent, manaPerSecond, omnivampPercent] = getVariables(activeEffect, 'DamagePercent', 'ManaPerSecond', 'OmnivampPercent')

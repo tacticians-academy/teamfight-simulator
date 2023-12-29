@@ -58,7 +58,7 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const target = champion.target
 			if (!target) { return false }
-			const checkingUnits = state.units.filter(unit => unit !== champion && unit !== target)
+			const checkingUnits = state.units.filter(unit => unit !== champion && unit !== target && unit.hasCollision())
 			let targetHex: HexCoord | undefined
 			const moveSpeed = 1000 //TODO experimentally determine
 			const knockupSeconds = champion.getSpellVariable(spell, 'KnockupDuration')
@@ -387,7 +387,7 @@ export const championEffects = {
 				onCollided: (elapsedMS, effect, withUnit, damage) => {
 					if (damage == null) return
 
-					const lowestHPAlly = getBestRandomAsMax(false, champion.alliedUnits(true), (unit) => unit.health)
+					const lowestHPAlly = getBestRandomAsMax(false, champion.aliveAlliedUnits(true), (unit) => unit.health)
 					if (lowestHPAlly) {
 						const percentHealing = champion.getSpellCalculationResult(spell, 'PercentHealing')
 						lowestHPAlly.gainHealth(elapsedMS, champion, damage.takingDamage * percentHealing / 100, true)
@@ -401,7 +401,7 @@ export const championEffects = {
 		cast: (elapsedMS, spell, champion) => {
 			const bonusLabelKey = spell.name as BonusLabelKey
 			const numTargets = champion.getSpellVariable(spell, 'NumTargets')
-			const validTargets = champion.alliedUnits(true).filter(unit => !unit.getBonusesFrom(bonusLabelKey).length)
+			const validTargets = champion.aliveAlliedUnits(true).filter(unit => !unit.getBonusesFrom(bonusLabelKey).length)
 			const lowestHPAllies = getBestSortedAsMax(false, validTargets, (unit) => unit.health) //TODO can self-target?
 				.slice(0, numTargets)
 			if (!lowestHPAllies.length) {

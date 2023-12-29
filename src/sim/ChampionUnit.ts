@@ -25,7 +25,7 @@ import { coordinateDistanceSquared, getClosestHexAvailableTo, getCoordFrom, getH
 import type { SurroundingHexRange } from '#/sim/helpers/board'
 import { calculateChampionBonuses, calculateItemBonuses, calculateSynergyBonuses, createDamageCalculation, solveSpellCalculationFrom } from '#/sim/helpers/calculate'
 import { MOVE_LOCKOUT_JUMPERS_MS, DEFAULT_MANA_LOCK_MS, HEX_PROPORTION, HEX_PROPORTION_PER_LEAGUEUNIT, MAX_HEX_COUNT } from '#/sim/helpers/constants'
-import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, thresholdCheck } from '#/sim/helpers/effectUtils'
+import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, getAttackableUnitsOfTeam, getInteractableUnitsOfTeam, getStageScalingIndex, getUnitsOfTeam, thresholdCheck } from '#/sim/helpers/effectUtils'
 import { containsHex, getTeamFor, isSameHex } from '#/sim/helpers/hexes'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/sim/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StackData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
@@ -42,7 +42,8 @@ export function isPlaceable(unitData: ChampionData) {
 
 export class ChampionUnit {
 	instanceID: string
-	startHex: HexCoord
+	startHex: HexCoord | undefined
+	benchIndex: number | undefined
 	team: TeamNumber = 0
 	starLevel: StarLevel
 	data: ChampionData
@@ -99,14 +100,14 @@ export class ChampionUnit {
 
 	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
 
-	constructor(apiName: string, hex: HexCoord, starLevel: StarLevel) {
+	constructor(apiName: string, hex: HexCoord | undefined, starLevel: StarLevel) {
 		this.instanceID = `c${instanceIndex += 1}`
 		const stats = setData.champions.find(unit => unit.apiName === apiName) ?? setData.champions.find(unit => unit.apiName === ChampionKey.TrainingDummy) ?? setData.champions[0]
 		this.isStarLocked = !isPlaceable(stats)
 		this.data = markRaw(stats)
 		this.starLevel = starLevel
-		this.startHex = [...hex]
-		this.activeHex = [...hex]
+		this.startHex = hex ? [...hex] : undefined
+		this.activeHex = hex ? [...hex] : [-1, -1]
 		this.coord = this.getCoord()
 		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 20 //TODO investigate how melee attacks work
 
@@ -682,8 +683,10 @@ export class ChampionUnit {
 	}
 
 	jumpToBackline() {
+		if (!this.startHex) return
+
 		const [col, row] = this.startHex
-		const targetHex: HexCoord = [col, this.team === 0 ? 0 : state.rowsTotal - 1]
+		const targetHex: HexCoord = [col, this.team === 0 ? 0 : setData.rowsTotal - 1]
 		this.customMoveTo(targetHex, true, undefined, MOVE_LOCKOUT_JUMPERS_MS, false)
 		this.applyStatusEffect(0, StatusEffectType.stealth, MOVE_LOCKOUT_JUMPERS_MS)
 	}
@@ -769,7 +772,7 @@ export class ChampionUnit {
 
 		this.items.forEach((item, index) => setData.itemEffects[item.name]?.deathOfHolder?.(elapsedMS, item, uniqueIdentifier(index, item), this))
 
-		const teamUnits = this.alliedUnits(false)
+		const teamUnits = this.aliveAlliedUnits(false)
 		if (teamUnits.length) {
 			getters.synergiesByTeam.value.forEach((teamSynergies, teamNumber) => {
 				teamSynergies.forEach(({ key, activeEffect }) => {
@@ -1046,8 +1049,8 @@ export class ChampionUnit {
 		return shield
 	}
 
-	alliedUnits(includingSelf: boolean): ChampionUnit[] {
-		return state.units.filter(unit => (includingSelf ? true : unit !== this) && !unit.dead && unit.team === this.team)
+	aliveAlliedUnits(includingSelf: boolean): ChampionUnit[] {
+		return getUnitsOfTeam(this.team).filter(unit => (includingSelf ? true : unit !== this) && !unit.dead)
 	}
 
 	coordDistanceSquaredTo(target: {coord: HexCoord} | HexCoord) {
@@ -1061,7 +1064,7 @@ export class ChampionUnit {
 		return isSameHex(this.activeHex, hex)
 	}
 	isStartAt(hex: HexCoord) {
-		return isSameHex(this.startHex, hex)
+		return this.startHex ? isSameHex(this.startHex, hex) : false
 	}
 	isIn(hexes: Iterable<HexCoord>) {
 		return containsHex(this.activeHex, hexes)
@@ -1094,7 +1097,8 @@ export class ChampionUnit {
 		}
 	}
 
-	setActiveHex([col, row]: HexCoord) {
+	setActiveHex(hex: HexCoord | undefined) {
+		const [col, row] = hex ?? [-1, -1]
 		this.movesBeforeDroppingTarget -= 1
 		this.activeHex[0] = col
 		this.activeHex[1] = row
@@ -1520,5 +1524,8 @@ export class ChampionUnit {
 	}
 	getTotalValue() {
 		return (this.data.cost ?? 0) * this.getCountFromPool()
+	}
+	getSellValue() {
+		return this.getTotalValue() - (this.starLevel > 1 && this.data.cost != null && this.data.cost > 1 ? 1 : 0)
 	}
 }

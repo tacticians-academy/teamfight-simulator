@@ -161,7 +161,7 @@ export const augmentEffects = {
 		apply: (augment, team, units) => {
 			const [amount, durationSeconds] = getVariables(augment, 'ShieldHP', 'ShieldDuration')
 			units.forEach(source => {
-				const adjacentHexes = getHexRing(source.startHex)
+				const adjacentHexes = getHexRing(source.activeHex)
 				units
 					.filter(adjacentUnit => adjacentUnit.isIn(adjacentHexes))
 					.forEach(adjacentUnit => adjacentUnit.queueShield(0, source, {

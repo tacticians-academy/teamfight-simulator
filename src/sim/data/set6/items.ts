@@ -156,7 +156,7 @@ export const baseItemEffects = {
 		damageDealtByHolder: (item, itemID, elapsedMS, target, holder, { damageType, takingDamage }) => {
 			if (damageType !== DamageType.physical) {
 				const [hextechHeal] = getVariables(item, BonusKey.VampSpell)
-				const lowestHPAlly = getBestRandomAsMax(false, holder.alliedUnits(true), (unit) => unit.health)
+				const lowestHPAlly = getBestRandomAsMax(false, holder.aliveAlliedUnits(true), (unit) => unit.health)
 				if (lowestHPAlly) {
 					lowestHPAlly.gainHealth(elapsedMS, holder, takingDamage * hextechHeal / 100, true)
 				}
@@ -323,7 +323,7 @@ export const baseItemEffects = {
 	[ItemKey.Zephyr]: {
 		apply: (item, unit) => {
 			const [banishSeconds] = getVariables(item, 'BanishDuration')
-			const targetHex = getInverseHex(unit.startHex)
+			const targetHex = getInverseHex(unit.activeHex)
 			const units = getUnitsOfTeam(unit.opposingTeam()).filter(unit => !unit.isUnstoppable())
 			const target = getDistanceUnitOfTeamWithinRangeTo(false, targetHex, undefined, units) //TODO not random
 			if (target) {
