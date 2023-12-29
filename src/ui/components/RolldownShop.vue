@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
-
 import UnitCircle from '#/ui/components/UnitCircle.vue'
 import UnitOverlay from '#/ui/components/UnitOverlay.vue'
+
+import { onBeforeUnmount, onMounted } from 'vue'
 
 import { useStore } from '#/store/store'
 import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
@@ -58,7 +58,7 @@ function onDrop(event: DragEvent, benchIndex: number) {
 			class="bench-space  relative flex-1 aspect-square border-4 border-secondary  flex"
 			@dragover="onDragOver" @drop="onDrop($event, benchIndex)"
 		>
-			<UnitCircle v-if="state.benchUnits[benchIndex]" :unit="state.benchUnits[benchIndex]!">
+			<UnitCircle v-if="state.benchUnits[benchIndex]" :unit="state.benchUnits[benchIndex]!" class="flex-1">
 				<UnitOverlay v-if="state.benchUnits[benchIndex]" :unit="state.benchUnits[benchIndex]!" />
 			</UnitCircle>
 		</div>
@@ -85,7 +85,7 @@ function onDrop(event: DragEvent, benchIndex: number) {
 				<div>Reroll</div><div>2</div>
 			</button>
 		</div>
-		<div v-for="a in 5" :key="a" class="flex-grow border-4 border-secondary" />
+		<div v-for="shopIndex in 5" :key="shopIndex" class="flex-grow border-4 border-secondary" />
 	</div>
 </div>
 </template>

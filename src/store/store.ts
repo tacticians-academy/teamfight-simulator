@@ -9,7 +9,7 @@ import { clearBoardStorage, getSavedComps, getSavedUnits, getSetNumber, getStora
 import type { AugmentList, StorageChampion } from '#/store/storage'
 
 import { importDefaultComps, importAugmentEffects, importChampionEffects, importItemEffects, importTraitEffects } from '#/sim/data/imports'
-import type { AugmentEffects, AugmentFns, ChampionEffects, CustomComp, CustomComps, ItemEffects, TraitEffects } from '#/sim/data/types'
+import type { AugmentEffects, AugmentFns, ChampionEffects, CustomComp, CustomComps, ItemEffects, RolldownConfig, TraitEffects } from '#/sim/data/types'
 
 import { ChampionUnit } from '#/sim/ChampionUnit'
 import { cancelLoop, delayUntil } from '#/sim/loop'
@@ -53,6 +53,7 @@ export const setData = shallowReactive({
 	shimmerscaleItems: [] as ItemData[],
 	supportItems: [] as ItemData[],
 	compsDefault: {} as CustomComps,
+	rolldownConfigs: {} as RolldownConfig[],
 	augmentEffects: {} as AugmentEffects,
 	championEffects: {} as ChampionEffects,
 	itemEffects: {} as ItemEffects,
@@ -77,6 +78,7 @@ export const state = reactive({
 
 	gold: 80,
 	xp: 78,
+	sidebarItems: [] as ItemData[],
 
 	elapsedSeconds: 0,
 	didStart: false,
@@ -104,7 +106,7 @@ export async function setSetNumber(set: SetNumber) {
 
 	try {
 		const { activeAugments, emptyImplementationAugments } = await importAugments(set)
-		const { defaultComps } = await importDefaultComps(set)
+		const { defaultComps, rolldownConfigs } = await importDefaultComps(set)
 		const { augmentEffects } = await importAugmentEffects(set)
 		const { championEffects } = await importChampionEffects(set)
 		const { itemEffects } = await importItemEffects(set)
@@ -134,6 +136,7 @@ export async function setSetNumber(set: SetNumber) {
 		setData.supportItems = supportItems
 		setData.traits = traits ?? []
 		setData.compsDefault = defaultComps ?? {}
+		setData.rolldownConfigs = rolldownConfigs ?? {}
 		setDataReactive.compsUser = getSavedComps(set)
 		setData.augmentEffects = augmentEffects ?? {}
 		setData.championEffects = championEffects ?? {}
@@ -511,6 +514,7 @@ const store = {
 			const unit = state.units.find(unit => unit.isStartAt(hex))
 			if (unit) {
 				state.gold += unit.getSellValue()
+				state.sidebarItems.push(...unit.items)
 			}
 		}
 		store._deleteUnit(hex)

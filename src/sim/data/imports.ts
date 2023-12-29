@@ -4,13 +4,15 @@ import type { SetNumber } from '@tacticians-academy/academy-library'
 
 export async function importDefaultComps(set: SetNumber) {
 	type DefaultComps = typeof import('./set6/6.5/defaultComps.js')
-	if (set !== 6.5) {
-		return {} as DefaultComps
-	}
 	if (set === 6.5) {
 		return await import('./set6/6.5/defaultComps.js')
 	}
-	throw 'Unsupported set:' + set
+	if (set === 10) {
+		return await import('./set10/defaultComps.js')
+	}
+	// throw 'Unsupported set:' + set
+	console.error('Unsupported set:' + set)
+	return {} as DefaultComps
 }
 
 export async function importAugmentEffects(set: SetNumber) {

@@ -178,7 +178,7 @@ function playNextFrame() {
 		}
 	}
 
-	const effectsByType: Set<GameEffect>[] = [state.hexEffects, state.moveUnitEffects, state.projectileEffects, state.shapeEffects, state.targetEffects]
+	const effectsByType = [state.hexEffects, state.moveUnitEffects, state.projectileEffects, state.shapeEffects, state.targetEffects] as any as Set<GameEffect>[]
 	effectsByType.forEach(effects => {
 		effects.forEach(effect => {
 			if (effect.update(elapsedMS, GAME_TICK_MS, state.units) === false) {

@@ -59,13 +59,13 @@ function onToggle(name: SimMode) {
 			Roll Down
 		</button>
 	</div>
-	<div class="flex-grow  flex first-letter:flex flex-col">
-		<div class="overflow-y-scroll" @dragover="onDragOver" @drop="onDropSell">
-			<RolldownSetup v-if="state.simMode === 'rolldown'" class="h-full" />
-			<div v-else-if="!state.didStart" class="flex flex-col">
+	<div class="flex-grow  flex flex-col h-full" @dragover="onDragOver" @drop="onDropSell">
+		<RolldownSetup v-if="state.simMode === 'rolldown'" />
+		<template v-else>
+			<div v-if="!state.didStart" class="overflow-y-scroll flex flex-col">
 				<ManageTeams />
 			</div>
-			<div v-else>
+			<div v-else class="overflow-y-scroll">
 				<div class="text-center">
 					⏱ {{ state.elapsedSeconds }}
 				</div>
@@ -74,8 +74,8 @@ function onToggle(name: SimMode) {
 				</div>
 				<SelectPlayers />
 			</div>
-		</div>
-		<button v-if="state.simMode === 'teamfight'" :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.didStart ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
+			<button :disabled="!canToggleSimulation" class="button  flex-shrink-0" @click="onFight">{{ state.didStart ? (state.winningTeam !== null ? 'Reset' : 'Ceasefire') : 'Teamfight!' }}</button>
+		</template>
 	</div>
 </div>
 </template>

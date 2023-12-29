@@ -1,7 +1,7 @@
-import type { CustomComps } from "#/sim/data/types"
+import type { CustomComps, RolldownConfig } from "#/sim/data/types"
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
-export const defaultComps = {
+export const defaultComps: CustomComps = {
 	Yordles: {
 		augments: ["So Small"],
 		units: [
@@ -27,4 +27,7 @@ export const defaultComps = {
 			{ id: ChampionKey.Lucian, hex: [0, 6], starLevel: 2, items: [] },
 		],
 	},
-} as CustomComps
+}
+
+export const rolldownConfigs: RolldownConfig[] = [
+]

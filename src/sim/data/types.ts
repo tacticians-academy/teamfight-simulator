@@ -75,3 +75,12 @@ export type TraitEffects = { [key in string]?: TraitFns }
 
 export type CustomComp = { augments: (string | null)[], units: StorageChampion[]}
 export type CustomComps = Record<string, CustomComp>
+
+export type RolldownConfig = {
+	stage: number
+	gold: number
+	xp: number
+	contestedUnits: string[]
+	units: StorageChampion[]
+	items: string[]
+}
