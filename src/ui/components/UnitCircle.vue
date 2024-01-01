@@ -34,6 +34,7 @@ function onInfo(event: Event) {
 <div
 	class="hex-unit hex-overlay  group" :class="(unit.team === 0 ? 'team-a' : 'team-b') + (!unit.isInteractable() ? 'opacity-50' : (unit.statusEffects.stealth.active ? 'opacity-75' : ''))"
 	:data-hex="unit.startHex"
+	:data-bench="unit.benchIndex"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
 	:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.data.apiName!, unit)"
 	@dragover="onDragOver" @drop="onDropOnUnit($event, unit)" @contextmenu="onInfo"

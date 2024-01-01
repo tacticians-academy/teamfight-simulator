@@ -77,9 +77,12 @@ function onSaveComp() {
 
 const canSaveComp = computed(() => getUnitsOfTeam(0).length > 1)
 
-function getHexUnderMouse() {
+function getUnitUnderMouse() {
 	let n: HTMLElement | null = document.querySelector(":hover")
 	while (n) {
+		if (n.dataset.bench != null) {
+			return parseInt(n.dataset.bench, 10)
+		}
 		if (n.dataset.hex != null) {
 			return n.dataset.hex.split(',').map(n => parseInt(n, 10)) as HexCoord
 		}
@@ -89,9 +92,9 @@ function getHexUnderMouse() {
 }
 function onKey(event: KeyboardEvent) {
 	if (event.key === 'e') {
-		const hex = getHexUnderMouse()
-		if (hex) {
-			deleteUnit(hex)
+		const unitLocation = getUnitUnderMouse()
+		if (unitLocation != null) {
+			deleteUnit(unitLocation)
 		}
 	}
 }

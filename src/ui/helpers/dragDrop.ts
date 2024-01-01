@@ -37,12 +37,7 @@ export function onDropSell(event: DragEvent) {
 
 	const dragType = getDragType(event)
 	if (dragType === 'unit') {
-		if (dragUnit.startHex) {
-			deleteUnit(dragUnit.startHex)
-		} else if (dragUnit.benchIndex != null) {
-			state.benchUnits[dragUnit.benchIndex] = undefined
-			dragUnit.benchIndex = undefined
-		}
+		deleteUnit(dragUnit.startHex ?? dragUnit.benchIndex!)
 	} else if (dragType === 'item') {
 		const name = getDragName(event)
 		if (name != null) {

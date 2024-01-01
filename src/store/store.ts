@@ -1,8 +1,8 @@
 import { computed, reactive, shallowReactive, watch, watchEffect } from 'vue'
 
 import { ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS } from '@tacticians-academy/academy-library'
-import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData } from '@tacticians-academy/academy-library'
-import { importAugments, importChampions, importItems, importTraits, importSetData } from '@tacticians-academy/academy-library/dist/imports'
+import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData, UnitPools } from '@tacticians-academy/academy-library'
+import { importAugments, importChampions, importItems, importTraits, importSetData, importMap } from '@tacticians-academy/academy-library/dist/imports'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
 import { clearBoardStorage, getSavedComps, getSavedUnits, getSetNumber, getStorageInt, getStorageJSON, getStorageString, loadTeamAugments, saveSetNumber, saveTeamAugments, saveUnits, setStorage, setStorageJSON, StorageKey } from '#/store/storage'
@@ -59,9 +59,11 @@ export const setData = shallowReactive({
 	itemEffects: {} as ItemEffects,
 	traitEffects: {} as TraitEffects,
 
+	dropRates: {} as Record<string, number[][]>,
 	levelShopOdds: [[0, 0, 0, 0, 0]] as number[][],
+	headlinerSystemParameters: {} as Record<string, number> | undefined,
+	tierBags: {} as UnitPools,
 	levelXP: [] as number[],
-	unitCostPoolSizes: [] as number[],
 })
 export const setDataReactive = reactive({
 	compsUser: {} as CustomComps,
@@ -76,15 +78,19 @@ export const state = reactive({
 	loadedSet: false,
 	setNumber: initSetNumber,
 
+	rolldownActive: false,
 	gold: 80,
 	xp: 78,
+	chosen: null as ChampionUnit | null,
+	rollToChosen: 0,
+	unitPools: {} as UnitPools,
 	sidebarItems: [] as ItemData[],
 
 	elapsedSeconds: 0,
 	didStart: false,
 	winningTeam: null as TeamNumber | null,
 	units: [] as ChampionUnit[],
-	benchUnits: [] as (ChampionUnit | undefined)[],
+	benchUnits: Array(9).fill(null) as (ChampionUnit | null)[],
 
 	hexEffects: new Set<HexEffect>(),
 	moveUnitEffects: new Set<MoveUnitEffect>(),
@@ -115,7 +121,8 @@ export async function setSetNumber(set: SetNumber) {
 		const { champions } = await importChampions(set)
 		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
 		const { traits } = await importTraits(set)
-		const { LEVEL_SHOP_ODDS, LEVEL_XP, UNIT_COST_POOL_SIZES } = await importSetData(set)
+		const { LEVEL_XP } = await importSetData(set)
+		const { dropRates, tierBags, headlinerSystemParameters } = await importMap(set)
 
 		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
 		state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
@@ -143,16 +150,19 @@ export async function setSetNumber(set: SetNumber) {
 		setData.itemEffects = itemEffects ?? {}
 		setData.traitEffects = traitEffects ?? {}
 
-		setData.levelShopOdds = LEVEL_SHOP_ODDS ?? []
+		setData.dropRates = dropRates ?? []
+		setData.levelShopOdds = dropRates?.Shop ?? []
+		setData.tierBags = tierBags
+		setData.headlinerSystemParameters = headlinerSystemParameters
 		setData.levelXP = LEVEL_XP ?? []
-		setData.unitCostPoolSizes = UNIT_COST_POOL_SIZES ?? []
 
 		setData.rowsPerSide = set < 2 ? 3 : 4
 		setData.rowsTotal = setData.rowsPerSide * 2
 
+		state.rollToChosen = 0
 		state.setNumber = set
 		state.units = []
-		state.benchUnits = []
+		state.benchUnits.fill(null)
 		loadStorageUnits(getSavedUnits(state.setNumber))
 		saveSetNumber(set)
 
@@ -377,7 +387,7 @@ function repositionUnit(unit: ChampionUnit, hex: HexCoord | undefined, benchInde
 
 		if (unit.benchIndex != null) {
 			if (state.benchUnits[unit.benchIndex] === unit) {
-				state.benchUnits[unit.benchIndex] = undefined
+				state.benchUnits[unit.benchIndex] = null
 			}
 			unit.benchIndex = undefined
 			state.units.push(unit)
@@ -389,7 +399,7 @@ function repositionUnit(unit: ChampionUnit, hex: HexCoord | undefined, benchInde
 			unit.startHex = undefined
 		}
 		if (unit.benchIndex != null && state.benchUnits[unit.benchIndex] === unit) {
-			state.benchUnits[unit.benchIndex] = undefined
+			state.benchUnits[unit.benchIndex] = null
 		}
 		state.benchUnits[benchIndex] = unit
 		unit.benchIndex = benchIndex
@@ -509,16 +519,23 @@ const store = {
 			saveUnits(state.setNumber)
 		}
 	},
-	deleteUnit(hex: HexCoord) {
+	deleteUnit(location: HexCoord | number) {
 		if (state.simMode === 'rolldown') {
-			const unit = state.units.find(unit => unit.isStartAt(hex))
+			const unit = typeof location === 'number' ? state.benchUnits[location] : state.units.find(unit => unit.isStartAt(location))
 			if (unit) {
 				state.gold += unit.getSellValue()
 				state.sidebarItems.push(...unit.items)
+				if (unit.data.cost != null) {
+					state.unitPools[unit.data.cost][unit.data.apiName] += unit.getCountFromPool()
+				}
 			}
 		}
-		store._deleteUnit(hex)
-		resetUnitsAfterUpdating()
+		if (typeof location === 'number') {
+			state.benchUnits[location] = null
+		} else {
+			store._deleteUnit(location)
+			resetUnitsAfterUpdating()
+		}
 	},
 	addUnit(apiName: string, hex: HexCoord, starLevel: StarLevel) {
 		const unit = new ChampionUnit(apiName, hex, starLevel)
@@ -560,6 +577,10 @@ const store = {
 	resetGame() {
 		state.elapsedSeconds = 0
 		resetUnitsAfterUpdating()
+	},
+
+	resetUnitPools() {
+		state.unitPools = structuredClone(setData.tierBags)
 	},
 }
 

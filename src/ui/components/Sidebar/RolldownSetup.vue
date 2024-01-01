@@ -11,11 +11,9 @@ import { getItemByIdentifier } from '#/sim/helpers/utils'
 
 const { getters: { synergiesByTeam }, state, startDragging } = useStore()
 
-const startedRolldown = ref(false)
-
 function onConfig(config: RolldownConfig) {
-	startedRolldown.value = !startedRolldown.value
-	if (startedRolldown.value) {
+	state.rolldownActive = !state.rolldownActive
+	if (state.rolldownActive) {
 		state.elapsedSeconds = 0
 		state.stageNumber = config.stage
 		state.gold = config.gold
@@ -29,7 +27,7 @@ function onConfig(config: RolldownConfig) {
 </script>
 
 <template>
-<div v-if="!startedRolldown" class="p-1">
+<div v-if="!state.rolldownActive" class="p-1">
 	<button v-for="(config, index) in setData.rolldownConfigs" :key="index" @click="onConfig(config)">
 		<div class="flex space-x-2">
 			<div>Stage {{ config.stage }}</div>
