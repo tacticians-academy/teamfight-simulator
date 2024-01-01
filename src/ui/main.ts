@@ -1,6 +1,6 @@
-import { createApp } from 'vue'
-
 import App from '#/ui/App.vue'
+
+import { createApp } from 'vue'
 
 createApp(App)
 	.directive('focus', {

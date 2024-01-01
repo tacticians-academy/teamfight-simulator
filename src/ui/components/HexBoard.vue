@@ -1,25 +1,28 @@
 <script setup lang="ts">
-import HexEffect from '#/ui/components/Effects/HexEffect.vue'
-import ProjectileEffect from '#/ui/components/Effects/ProjectileEffect.vue'
-import ShapeEffect from '#/ui/components/Effects/ShapeEffect.vue'
-import TargetEffect from '#/ui/components/Effects/TargetEffect.vue'
+import HexEffectVue from '#/ui/components/Effects/HexEffect.vue'
+import ProjectileEffectVue from '#/ui/components/Effects/ProjectileEffect.vue'
+import ShapeEffectVue from '#/ui/components/Effects/ShapeEffect.vue'
+import TargetEffectVue from '#/ui/components/Effects/TargetEffect.vue'
 import UnitCircle from '#/ui/components/UnitCircle.vue'
 import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive } from '#/store/store'
-import { saveComps } from '#/store/storage'
+import { saveComps, toStorage } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
 import { getMirrorHex, getTeamForRow, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
+import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
+import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
+import type { HexEffect } from '#/sim/effects/HexEffect'
+import type { ProjectileEffect } from '#/sim/effects/ProjectileEffect'
+import type { ShapeEffect } from '#/sim/effects/ShapeEffect'
+import type { TargetEffect } from '#/sim/effects/TargetEffect'
 
 import { BOARD_UNITS_RAW, HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/dragDrop'
-import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
-import { toStorage } from '#/store/storage'
-import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
 
 const { getters, state, dropUnit, deleteUnit } = useStore()
 
@@ -139,22 +142,22 @@ onBeforeUnmount(() => {
 				<UnitOverlay v-if="unit.hasCollision()" :unit="unit" />
 			</template>
 			<transition-group name="fade">
-				<template v-for="hexEffect in state.hexEffects" :key="hexEffect.instanceID">
-					<HexEffect v-if="hexEffect.started" :effect="hexEffect" />
+				<template v-for="hexEffect in (state.hexEffects as unknown as Set<HexEffect>)" :key="hexEffect.instanceID">
+					<HexEffectVue v-if="hexEffect.started" :effect="hexEffect" />
 				</template>
 			</transition-group>
-			<template v-for="projectileEffect in state.projectileEffects" :key="projectileEffect.instanceID">
-				<ProjectileEffect v-if="projectileEffect.started" :effect="projectileEffect" />
+			<template v-for="projectileEffect in (state.projectileEffects as unknown as Set<ProjectileEffect>)" :key="projectileEffect.instanceID">
+				<ProjectileEffectVue v-if="projectileEffect.started" :effect="projectileEffect" />
 			</template>
 			<transition-group name="fade">
-				<template v-for="shapeEffect in state.shapeEffects" :key="shapeEffect.instanceID">
-					<ShapeEffect v-if="shapeEffect.started" :effect="shapeEffect" />
+				<template v-for="shapeEffect in (state.shapeEffects as unknown as Set<ShapeEffect>)" :key="shapeEffect.instanceID">
+					<ShapeEffectVue v-if="shapeEffect.started" :effect="shapeEffect" />
 				</template>
 			</transition-group>
 			<transition-group name="fade">
-				<template v-for="targetEffect in state.targetEffects" :key="targetEffect.instanceID">
+				<template v-for="targetEffect in (state.targetEffects as unknown as Set<TargetEffect>)" :key="targetEffect.instanceID">
 					<template v-if="targetEffect.started">
-						<TargetEffect v-for="(sourceTarget, index) in targetEffect.sourceTargets" :key="index" :effect="targetEffect" :sourceTarget="sourceTarget" />
+						<TargetEffectVue v-for="(sourceTarget, index) in targetEffect.sourceTargets" :key="index" :effect="targetEffect" :sourceTarget="sourceTarget" />
 					</template>
 				</template>
 			</transition-group>

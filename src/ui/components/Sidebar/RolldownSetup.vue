@@ -6,7 +6,6 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 import { useStore, getValueOfTeam, setData, setCompForTeam } from '#/store/store'
 import { getIconURLFor } from '#/ui/helpers/utils'
 import type { RolldownConfig } from '#/sim/data/types'
-import { ref } from 'vue'
 import { getItemByIdentifier } from '#/sim/helpers/utils'
 
 const { getters: { synergiesByTeam }, state, startDragging } = useStore()

@@ -9,7 +9,6 @@ import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/d
 import { getIconURLFor } from '#/ui/helpers/utils'
 import { ChampionUnit } from '#/sim/ChampionUnit'
 import type { StarLevel } from '#/sim/helpers/types'
-import { stat } from 'fs'
 
 const { state, getters, dropUnit, resetUnitPools } = useStore()
 

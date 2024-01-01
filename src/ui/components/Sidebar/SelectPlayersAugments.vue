@@ -8,7 +8,6 @@ import type { AugmentData, AugmentGroupKey } from '@tacticians-academy/academy-l
 import { useStore, setAugmentFor, setData } from '#/store/store'
 
 import type { TeamNumber } from '#/sim/helpers/types'
-
 import { getIconURLFor } from '#/ui/helpers/utils'
 
 const { state } = useStore()
