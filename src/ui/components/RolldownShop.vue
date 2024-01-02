@@ -177,7 +177,6 @@ function refreshShop() {
 
 watch(() => state.rolldownActive, () => {
 	shop.fill(null)
-	resetShop()
 	if (state.rolldownActive) {
 		refreshShop()
 	}

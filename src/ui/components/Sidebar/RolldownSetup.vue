@@ -13,15 +13,15 @@ const { getters: { synergiesByTeam }, state, startDragging } = useStore()
 function onConfig(config?: RolldownConfig) {
 	const active = config != null && !state.rolldownActive
 	state.rolldownActive = active
+	resetShop()
 	if (active) {
 		state.elapsedSeconds = 0
 		state.stageNumber = config.stage
 		state.gold = config.gold
 		state.xp = config.xp
 		state.benchItems = config.items.map(itemID => getItemByIdentifier(itemID, setData.currentItems)).filter((item): item is ItemData => !!item)
-		setCompForTeam({ augments: [], units: config.units}, 0)
+		setCompForTeam({ augments: [], units: config.units }, 0)
 	}
-	resetShop()
 }
 </script>
 

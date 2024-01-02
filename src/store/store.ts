@@ -167,11 +167,9 @@ export async function setSetNumber(set: SetNumber) {
 		setData.rowsPerSide = set < 2 ? 3 : 4
 		setData.rowsTotal = setData.rowsPerSide * 2
 
-		state.shopSinceChosen = 0
 		resetShop()
 		state.setNumber = set
 		state.units = []
-		state.benchUnits.fill(null)
 		loadStorageUnits(getSavedUnits(state.setNumber))
 		saveSetNumber(set)
 
@@ -624,6 +622,7 @@ export function resetShop() {
 	state.elapsedSeconds = 0
 	state.shopSinceChosen = 0
 	state.shopNumber = 0
+	state.benchUnits.fill(null)
 	state.shopUnitPools = structuredClone(setData.tierBags)
 }
 

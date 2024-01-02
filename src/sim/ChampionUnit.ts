@@ -112,7 +112,7 @@ export class ChampionUnit {
 		this.starLevel = starLevel
 		this.startHex = hex ? [...hex] : undefined
 		this.activeHex = hex ? [...hex] : [-1, -1]
-		this.coord = this.getCoord()
+		this.coord = hex ? this.getCoord() : [-1, -1]
 		this.chosenTraits = chosenTraits
 		if (chosenTraits) {
 			state.chosen = this
@@ -1528,7 +1528,7 @@ export class ChampionUnit {
 	}
 
 	getCountFromPool() {
-		return this.starLevel === 1 ? 1 : Math.pow(3, this.starLevel - 1)
+		return Math.pow(3, this.starLevel - 1)
 	}
 	getTotalValue() {
 		return (this.data.cost ?? 0) * this.getCountFromPool()
