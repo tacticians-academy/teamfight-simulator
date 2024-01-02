@@ -112,7 +112,7 @@ function refreshShop() {
 		const levelIndex = currentLevelData.value[0] - 1
 		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.levelShopOdds)[levelIndex]
 		const baseCost = getWeightedRandom(shopCostOdds.map((a, shopIndex) => [shopIndex + 1, a]))
-		const units = setData.tierBags[baseCost]
+		const units = state.shopUnitPools[baseCost]
 		const countFromPool = Math.pow(3, starLevel - 1)
 		const chosenTraits: Record<string, number> = {}
 		let unitApiName = ''
@@ -131,6 +131,13 @@ function refreshShop() {
 			}
 			unit = setData.champions.find(unitData => unitData.apiName === unitApiName)
 			if (unit && getChosen) {
+				const groupAPIName = setData.combinePoolAPINames[unitApiName] ?? unitApiName
+				const totalUnitPoolCount = setData.tierBags[baseCost][groupAPIName]
+				const remainingUnitPoolCount = state.shopUnitPools[baseCost][groupAPIName]
+				if (remainingUnitPoolCount / totalUnitPoolCount < 0.5) {
+					continue
+				}
+
 				const possibleTraits = unit.traits
 					.map(traitName => setData.traits.find(trait => trait.name === traitName))
 					.filter((trait): trait is TraitData => trait != null && trait.effects.length > 1)
