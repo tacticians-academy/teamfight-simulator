@@ -10,6 +10,7 @@ export const rolldownConfigs: RolldownConfig[] = [
 		stage: 4,
 		gold: 60,
 		xp: 78,
+		augments: [],
 		contestedUnits: ['TFT10_Ekko', 'TFT10_Ahri', 'TFT10_Akali', 'TFT10_Caitlyn', 'TFT10_Ezreal', 'TFT10_Poppy'],
 		items: [],
 		units: [

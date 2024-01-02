@@ -80,6 +80,7 @@ export type RolldownConfig = {
 	stage: number
 	gold: number
 	xp: number
+	augments: string[]
 	contestedUnits: string[]
 	units: StorageChampion[]
 	items: string[]
