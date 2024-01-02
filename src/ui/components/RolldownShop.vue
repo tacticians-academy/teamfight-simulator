@@ -10,7 +10,7 @@ import type { ChampionData, TraitData } from '@tacticians-academy/academy-librar
 import { ChampionUnit } from '#/sim/ChampionUnit'
 import type { StarLevel } from '#/sim/helpers/types'
 import { shuffle } from '#/sim/helpers/utils'
-import { setData, useStore, resetShop, modifyPool } from '#/store/store'
+import { setData, useStore, resetShop, modifyPool, resetChosenParameters } from '#/store/store'
 import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
 import { getIconURLFor } from '#/ui/helpers/utils'
 import { isEmpty } from '#/ui/helpers/utils'
@@ -99,9 +99,6 @@ function getWeightedRandom(data: [value: any, weight: any][], minWeight: number 
 	return sorted.find(entry => entry[1] > random)![0]
 }
 
-const chosenUnitLastTrait: Record<string, string | undefined> = {}
-const chosenUnitLastShop: Record<string, number | undefined> = {}
-
 function refreshShop() {
 	state.shopNumber += 1
 	state.shopSinceChosen += 1
@@ -115,47 +112,62 @@ function refreshShop() {
 		const units = setData.tierBags[baseCost]
 		const countFromPool = Math.pow(3, starLevel - 1)
 		const chosenTraits: Record<string, number> = {}
-		let apiName = ''
+		let unitApiName = ''
 		let unit: ChampionData | undefined
+		let attemptsLeft = 9
 		while (unit == null) {
-			apiName = getWeightedRandom(Object.entries(units).filter(unit => unit[1] != null), countFromPool)
+			attemptsLeft -= 1
+			if (attemptsLeft <= 0) {
+				break
+			}
+			unitApiName = getWeightedRandom(Object.entries(units).filter(unit => unit[1] != null), countFromPool)
 			const costRepeatLimit = setData.headlinerSystemParameters?.[`${baseCost}CostChampNoRepeatNum`]
-			const unitLastShopNumber = chosenUnitLastShop[apiName]
+			const unitLastShopNumber = state.chosenUnitLastShop[unitApiName]
 			if (costRepeatLimit != null && unitLastShopNumber != null && unitLastShopNumber > state.shopNumber - costRepeatLimit) {
 				continue
 			}
-			unit = setData.champions.find(unitData => unitData.apiName === apiName)
+			unit = setData.champions.find(unitData => unitData.apiName === unitApiName)
 			if (unit && getChosen) {
 				const possibleTraits = unit.traits
 					.map(traitName => setData.traits.find(trait => trait.name === traitName))
 					.filter((trait): trait is TraitData => trait != null && trait.effects.length > 1)
 				shuffle(possibleTraits)
 				for (const possibleTrait of possibleTraits) {
-					if (chosenUnitLastTrait[apiName] === possibleTrait.apiName) {
+					const traitKey = possibleTrait.apiName
+					if (traitKey == null || state.chosenUnitLastTrait[unitApiName] === traitKey || state.chosenPreviousTraits.includes(traitKey)) {
 						continue
 					}
-					chosenUnitLastShop[apiName] = state.shopNumber
+					const recentTraitNoRepeatNum = setData.headlinerSystemParameters?.['RecentTraitNoRepeatNum']
+					if (recentTraitNoRepeatNum != null) {
+						state.chosenPreviousTraits.push(traitKey)
+						if (state.chosenPreviousTraits.length > recentTraitNoRepeatNum) {
+							state.chosenPreviousTraits.shift()
+						}
+					}
+					state.chosenUnitLastShop[unitApiName] = state.shopNumber
+					state.chosenUnitLastTrait[unitApiName] = traitKey
 					chosenTraits[possibleTrait.name] = 2
-					chosenUnitLastTrait[apiName] = possibleTrait.apiName
 					break
 				}
 			}
 		}
-		const shopUnit = {
-			name: unit.name,
-			apiName,
-			baseCost,
-			countFromPool,
-			totalPrice: baseCost * countFromPool,
-			icon: unit.icon,
-			starLevel,
-			traits: unit.traits,
-			chosenTraits: !isEmpty(chosenTraits) ? chosenTraits : undefined,
-		}
-		shop[shopIndex] = shopUnit
-		if (getChosen) {
-			state.shopSinceChosen = 0
-			getChosen = false
+		if (unit) {
+			const shopUnit = {
+				name: unit.name,
+				apiName: unitApiName,
+				baseCost,
+				countFromPool,
+				totalPrice: baseCost * countFromPool,
+				icon: unit.icon,
+				starLevel,
+				traits: unit.traits,
+				chosenTraits: !isEmpty(chosenTraits) ? chosenTraits : undefined,
+			}
+			shop[shopIndex] = shopUnit
+			if (getChosen) {
+				state.shopSinceChosen = 0
+				getChosen = false
+			}
 		}
 	}
 }
@@ -177,6 +189,9 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 	state.gold -= shopItem.totalPrice
 	shop[shopIndex] = null
 	modifyPool(shopItem, shopItem.baseCost, -shopItem.countFromPool)
+	if (shopItem.chosenTraits) {
+		resetChosenParameters()
+	}
 
 	const unit = new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
 	unit.benchIndex = benchIndex

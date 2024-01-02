@@ -89,6 +89,10 @@ export const state = reactive({
 	shopUnitPools: {} as UnitPools,
 	benchItems: [] as ItemData[],
 
+	chosenUnitLastTrait: {} as Record<string, string | undefined>,
+	chosenUnitLastShop: {} as Record<string, number | undefined>,
+	chosenPreviousTraits: [] as string[],
+
 	elapsedSeconds: 0,
 	didStart: false,
 	winningTeam: null as TeamNumber | null,
@@ -604,7 +608,14 @@ export function modifyPool({ apiName }: { apiName: string }, cost: number, vecto
 	state.shopUnitPools[cost][poolAPIName]! += vector
 }
 
+export function resetChosenParameters() {
+	state.chosenPreviousTraits = []
+	state.chosenUnitLastTrait = {}
+	state.chosenUnitLastShop = {}
+}
+
 export function resetShop() {
+	resetChosenParameters()
 	state.elapsedSeconds = 0
 	state.shopSinceChosen = 0
 	state.shopNumber = 0
