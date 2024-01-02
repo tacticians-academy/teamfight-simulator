@@ -64,8 +64,8 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	<div class="flex">
 		<div
 			v-for="(item, index) in unit.items" :key="index"
-			class="w-1/3 pointer-events-auto" :class="state.didStart ? 'pointer-events-none' : null"
-			:draggable="!state.didStart && state.simMode !== 'rolldown'" @dragstart="startDragging($event, 'item', item.name, unit)"
+			class="w-1/3" :class="state.didStart || state.simMode === 'rolldown' ? 'pointer-events-none' : 'pointer-events-auto'"
+			:draggable="!state.didStart" @dragstart="startDragging($event, 'item', item.name, unit)"
 		>
 			<img :src="getIconURLFor(state, item)" :alt="item.name">
 		</div>
