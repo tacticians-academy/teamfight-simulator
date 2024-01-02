@@ -15,7 +15,7 @@ const props = defineProps<{
 	units: string[]
 }>()
 
-const traitTexture = `url(${getAssetPrefixFor(state.setNumber, false)}${state.setNumber <= 1 ? 'data/menu/textures' : 'assets/ux/tft'}/tft_traits_texture_atlas.png)`
+const traitTexture = `url(${getAssetPrefixFor(state.setNumber, false)}${state.setNumber <= 1 ? 'data/menu/textures' : 'assets/ux/tft'}/tft_traits_texture_atlas${state.setNumber >= 10 ? '.tft_set' + state.setNumber : ''}.png)`
 
 const styleOffsetX = computed(() => `-${2 + Math.min(3, props.activeStyle) * 2 * 49}px`)
 const styleOffsetY = computed(() => `-${2 + (props.activeStyle >= 4 ? 58 : 0)}px`)
