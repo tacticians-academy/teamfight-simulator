@@ -8,3 +8,10 @@ export function getIconURLFor(state: { setNumber: SetNumber }, deriveAsset: { ic
 export function getTeamName(team: number) {
 	return team === 0 ? 'Blue' : 'Red'
 }
+
+export function isEmpty(object: Record<string, any>) {
+	for (const key in object) {
+		return false
+	}
+	return true
+}

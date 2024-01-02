@@ -30,6 +30,7 @@ import { containsHex, getTeamFor, isSameHex } from '#/sim/helpers/hexes'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/sim/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StackData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
 import { getBestRandomAsMax, uniqueIdentifier } from '#/sim/helpers/utils'
+import { isEmpty } from '#/ui/helpers/utils'
 
 let instanceIndex = 0
 
@@ -348,7 +349,7 @@ export class ChampionUnit {
 			})
 			const windupMS = msBetweenAttacks / 4 //TODO calculate from data
 			const damageSourceType = DamageSourceType.attack
-			if (!Object.keys(empoweredAuto.damageModifier!).length) {
+			if (isEmpty(empoweredAuto.damageModifier!)) {
 				empoweredAuto.damageModifier = undefined
 			}
 			if (empoweredAuto.bounce!.bouncesRemaining <= 0) {

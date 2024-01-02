@@ -9,7 +9,7 @@ import { useStore, state, setData, setDataReactive } from '#/store/store'
 
 import { isPlaceable } from '#/sim/ChampionUnit'
 import type { CustomComps } from '#/sim/data/types'
-import { getIconURLFor } from '#/ui/helpers/utils'
+import { getIconURLFor, isEmpty } from '#/ui/helpers/utils'
 
 const { startDragging } = useStore()
 
@@ -64,7 +64,7 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 </template>
 <div v-else-if="showSection === 'comps'" class="space-y-4">
 	<template v-for="[title, comps] in compsByGroup" :key="title">
-		<div v-if="Object.keys(comps).length" class="space-y-1">
+		<div v-if="!isEmpty(comps)" class="space-y-1">
 			<div class="mt-1 mx-1 text-secondary uppercase text-sm">{{ title }}:</div>
 			<template v-for="(comp, name) in comps" :key="name">
 				<SelectUnitsComp :name="name" :comp="comp" :canDelete="title !== 'Defaults'" class="mx-1" />
