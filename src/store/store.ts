@@ -87,7 +87,7 @@ export const state = reactive({
 	shopSinceChosen: 0,
 	shopNumber: 0,
 	shopUnitPools: {} as UnitPools,
-	sidebarItems: [] as ItemData[],
+	benchItems: [] as ItemData[],
 
 	elapsedSeconds: 0,
 	didStart: false,
@@ -430,7 +430,13 @@ const store = {
 		})
 		removeFirstFromArrayWhere(fromUnit.items, (item) => item.name === itemName)
 	},
-	deleteItem(itemName: string, fromUnit: ChampionUnit) {
+	deleteItem(itemName: string, fromUnit: ChampionUnit, wasCopied: boolean) {
+		if (!wasCopied && state.rolldownActive) {
+			const item = getItemFrom(itemName)
+			if (item) {
+				state.benchItems.push(item)
+			}
+		}
 		state.dragUnit = null
 		store._deleteItem(itemName, fromUnit)
 		fromUnit.genericReset()
@@ -438,6 +444,9 @@ const store = {
 		resetUnitsAfterUpdating()
 	},
 	_addItem(item: ItemData, champion: ChampionUnit) {
+		if (state.simMode === 'rolldown' && champion.items.length >= 3) {
+			return false
+		}
 		if (champion.data.isSpawn) {
 			let canSpawnHoldItems = false
 			if (champion.data.apiName === ChampionKey.TrainingDummy) {
@@ -501,8 +510,9 @@ const store = {
 	moveItem(itemName: string, toUnit: ChampionUnit, fromUnit: ChampionUnit | null) {
 		if (store.addItemName(itemName, toUnit)) {
 			if (fromUnit) {
-				store.deleteItem(itemName, fromUnit)
+				store.deleteItem(itemName, fromUnit, true)
 			} else {
+				removeFirstFromArrayWhere(state.benchItems, (item) => item.name === itemName)
 				resetUnitsAfterUpdating()
 			}
 		}
@@ -533,7 +543,7 @@ const store = {
 					state.chosen = null
 				}
 				state.gold += unit.getSellValue()
-				state.sidebarItems.push(...unit.items)
+				state.benchItems.push(...unit.items)
 				if (unit.data.cost != null) {
 					modifyPool(unit.data, unit.data.cost, +unit.getCountFromPool())
 				}

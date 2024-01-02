@@ -41,7 +41,7 @@ export function onDropSell(event: DragEvent) {
 	} else if (dragType === 'item') {
 		const name = getDragName(event)
 		if (name != null) {
-			deleteItem(name, dragUnit)
+			deleteItem(name, dragUnit, false)
 		}
 	} else {
 		console.log('ERR', 'Unknown drag type', dragType, dragUnit)
