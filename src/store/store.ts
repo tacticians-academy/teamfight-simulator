@@ -202,10 +202,15 @@ export const getters = {
 		if (state.xp <= 0 || !setData.levelXP.length) {
 			return [0, 0, 0]
 		}
-		const currentLevelIndex = setData.levelXP.findIndex(levelXP => levelXP > state.xp) - 1
+		let currentLevelIndex = setData.levelXP.findIndex(levelXP => levelXP > state.xp)
+		if (currentLevelIndex === -1) {
+			currentLevelIndex = setData.levelXP.length
+		}
+		currentLevelIndex -= 1
+
 		const currentLevelXP = setData.levelXP[currentLevelIndex]
-		const nextLevelXP = setData.levelXP[currentLevelIndex + 1]
-		return [currentLevelIndex + 1, state.xp - currentLevelXP, nextLevelXP - currentLevelXP]
+		const nextLevelXP = setData.levelXP[currentLevelIndex + 1] ?? 0
+		return [currentLevelIndex + 1, state.xp - currentLevelXP, nextLevelXP === 0 ? 0 : nextLevelXP - currentLevelXP]
 	}),
 
 	synergiesByTeam: computed(() => {

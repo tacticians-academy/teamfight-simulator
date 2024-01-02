@@ -2,7 +2,7 @@
 import UnitCircle from '#/ui/components/UnitCircle.vue'
 import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
-import { onBeforeUnmount, onMounted, reactive, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, watch } from 'vue'
 
 import { getAssetPrefixFor } from '@tacticians-academy/academy-library'
 import type { ChampionData, TraitData } from '@tacticians-academy/academy-library'
@@ -21,13 +21,6 @@ const { currentLevelData } = getters
 
 const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograph/sets/set10/tft_headliner_badge_mask.tft_set10.png`
 
-function onBuyXP() {
-	if (state.gold < 4) return
-
-	state.gold -= 4
-	state.xp += 4
-}
-
 type ShopUnit = {
 	apiName: string
 	name: string
@@ -40,8 +33,18 @@ type ShopUnit = {
 	chosenTraits: Record<string, number> | undefined
 }
 const shop = reactive<(ShopUnit | null)[]>([null, null, null, null, null])
+
+const disableXP = computed(() => !state.rolldownActive || state.gold < 4 || currentLevelData.value[2] <= 0)
+const disableReroll = computed(() => !state.rolldownActive || state.gold < 2)
+
+function onBuyXP() {
+	if (disableXP.value) return
+
+	state.gold -= 4
+	state.xp += 4
+}
 function onReroll() {
-	if (state.gold < 2) return
+	if (disableReroll.value) return
 
 	state.gold -= 2
 	refreshShop()
@@ -216,7 +219,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 		<div class="w-32">
 			<div class="flex justify-between">
 				<div>Lvl. {{ currentLevelData[0] }}</div>
-				<div>{{ currentLevelData[1] }}/{{ currentLevelData[2] }}</div>
+				<div v-if="currentLevelData[2] > 0">{{ currentLevelData[1] }}/{{ currentLevelData[2] }}</div>
 			</div>
 			<div class="flex w-full">
 				<div v-for="markIndex in (currentLevelData[2] / 4)" :key="markIndex" class="flex-grow m-px h-0.5" :class="markIndex * 4 <= currentLevelData[1] ? 'bg-team-a' : 'bg-secondary'" />
@@ -227,10 +230,10 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 	</div>
 	<div class="shop-ui  p-1 space-x-1  flex" @dragover="onDragOver" @drop="onDropSell">
 		<div class="shop-buttons  flex flex-col">
-			<button :disabled="state.gold < 4" @click="onBuyXP">
+			<button :disabled="disableXP" @click="onBuyXP">
 				<div>Buy XP</div><div>4</div>
 			</button>
-			<button :disabled="state.gold < 2" @click="onReroll">
+			<button :disabled="disableReroll" @click="onReroll">
 				<div>Reroll</div><div>2</div>
 			</button>
 		</div>

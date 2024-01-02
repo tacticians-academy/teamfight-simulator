@@ -12,7 +12,20 @@ export const rolldownConfigs: RolldownConfig[] = [
 		xp: 78,
 		augments: [],
 		contestedUnits: ['TFT10_Ekko', 'TFT10_Ahri', 'TFT10_Akali', 'TFT10_Caitlyn', 'TFT10_Ezreal', 'TFT10_Poppy'],
-		items: [],
+		items: ['TFT_Item_GiantsBelt'],
+		units: [
+			{ id: ChampionKey.KSante, hex: [3, 4], starLevel: 2, items: [`TFT_Item_GargoyleStoneplate`, 'TFT_Item_Crownguard'] },
+			{ id: ChampionKey.Sett, hex: [2, 5], starLevel: 1, items: [] },
+			{ id: ChampionKey.Ezreal, hex: [0, 7], starLevel: 1, items: [`TFT_Item_BlueBuff`, 'TFT_Item_RapidFireCannon'] },
+		],
+	},
+	{
+		stage: 6,
+		gold: 60,
+		xp: 250,
+		augments: [],
+		contestedUnits: ['TFT10_Ekko', 'TFT10_Ahri', 'TFT10_Akali', 'TFT10_Caitlyn', 'TFT10_Ezreal', 'TFT10_Poppy'],
+		items: ['TFT_Item_GiantsBelt'],
 		units: [
 			{ id: ChampionKey.KSante, hex: [3, 4], starLevel: 2, items: [`TFT_Item_GargoyleStoneplate`, 'TFT_Item_Crownguard'] },
 			{ id: ChampionKey.Sett, hex: [2, 5], starLevel: 1, items: [] },
