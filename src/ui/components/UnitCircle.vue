@@ -42,7 +42,7 @@ function onInfo(event: Event) {
 	<div class="circle" :style="{ backgroundImage: `url(${getIconURLFor(state, props.unit.data)})` }" :class="unit.team === 0 ? 'border-team-a' : 'border-team-b'">
 		<span class="group-hover-visible">{{ unit.data.name }}</span>
 	</div>
-	<div class="stars">
+	<div class="stars" :class="unit.starLevel === 3 ? 'star-3' : (unit.starLevel === 2 ? 'star-2' : 'star-1')">
 		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart || state.simMode === 'rolldown'" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
@@ -65,13 +65,25 @@ function onInfo(event: Event) {
 </div>
 </template>
 
+<style lang="postcss">
+.star-1 {
+	@apply text-amber-800;
+}
+.star-2 {
+	@apply text-slate-100;
+}
+.star-3 {
+	@apply text-yellow-300;
+}
+</style>
+
 <style scoped lang="postcss">
 .hex-unit {
 	@apply pointer-events-auto;
 }
 
 .stars {
-	@apply absolute w-full bottom-0 text-center text-yellow-500;
+	@apply absolute w-full bottom-0 text-center;
 	font-size: 1.7vw;
 }
 
