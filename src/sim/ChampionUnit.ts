@@ -165,9 +165,11 @@ export class ChampionUnit {
 		this.resurrecting = false
 		this.target = null
 		this.setActiveHex(this.startHex)
-		const coord = this.getCoord()
-		this.coord[0] = coord[0]
-		this.coord[1] = coord[1]
+		if (this.startHex) {
+			const coord = this.getCoord()
+			this.coord[0] = coord[0]
+			this.coord[1] = coord[1]
+		}
 		this.moving = false
 		this.attackStartAtMS = 0
 		this.customMoveSpeed = undefined

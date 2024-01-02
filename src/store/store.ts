@@ -608,6 +608,7 @@ const store = {
 
 export function modifyPool({ apiName }: { apiName: string }, cost: number, vector: number) {
 	const poolAPIName = setData.combinePoolAPINames[apiName] ?? apiName
+	// console.log(poolAPIName, state.shopUnitPools[cost][poolAPIName], vector) //SAMPLE
 	state.shopUnitPools[cost][poolAPIName]! += vector
 }
 
