@@ -4,7 +4,7 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, onBeforeUnmount, onMounted, reactive, watch } from 'vue'
 
-import { getAssetPrefixFor } from '@tacticians-academy/academy-library'
+import { getAssetPrefixFor, removeFirstFromArray } from '@tacticians-academy/academy-library'
 import type { ChampionData, TraitData } from '@tacticians-academy/academy-library'
 
 import { ChampionUnit } from '#/sim/ChampionUnit'
@@ -15,7 +15,7 @@ import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/d
 import { getIconURLFor } from '#/ui/helpers/utils'
 import { isEmpty } from '#/ui/helpers/utils'
 
-const { state, getters, dropUnit } = useStore()
+const { state, getters, dropUnit, setStarLevel } = useStore()
 
 const { currentLevelData } = getters
 
@@ -202,9 +202,41 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 		resetChosenParameters()
 	}
 
-	const unit = new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
-	unit.benchIndex = benchIndex
-	state.benchUnits[benchIndex] = unit
+	const newUnit = new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
+	const groupAPIName = newUnit.groupAPIName
+	newUnit.benchIndex = benchIndex
+	state.benchUnits[benchIndex] = newUnit
+
+	for (let starLevel = 1 as StarLevel; starLevel <= 2; starLevel += 1) {
+		const copiesOfUnitAtStarLevel = [...state.units, ...state.benchUnits].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
+		if (copiesOfUnitAtStarLevel.length >= 3) {
+			const repUnit = copiesOfUnitAtStarLevel.find(unit => unit.chosenTraits) ?? copiesOfUnitAtStarLevel[0]
+			removeFirstFromArray(copiesOfUnitAtStarLevel, repUnit)
+			copiesOfUnitAtStarLevel.forEach(unit => {
+				unit.items.forEach(_item => {
+					let moveItem = _item
+					if (repUnit.items.length < 3) {
+						repUnit.items.push(moveItem)
+					} else {
+						if (!setData.componentItems.some(cItem => cItem.name === moveItem.name)) {
+							const bumpComponent = repUnit.items.find(repItem => setData.componentItems.some(cItem => cItem.name === repItem.name))
+							if (bumpComponent) {
+								removeFirstFromArray(repUnit.items, bumpComponent)
+								repUnit.items.push(moveItem)
+								moveItem = bumpComponent
+							}
+						}
+						state.benchItems.push(moveItem)
+					}
+				})
+				if (unit.benchIndex != null) {
+					state.benchUnits[unit.benchIndex] = null
+				}
+				removeFirstFromArray(state.units, unit)
+			})
+			setStarLevel(repUnit, repUnit.starLevel + 1 as StarLevel)
+		}
+	}
 }
 </script>
 
