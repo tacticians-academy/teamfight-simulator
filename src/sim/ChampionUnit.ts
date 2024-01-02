@@ -43,10 +43,12 @@ export function isPlaceable(unitData: ChampionData) {
 
 export class ChampionUnit {
 	instanceID: string
+	groupAPIName: string
 	startHex: HexCoord | undefined
 	benchIndex: number | undefined
 	team: TeamNumber = 0
 	starLevel: StarLevel
+	chosenTraits: Record<string, number> | undefined
 	data: ChampionData
 
 	activeHex: HexCoord
@@ -101,8 +103,9 @@ export class ChampionUnit {
 
 	pendingBonuses = new Set<[activatesAtMS: DOMHighResTimeStamp, label: BonusLabelKey, variables: BonusVariable[]]>()
 
-	constructor(apiName: string, hex: HexCoord | undefined, starLevel: StarLevel) {
+	constructor(apiName: string, hex: HexCoord | undefined, starLevel: StarLevel, chosenTraits?: Record<string, number> | undefined) {
 		this.instanceID = `c${instanceIndex += 1}`
+		this.groupAPIName = setData.combinePoolAPINames[apiName] ?? apiName
 		const stats = setData.champions.find(unit => unit.apiName === apiName) ?? setData.champions.find(unit => unit.apiName === ChampionKey.TrainingDummy) ?? setData.champions[0]
 		this.isStarLocked = !isPlaceable(stats)
 		this.data = markRaw(stats)
@@ -110,6 +113,10 @@ export class ChampionUnit {
 		this.startHex = hex ? [...hex] : undefined
 		this.activeHex = hex ? [...hex] : [-1, -1]
 		this.coord = this.getCoord()
+		this.chosenTraits = chosenTraits
+		if (chosenTraits) {
+			state.chosen = this
+		}
 		this.instantAttack = this.data.basicAttackMissileSpeed == null || this.data.basicAttackMissileSpeed <= 20 //TODO investigate how melee attacks work
 
 		for (const effectType in StatusEffectType) {

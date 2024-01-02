@@ -28,8 +28,9 @@ import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from
 import { getItemByIdentifier, uniqueIdentifier } from '#/sim/helpers/utils'
 
 import type { DraggableType } from '#/ui/helpers/dragDrop'
+import { sum } from '#/ui/helpers/utils'
 
-type TraitAndUnits = [TraitData, string[]]
+type TraitAndUnits = [TraitData, Record<string, number>]
 
 export const DEFAULT_SET = SET_NUMBERS[SET_NUMBERS.length - 1]
 
@@ -64,6 +65,7 @@ export const setData = shallowReactive({
 	headlinerSystemParameters: {} as Record<string, number> | undefined,
 	tierBags: {} as UnitPools,
 	levelXP: [] as number[],
+	combinePoolAPINames: {} as Record<string, string | undefined>,
 })
 export const setDataReactive = reactive({
 	compsUser: {} as CustomComps,
@@ -82,8 +84,9 @@ export const state = reactive({
 	gold: 80,
 	xp: 78,
 	chosen: null as ChampionUnit | null,
-	rollToChosen: 0,
-	unitPools: {} as UnitPools,
+	shopSinceChosen: 0,
+	shopNumber: 0,
+	shopUnitPools: {} as UnitPools,
 	sidebarItems: [] as ItemData[],
 
 	elapsedSeconds: 0,
@@ -121,7 +124,7 @@ export async function setSetNumber(set: SetNumber) {
 		const { champions } = await importChampions(set)
 		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
 		const { traits } = await importTraits(set)
-		const { LEVEL_XP } = await importSetData(set)
+		const { LEVEL_XP, COMBINE_POOL_APINAMES } = await importSetData(set)
 		const { dropRates, tierBags, headlinerSystemParameters } = await importMap(set)
 
 		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
@@ -155,11 +158,13 @@ export async function setSetNumber(set: SetNumber) {
 		setData.tierBags = tierBags
 		setData.headlinerSystemParameters = headlinerSystemParameters
 		setData.levelXP = LEVEL_XP ?? []
+		setData.combinePoolAPINames = COMBINE_POOL_APINAMES ?? {}
 
 		setData.rowsPerSide = set < 2 ? 3 : 4
 		setData.rowsTotal = setData.rowsPerSide * 2
 
-		state.rollToChosen = 0
+		state.shopSinceChosen = 0
+		resetShop()
 		state.setNumber = set
 		state.units = []
 		state.benchUnits.fill(null)
@@ -206,11 +211,14 @@ export const getters = {
 			for (const trait of unit.traits) {
 				let entry = traitsAndUnits.find(([teamTrait]) => teamTrait.name === trait.name)
 				if (!entry) {
-					entry = [trait, []]
+					entry = [trait, {}]
 					traitsAndUnits.push(entry)
 				}
-				if (!entry[1].includes(unit.data.apiName)) {
-					entry[1].push(unit.data.apiName)
+
+				const prevTraitScoreForUnit = entry[1][unit.groupAPIName] ?? 0
+				const newTraitScoreForUnit = unit.chosenTraits?.[trait.name] ?? 1
+				if (prevTraitScoreForUnit < newTraitScoreForUnit) {
+					entry[1][unit.groupAPIName] = newTraitScoreForUnit
 				}
 			}
 		})
@@ -226,34 +234,32 @@ export const getters = {
 
 				let entry = traitsAndUnits.find(([teamTrait]) => teamTrait.name === traitName)
 				if (!entry) {
-					entry = [trait, []]
+					entry = [trait, {}]
 					traitsAndUnits.push(entry)
 				}
-				if (!entry[1].includes(traitName)) {
-					entry[1].push(augment.name)
-					if (suffix === 'Soul') {
-						entry[1].push(augment.name)
-					}
+				if (!entry[1][traitName]) { // What does this check?
+					entry[1][augment.name] = suffix === 'Soul' ? 2 : 1
 				}
 			})
 		})
 		return traitsAndUnitsByTeam
 			.map(teamCountSynergies => {
 				return Array.from(teamCountSynergies)
-					.map(([trait, uniqueUnits]): SynergyData => {
-						const uniqueUnitCount = uniqueUnits.length
-						const activeEffect = trait.effects.find(effect => uniqueUnitCount >= effect.minUnits && uniqueUnitCount <= effect.maxUnits)
+					.map(([trait, unitScores]): SynergyData => {
+						const totalScore = sum(Object.values(unitScores))
+						const activeEffect = trait.effects.find(effect => totalScore >= effect.minUnits && totalScore <= effect.maxUnits)
 						return {
 							key: trait.name as TraitKey,
 							trait,
 							activeStyle: activeEffect?.style ?? 0,
 							activeEffect,
-							uniqueUnitNames: Array.from(uniqueUnits),
+							units: Object.keys(unitScores),
+							totalScore,
 						}
 					})
 					.sort((a, b) => {
 						const styleDiff = b.activeStyle - a.activeStyle
-						return styleDiff !== 0 ? styleDiff : a.uniqueUnitNames.length - b.uniqueUnitNames.length
+						return styleDiff !== 0 ? styleDiff : a.totalScore - b.totalScore
 					})
 			})
 	}),
@@ -292,7 +298,7 @@ watch(getters.augmentCount, (augmentCount) => {
 // Store
 
 export function getValueOfTeam(teamNumber: TeamNumber) {
-	return getUnitsOfTeam(teamNumber).map(u => u.getTotalValue()).reduce((curr, acc) => curr + acc, 0)
+	return sum(getUnitsOfTeam(teamNumber).map(u => u.getTotalValue()))
 }
 
 export function clearBoardStateAndReset() {
@@ -523,10 +529,13 @@ const store = {
 		if (state.simMode === 'rolldown') {
 			const unit = typeof location === 'number' ? state.benchUnits[location] : state.units.find(unit => unit.isStartAt(location))
 			if (unit) {
+				if (state.chosen === unit) {
+					state.chosen = null
+				}
 				state.gold += unit.getSellValue()
 				state.sidebarItems.push(...unit.items)
 				if (unit.data.cost != null) {
-					state.unitPools[unit.data.cost][unit.data.apiName] += unit.getCountFromPool()
+					modifyPool(unit.data, unit.data.cost, +unit.getCountFromPool())
 				}
 			}
 		}
@@ -537,8 +546,8 @@ const store = {
 			resetUnitsAfterUpdating()
 		}
 	},
-	addUnit(apiName: string, hex: HexCoord, starLevel: StarLevel) {
-		const unit = new ChampionUnit(apiName, hex, starLevel)
+	addUnit(apiName: string, hex: HexCoord, starLevel: StarLevel, chosenTraits: Record<string, number> | undefined) {
+		const unit = new ChampionUnit(apiName, hex, starLevel, chosenTraits)
 		unit.updateTeam()
 		state.units.push(unit)
 		unit.genericReset()
@@ -548,7 +557,7 @@ const store = {
 		const dragUnit = state.dragUnit
 		if (dragUnit && hex && state.simMode !== 'rolldown' && event.dataTransfer?.effectAllowed === 'copy') {
 			store._deleteUnit(hex)
-			store.addUnit(apiName, hex, dragUnit.starLevel)
+			store.addUnit(apiName, hex, dragUnit.starLevel, undefined)
 			//TODO copy items?
 			state.dragUnit = null
 		} else {
@@ -568,7 +577,7 @@ const store = {
 				state.dragUnit = null
 			} else if (hex) {
 				store._deleteUnit(hex)
-				store.addUnit(apiName, hex, 1)
+				store.addUnit(apiName, hex, 1, undefined)
 			}
 		}
 		saveUnits(state.setNumber)
@@ -578,10 +587,18 @@ const store = {
 		state.elapsedSeconds = 0
 		resetUnitsAfterUpdating()
 	},
+}
 
-	resetUnitPools() {
-		state.unitPools = structuredClone(setData.tierBags)
-	},
+export function modifyPool({ apiName }: { apiName: string }, cost: number, vector: number) {
+	const poolAPIName = setData.combinePoolAPINames[apiName] ?? apiName
+	state.shopUnitPools[cost][poolAPIName]! += vector
+}
+
+export function resetShop() {
+	state.elapsedSeconds = 0
+	state.shopSinceChosen = 0
+	state.shopNumber = 0
+	state.shopUnitPools = structuredClone(setData.tierBags)
 }
 
 export function useStore() {
@@ -626,7 +643,7 @@ export function loadStorageUnits(storageUnits: StorageChampion[]) {
 			const championItems = storageUnit.items
 				.map(id => getItemByIdentifier(id, setData.currentItems))
 				.filter((item): item is ItemData => !!item)
-			const champion = new ChampionUnit(storageUnit.id, storageUnit.hex, storageUnit.starLevel)
+			const champion = new ChampionUnit(storageUnit.id, storageUnit.hex, storageUnit.starLevel, storageUnit.chosenTraits)
 			champion.updateTeam()
 			champion.items = championItems
 			champion.resetPre(synergiesByTeam)

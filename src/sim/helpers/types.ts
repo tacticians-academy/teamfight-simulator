@@ -49,7 +49,8 @@ export interface SynergyData {
 	trait: TraitData
 	activeStyle: number
 	activeEffect: TraitEffectData | undefined
-	uniqueUnitNames: string[]
+	units: string[]
+	totalScore: number
 }
 
 export enum StatusEffectType {

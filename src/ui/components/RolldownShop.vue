@@ -4,15 +4,22 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { onBeforeUnmount, onMounted, reactive, watch } from 'vue'
 
-import { setData, useStore } from '#/store/store'
-import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
-import { getIconURLFor } from '#/ui/helpers/utils'
+import { getAssetPrefixFor } from '@tacticians-academy/academy-library'
+import type { ChampionData, TraitData } from '@tacticians-academy/academy-library'
+
 import { ChampionUnit } from '#/sim/ChampionUnit'
 import type { StarLevel } from '#/sim/helpers/types'
+import { shuffle } from '#/sim/helpers/utils'
+import { setData, useStore, resetShop, modifyPool } from '#/store/store'
+import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
+import { getIconURLFor } from '#/ui/helpers/utils'
+import { isEmpty } from '#/ui/helpers/utils'
 
-const { state, getters, dropUnit, resetUnitPools } = useStore()
+const { state, getters, dropUnit } = useStore()
 
 const { currentLevelData } = getters
+
+const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograph/sets/set10/tft_headliner_badge_mask.tft_set10.png`
 
 function onBuyXP() {
 	if (state.gold < 4) return
@@ -30,7 +37,7 @@ type ShopUnit = {
 	icon: string
 	starLevel: StarLevel
 	traits: string[]
-	chosenTraits: string[]
+	chosenTraits: Record<string, number> | undefined
 }
 const shop = reactive<(ShopUnit | null)[]>([null, null, null, null, null])
 function onReroll() {
@@ -47,8 +54,21 @@ function onKey(event: KeyboardEvent) {
 		onBuyXP()
 	}
 }
+
+let preloadImages: HTMLImageElement[] = []
 onMounted(() => {
 	document.addEventListener('keyup', onKey, false)
+	preloadImages = []
+	for (const unit of setData.champions) {
+		const img = new Image()
+		img.src = getIconURLFor(state, unit)
+		preloadImages.push(img)
+	}
+	for (const trait of setData.traits) {
+		const img = new Image()
+		img.src = getIconURLFor(state, trait)
+		preloadImages.push(img)
+	}
 })
 onBeforeUnmount(() => {
 	document.removeEventListener('keyup', onKey, false)
@@ -65,7 +85,7 @@ function onDrop(event: DragEvent, benchIndex: number) {
 	dropUnit(event, dragUnit.data.apiName, undefined, benchIndex)
 }
 
-function getWeightedRandom(data: [value: any, weight: number][], minWeight: number = 1) {
+function getWeightedRandom(data: [value: any, weight: any][], minWeight: number = 1) {
 	let acc = 0
 	const sorted = data
 		.filter(entry => entry[1] > minWeight - 1)
@@ -79,22 +99,48 @@ function getWeightedRandom(data: [value: any, weight: number][], minWeight: numb
 	return sorted.find(entry => entry[1] > random)![0]
 }
 
+const chosenUnitLastTrait: Record<string, string | undefined> = {}
+const chosenUnitLastShop: Record<string, number | undefined> = {}
+
 function refreshShop() {
-	state.rollToChosen -= 1
-	let getChosen = !state.chosen && setData.headlinerSystemParameters ? state.rollToChosen <= 0 : false
-	if (getChosen) {
-		state.rollToChosen = setData.headlinerSystemParameters!['HeadlinerFrequency']
-	}
-	for (let index = shop.length - 1; index >= 0; index -= 1) {
-		const element = shop[index]
+	state.shopNumber += 1
+	state.shopSinceChosen += 1
+	const chosenFrequency = setData.headlinerSystemParameters?.['HeadlinerFrequency']
+	let getChosen = chosenFrequency != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
+	for (let shopIndex = shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
 		const starLevel: StarLevel = getChosen ? 2 : 1
 		const levelIndex = currentLevelData.value[0] - 1
 		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.levelShopOdds)[levelIndex]
-		const baseCost = getWeightedRandom(shopCostOdds.map((a, index) => [index + 1, a]))
+		const baseCost = getWeightedRandom(shopCostOdds.map((a, shopIndex) => [shopIndex + 1, a]))
 		const units = setData.tierBags[baseCost]
 		const countFromPool = Math.pow(3, starLevel - 1)
-		const apiName = getWeightedRandom(Object.entries(units), countFromPool)
-		const unit = setData.champions.find(unitData => unitData.apiName === apiName)!
+		const chosenTraits: Record<string, number> = {}
+		let apiName = ''
+		let unit: ChampionData | undefined
+		while (unit == null) {
+			apiName = getWeightedRandom(Object.entries(units).filter(unit => unit[1] != null), countFromPool)
+			const costRepeatLimit = setData.headlinerSystemParameters?.[`${baseCost}CostChampNoRepeatNum`]
+			const unitLastShopNumber = chosenUnitLastShop[apiName]
+			if (costRepeatLimit != null && unitLastShopNumber != null && unitLastShopNumber > state.shopNumber - costRepeatLimit) {
+				continue
+			}
+			unit = setData.champions.find(unitData => unitData.apiName === apiName)
+			if (unit && getChosen) {
+				const possibleTraits = unit.traits
+					.map(traitName => setData.traits.find(trait => trait.name === traitName))
+					.filter((trait): trait is TraitData => trait != null && trait.effects.length > 1)
+				shuffle(possibleTraits)
+				for (const possibleTrait of possibleTraits) {
+					if (chosenUnitLastTrait[apiName] === possibleTrait.apiName) {
+						continue
+					}
+					chosenUnitLastShop[apiName] = state.shopNumber
+					chosenTraits[possibleTrait.name] = 2
+					chosenUnitLastTrait[apiName] = possibleTrait.apiName
+					break
+				}
+			}
+		}
 		const shopUnit = {
 			name: unit.name,
 			apiName,
@@ -104,23 +150,22 @@ function refreshShop() {
 			icon: unit.icon,
 			starLevel,
 			traits: unit.traits,
-			chosenTraits: [],
+			chosenTraits: !isEmpty(chosenTraits) ? chosenTraits : undefined,
 		}
-		shop[index] = shopUnit
+		shop[shopIndex] = shopUnit
 		if (getChosen) {
+			state.shopSinceChosen = 0
 			getChosen = false
 		}
 	}
 }
 
 watch(() => state.rolldownActive, () => {
+	shop.fill(null)
+	resetShop()
 	if (state.rolldownActive) {
-		state.rolldownActive = false
-		shop.fill(null)
-	} else {
 		refreshShop()
 	}
-	resetUnitPools()
 })
 
 function onBuy(shopItem: ShopUnit, shopIndex: number) {
@@ -131,9 +176,9 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 
 	state.gold -= shopItem.totalPrice
 	shop[shopIndex] = null
-	state.unitPools[shopItem.baseCost][shopItem.apiName] += shopItem.countFromPool
+	modifyPool(shopItem, shopItem.baseCost, -shopItem.countFromPool)
 
-	const unit = new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel)
+	const unit = new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
 	unit.benchIndex = benchIndex
 	state.benchUnits[benchIndex] = unit
 }
@@ -174,16 +219,21 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 				<div>Reroll</div><div>2</div>
 			</button>
 		</div>
-		<div v-for="(shopItem, index) in shop" :key="index" class="flex-1 p-1 bg-secondary">
-			<button v-if="shopItem" class="w-full h-full  flex flex-col justify-between" @click="onBuy(shopItem, index)">
-				<div class="relative w-full">
-					<!-- :style="{ backgroundImage: `url(${})` }" -->
-					<img :src="getIconURLFor(state, shopItem)" class="w-full rounded-sm pointer-events-none">
-					<div v-if="shopItem.starLevel > 1" class="shop-stars  absolute top-0">
+		<div v-for="(shopItem, index) in shop" :key="index" class="flex-1 bg-secondary text-white">
+			<button v-if="shopItem" :disabled="state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  w-full h-full rounded-sm  flex flex-col justify-between" @click="onBuy(shopItem, index)">
+				<div class="flex-grow relative w-full">
+					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class="h-full m-0.5 bg-no-repeat bg-cover" />
+					<div v-if="shopItem.chosenTraits" class="shop-headliner-overlay  relative">
+						<img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft10_gradient.tft_set10.png'" class="shop-headliner-glow  w-full h-full absolute inset-0">
+						<img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft_headliner_badge_top.tft_set10.png'" class="w-full h-full">
+						<!-- <img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft_headliner_badge_icon.tft_set10.png'" class="absolute inset-0"> -->
+					</div>
+					<div v-if="shopItem.starLevel > 1" class="shop-stars  absolute top-0" :class="shopItem.starLevel === 3 ? 'star-3' : (shopItem.starLevel === 2 ? 'star-2' : 'star-1')">
 						{{ Array(shopItem.starLevel).fill('★').join('') }}
 					</div>
 					<div class="shop-traits  absolute bottom-0 text-left">
-						<div v-for="trait in shopItem.traits" :key="trait" class="flex items-center">
+						<div v-for="trait in shopItem.traits" :key="trait" class="shop-trait" :class="shopItem.chosenTraits?.[trait] ? 'chosen' : null">
+							<div v-if="shopItem.chosenTraits?.[trait]" class="shop-chosen-count">{{ shopItem.chosenTraits[trait] }}</div>
 							<img :src="getIconURLFor(state, setData.traits.find(t => t.name === trait) ?? setData.traits[0])" class="shop-trait  border border-black mx-1">
 							<div>{{ trait }}</div>
 						</div>
@@ -201,16 +251,17 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 
 <style scoped lang="postcss">
 .shop-ui {
-	height: 9.5vw;
+	height: 9vw;
 }
 .shop-buttons button {
 	@apply text-left;
 }
 
 .shop-stars {
-	margin-left: 0.375vw;
-	margin-top: -0.75vw;
+	margin-left: 0.2vw;
+	margin-top: -0.8vw;
 	font-size: 1.3vw;
+	-webkit-text-stroke: 1px #000;
 }
 .shop-traits {
 	font-size: 1.0vw;
@@ -221,7 +272,57 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 }
 
 .shop-trait {
+	@apply flex items-center;
+}
+.shop-trait img {
 	@apply bg-gray-700 p-0.5 pointer-events-none aspect-square;
 	width: 1.2vw;
+}
+.shop-trait.chosen img {
+	box-shadow: white 0 0 4px 1px;
+}
+
+.shop-headliner-glow {
+	mask-repeat: no-repeat;
+	mask-size: contain;
+	mask-position: center;
+	mask-image: v-bind(headlinerMaskURL);
+	mask-mode: luminance;
+	mask-type: luminance;
+}
+.shop-headliner-overlay {
+	@apply absolute;
+	top: -1.0vw;
+	right: -2vw;
+}
+.shop-headliner-overlay > * {
+	@apply block;
+	width: 6vw;
+}
+.shop-item {
+	@apply disabled:opacity-25;
+}
+
+.cost-1 {
+	background-color: #1A232E;
+}
+.cost-2 {
+	background-color: #1D342C;
+}
+.cost-3 {
+	background-color: #1A2143;
+}
+.cost-4 {
+	background-color: #3F1243;
+}
+.cost-5 {
+	background-color: #624518;
+}
+
+.shop-chosen-count {
+	@apply absolute bg-black border border-black;
+	height: 1vw;
+	line-height: 1vw;
+	left: -0.3vw;
 }
 </style>

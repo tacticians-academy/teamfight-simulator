@@ -12,7 +12,8 @@ export interface StorageChampion {
 	hex: HexCoord
 	starLevel: StarLevel
 	items: (number | string)[]
-	stacks?: [string, number][]
+	stacks?: [string, number][] | undefined
+	chosenTraits?: Record<string, number> | undefined
 }
 
 export const enum StorageKey {
@@ -103,6 +104,7 @@ export function toStorage(units: ChampionUnit[]): StorageChampion[] {
 			starLevel: unit.starLevel,
 			items: unit.items.map(item => item.apiName ?? item.id ?? -1),
 			stacks: Object.entries(unit.stacks).map(stackEntry => [stackEntry[0], stackEntry[1]!.amount]),
+			chosenTraits: unit.chosenTraits,
 		}))
 }
 export function saveUnits(set: SetNumber) {

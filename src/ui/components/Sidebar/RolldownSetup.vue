@@ -3,7 +3,7 @@ import DisplayTrait from '#/ui/components/Sidebar/DisplayTrait.vue'
 
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { useStore, getValueOfTeam, setData, setCompForTeam } from '#/store/store'
+import { useStore, getValueOfTeam, setData, setCompForTeam, resetShop } from '#/store/store'
 import { getIconURLFor } from '#/ui/helpers/utils'
 import type { RolldownConfig } from '#/sim/data/types'
 import { getItemByIdentifier } from '#/sim/helpers/utils'
@@ -19,9 +19,8 @@ function onConfig(config: RolldownConfig) {
 		state.xp = config.xp
 		state.sidebarItems = config.items.map(itemID => getItemByIdentifier(itemID, setData.currentItems)).filter((item): item is ItemData => !!item)
 		setCompForTeam({ augments: [], units: config.units}, 0)
-	} else {
-		state.elapsedSeconds = 0
 	}
+	resetShop()
 }
 </script>
 
@@ -52,8 +51,8 @@ function onConfig(config: RolldownConfig) {
 		<div>
 			<span class="">Board value: {{ getValueOfTeam(0) }}</span>
 		</div>
-		<div v-for="{ key, trait, activeStyle, activeEffect, uniqueUnitNames } in synergiesByTeam[0]" :key="key">
-			<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="uniqueUnitNames" />
+		<div v-for="{ key, trait, activeStyle, activeEffect, units } in synergiesByTeam[0]" :key="key">
+			<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="units" />
 		</div>
 		<div class="text-secondary text-sm">
 			<template v-for="{ key, trait, activeStyle } in synergiesByTeam[0]" :key="key">

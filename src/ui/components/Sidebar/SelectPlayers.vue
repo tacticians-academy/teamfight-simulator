@@ -47,8 +47,8 @@ function onReset() {
 				<span class="font-semibold">Team {{ getTeamName(teamIndex) }}</span>
 				<span class="text-secondary"> ({{ getValueOfTeam(teamIndex as TeamNumber) }} gold value)</span>
 			</div>
-			<div v-for="{ key, trait, activeStyle, activeEffect, uniqueUnitNames } in teamSynergies" :key="key">
-				<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="uniqueUnitNames" />
+			<div v-for="{ key, trait, activeStyle, activeEffect, units } in teamSynergies" :key="key">
+				<DisplayTrait v-if="activeStyle > 0" :trait="trait" :activeStyle="activeStyle" :activeEffect="activeEffect" :units="units" />
 			</div>
 			<div class="text-secondary text-sm">
 				<template v-for="{ key, trait, activeStyle } in teamSynergies" :key="key">

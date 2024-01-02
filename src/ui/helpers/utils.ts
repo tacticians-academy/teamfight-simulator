@@ -15,3 +15,7 @@ export function isEmpty(object: Record<string, any>) {
 	}
 	return true
 }
+
+export function sum(arr: number[]) {
+	return arr.reduce((acc, curr) => acc + curr, 0)
+}
