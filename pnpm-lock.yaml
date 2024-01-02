@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@tacticians-academy/academy-library':
-    specifier: link:../academy-library
-    version: link:../academy-library
+    specifier: ^0.30.0
+    version: 0.30.0
   '@tailwindcss/forms':
     specifier: ^0.5.7
     version: 0.5.7(tailwindcss@3.4.0)
@@ -519,6 +519,10 @@ packages:
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
+
+  /@tacticians-academy/academy-library@0.30.0:
+    resolution: {integrity: sha512-Gm1ISchfjwngVUPRbnPDiXRl6yUT0xrwC38xn6Mdqq/QRZ+Arp+Gqx21IVW+zlODKyupimSjTpZ56imalX2b4w==}
+    dev: false
 
   /@tailwindcss/forms@0.5.7(tailwindcss@3.4.0):
     resolution: {integrity: sha512-QE7X69iQI+ZXwldE+rzasvbJiyV/ju1FGHH0Qn2W3FKbuYtqp8LKcy6iSw79fVUT5/Vvf+0XgLCeYVG+UV6hOw==}

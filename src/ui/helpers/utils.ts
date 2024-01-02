@@ -10,7 +10,7 @@ export function getTeamName(team: number) {
 }
 
 export function isEmpty(object: Record<string, any>) {
-	for (const key in object) {
+	for (const _ in object) {
 		return false
 	}
 	return true

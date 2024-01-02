@@ -1391,7 +1391,7 @@ export class ChampionUnit {
 			}
 		}
 		const projectile = new ProjectileEffect(this, elapsedMS, spell, data)
-		state.projectileEffects.add(projectile)
+		state.projectileEffects.add(projectile as any)
 		if (elapsedMS > 0) {
 			if (spell) {
 				this.manaLockUntilMS = projectile.startsAtMS + DEFAULT_MANA_LOCK_MS
@@ -1422,7 +1422,7 @@ export class ChampionUnit {
 			data.targetTeam = this.opposingTeam()
 		}
 		const hexEffect = new HexEffect(this, elapsedMS, spell, data)
-		state.hexEffects.add(hexEffect)
+		state.hexEffects.add(hexEffect as any)
 		if (elapsedMS > 0 && spell) {
 			this.attackStartAtMS = hexEffect.activatesAtMS
 			this.manaLockUntilMS = hexEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
@@ -1456,7 +1456,7 @@ export class ChampionUnit {
 			}
 		}
 		const effect = new MoveUnitEffect(this, elapsedMS, spell, data)
-		state.moveUnitEffects.add(effect)
+		state.moveUnitEffects.add(effect as any)
 		if (spell) {
 			this.attackStartAtMS = effect.activatesAtMS
 			this.manaLockUntilMS = effect.activatesAtMS + DEFAULT_MANA_LOCK_MS
@@ -1472,7 +1472,7 @@ export class ChampionUnit {
 			data.damageSourceType = DamageSourceType.spell
 		}
 		const shapeEffect = new ShapeEffect(this, elapsedMS, spell, data)
-		state.shapeEffects.add(shapeEffect)
+		state.shapeEffects.add(shapeEffect as any)
 		if (spell) {
 			this.attackStartAtMS = shapeEffect.activatesAtMS
 			this.manaLockUntilMS = shapeEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS
@@ -1501,7 +1501,7 @@ export class ChampionUnit {
 			data.sourceTargets = [[this, this.target]]
 		}
 		const targetEffect = new TargetEffect(this, elapsedMS, spell, data)
-		state.targetEffects.add(targetEffect)
+		state.targetEffects.add(targetEffect as any)
 		if (spell) {
 			this.attackStartAtMS = targetEffect.activatesAtMS
 			this.manaLockUntilMS = targetEffect.activatesAtMS + DEFAULT_MANA_LOCK_MS

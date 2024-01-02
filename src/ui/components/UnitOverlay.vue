@@ -35,7 +35,6 @@ const statusEffectSymbols: Record<StatusEffectType, string> = {
 	[StatusEffectType.stunned]: '🔗', // ⛓
 	[StatusEffectType.unstoppable]: '🗝', // 🔓
 }
-
 </script>
 
 <template>
