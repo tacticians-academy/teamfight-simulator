@@ -116,9 +116,21 @@ function onKey(event: KeyboardEvent) {
 				}
 			} else {
 				const unit = state.units.find(u => u.isAt(unitLocation))
-				const benchIndex = state.benchUnits.findIndex(benchUnit => benchUnit == null)
-				if (benchIndex !== -1 && unit) {
-					moveUnit(unit, undefined, benchIndex)
+				if (!unit) return
+
+				if (state.simMode === 'rolldown') {
+					const benchIndex = state.benchUnits.findIndex(benchUnit => benchUnit == null)
+					if (benchIndex !== -1) {
+						moveUnit(unit, undefined, benchIndex)
+					}
+				} else {
+					const inverseHex = getInverseHex(unitLocation)
+					const inverseUnit = state.units.find(u => u.isAt(inverseHex))
+					moveUnit(unit, inverseHex, undefined)
+					if (inverseUnit) {
+						moveUnit(inverseUnit, unitLocation, undefined)
+					}
+					saveUnits(state.setNumber)
 				}
 			}
 		}
