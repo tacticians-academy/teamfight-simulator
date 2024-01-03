@@ -103,7 +103,7 @@ const searchItems = computed(() => {
 		<div
 			v-for="item in searchItems" :key="item.name"
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
-			:draggable="!state.didStart" @dragstart="onDrag($event, item.name)"
+			:draggable="state.simMode === 'teamfight' && !state.didStart" @dragstart="onDrag($event, item.name)"
 		>
 			<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>
@@ -112,7 +112,7 @@ const searchItems = computed(() => {
 <template v-else>
 	<div
 		v-for="[title, group] in itemGroups" :key="title"
-		:draggable="!state.didStart"
+		:draggable="state.simMode === 'teamfight' && !state.didStart"
 		class="sidebar-icons-group"
 	>
 		<button class="w-full font-semibold  flex justify-between" @click="onToggle(title)">
@@ -123,7 +123,7 @@ const searchItems = computed(() => {
 			<div
 				v-for="item in group" :key="item.name"
 				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
-				:draggable="!state.didStart" @dragstart="onDrag($event, item.name)"
+				:draggable="state.simMode === 'teamfight' && !state.didStart" @dragstart="onDrag($event, item.name)"
 			>
 				<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 			</div>

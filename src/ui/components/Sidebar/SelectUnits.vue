@@ -11,7 +11,7 @@ import { isPlaceable } from '#/sim/ChampionUnit'
 import type { CustomComps } from '#/sim/data/types'
 import { getIconURLFor, isEmpty } from '#/ui/helpers/utils'
 
-const { startDragging } = useStore()
+const { getters: { isBoardEnabled }, startDragging } = useStore()
 
 const unitGroups = computed(() => {
 	let unitGroups: ['Supported' | 'Unimplemented', ChampionData[]][] = [['Supported', []], ['Unimplemented', []]]
@@ -55,7 +55,7 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 			<div
 				v-for="unit in group" :key="unit.apiName"
 				class="sidebar-icon unit  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
-				:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.apiName!, null)"
+				:draggable="isBoardEnabled" @dragstart="startDragging($event, 'unit', unit.apiName!, null)"
 			>
 				<span class="icon-name  group-hover-visible">{{ unit.name }}</span>
 			</div>

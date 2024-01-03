@@ -8,11 +8,11 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive, moveUnit } from '#/store/store'
-import { saveComps, toStorage } from '#/store/storage'
+import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive, moveUnit, resetUnitsAfterUpdating } from '#/store/store'
+import { saveComps, saveUnits, toStorage } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getClosestHexAvailableTo, getCoordFrom, getDefaultHexFor } from '#/sim/helpers/board'
-import { getMirrorHex, getTeamForRow, isSameHex } from '#/sim/helpers/hexes'
+import { getInverseHex, getMirrorHex, getTeamForRow, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
 import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
 import { getUnitsOfTeam } from '#/sim/helpers/effectUtils'
@@ -24,11 +24,11 @@ import type { TargetEffect } from '#/sim/effects/TargetEffect'
 import { BOARD_UNITS_RAW, HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/dragDrop'
 
-const { getters: { currentLevelData, socialitesByTeam }, state, dropUnit, deleteUnit } = useStore()
+const { getters: { currentLevelData, isBoardEnabled, socialitesByTeam }, state, dropUnit, deleteUnit } = useStore()
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
-const showingSocialite = computed(() => !state.didStart && Math.floor(state.setNumber) === 6)
+const showingSocialite = computed(() => isBoardEnabled.value && Math.floor(state.setNumber) === 6)
 
 function onDrop(event: DragEvent, hex: HexCoord) {
 	const type = getDragType(event)
@@ -93,7 +93,10 @@ function getUnitUnderMouse() {
 	}
 	return undefined
 }
+
 function onKey(event: KeyboardEvent) {
+	if (!isBoardEnabled.value) return
+
 	if (event.key === 'e') {
 		const unitLocation = getUnitUnderMouse()
 		if (unitLocation != null) {

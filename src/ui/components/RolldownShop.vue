@@ -188,9 +188,9 @@ function refreshShop() {
 	}
 }
 
-watch(() => state.rolldownActive, () => {
+watch(() => state.didStart, () => {
 	shop.fill(null)
-	if (state.rolldownActive) {
+	if (state.didStart) {
 		refreshImageCache()
 		refreshShop()
 	}
@@ -314,7 +314,7 @@ function onBuyUnit(shopItem: ShopUnit, shopIndex: number) {
 			</button>
 		</div>
 		<div v-for="(shopItem, index) in shop" :key="index" class="flex-1 bg-secondary text-white">
-			<button v-if="shopItem" :disabled="state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col" @click="onBuyUnit(shopItem, index)">
+			<button v-if="shopItem" :disabled="!state.rolldownActive || state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col" @click="onBuyUnit(shopItem, index)">
 				<div class="relative w-full">
 					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class=" aspect-video m-0.5 bg-no-repeat bg-cover" />
 					<div v-if="shopItem.chosenTraits" class="shop-headliner-overlay  relative">

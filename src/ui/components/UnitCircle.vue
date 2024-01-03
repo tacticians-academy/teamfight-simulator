@@ -9,7 +9,7 @@ import type { StarLevel } from '#/sim/helpers/types'
 
 import { getIconURLFor } from '#/ui/helpers/utils'
 
-const { state, setStarLevel, startDragging } = useStore()
+const { getters: { isBoardEnabled }, state, setStarLevel, startDragging } = useStore()
 
 const props = defineProps<{
 	unit: ChampionUnit
@@ -36,14 +36,14 @@ function onInfo(event: Event) {
 	:data-hex="unit.startHex"
 	:data-bench="unit.benchIndex"
 	:style="{ left: `${currentPosition[0] * 100}%`, top: `${currentPosition[1] * 100}%` }"
-	:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.data.apiName!, unit)"
+	:draggable="isBoardEnabled" @dragstart="startDragging($event, 'unit', unit.data.apiName!, unit)"
 	@dragover="onDragOver" @drop="onDropOnUnit($event, unit)" @contextmenu="onInfo"
 >
 	<div class="circle" :style="{ backgroundImage: `url(${getIconURLFor(state, props.unit.data)})` }" :class="unit.team === 0 ? 'border-team-a' : 'border-team-b'">
 		<div class="icon-name  group-hover-visible">{{ unit.data.name }}</div>
 	</div>
 	<div class="stars" :class="unit.starLevel === 3 ? 'star-3' : (unit.starLevel === 2 ? 'star-2' : 'star-1')">
-		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart || state.simMode === 'rolldown'" @click="onStar(starLevel)">
+		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.simMode === 'rolldown' || state.didStart" @click="onStar(starLevel)">
 			{{ starLevel <= unit.starLevel ? '★' : '☆' }}
 		</button>
 	</div>

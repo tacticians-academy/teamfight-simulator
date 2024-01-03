@@ -3,7 +3,7 @@ import ManageTeams from '#/ui/components/Sidebar/ManageTeams.vue'
 import RolldownSetup from '#/ui/components/Sidebar/RolldownSetup.vue'
 import SelectPlayers from '#/ui/components/Sidebar/SelectPlayers.vue'
 
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 import { useStore } from '#/store/store'
 import type { SimMode } from '#/store/store'
@@ -44,6 +44,8 @@ function onToggle(name: SimMode) {
 	if (state.didStart) {
 		onFight()
 	}
+	state.rolldownActive = false
+	state.didStart = false
 	state.simMode = name
 }
 </script>

@@ -196,6 +196,8 @@ export const getters = {
 	augmentCount: computed(() => Math.min(3, state.stageNumber - 1)),
 	mutantType: computed(() => state.mutantType),
 
+	isBoardEnabled: computed(() => state.simMode === 'rolldown' ? state.rolldownActive : !state.didStart),
+
 	currentLevelData: computed(() => {
 		if (state.xp <= 0 || !setData.levelXP.length) {
 			return [0, 0, 0]

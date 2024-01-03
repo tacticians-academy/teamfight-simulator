@@ -8,14 +8,23 @@ import { getIconURLFor } from '#/ui/helpers/utils'
 import type { RolldownConfig } from '#/sim/data/types'
 import { getItemByIdentifier } from '#/sim/helpers/utils'
 
-const { getters: { synergiesByTeam }, state, startDragging } = useStore()
+const { getters: { isBoardEnabled, synergiesByTeam }, state, startDragging } = useStore()
+
+let rolldownStartMS = performance.now()
+
+const ROLLDOWN_SECONDS = 30
 
 function onConfig(config?: RolldownConfig) {
 	const active = config != null && !state.rolldownActive
 	state.rolldownActive = active
+	state.didStart = active
 	resetShop()
 	if (active) {
+		state.didStart = true
+		rolldownStartMS = performance.now()
 		state.elapsedSeconds = 0
+		updateTimer()
+
 		state.stageNumber = config.stage
 		state.gold = config.gold
 		state.xp = config.xp
@@ -23,10 +32,23 @@ function onConfig(config?: RolldownConfig) {
 		setCompForTeam({ augments: [], units: config.units }, 0)
 	}
 }
+
+function updateTimer(ms: DOMHighResTimeStamp = 1000) {
+	setTimeout(() => {
+		state.elapsedSeconds += 1
+		if (state.elapsedSeconds < ROLLDOWN_SECONDS) {
+			const elapsedMS = performance.now() - rolldownStartMS
+			const driftMS = elapsedMS - state.elapsedSeconds * 1000
+			updateTimer(1000 - driftMS)
+		} else {
+			state.rolldownActive = false
+		}
+	}, ms)
+}
 </script>
 
 <template>
-<div v-if="!state.rolldownActive" class="p-1 space-y-2">
+<div v-if="!state.didStart" class="p-1 space-y-2">
 	<h1 class="text-xl">Choose a scenario:</h1>
 	<button v-for="(config, index) in setData.rolldownConfigs" :key="index" class="w-full pt-0.5 px-1 bg-tertiary rounded-md group" @click="onConfig(config)">
 		<div class="flex space-x-2">
@@ -50,6 +72,9 @@ function onConfig(config?: RolldownConfig) {
 </div>
 <div v-else class="h-full  flex flex-col justify-between">
 	<div class="flex flex-col">
+		<div class="text-center">
+			⏱ {{ ROLLDOWN_SECONDS - state.elapsedSeconds }}
+		</div>
 		<div class="p-1 overflow-y-scroll">
 			<div>
 				<span class="">Board value: {{ getValueOfTeam(0) }}</span>
@@ -73,7 +98,7 @@ function onConfig(config?: RolldownConfig) {
 		<div
 			v-for="item in state.benchItems" :key="item.name"
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
-			:draggable="!state.didStart" @dragstart="startDragging($event, 'item', item.name, null)"
+			:draggable="isBoardEnabled" @dragstart="startDragging($event, 'item', item.name, null)"
 		>
 			<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>
