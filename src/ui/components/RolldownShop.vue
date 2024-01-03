@@ -23,6 +23,7 @@ const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograp
 
 type ShopUnit = {
 	apiName: string
+	groupAPIName: string
 	name: string
 	countFromPool: number
 	baseCost: number
@@ -169,6 +170,7 @@ function refreshShop() {
 			const shopUnit = {
 				name: unit.name,
 				apiName: unitApiName,
+				groupAPIName: setData.combinePoolAPINames[unitApiName] ?? unitApiName,
 				baseCost,
 				countFromPool,
 				totalPrice: baseCost * countFromPool,
@@ -194,26 +196,57 @@ watch(() => state.rolldownActive, () => {
 	}
 })
 
-function onBuy(shopItem: ShopUnit, shopIndex: number) {
-	if (state.gold < shopItem.totalPrice) return
+function getCopiesOfUnitAt(groupAPIName: string, starLevel: number) {
+	return [...state.units, ...state.benchUnits].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
+}
 
-	const benchIndex = state.benchUnits.findIndex(benchSpace => benchSpace == null)
-	if (benchIndex === -1) return
-
+function buyUnitFromShopAt(shopIndex: number) {
+	const shopItem = shop[shopIndex]!
 	state.gold -= shopItem.totalPrice
 	shop[shopIndex] = null
 	modifyPool(shopItem, shopItem.baseCost, -shopItem.countFromPool)
 	if (shopItem.chosenTraits) {
 		resetChosenParameters()
 	}
+	return new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
+}
 
-	const newUnit = new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
-	const groupAPIName = newUnit.groupAPIName
-	newUnit.benchIndex = benchIndex
-	state.benchUnits[benchIndex] = newUnit
+function onBuyUnit(shopItem: ShopUnit, shopIndex: number) {
+	if (state.gold < shopItem.totalPrice) return
 
+	const { groupAPIName } = shopItem
+
+	// Buy multiple to star up on full
+	const existingCopiesCount = getCopiesOfUnitAt(groupAPIName, shopItem.starLevel).length
+	const shopCopyIndices = shop.reduce<number[]>((acc, item, index) => (index !== shopIndex && item?.groupAPIName === groupAPIName) ? acc.concat(index) : acc, [])
+	const benchIndex = state.benchUnits.findIndex(benchSpace => benchSpace == null)
+	let combinesExtraUnits = false
+	let extraUnit = null
+	if (benchIndex === -1) {
+		if (existingCopiesCount > 0) {
+			const maxMoneyCount = Math.floor(state.gold / shopItem.totalPrice)
+			const maxBuyableCount = Math.min(maxMoneyCount, shopCopyIndices.length)
+			if (maxBuyableCount + existingCopiesCount >= 2) {
+				combinesExtraUnits = true
+				if (existingCopiesCount < 2) {
+					extraUnit = buyUnitFromShopAt(shopCopyIndices[0])
+				}
+			}
+		}
+		if (!combinesExtraUnits) {
+			return
+		}
+	}
+
+	const newUnit = buyUnitFromShopAt(shopIndex)
+	if (!combinesExtraUnits) {
+		newUnit.benchIndex = benchIndex
+		state.benchUnits[benchIndex] = newUnit
+	}
+
+	// Combine 3 copies of unit
 	for (let starLevel = 1 as StarLevel; starLevel <= 2; starLevel += 1) {
-		const copiesOfUnitAtStarLevel = [...state.units, ...state.benchUnits].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
+		const copiesOfUnitAtStarLevel = [...state.units, ...state.benchUnits, ...(combinesExtraUnits ? [newUnit, extraUnit] : [])].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
 		if (copiesOfUnitAtStarLevel.length >= 3) {
 			const repUnit = copiesOfUnitAtStarLevel.find(unit => unit.chosenTraits) ?? copiesOfUnitAtStarLevel[0]
 			removeFirstFromArray(copiesOfUnitAtStarLevel, repUnit)
@@ -281,7 +314,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 			</button>
 		</div>
 		<div v-for="(shopItem, index) in shop" :key="index" class="flex-1 bg-secondary text-white">
-			<button v-if="shopItem" :disabled="state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col" @click="onBuy(shopItem, index)">
+			<button v-if="shopItem" :disabled="state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col" @click="onBuyUnit(shopItem, index)">
 				<div class="relative w-full">
 					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class=" aspect-video m-0.5 bg-no-repeat bg-cover" />
 					<div v-if="shopItem.chosenTraits" class="shop-headliner-overlay  relative">
