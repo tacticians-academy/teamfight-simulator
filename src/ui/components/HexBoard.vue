@@ -8,10 +8,10 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive } from '#/store/store'
+import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive, moveUnit } from '#/store/store'
 import { saveComps, toStorage } from '#/store/storage'
 
-import { boardRowsCols, calculateCoordForHex, getCoordFrom } from '#/sim/helpers/board'
+import { boardRowsCols, calculateCoordForHex, getClosestHexAvailableTo, getCoordFrom, getDefaultHexFor } from '#/sim/helpers/board'
 import { getMirrorHex, getTeamForRow, isSameHex } from '#/sim/helpers/hexes'
 import type { HexCoord } from '#/sim/helpers/types'
 import { BOARD_COL_COUNT, UNIT_SIZE_PROPORTION } from '#/sim/helpers/constants'
@@ -24,7 +24,7 @@ import type { TargetEffect } from '#/sim/effects/TargetEffect'
 import { BOARD_UNITS_RAW, HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/dragDrop'
 
-const { getters, state, dropUnit, deleteUnit } = useStore()
+const { getters: { currentLevelData, socialitesByTeam }, state, dropUnit, deleteUnit } = useStore()
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 
@@ -99,6 +99,26 @@ function onKey(event: KeyboardEvent) {
 		if (unitLocation != null) {
 			deleteUnit(unitLocation)
 		}
+	} else if (event.key === 'w') {
+		const unitLocation = getUnitUnderMouse()
+		if (unitLocation != null) {
+			if (typeof unitLocation === 'number') {
+				if (getUnitsOfTeam(0).length >= currentLevelData.value[0]) {
+					return
+				}
+				const hex = getClosestHexAvailableTo(getDefaultHexFor(0), state.units) //TODO use exact hexes from game
+				const unit = state.benchUnits[unitLocation]
+				if (hex && unit) {
+					moveUnit(unit, hex, undefined)
+				}
+			} else {
+				const unit = state.units.find(u => u.isAt(unitLocation))
+				const benchIndex = state.benchUnits.findIndex(benchUnit => benchUnit == null)
+				if (benchIndex !== -1 && unit) {
+					moveUnit(unit, undefined, benchIndex)
+				}
+			}
+		}
 	}
 }
 onMounted(() => {
@@ -114,7 +134,7 @@ onBeforeUnmount(() => {
 	<div class="relative">
 		<div class="overflow-x-hidden aspect-square">
 			<div v-if="state.simMode === 'rolldown'" class="available-slots  absolute inset-0 text-tertiary  flex justify-center items-center">
-				{{ getUnitsOfTeam(0).length }} / {{ getters.currentLevelData.value[0] }}
+				{{ getUnitsOfTeam(0).length }} / {{ currentLevelData[0] }}
 			</div>
 			<template v-for="(row, rowIndex) in boardRowsCols" :key="rowIndex">
 				<div
@@ -122,7 +142,7 @@ onBeforeUnmount(() => {
 					class="hex" :class="getTeamForRow(rowIndex) === 0 ? 'team-a' : 'team-b'"
 					:style="{
 						left: `${colRow.coord[0] * 100}%`, top: `${colRow.coord[1] * 100}%`,
-						boxShadow: showingSocialite && getters.socialitesByTeam.value[getTeamForRow(rowIndex)] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
+						boxShadow: showingSocialite && socialitesByTeam[getTeamForRow(rowIndex)] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
 					}"
 					@dragover="onDragOver" @drop="onDrop($event, colRow.hex)"
 					@contextmenu.prevent="onHexMenu(colRow.hex)"

@@ -420,6 +420,11 @@ function repositionUnit(unit: ChampionUnit, hex: HexCoord | undefined, benchInde
 	unit.updateTeam()
 }
 
+export function moveUnit(unit: ChampionUnit, hex: HexCoord | undefined, benchIndex: number | undefined) {
+	repositionUnit(unit, hex, benchIndex)
+	resetUnitsAfterUpdating()
+}
+
 const store = {
 	state,
 
@@ -589,8 +594,7 @@ const store = {
 				if (existingUnit) {
 					repositionUnit(existingUnit, dragUnit.startHex, dragUnit.benchIndex)
 				}
-				repositionUnit(dragUnit, hex, benchIndex)
-				resetUnitsAfterUpdating()
+				moveUnit(dragUnit, hex, benchIndex)
 				state.dragUnit = null
 			} else if (hex) {
 				store._deleteUnit(hex)
