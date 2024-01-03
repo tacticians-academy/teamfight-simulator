@@ -57,7 +57,7 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 				class="sidebar-icon unit  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
 				:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.apiName!, null)"
 			>
-				<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
+				<span class="icon-name  group-hover-visible">{{ unit.name }}</span>
 			</div>
 		</div>
 	</div>

@@ -16,7 +16,7 @@ const props = defineProps<{
 <button
 	class="augment-box  group" :style="{ backgroundImage: augment ? `url(${getIconURLFor(state, augment)})` : undefined }"
 >
-	<span class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
+	<span class="icon-name  group-hover-visible">{{ augment.name }}</span>
 </button>
 </template>
 

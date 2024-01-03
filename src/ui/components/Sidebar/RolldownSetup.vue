@@ -75,7 +75,7 @@ function onConfig(config?: RolldownConfig) {
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
 			:draggable="!state.didStart" @dragstart="startDragging($event, 'item', item.name, null)"
 		>
-			<div class="sidebar-icon-name  group-hover-visible">{{ item.name }}</div>
+			<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>
 	</div>
 </div>

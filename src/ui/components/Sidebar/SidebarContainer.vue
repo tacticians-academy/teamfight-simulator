@@ -94,7 +94,7 @@ function onToggle(name: SimMode) {
 	font-size: 1.3vw;
 }
 .mode-panel button {
-	@apply  rounded-l-2xl;
+	@apply rounded-l-2xl;
 }
 
 .sidebar-icons-group {
@@ -114,7 +114,7 @@ function onToggle(name: SimMode) {
 	background-position-x: 85%;
 	background-size: 200% 112.5%;
 }
-.sidebar-icon-name {
+.icon-name {
 	@apply break-words w-full max-h-full leading-tight;
 	text-shadow: 0 1px 2px black;
 }

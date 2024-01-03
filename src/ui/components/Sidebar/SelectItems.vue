@@ -105,7 +105,7 @@ const searchItems = computed(() => {
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
 			:draggable="!state.didStart" @dragstart="onDrag($event, item.name)"
 		>
-			<div class="sidebar-icon-name  group-hover-visible">{{ item.name }}</div>
+			<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>
 	</div>
 </div>
@@ -125,7 +125,7 @@ const searchItems = computed(() => {
 				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
 				:draggable="!state.didStart" @dragstart="onDrag($event, item.name)"
 			>
-				<div class="sidebar-icon-name  group-hover-visible">{{ item.name }}</div>
+				<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 			</div>
 		</div>
 	</div>

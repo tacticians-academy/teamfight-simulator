@@ -110,7 +110,7 @@ function onSearchEnter() {
 					:disabled="state.didStart"
 					@click="onAugmentTeamIndex(teamNumber as TeamNumber, augmentIndex)"
 				>
-					<span v-if="augment" class="sidebar-icon-name  group-hover-visible">{{ augment.name }}</span>
+					<span v-if="augment" class="icon-name  group-hover-visible">{{ augment.name }}</span>
 					<span v-else class="w-full h-full rounded text-secondary text-xl font-medium font-serif border border-gray-400  flex justify-center items-center">{{ Array(augmentIndex + 1).fill('I').join('') }}</span>
 				</button>
 			</template>

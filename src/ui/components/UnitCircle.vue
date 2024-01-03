@@ -40,7 +40,7 @@ function onInfo(event: Event) {
 	@dragover="onDragOver" @drop="onDropOnUnit($event, unit)" @contextmenu="onInfo"
 >
 	<div class="circle" :style="{ backgroundImage: `url(${getIconURLFor(state, props.unit.data)})` }" :class="unit.team === 0 ? 'border-team-a' : 'border-team-b'">
-		<span class="group-hover-visible">{{ unit.data.name }}</span>
+		<div class="icon-name  group-hover-visible">{{ unit.data.name }}</div>
 	</div>
 	<div class="stars" :class="unit.starLevel === 3 ? 'star-3' : (unit.starLevel === 2 ? 'star-2' : 'star-1')">
 		<button v-for="starLevel in 3" :key="starLevel" :disabled="unit.isStarLocked || state.didStart || state.simMode === 'rolldown'" @click="onStar(starLevel)">

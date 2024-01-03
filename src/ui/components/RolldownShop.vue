@@ -247,10 +247,10 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 
 <template>
 <div class="absolute left-0 bottom-0 right-0 bg-primary">
-	<div class="bench-ui  p-1 space-x-1  flex">
+	<div class="bench-ui p-1 space-x-1  flex">
 		<div
 			v-for="(benchUnit, index) in state.benchUnits" :key="index"
-			class="bench-space  relative flex-1 aspect-square border-4 border-secondary  flex"
+			class="bench-space  flex-1 w-0 aspect-square relative border-4 border-secondary  flex"
 			@dragover="onDragOver" @drop="onDrop($event, index)"
 		>
 			<UnitCircle v-if="benchUnit" :unit="benchUnit" class="flex-1">
@@ -259,17 +259,17 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 		</div>
 	</div>
 	<div class="flex justify-between">
-		<div class="w-32">
+		<div class="shop-top">
 			<div class="flex justify-between">
 				<div>Lvl. {{ currentLevelData[0] }}</div>
 				<div v-if="currentLevelData[2] > 0">{{ currentLevelData[1] }}/{{ currentLevelData[2] }}</div>
 			</div>
-			<div class="flex w-full">
-				<div v-for="markIndex in (currentLevelData[2] / 4)" :key="markIndex" class="flex-grow m-px h-0.5" :class="markIndex * 4 <= currentLevelData[1] ? 'bg-team-a' : 'bg-secondary'" />
+			<div class="flex w-full" :class="currentLevelData[2] <= 0 ? 'invisible' : ''">
+				<div v-for="markIndex in ((currentLevelData[2] || 4) / 4)" :key="markIndex" class="flex-grow m-px h-0.5" :class="markIndex * 4 <= currentLevelData[1] ? 'bg-team-a' : 'bg-secondary'" />
 			</div>
 		</div>
-		<div>{{ state.gold }}g</div>
-		<div class="w-32 text-right">🔓</div>
+		<div class="shop-top  text-center">{{ state.gold }}g</div>
+		<div class="shop-top  text-right">🔓</div>
 	</div>
 	<div class="shop-ui  p-1 space-x-1  flex" @dragover="onDragOver" @drop="onDropSell">
 		<div class="shop-buttons  flex flex-col">
@@ -314,8 +314,15 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 .shop-ui {
 	height: 10.5vw;
 }
+.shop-top {
+	@apply w-32 mx-1;
+}
 .shop-buttons button {
 	@apply text-left;
+}
+
+.hex-unit {
+	@apply w-full;
 }
 
 .shop-stars {
