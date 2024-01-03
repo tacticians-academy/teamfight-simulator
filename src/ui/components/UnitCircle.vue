@@ -92,6 +92,7 @@ function onInfo(event: Event) {
 	@apply flex justify-center items-center;
 	font-size: 1.5vw;
 	border-width: 0.4vw;
-	background-position-x: 75%;
+	background-position-x: 90%;
+	background-size: 200% 112.5%;
 }
 </style>

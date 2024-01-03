@@ -59,8 +59,7 @@ function onKey(event: KeyboardEvent) {
 }
 
 let preloadImages: HTMLImageElement[] = []
-onMounted(() => {
-	document.addEventListener('keyup', onKey, false)
+function refreshImageCache() {
 	preloadImages = []
 	for (const unit of setData.champions) {
 		const img = new Image()
@@ -72,6 +71,11 @@ onMounted(() => {
 		img.src = getIconURLFor(state, trait)
 		preloadImages.push(img)
 	}
+}
+
+onMounted(() => {
+	document.addEventListener('keyup', onKey, false)
+	refreshImageCache()
 })
 onBeforeUnmount(() => {
 	document.removeEventListener('keyup', onKey, false)
@@ -185,6 +189,7 @@ function refreshShop() {
 watch(() => state.rolldownActive, () => {
 	shop.fill(null)
 	if (state.rolldownActive) {
+		refreshImageCache()
 		refreshShop()
 	}
 })
@@ -276,9 +281,9 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 			</button>
 		</div>
 		<div v-for="(shopItem, index) in shop" :key="index" class="flex-1 bg-secondary text-white">
-			<button v-if="shopItem" :disabled="state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  w-full h-full rounded-sm  flex flex-col justify-between" @click="onBuy(shopItem, index)">
-				<div class="flex-grow relative w-full">
-					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class="h-full m-0.5 bg-no-repeat bg-cover" />
+			<button v-if="shopItem" :disabled="state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col" @click="onBuy(shopItem, index)">
+				<div class="relative w-full">
+					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class=" aspect-video m-0.5 bg-no-repeat bg-cover" />
 					<div v-if="shopItem.chosenTraits" class="shop-headliner-overlay  relative">
 						<img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft10_gradient.tft_set10.png'" class="shop-headliner-glow  w-full h-full absolute inset-0">
 						<img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft_headliner_badge_top.tft_set10.png'" class="w-full h-full">
@@ -287,7 +292,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 					<div v-if="shopItem.starLevel > 1" class="shop-stars  absolute top-0" :class="shopItem.starLevel === 3 ? 'star-3' : (shopItem.starLevel === 2 ? 'star-2' : 'star-1')">
 						{{ Array(shopItem.starLevel).fill('★').join('') }}
 					</div>
-					<div class="shop-traits  absolute bottom-0 text-left">
+					<div class="shop-traits">
 						<div v-for="trait in shopItem.traits" :key="trait" class="shop-trait" :class="shopItem.chosenTraits?.[trait] ? 'chosen' : null">
 							<div v-if="shopItem.chosenTraits?.[trait]" class="shop-chosen-count">{{ shopItem.chosenTraits[trait] }}</div>
 							<img :src="getIconURLFor(state, setData.traits.find(t => t.name === trait) ?? setData.traits[0])" class="shop-trait  border border-black mx-1">
@@ -295,7 +300,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 						</div>
 					</div>
 				</div>
-				<div v-if="shopItem" class="shop-name  w-full px-1 font-serif  flex justify-between">
+				<div v-if="shopItem" class="shop-name  flex-grow w-full px-1 font-serif  flex items-center justify-between">
 					<div>{{ shopItem.name }}</div>
 					<div>{{ shopItem.totalPrice }}</div>
 				</div>
@@ -307,7 +312,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 
 <style scoped lang="postcss">
 .shop-ui {
-	height: 9vw;
+	height: 10.5vw;
 }
 .shop-buttons button {
 	@apply text-left;
@@ -320,6 +325,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 	-webkit-text-stroke: 1px #000;
 }
 .shop-traits {
+	@apply absolute bottom-0 mb-1 text-left;
 	font-size: 1.0vw;
 	font-weight: 300;
 }
@@ -356,7 +362,7 @@ function onBuy(shopItem: ShopUnit, shopIndex: number) {
 	width: 6vw;
 }
 .shop-item {
-	@apply disabled:opacity-25;
+	@apply w-full h-full rounded-sm disabled:opacity-25;
 }
 
 .cost-1 {

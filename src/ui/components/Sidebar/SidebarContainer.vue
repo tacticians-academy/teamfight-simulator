@@ -17,7 +17,7 @@ import { getTeamName } from '#/ui/helpers/utils'
 const SIDEBAR_VW = `${SIDEBAR_UNITS}vw`
 const MODE_PANEL_VW = `${SIDEBAR_UNITS / 5}vw`
 
-const { state, deleteItem, deleteUnit, resetGame } = useStore()
+const { state, resetGame } = useStore()
 
 const canToggleSimulation = computed(() => {
 	if (state.didStart) {
@@ -109,7 +109,10 @@ function onToggle(name: SimMode) {
 	font-size: 1.7vw;
 	width: calc(33.3333333333% - 0.25vw * 2 / 3);
 	margin-bottom: 0.25vw;
-	background-position-x: 75%;
+}
+.sidebar-icon.unit {
+	background-position-x: 85%;
+	background-size: 200% 112.5%;
 }
 .sidebar-icon-name {
 	@apply break-words w-full max-h-full leading-tight;

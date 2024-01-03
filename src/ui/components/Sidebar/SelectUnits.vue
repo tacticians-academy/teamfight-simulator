@@ -54,7 +54,7 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 		<div class="sidebar-icons-container">
 			<div
 				v-for="unit in group" :key="unit.apiName"
-				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
+				class="sidebar-icon unit  group" :style="{ backgroundImage: `url(${getIconURLFor(state, unit)})` }"
 				:draggable="!state.didStart" @dragstart="startDragging($event, 'unit', unit.apiName!, null)"
 			>
 				<span class="sidebar-icon-name  group-hover-visible">{{ unit.name }}</span>
