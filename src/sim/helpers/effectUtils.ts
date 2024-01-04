@@ -10,7 +10,7 @@ import { getClosestHexAvailableTo, getDistanceUnitOfTeamWithinRangeTo, getHexRow
 import { createDamageCalculation } from '#/sim/helpers/calculate'
 import { StatusEffectType } from '#/sim/helpers/types'
 import type { DamageModifier, HexCoord, StarLevel, TeamNumber } from '#/sim/helpers/types'
-import { getArrayValueCounts, getBestRandomAsMax, getBestSortedAsMax, getBestUniqueAsMax, randomItem } from '#/sim/helpers/utils'
+import { getArrayValueCounts, getBestRandomAsMax, getBestSortedAsMax, getBestUniqueAsMax, randomItem, sum } from '#/sim/helpers/utils'
 
 export function spawnUnit(fromUnit: ChampionUnit, apiName: string, starLevel: StarLevel) {
 	const hex = fromUnit.activeHex
@@ -123,6 +123,10 @@ export function getAttackableUnitsOfTeam(team: TeamNumber | null) {
 }
 export function getInteractableUnitsOfTeam(team: TeamNumber | null) {
 	return state.units.filter(unit => (team == null || unit.team === team) && unit.isInteractable())
+}
+
+export function getValueOfTeam(teamNumber: TeamNumber) {
+	return sum(getUnitsOfTeam(teamNumber).map(u => u.getTotalValue()))
 }
 
 export function getStageScalingIndex() {

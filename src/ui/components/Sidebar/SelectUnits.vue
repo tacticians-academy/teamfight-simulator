@@ -9,7 +9,8 @@ import { useStore, state, setData, setDataReactive } from '#/store/store'
 
 import { isPlaceable } from '#/sim/ChampionUnit'
 import type { CustomComps } from '#/sim/data/types'
-import { getIconURLFor, isEmpty } from '#/ui/helpers/utils'
+import { isEmpty } from '#/sim/helpers/utils'
+import { getIconURLFor } from '#/ui/helpers/utils'
 
 const { getters: { isBoardEnabled }, startDragging } = useStore()
 

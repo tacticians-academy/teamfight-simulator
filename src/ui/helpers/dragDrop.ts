@@ -1,11 +1,11 @@
-import { useStore, setCompForTeam } from '#/store/store'
+import { useStore } from '#/store/store'
 
 import type { ChampionUnit } from '#/sim/ChampionUnit'
 import type { CustomComp } from '#/sim/data/types'
 import type { HexCoord } from '#/sim/helpers/types'
 import { getTeamFor } from '#/sim/helpers/hexes'
 
-const { state, copyItem, moveItem, dropUnit, deleteItem, deleteUnit } = useStore()
+const { state, copyItem, moveItem, dropUnit, deleteItem, deleteUnit, setCompForTeam } = useStore()
 
 export type DraggableType = 'unit' | 'item' | 'comp' | 'shop'
 

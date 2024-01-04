@@ -25,10 +25,9 @@ import { getInverseHex, getMirrorHex, isSameHex } from '#/sim/helpers/hexes'
 import { getAliveUnitsOfTeam, getAliveUnitsOfTeamWithTrait, getUnitsOfTeam, getVariables, resetChecks } from '#/sim/helpers/effectUtils'
 import { MutantType } from '#/sim/helpers/types'
 import type { BonusLabelKey, HexCoord, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
-import { getItemByIdentifier, uniqueIdentifier } from '#/sim/helpers/utils'
+import { getItemByIdentifier, sum, uniqueIdentifier } from '#/sim/helpers/utils'
 
 import type { DraggableType } from '#/ui/helpers/dragDrop'
-import { sum } from '#/ui/helpers/utils'
 
 type TraitAndUnits = [TraitData, Record<string, number>]
 
@@ -126,83 +125,6 @@ export const state = reactive({
 
 	dragUnit: null as ChampionUnit | null,
 })
-setSetNumber(initSetNumber)
-
-export async function setSetNumber(set: SetNumber) {
-	state.loadedSet = false
-
-	try {
-		const { activeAugments, emptyImplementationAugments } = await importAugments(set)
-		const { defaultComps, rolldownConfigs } = await importDefaultComps(set)
-		const { augmentEffects } = await importAugmentEffects(set)
-		const { championEffects } = await importChampionEffects(set)
-		const { itemEffects } = await importItemEffects(set)
-		const { traitEffects } = await importTraitEffects(set)
-
-		const { champions } = await importChampions(set)
-		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
-		const { traits } = await importTraits(set)
-		const { LEVEL_XP, COMBINE_POOL_APINAMES } = await importSetData(set)
-		const { dropRates, tierBags, headlinerSystemParameters } = await importMap(set)
-
-		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
-		state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
-		state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
-		state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
-
-		setData.activeAugments = activeAugments ?? []
-		setData.emptyImplementationAugments = emptyImplementationAugments ?? []
-		setData.champions = champions ?? []
-		setData.currentItems = currentItems
-		setData.completedItems = completedItems
-		setData.componentItems = componentItems
-		setData.emblemItems = emblemItems
-		setData.shadowItems = shadowItems
-		setData.radiantItems = radiantItems
-		setData.ornnItems = ornnItems
-		setData.shimmerscaleItems = shimmerscaleItems
-		setData.supportItems = supportItems
-		setData.traits = traits ?? []
-		setData.compsDefault = defaultComps ?? {}
-		setData.rolldownConfigs = rolldownConfigs ?? {}
-		setDataReactive.compsUser = getSavedComps(set)
-		setData.augmentEffects = augmentEffects ?? {}
-		setData.championEffects = championEffects ?? {}
-		setData.itemEffects = itemEffects ?? {}
-		setData.traitEffects = traitEffects ?? {}
-
-		setData.dropRates = dropRates ?? []
-		setData.levelShopOdds = dropRates?.Shop ?? []
-		setData.tierBags = tierBags
-		setData.headlinerSystemParameters = headlinerSystemParameters
-		setData.levelXP = LEVEL_XP ?? []
-		setData.combinePoolAPINames = COMBINE_POOL_APINAMES ?? {}
-
-		setData.rowsPerSide = set < 2 ? 3 : 4
-		setData.rowsTotal = setData.rowsPerSide * 2
-
-		resetShop()
-		state.setNumber = set
-		state.units = []
-		loadStorageUnits(getSavedUnits(state.setNumber))
-		saveSetNumber(set)
-
-		if (set === DEFAULT_SET) { // Load sample data first run
-			const latestVersion = '2'
-			if (window.localStorage.getItem('TFTSIM_v') !== latestVersion) {
-				window.localStorage.setItem('TFTSIM_v', latestVersion)
-				const comps = Object.values(setData.compsDefault)
-				if (comps.length >= 2) {
-					setCompForTeam(comps[0], 0)
-					setCompForTeam(comps[1], 1)
-				}
-			}
-		}
-	} catch (error) {
-		console.log(error)
-	}
-	state.loadedSet = true
-}
 
 // Getters
 
@@ -320,10 +242,6 @@ watch(getters.augmentCount, (augmentCount) => {
 
 // Store
 
-export function getValueOfTeam(teamNumber: TeamNumber) {
-	return sum(getUnitsOfTeam(teamNumber).map(u => u.getTotalValue()))
-}
-
 export function clearBoardStateAndReset() {
 	clearBoardStorage(state.setNumber)
 	state.units = []
@@ -440,6 +358,8 @@ export function moveUnit(unit: ChampionUnit, hex: HexCoord | undefined, benchInd
 	repositionUnit(unit, hex, benchIndex)
 	resetUnitsAfterUpdating()
 }
+
+// Store
 
 const store = {
 	state,
@@ -630,7 +550,7 @@ const store = {
 	},
 
 	canBuy(shopItem: ShopUnit) {
-		return state.gold < shopItem.totalPrice || (shopItem.chosenTraits != null && state.chosen != null)
+		return state.gold >= shopItem.totalPrice && (shopItem.chosenTraits == null || state.chosen == null)
 	},
 
 	buyUnit(shopItem: ShopUnit, shopIndex: number) {
@@ -698,6 +618,163 @@ const store = {
 			}
 		}
 	},
+
+	getSocialiteHexStrength(hex: HexCoord) {
+		const mirrorHex = getMirrorHex(hex)
+		const socialiteIndex = Object.keys(state.socialiteHexes).map(key => parseInt(key, 10)).find(index => isSameHex(mirrorHex, state.socialiteHexes[index]))
+		return socialiteIndex != null ? socialiteIndex + 1 : 0
+	},
+
+	setSocialiteHex(index: number, hex: HexCoord | null) {
+		if (hex) {
+			state.socialiteHexes.forEach((existingSocialiteHex, index) => {
+				if (existingSocialiteHex && isSameHex(existingSocialiteHex, hex)) {
+					state.socialiteHexes[index] = null
+				}
+			})
+		}
+		state.socialiteHexes[index] = hex
+		setStorageJSON(state.setNumber, StorageKey.SocialiteHexes, state.socialiteHexes)
+	},
+
+	setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {
+		state.augmentsByTeam[teamNumber][augmentIndex] = augment
+		saveTeamAugments(state.setNumber)
+		resetUnitsAfterUpdating()
+	},
+
+	setCompForTeam(comp: CustomComp, teamNumber: TeamNumber) {
+		const teamAugments = state.augmentsByTeam[teamNumber]
+		teamAugments.forEach((augment, index) => teamAugments[index] = null)
+		state.units = state.units.filter(unit => unit.team !== teamNumber)
+		if (teamNumber === 1) {
+			comp.units.forEach(unit => unit.hex = getInverseHex(unit.hex))
+		}
+		comp.augments.forEach((augmentName, index) => teamAugments[index] = setData.activeAugments.find(augment => augment.name === augmentName) ?? null)
+		const newUnits = loadStorageUnits(comp.units)
+		saveUnits(state.setNumber)
+		saveTeamAugments(state.setNumber)
+		if (teamNumber === 0) {
+			for (const unit of newUnits) {
+				if (unit.data.cost != null) {
+					modifyPool(unit.data, unit.data.cost, -unit.getCountFromPool())
+				}
+			}
+		}
+	},
+
+	resetShop() {
+		resetChosenParameters()
+		state.elapsedSeconds = 0
+		state.shopSinceChosen = 0
+		state.shopNumber = 0
+		state.shop.fill(null)
+		state.benchUnits.fill(null)
+		state.shopUnitPools = structuredClone(setData.tierBags)
+	},
+}
+
+export async function setSetNumber(set: SetNumber) {
+	state.loadedSet = false
+
+	try {
+		const { activeAugments, emptyImplementationAugments } = await importAugments(set)
+		const { defaultComps, rolldownConfigs } = await importDefaultComps(set)
+		const { augmentEffects } = await importAugmentEffects(set)
+		const { championEffects } = await importChampionEffects(set)
+		const { itemEffects } = await importItemEffects(set)
+		const { traitEffects } = await importTraitEffects(set)
+
+		const { champions } = await importChampions(set)
+		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
+		const { traits } = await importTraits(set)
+		const { LEVEL_XP, COMBINE_POOL_APINAMES } = await importSetData(set)
+		const { dropRates, tierBags, headlinerSystemParameters } = await importMap(set)
+
+		state.augmentsByTeam = loadTeamAugments(set, activeAugments)
+		state.socialiteHexes = (getStorageJSON(set, StorageKey.SocialiteHexes) ?? [null, null]) as (HexCoord | null)[]
+		state.stageNumber = getStorageInt(set, StorageKey.StageNumber, 3)
+		state.mutantType = (getStorageString(set, StorageKey.Mutant) as MutantType) ?? MutantType.Cybernetic
+
+		setData.activeAugments = activeAugments ?? []
+		setData.emptyImplementationAugments = emptyImplementationAugments ?? []
+		setData.champions = champions ?? []
+		setData.currentItems = currentItems
+		setData.completedItems = completedItems
+		setData.componentItems = componentItems
+		setData.emblemItems = emblemItems
+		setData.shadowItems = shadowItems
+		setData.radiantItems = radiantItems
+		setData.ornnItems = ornnItems
+		setData.shimmerscaleItems = shimmerscaleItems
+		setData.supportItems = supportItems
+		setData.traits = traits ?? []
+		setData.compsDefault = defaultComps ?? {}
+		setData.rolldownConfigs = rolldownConfigs ?? {}
+		setDataReactive.compsUser = getSavedComps(set)
+		setData.augmentEffects = augmentEffects ?? {}
+		setData.championEffects = championEffects ?? {}
+		setData.itemEffects = itemEffects ?? {}
+		setData.traitEffects = traitEffects ?? {}
+
+		setData.dropRates = dropRates ?? []
+		setData.levelShopOdds = dropRates?.Shop ?? []
+		setData.tierBags = tierBags
+		setData.headlinerSystemParameters = headlinerSystemParameters
+		setData.levelXP = LEVEL_XP ?? []
+		setData.combinePoolAPINames = COMBINE_POOL_APINAMES ?? {}
+
+		setData.rowsPerSide = set < 2 ? 3 : 4
+		setData.rowsTotal = setData.rowsPerSide * 2
+
+		store.resetShop()
+		state.setNumber = set
+		state.units = []
+		loadStorageUnits(getSavedUnits(state.setNumber))
+		saveSetNumber(set)
+
+		if (set === DEFAULT_SET) { // Load sample data first run
+			const latestVersion = '2'
+			if (window.localStorage.getItem('TFTSIM_v') !== latestVersion) {
+				window.localStorage.setItem('TFTSIM_v', latestVersion)
+				const comps = Object.values(setData.compsDefault)
+				if (comps.length >= 2) {
+					store.setCompForTeam(comps[0], 0)
+					store.setCompForTeam(comps[1], 1)
+				}
+			}
+		}
+	} catch (error) {
+		console.log(error)
+	}
+	state.loadedSet = true
+}
+
+// Helpers
+
+function loadStorageUnits(storageUnits: StorageChampion[]) {
+	const synergiesByTeam = [[], []]
+	const units = storageUnits
+		.map(storageUnit => {
+			const championItems = storageUnit.items
+				.map(id => getItemByIdentifier(id, setData.currentItems))
+				.filter((item): item is ItemData => !!item)
+			const champion = new ChampionUnit(storageUnit.id, storageUnit.hex, storageUnit.starLevel, storageUnit.chosenTraits)
+			champion.updateTeam()
+			champion.items = championItems
+			champion.resetPre(synergiesByTeam)
+			if (storageUnit.stacks) {
+				for (const [key, amount] of storageUnit.stacks) {
+					champion.stacks[key as BonusLabelKey] = {
+						amount,
+					}
+				}
+			}
+			return champion
+		})
+	state.units.push(...units)
+	resetUnitsAfterUpdating()
+	return units
 }
 
 function buyUnitFromShopAt(shopIndex: number) {
@@ -727,92 +804,13 @@ function resetChosenParameters() {
 	state.chosenUnitLastShop = {}
 }
 
-export function resetShop() {
-	resetChosenParameters()
-	state.elapsedSeconds = 0
-	state.shopSinceChosen = 0
-	state.shopNumber = 0
-	state.shop.fill(null)
-	state.benchUnits.fill(null)
-	state.shopUnitPools = structuredClone(setData.tierBags)
+export function gameOver(forTeam: TeamNumber) {
+	state.winningTeam = forTeam === 0 ? 1 : 0
+	cancelLoop()
 }
 
 export function useStore() {
 	return store
 }
 
-// Helpers
-
-export function gameOver(forTeam: TeamNumber) {
-	state.winningTeam = forTeam === 0 ? 1 : 0
-	cancelLoop()
-}
-
-export function getSocialiteHexStrength(hex: HexCoord) {
-	const mirrorHex = getMirrorHex(hex)
-	const socialiteIndex = Object.keys(state.socialiteHexes).map(key => parseInt(key, 10)).find(index => isSameHex(mirrorHex, state.socialiteHexes[index]))
-	return socialiteIndex != null ? socialiteIndex + 1 : 0
-}
-
-export function setSocialiteHex(index: number, hex: HexCoord | null) {
-	if (hex) {
-		state.socialiteHexes.forEach((existingSocialiteHex, index) => {
-			if (existingSocialiteHex && isSameHex(existingSocialiteHex, hex)) {
-				state.socialiteHexes[index] = null
-			}
-		})
-	}
-	state.socialiteHexes[index] = hex
-	setStorageJSON(state.setNumber, StorageKey.SocialiteHexes, state.socialiteHexes)
-}
-
-export function setAugmentFor(teamNumber: TeamNumber, augmentIndex: number, augment: AugmentData | null) {
-	state.augmentsByTeam[teamNumber][augmentIndex] = augment
-	saveTeamAugments(state.setNumber)
-	resetUnitsAfterUpdating()
-}
-
-export function loadStorageUnits(storageUnits: StorageChampion[]) {
-	const synergiesByTeam = [[], []]
-	const units = storageUnits
-		.map(storageUnit => {
-			const championItems = storageUnit.items
-				.map(id => getItemByIdentifier(id, setData.currentItems))
-				.filter((item): item is ItemData => !!item)
-			const champion = new ChampionUnit(storageUnit.id, storageUnit.hex, storageUnit.starLevel, storageUnit.chosenTraits)
-			champion.updateTeam()
-			champion.items = championItems
-			champion.resetPre(synergiesByTeam)
-			if (storageUnit.stacks) {
-				for (const [key, amount] of storageUnit.stacks) {
-					champion.stacks[key as BonusLabelKey] = {
-						amount,
-					}
-				}
-			}
-			return champion
-		})
-	state.units.push(...units)
-	resetUnitsAfterUpdating()
-	return units
-}
-
-export function setCompForTeam(comp: CustomComp, teamNumber: TeamNumber) {
-	const teamAugments = state.augmentsByTeam[teamNumber]
-	teamAugments.forEach((augment, index) => teamAugments[index] = null)
-	state.units = state.units.filter(unit => unit.team !== teamNumber)
-	if (teamNumber === 1) {
-		comp.units.forEach(unit => unit.hex = getInverseHex(unit.hex))
-	}
-	comp.augments.forEach((augmentName, index) => teamAugments[index] = setData.activeAugments.find(augment => augment.name === augmentName) ?? null)
-	const newUnits = loadStorageUnits(comp.units)
-	saveUnits(state.setNumber)
-	saveTeamAugments(state.setNumber)
-	if (teamNumber === 0) {
-		for (const unit of newUnits) {
-			if (unit.data.cost != null) {
-				modifyPool(unit.data, unit.data.cost, -unit.getCountFromPool())
-			}
-		}
-	}
-}
+setSetNumber(initSetNumber)

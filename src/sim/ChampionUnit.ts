@@ -4,7 +4,7 @@ import { AugmentGroupKey, ItemKey, TraitKey, BonusKey, DamageType } from '@tacti
 import type { ChampionData, ChampionSpellData, ChampionSpellMissileData, EffectVariables, ItemData, SpellCalculation, TraitData } from '@tacticians-academy/academy-library'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
-import { gameOver, getters, state, setData, resetUnitsAfterUpdating } from '#/store/store'
+import { getters, state, setData, resetUnitsAfterUpdating, gameOver } from '#/store/store'
 import { saveUnits } from '#/store/storage'
 
 import type { ChampionFns } from '#/sim/data/types'
@@ -29,8 +29,7 @@ import { applyStackingModifier, checkCooldown, getAliveUnitsOfTeamWithTrait, get
 import { containsHex, getTeamFor, isSameHex } from '#/sim/helpers/hexes'
 import { SpellKey, DamageSourceType, StatusEffectType } from '#/sim/helpers/types'
 import type { ActivateFn, BleedData, BonusEntry, BonusLabelKey, BonusScaling, BonusVariable, DamageFn, DamageModifier, DamageResult, EmpoweredAuto, HexCoord, ShieldEntry, StatusEffect, ShieldData, StackData, StarLevel, SynergyData, TeamNumber } from '#/sim/helpers/types'
-import { getBestRandomAsMax, uniqueIdentifier } from '#/sim/helpers/utils'
-import { isEmpty } from '#/ui/helpers/utils'
+import { getBestRandomAsMax, isEmpty, uniqueIdentifier } from '#/sim/helpers/utils'
 
 let instanceIndex = 0
 

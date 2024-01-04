@@ -2,10 +2,11 @@
 import DisplayTrait from '#/ui/components/Sidebar/DisplayTrait.vue'
 import SelectPlayersAugments from '#/ui/components/Sidebar/SelectPlayersAugments.vue'
 
-import { getValueOfTeam, useStore, clearBoardStateAndReset } from '#/store/store'
+import { useStore, clearBoardStateAndReset } from '#/store/store'
 
 import { MutantType } from '#/sim/helpers/types'
 import type { TeamNumber } from '#/sim/helpers/types'
+import { getValueOfTeam } from '#/sim/helpers/effectUtils'
 
 import { getTeamName } from '#/ui/helpers/utils'
 

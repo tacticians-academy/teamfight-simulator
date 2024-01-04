@@ -3,12 +3,13 @@ import DisplayTrait from '#/ui/components/Sidebar/DisplayTrait.vue'
 
 import type { ItemData } from '@tacticians-academy/academy-library'
 
-import { useStore, getValueOfTeam, setData, setCompForTeam, resetShop } from '#/store/store'
+import { useStore, setData } from '#/store/store'
 import { getIconURLFor } from '#/ui/helpers/utils'
 import type { RolldownConfig } from '#/sim/data/types'
+import { getValueOfTeam } from '#/sim/helpers/effectUtils'
 import { getItemByIdentifier } from '#/sim/helpers/utils'
 
-const { getters: { isBoardEnabled, synergiesByTeam }, state, startDragging } = useStore()
+const { getters: { isBoardEnabled, synergiesByTeam }, state, startDragging, setCompForTeam, resetShop } = useStore()
 
 let rolldownStartMS = performance.now()
 let rolldownTimer: ReturnType<typeof setTimeout> | undefined = undefined

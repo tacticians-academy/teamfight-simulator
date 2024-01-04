@@ -8,11 +8,12 @@ import { getAssetPrefixFor } from '@tacticians-academy/academy-library'
 import type { ChampionData, TraitData } from '@tacticians-academy/academy-library'
 
 import type { StarLevel } from '#/sim/helpers/types'
-import { shuffle } from '#/sim/helpers/utils'
+import { getWeightedRandom, isEmpty, shuffle } from '#/sim/helpers/utils'
+
 import { setData, useStore } from '#/store/store'
+
 import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
 import { getIconURLFor } from '#/ui/helpers/utils'
-import { isEmpty } from '#/ui/helpers/utils'
 
 const { state, getters: { currentLevelData }, dropUnit, canBuy, startDragging, buyUnit } = useStore()
 
@@ -79,20 +80,6 @@ function onDrop(event: DragEvent, benchIndex: number) {
 	} else if (type === 'unit') {
 		dropUnit(event, name, undefined, benchIndex)
 	}
-}
-
-function getWeightedRandom(data: [value: any, weight: any][], minWeight: number = 1) {
-	let acc = 0
-	const sorted = data
-		.filter(entry => entry[1] > minWeight - 1)
-		.sort((a, b) => a[1] - b[1])
-		.map(entry => {
-			acc += entry[1]
-			entry[1] = acc
-			return entry
-		})
-	const random = Math.random() * acc
-	return sorted.find(entry => entry[1] > random)![0]
 }
 
 function refreshShop() {

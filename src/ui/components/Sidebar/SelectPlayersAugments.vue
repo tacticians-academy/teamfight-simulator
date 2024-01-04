@@ -5,12 +5,12 @@ import { computed, ref } from 'vue'
 
 import type { AugmentData, AugmentGroupKey } from '@tacticians-academy/academy-library'
 
-import { useStore, setAugmentFor, setData } from '#/store/store'
+import { useStore, setData } from '#/store/store'
 
 import type { TeamNumber } from '#/sim/helpers/types'
 import { getIconURLFor } from '#/ui/helpers/utils'
 
-const { state } = useStore()
+const { state, setAugmentFor } = useStore()
 
 const selectAugment = ref<[tierIndex: number, teamNumber: TeamNumber, augmentIndex: number] | null>(null)
 

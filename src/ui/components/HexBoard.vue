@@ -8,7 +8,7 @@ import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
-import { useStore, setData, getSocialiteHexStrength, setSocialiteHex, setDataReactive, moveUnit, resetUnitsAfterUpdating } from '#/store/store'
+import { useStore, setData, setDataReactive, moveUnit } from '#/store/store'
 import { saveComps, saveUnits, toStorage } from '#/store/storage'
 
 import { boardRowsCols, calculateCoordForHex, getClosestHexAvailableTo, getCoordFrom, getDefaultHexFor } from '#/sim/helpers/board'
@@ -24,7 +24,7 @@ import type { TargetEffect } from '#/sim/effects/TargetEffect'
 import { BOARD_UNITS_RAW, HEX_SIZE_UNITS } from '#/ui/helpers/constants'
 import { getDragName, getDragType, onDragOver, onDropComp } from '#/ui/helpers/dragDrop'
 
-const { getters: { currentLevelData, isBoardEnabled, socialitesByTeam }, state, dropUnit, deleteUnit } = useStore()
+const { getters: { currentLevelData, isBoardEnabled, socialitesByTeam }, state, dropUnit, deleteUnit, getSocialiteHexStrength, setSocialiteHex } = useStore()
 
 const HEX_VW = `${HEX_SIZE_UNITS}vw`
 

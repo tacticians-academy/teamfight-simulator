@@ -2,6 +2,17 @@ import type { ItemData } from '@tacticians-academy/academy-library'
 
 export const TESTING = process.env.NODE_ENV !== 'production'
 
+export function isEmpty(object: Record<string, any>) {
+	for (const _ in object) {
+		return false
+	}
+	return true
+}
+
+export function sum(arr: number[]) {
+	return arr.reduce((acc, curr) => acc + curr, 0)
+}
+
 export function getItemByIdentifier(identifier: number | string | null, items: ItemData[]) {
 	if (typeof identifier === 'number') {
 		return items.find(item => item.id === identifier)
@@ -106,4 +117,18 @@ export function shuffle<T>(array: T[]) {
 
 export function randomItems<T>(maxCount: number, array: T[]) {
 	return shuffle(array).slice(0, maxCount)
+}
+
+export function getWeightedRandom(data: [value: any, weight: any][], minWeight: number = 1) {
+	let acc = 0
+	const sorted = data
+		.filter(entry => entry[1] > minWeight - 1)
+		.sort((a, b) => a[1] - b[1])
+		.map(entry => {
+			acc += entry[1]
+			entry[1] = acc
+			return entry
+		})
+	const random = Math.random() * acc
+	return sorted.find(entry => entry[1] > random)![0]
 }
