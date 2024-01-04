@@ -11,18 +11,19 @@ import { getItemByIdentifier } from '#/sim/helpers/utils'
 const { getters: { isBoardEnabled, synergiesByTeam }, state, startDragging } = useStore()
 
 let rolldownStartMS = performance.now()
+let rolldownTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
 const ROLLDOWN_SECONDS = 30
 
 function onConfig(config?: RolldownConfig) {
+	clearTimer()
 	const active = config != null && !state.rolldownActive
 	state.rolldownActive = active
 	state.didStart = active
+	state.elapsedSeconds = 0
 	resetShop()
 	if (active) {
-		state.didStart = true
 		rolldownStartMS = performance.now()
-		state.elapsedSeconds = 0
 		updateTimer()
 
 		state.stageNumber = config.stage
@@ -33,15 +34,24 @@ function onConfig(config?: RolldownConfig) {
 	}
 }
 
+function clearTimer() {
+	if (rolldownTimer) {
+		clearTimeout(rolldownTimer)
+		rolldownTimer = undefined
+	}
+}
+
 function updateTimer(ms: DOMHighResTimeStamp = 1000) {
-	setTimeout(() => {
-		state.elapsedSeconds += 1
-		if (state.elapsedSeconds < ROLLDOWN_SECONDS) {
+	clearTimer()
+	rolldownTimer = setTimeout(() => {
+		if (state.rolldownActive && state.elapsedSeconds < ROLLDOWN_SECONDS) {
+			state.elapsedSeconds += 1
 			const elapsedMS = performance.now() - rolldownStartMS
 			const driftMS = elapsedMS - state.elapsedSeconds * 1000
 			updateTimer(1000 - driftMS)
 		} else {
 			state.rolldownActive = false
+			clearTimer()
 		}
 	}, ms)
 }

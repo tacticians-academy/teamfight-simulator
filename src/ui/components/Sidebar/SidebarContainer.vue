@@ -45,7 +45,6 @@ function onToggle(name: SimMode) {
 		onFight()
 	}
 	state.rolldownActive = false
-	state.didStart = false
 	state.simMode = name
 }
 </script>
