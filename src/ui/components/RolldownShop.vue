@@ -18,6 +18,11 @@ import { getIconURLFor } from '#/ui/helpers/utils'
 const { state, getters: { currentLevelData }, dropUnit, canBuy, startDragging, buyUnit } = useStore()
 
 const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograph/sets/set10/tft_headliner_badge_mask.tft_set10.png`
+const shopUIURL = computed(() => {
+	const prefix = getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/tft_hud_texture_atlas'
+	const suffix = state.setNumber >= 9.5 ? '.tft_set9_stage2' : ''
+	return `url(${prefix}${suffix}.png)`
+})
 
 const disableXP = computed(() => !state.rolldownActive || state.gold < 4 || currentLevelData.value[2] <= 0)
 const disableReroll = computed(() => !state.rolldownActive || state.gold < 2)
@@ -201,7 +206,7 @@ watch(() => state.didStart, () => {
 		<div class="shop-top  text-center">{{ state.gold }}g</div>
 		<div class="shop-top  text-right">🔓</div>
 	</div>
-	<div class="shop-ui  p-1 space-x-1  flex" @dragover="onDragOver" @drop="onDropSell">
+	<div class="shop-ui  flex" @dragover="onDragOver" @drop="onDropSell">
 		<div class="shop-buttons  flex flex-col">
 			<button :disabled="disableXP" @click="onBuyXP">
 				<div>Buy XP</div><div>4</div>
@@ -210,36 +215,42 @@ watch(() => state.didStart, () => {
 				<div>Reroll</div><div>2</div>
 			</button>
 		</div>
-		<div v-for="(shopItem, index) in state.shop" :key="index" class="flex-1 bg-secondary text-white">
+		<div v-for="(shopItem, index) in state.shop" :key="index" class="shop-item  flex-1 bg-secondary text-white">
 			<button
 				v-if="shopItem" :disabled="!state.rolldownActive || !canBuy(shopItem)"
-				:class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col"
+				:class="`cost-${shopItem.baseCost}`" class="shop-item-content  relative  flex flex-col"
 				:draggable="state.rolldownActive && canBuy(shopItem)" @dragstart="startDragging($event, 'shop', index.toString(), null)"
 				@click="buyUnit(shopItem, index)"
 			>
-				<div class="relative w-full">
-					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class=" aspect-video m-0.5 bg-no-repeat bg-cover" />
+				<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class="shop-unit-area  bg-cover" />
+
+				<div class="absolute inset-0 z-50">
+					<div class="shop-unit-area  relative">
+						<div class="shop-traits">
+							<div v-for="trait in shopItem.traits" :key="trait" class="shop-trait" :class="shopItem.chosenTraits?.[trait] ? 'chosen' : null">
+								<div v-if="shopItem.chosenTraits?.[trait]" class="shop-chosen-count">{{ shopItem.chosenTraits[trait] }}</div>
+								<img :src="getIconURLFor(state, setData.traits.find(t => t.name === trait) ?? setData.traits[0])" class="border border-black">
+								<div>{{ trait }}</div>
+							</div>
+						</div>
+					</div>
+					<div v-if="shopItem" class="shop-name  font-serif  flex items-center justify-between">
+						<div>{{ shopItem.name }}</div>
+						<div>{{ shopItem.totalPrice }}</div>
+					</div>
+				</div>
+				<div class="shop-item-frame" :style="{ backgroundImage: shopUIURL }">
+					<div v-if="shopItem.starLevel > 1" class="shop-stars  absolute top-0" :class="shopItem.starLevel === 3 ? 'star-3' : (shopItem.starLevel === 2 ? 'star-2' : 'star-1')">
+						{{ Array(shopItem.starLevel).fill('★').join('') }}
+					</div>
 					<div v-if="shopItem.chosenTraits" class="shop-headliner-overlay  relative">
 						<img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft10_gradient.tft_set10.png'" class="shop-headliner-glow  w-full h-full absolute inset-0">
 						<img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft_headliner_badge_top.tft_set10.png'" class="w-full h-full">
 						<!-- <img :src="getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/mograph/sets/set10/tft_headliner_badge_icon.tft_set10.png'" class="absolute inset-0"> -->
 					</div>
-					<div v-if="shopItem.starLevel > 1" class="shop-stars  absolute top-0" :class="shopItem.starLevel === 3 ? 'star-3' : (shopItem.starLevel === 2 ? 'star-2' : 'star-1')">
-						{{ Array(shopItem.starLevel).fill('★').join('') }}
-					</div>
-					<div class="shop-traits">
-						<div v-for="trait in shopItem.traits" :key="trait" class="shop-trait" :class="shopItem.chosenTraits?.[trait] ? 'chosen' : null">
-							<div v-if="shopItem.chosenTraits?.[trait]" class="shop-chosen-count">{{ shopItem.chosenTraits[trait] }}</div>
-							<img :src="getIconURLFor(state, setData.traits.find(t => t.name === trait) ?? setData.traits[0])" class="shop-trait  border border-black mx-1">
-							<div>{{ trait }}</div>
-						</div>
-					</div>
-				</div>
-				<div v-if="shopItem" class="shop-name  flex-grow w-full px-1 font-serif  flex items-center justify-between">
-					<div>{{ shopItem.name }}</div>
-					<div>{{ shopItem.totalPrice }}</div>
 				</div>
 			</button>
+
 		</div>
 	</div>
 </div>
@@ -247,13 +258,20 @@ watch(() => state.didStart, () => {
 
 <style scoped lang="postcss">
 .shop-ui {
-	height: 10.5vw;
+	height: 10.59vw;
+	padding: 0.1vw;
+	margin-right: 0.5vw;
+}
+.shop-item {
+	margin-left: 0.5vw;
+	margin-bottom: 0.5vw;
 }
 .shop-top {
 	@apply w-32 mx-1;
 }
 .shop-buttons button {
 	@apply text-left;
+	width: 5vw;
 }
 
 .hex-unit {
@@ -267,11 +285,14 @@ watch(() => state.didStart, () => {
 	-webkit-text-stroke: 1px #000;
 }
 .shop-traits {
-	@apply absolute bottom-0 mb-1 text-left;
+	@apply absolute inset-0 h-full  text-left  flex flex-col justify-end;
+	padding-bottom: 0.05vw;
 	font-size: 1.0vw;
 	font-weight: 300;
 }
 .shop-name {
+	padding: 0 0.7vw;
+	height: 2.3vw;
 	font-size: 1.2vw;
 }
 
@@ -281,6 +302,7 @@ watch(() => state.didStart, () => {
 .shop-trait img {
 	@apply bg-gray-700 p-0.5 pointer-events-none aspect-square;
 	width: 1.2vw;
+	margin: 0 0.25vw;
 }
 .shop-trait.chosen img {
 	box-shadow: white 0 0 4px 1px;
@@ -296,31 +318,54 @@ watch(() => state.didStart, () => {
 }
 .shop-headliner-overlay {
 	@apply absolute;
-	top: -1.0vw;
-	right: -2vw;
+	top: -0.7vw;
+	right: -1.9vw;
 }
 .shop-headliner-overlay > * {
 	@apply block;
 	width: 6vw;
 }
-.shop-item {
-	@apply w-full h-full rounded-sm disabled:opacity-25;
+.shop-item-content {
+	@apply w-full h-full rounded-sm;
+	@apply disabled:opacity-30;
 }
 
-.cost-1 {
-	background-color: #1A232E;
+.shop-unit-area {
+	@apply mx-auto;
+	box-sizing: border-box;
+	margin-top: 0.37vw;
+	width: calc(100% - 0.7vw);
+	height: 7.15vw;
+	/* padding: 1vw; */
 }
-.cost-2 {
-	background-color: #1D342C;
+
+.shop-item-frame {
+	@apply absolute inset-0 w-full h-full;
+	background-size: 124.5vw;
 }
-.cost-3 {
-	background-color: #1A2143;
+
+.cost-1 .shop-item-frame, .cost-3 .shop-item-frame, .cost-5 .shop-item-frame {
+	background-position-x: -1.02vw;
 }
-.cost-4 {
-	background-color: #3F1243;
+.cost-1 .shop-item-frame, .cost-2 .shop-item-frame {
+	background-position-y: -88.43vw;
 }
-.cost-5 {
-	background-color: #624518;
+.cost-2 .shop-item-frame, .cost-4 .shop-item-frame {
+	background-position-x: -28.12vw;
+}
+.cost-3 .shop-item-frame, .cost-4 .shop-item-frame {
+	background-position-y: -98.83vw;
+}
+.cost-5 .shop-item-frame {
+	background-position-y: -109.23vw;
+}
+.shop-item-content:not(:disabled) {
+	&.cost-1:hover .shop-item-frame, &.cost-3:hover .shop-item-frame, &.cost-5:hover .shop-item-frame {
+		background-position-x: -14.57vw;
+	}
+	&.cost-2:hover .shop-item-frame, &.cost-4:hover .shop-item-frame {
+		background-position-x: -41.67vw;
+	}
 }
 
 .shop-chosen-count {
