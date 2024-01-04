@@ -159,7 +159,7 @@ onBeforeUnmount(() => {
 						left: `${colRow.coord[0] * 100}%`, top: `${colRow.coord[1] * 100}%`,
 						boxShadow: showingSocialite && socialitesByTeam[getTeamForRow(rowIndex)] && getSocialiteHexStrength(colRow.hex) > 0 ? `inset 0 0 ${3 - getSocialiteHexStrength(colRow.hex)}vw blue` : undefined
 					}"
-					@dragover="onDragOver" @drop="onDrop($event, colRow.hex)"
+					:draggable="state.simMode === 'teamfight'" @dragover="onDragOver" @drop="onDrop($event, colRow.hex)"
 					@contextmenu.prevent="onHexMenu(colRow.hex)"
 				/>
 			</template>

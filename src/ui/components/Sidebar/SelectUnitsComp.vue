@@ -13,10 +13,6 @@ const props = defineProps<{
 
 const { startDragging } = useStore()
 
-function onDrag(event: DragEvent) {
-	startDragging(event, 'comp', JSON.stringify(props.comp), null)
-}
-
 function onDelete() {
 	delete setDataReactive.compsUser[props.name]
 	saveComps(state.setNumber)
@@ -24,7 +20,7 @@ function onDelete() {
 </script>
 
 <template>
-<div class="p-1 bg-tertiary rounded-md group  space-y-0.5" :draggable="!state.didStart" @dragstart="onDrag">
+<div class="p-1 bg-tertiary rounded-md group  space-y-0.5" :draggable="!state.didStart" @dragstart="startDragging($event, 'comp', JSON.stringify(comp), null)">
 	<div class="flex justify-between">
 		<div class="title  mr-1  flex justify-between">
 			<div>{{ name }}</div>

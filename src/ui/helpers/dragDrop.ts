@@ -7,7 +7,7 @@ import { getTeamFor } from '#/sim/helpers/hexes'
 
 const { state, copyItem, moveItem, dropUnit, deleteItem, deleteUnit } = useStore()
 
-export type DraggableType = 'unit' | 'item' | 'comp'
+export type DraggableType = 'unit' | 'item' | 'comp' | 'shop'
 
 export function onDragOver(event: DragEvent) {
 	if (!event.dataTransfer || event.dataTransfer.items.length < 2) return
@@ -43,8 +43,6 @@ export function onDropSell(event: DragEvent) {
 		if (name != null) {
 			deleteItem(name, dragUnit, false)
 		}
-	} else {
-		console.log('ERR', 'Unknown drag type', dragType, dragUnit)
 	}
 }
 
@@ -66,8 +64,6 @@ export function onDropOnUnit(event: DragEvent, onUnit: ChampionUnit) {
 		if (onUnit.startHex) {
 			onDropComp(name, onUnit.startHex)
 		}
-	} else {
-		console.log('ERR', 'Unknown drag type', type, name)
 	}
 }
 

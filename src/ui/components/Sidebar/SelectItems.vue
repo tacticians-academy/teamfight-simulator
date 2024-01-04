@@ -46,10 +46,6 @@ function onToggle(title: string) {
 	collapsed[title] = !collapsed[title]
 }
 
-function onDrag(event: DragEvent, name: string) {
-	startDragging(event, 'item', name, null)
-}
-
 function getSearchScore(searchWhole: string, searchWords: string[], testAgainst: string) {
 	testAgainst = testAgainst.toLowerCase()
 	const maxWordScore = searchWords.length + 1
@@ -103,7 +99,7 @@ const searchItems = computed(() => {
 		<div
 			v-for="item in searchItems" :key="item.name"
 			class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
-			:draggable="state.simMode === 'teamfight' && !state.didStart" @dragstart="onDrag($event, item.name)"
+			:draggable="state.simMode === 'teamfight' && !state.didStart" @dragstart="startDragging($event, 'item', item.name, null)"
 		>
 			<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 		</div>
@@ -123,7 +119,7 @@ const searchItems = computed(() => {
 			<div
 				v-for="item in group" :key="item.name"
 				class="sidebar-icon  group" :style="{ backgroundImage: `url(${getIconURLFor(state, item)})` }"
-				:draggable="state.simMode === 'teamfight' && !state.didStart" @dragstart="onDrag($event, item.name)"
+				:draggable="state.simMode === 'teamfight' && !state.didStart" @dragstart="startDragging($event, 'item', item.name, null)"
 			>
 				<div class="icon-name  group-hover-visible">{{ item.name }}</div>
 			</div>

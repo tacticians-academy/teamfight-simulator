@@ -2,38 +2,21 @@
 import UnitCircle from '#/ui/components/UnitCircle.vue'
 import UnitOverlay from '#/ui/components/UnitOverlay.vue'
 
-import { computed, onBeforeUnmount, onMounted, reactive, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 
-import { getAssetPrefixFor, removeFirstFromArray } from '@tacticians-academy/academy-library'
+import { getAssetPrefixFor } from '@tacticians-academy/academy-library'
 import type { ChampionData, TraitData } from '@tacticians-academy/academy-library'
 
-import { ChampionUnit } from '#/sim/ChampionUnit'
 import type { StarLevel } from '#/sim/helpers/types'
 import { shuffle } from '#/sim/helpers/utils'
-import { setData, useStore, resetShop, modifyPool, resetChosenParameters } from '#/store/store'
+import { setData, useStore } from '#/store/store'
 import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
 import { getIconURLFor } from '#/ui/helpers/utils'
 import { isEmpty } from '#/ui/helpers/utils'
 
-const { state, getters, dropUnit, setStarLevel } = useStore()
-
-const { currentLevelData } = getters
+const { state, getters: { currentLevelData }, dropUnit, setStarLevel, startDragging, buyUnit } = useStore()
 
 const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograph/sets/set10/tft_headliner_badge_mask.tft_set10.png`
-
-type ShopUnit = {
-	apiName: string
-	groupAPIName: string
-	name: string
-	countFromPool: number
-	baseCost: number
-	totalPrice: number
-	icon: string
-	starLevel: StarLevel
-	traits: string[]
-	chosenTraits: Record<string, number> | undefined
-}
-const shop = reactive<(ShopUnit | null)[]>([null, null, null, null, null])
 
 const disableXP = computed(() => !state.rolldownActive || state.gold < 4 || currentLevelData.value[2] <= 0)
 const disableReroll = computed(() => !state.rolldownActive || state.gold < 2)
@@ -83,14 +66,19 @@ onBeforeUnmount(() => {
 })
 
 function onDrop(event: DragEvent, benchIndex: number) {
-	const type = getDragType(event)
-	if (type !== 'unit') return
 	const name = getDragName(event)
 	if (name == null) return
-	const dragUnit = state.dragUnit
-	if (dragUnit == null) return
+	const type = getDragType(event)
+	if (type === 'shop') {
+		const shopIndex = parseInt(name, 10)
+		if (isNaN(shopIndex)) return
+		const shopUnit = state.shop[shopIndex]
+		if (!shopUnit) return
 
-	dropUnit(event, dragUnit.data.apiName, undefined, benchIndex)
+		buyUnit(shopUnit, shopIndex)
+	} else if (type === 'unit') {
+		dropUnit(event, name, undefined, benchIndex)
+	}
 }
 
 function getWeightedRandom(data: [value: any, weight: any][], minWeight: number = 1) {
@@ -112,7 +100,7 @@ function refreshShop() {
 	state.shopSinceChosen += 1
 	const chosenFrequency = setData.headlinerSystemParameters?.['HeadlinerFrequency']
 	let getChosen = chosenFrequency != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
-	for (let shopIndex = shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
+	for (let shopIndex = state.shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
 		const starLevel: StarLevel = getChosen ? 2 : 1
 		const levelIndex = currentLevelData.value[0] - 1
 		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.levelShopOdds)[levelIndex]
@@ -179,7 +167,7 @@ function refreshShop() {
 				traits: unit.traits,
 				chosenTraits: !isEmpty(chosenTraits) ? chosenTraits : undefined,
 			}
-			shop[shopIndex] = shopUnit
+			state.shop[shopIndex] = shopUnit
 			if (getChosen) {
 				state.shopSinceChosen = 0
 				getChosen = false
@@ -189,93 +177,11 @@ function refreshShop() {
 }
 
 watch(() => state.didStart, () => {
-	shop.fill(null)
 	if (state.didStart) {
 		refreshImageCache()
 		refreshShop()
 	}
 })
-
-function getCopiesOfUnitAt(groupAPIName: string, starLevel: number) {
-	return [...state.units, ...state.benchUnits].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
-}
-
-function buyUnitFromShopAt(shopIndex: number) {
-	const shopItem = shop[shopIndex]!
-	state.gold -= shopItem.totalPrice
-	shop[shopIndex] = null
-	modifyPool(shopItem, shopItem.baseCost, -shopItem.countFromPool)
-	if (shopItem.chosenTraits) {
-		resetChosenParameters()
-	}
-	return new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
-}
-
-function onBuyUnit(shopItem: ShopUnit, shopIndex: number) {
-	if (state.gold < shopItem.totalPrice) return
-
-	const { groupAPIName } = shopItem
-
-	// Buy multiple to star up on full
-	const existingCopiesCount = getCopiesOfUnitAt(groupAPIName, shopItem.starLevel).length
-	const shopCopyIndices = shop.reduce<number[]>((acc, item, index) => (index !== shopIndex && item?.groupAPIName === groupAPIName) ? acc.concat(index) : acc, [])
-	const benchIndex = state.benchUnits.findIndex(benchSpace => benchSpace == null)
-	let combinesExtraUnits = false
-	let extraUnit = null
-	if (benchIndex === -1) {
-		if (existingCopiesCount > 0) {
-			const maxMoneyCount = Math.floor(state.gold / shopItem.totalPrice)
-			const maxBuyableCount = Math.min(maxMoneyCount, shopCopyIndices.length)
-			if (maxBuyableCount + existingCopiesCount >= 2) {
-				combinesExtraUnits = true
-				if (existingCopiesCount < 2) {
-					extraUnit = buyUnitFromShopAt(shopCopyIndices[0])
-				}
-			}
-		}
-		if (!combinesExtraUnits) {
-			return
-		}
-	}
-
-	const newUnit = buyUnitFromShopAt(shopIndex)
-	if (!combinesExtraUnits) {
-		newUnit.benchIndex = benchIndex
-		state.benchUnits[benchIndex] = newUnit
-	}
-
-	// Combine 3 copies of unit
-	for (let starLevel = 1 as StarLevel; starLevel <= 2; starLevel += 1) {
-		const copiesOfUnitAtStarLevel = [...state.units, ...state.benchUnits, ...(combinesExtraUnits ? [newUnit, extraUnit] : [])].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
-		if (copiesOfUnitAtStarLevel.length >= 3) {
-			const repUnit = copiesOfUnitAtStarLevel.find(unit => unit.chosenTraits) ?? copiesOfUnitAtStarLevel[0]
-			removeFirstFromArray(copiesOfUnitAtStarLevel, repUnit)
-			copiesOfUnitAtStarLevel.forEach(unit => {
-				unit.items.forEach(_item => {
-					let moveItem = _item
-					if (repUnit.items.length < 3) {
-						repUnit.items.push(moveItem)
-					} else {
-						if (!setData.componentItems.some(cItem => cItem.name === moveItem.name)) {
-							const bumpComponent = repUnit.items.find(repItem => setData.componentItems.some(cItem => cItem.name === repItem.name))
-							if (bumpComponent) {
-								removeFirstFromArray(repUnit.items, bumpComponent)
-								repUnit.items.push(moveItem)
-								moveItem = bumpComponent
-							}
-						}
-						state.benchItems.push(moveItem)
-					}
-				})
-				if (unit.benchIndex != null) {
-					state.benchUnits[unit.benchIndex] = null
-				}
-				removeFirstFromArray(state.units, unit)
-			})
-			setStarLevel(repUnit, repUnit.starLevel + 1 as StarLevel)
-		}
-	}
-}
 </script>
 
 <template>
@@ -313,8 +219,13 @@ function onBuyUnit(shopItem: ShopUnit, shopIndex: number) {
 				<div>Reroll</div><div>2</div>
 			</button>
 		</div>
-		<div v-for="(shopItem, index) in shop" :key="index" class="flex-1 bg-secondary text-white">
-			<button v-if="shopItem" :disabled="!state.rolldownActive || state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)" :class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col" @click="onBuyUnit(shopItem, index)">
+		<div v-for="(shopItem, index) in state.shop" :key="index" class="flex-1 bg-secondary text-white">
+			<button
+				v-if="shopItem" :disabled="!state.rolldownActive || state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)"
+				:class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col"
+				:draggable="true" @dragstart="startDragging($event, 'shop', index.toString(), null)"
+				@click="buyUnit(shopItem, index)"
+			>
 				<div class="relative w-full">
 					<div :style="{ backgroundImage: `url(${getIconURLFor(state, shopItem)})` }" class=" aspect-video m-0.5 bg-no-repeat bg-cover" />
 					<div v-if="shopItem.chosenTraits" class="shop-headliner-overlay  relative">

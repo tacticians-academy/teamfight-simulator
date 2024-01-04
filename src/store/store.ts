@@ -1,6 +1,6 @@
 import { computed, reactive, shallowReactive, watch, watchEffect } from 'vue'
 
-import { ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS } from '@tacticians-academy/academy-library'
+import { ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS, removeFirstFromArray } from '@tacticians-academy/academy-library'
 import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData, UnitPools } from '@tacticians-academy/academy-library'
 import { importAugments, importChampions, importItems, importTraits, importSetData, importMap } from '@tacticians-academy/academy-library/dist/imports'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
@@ -31,6 +31,19 @@ import type { DraggableType } from '#/ui/helpers/dragDrop'
 import { sum } from '#/ui/helpers/utils'
 
 type TraitAndUnits = [TraitData, Record<string, number>]
+
+type ShopUnit = {
+	apiName: string
+	groupAPIName: string
+	name: string
+	countFromPool: number
+	baseCost: number
+	totalPrice: number
+	icon: string
+	starLevel: StarLevel
+	traits: string[]
+	chosenTraits: Record<string, number> | undefined
+}
 
 export const DEFAULT_SET = SET_NUMBERS[SET_NUMBERS.length - 1]
 
@@ -81,6 +94,7 @@ export const state = reactive({
 	setNumber: initSetNumber,
 
 	rolldownActive: false,
+	shop: [null, null, null, null, null] as (ShopUnit | null)[],
 	gold: 80,
 	xp: 78,
 	chosen: null as ChampionUnit | null,
@@ -570,18 +584,23 @@ const store = {
 			resetUnitsAfterUpdating()
 		}
 	},
-	addUnit(apiName: string, hex: HexCoord, starLevel: StarLevel, chosenTraits: Record<string, number> | undefined) {
+	addUnit(apiName: string, hex: HexCoord | undefined, benchIndex: number | undefined, starLevel: StarLevel, chosenTraits: Record<string, number> | undefined) {
 		const unit = new ChampionUnit(apiName, hex, starLevel, chosenTraits)
-		unit.updateTeam()
-		state.units.push(unit)
-		unit.genericReset()
-		resetUnitsAfterUpdating()
+		if (hex) {
+			unit.updateTeam()
+			state.units.push(unit)
+			unit.genericReset()
+			resetUnitsAfterUpdating()
+		} else if (benchIndex != null) {
+			unit.benchIndex = benchIndex
+			state.benchUnits[benchIndex] = unit
+		}
 	},
 	dropUnit(event: DragEvent, apiName: string, hex: HexCoord | undefined, benchIndex: number | undefined) {
 		const dragUnit = state.dragUnit
 		if (dragUnit && hex && state.simMode !== 'rolldown' && event.dataTransfer?.effectAllowed === 'copy') {
 			store._deleteUnit(hex)
-			store.addUnit(apiName, hex, dragUnit.starLevel, undefined)
+			store.addUnit(apiName, hex, undefined, dragUnit.starLevel, undefined)
 			//TODO copy items?
 			state.dragUnit = null
 		} else {
@@ -600,7 +619,6 @@ const store = {
 				state.dragUnit = null
 			} else if (hex) {
 				store._deleteUnit(hex)
-				store.addUnit(apiName, hex, 1, undefined)
 			}
 		}
 		saveUnits(state.setNumber)
@@ -610,15 +628,96 @@ const store = {
 		state.elapsedSeconds = 0
 		resetUnitsAfterUpdating()
 	},
+
+	buyUnit(shopItem: ShopUnit, shopIndex: number) {
+		if (state.gold < shopItem.totalPrice) return
+
+		const { groupAPIName } = shopItem
+
+		// Buy multiple to star up on full
+		const existingCopiesCount = getCopiesOfUnitAt(groupAPIName, shopItem.starLevel).length
+		const shopCopyIndices = state.shop.reduce<number[]>((acc, item, index) => (index !== shopIndex && item?.groupAPIName === groupAPIName) ? acc.concat(index) : acc, [])
+		const benchIndex = state.benchUnits.findIndex(benchSpace => benchSpace == null)
+		let combinesExtraUnits = false
+		let extraUnit = null
+		if (benchIndex === -1) {
+			if (existingCopiesCount > 0) {
+				const maxMoneyCount = Math.floor(state.gold / shopItem.totalPrice)
+				const maxBuyableCount = Math.min(maxMoneyCount, shopCopyIndices.length)
+				if (maxBuyableCount + existingCopiesCount >= 2) {
+					combinesExtraUnits = true
+					if (existingCopiesCount < 2) {
+						extraUnit = buyUnitFromShopAt(shopCopyIndices[0])
+					}
+				}
+			}
+			if (!combinesExtraUnits) {
+				return
+			}
+		}
+
+		const newUnit = buyUnitFromShopAt(shopIndex)
+		if (!combinesExtraUnits) {
+			newUnit.benchIndex = benchIndex
+			state.benchUnits[benchIndex] = newUnit
+		}
+
+		// Combine 3 copies of unit
+		for (let starLevel = 1 as StarLevel; starLevel <= 2; starLevel += 1) {
+			const copiesOfUnitAtStarLevel = [...state.units, ...state.benchUnits, ...(combinesExtraUnits ? [newUnit, extraUnit] : [])].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
+			if (copiesOfUnitAtStarLevel.length >= 3) {
+				const repUnit = copiesOfUnitAtStarLevel.find(unit => unit.chosenTraits) ?? copiesOfUnitAtStarLevel[0]
+				removeFirstFromArray(copiesOfUnitAtStarLevel, repUnit)
+				copiesOfUnitAtStarLevel.forEach(unit => {
+					unit.items.forEach(_item => {
+						let moveItem = _item
+						if (repUnit.items.length < 3) {
+							repUnit.items.push(moveItem)
+						} else {
+							if (!setData.componentItems.some(cItem => cItem.name === moveItem.name)) {
+								const bumpComponent = repUnit.items.find(repItem => setData.componentItems.some(cItem => cItem.name === repItem.name))
+								if (bumpComponent) {
+									removeFirstFromArray(repUnit.items, bumpComponent)
+									repUnit.items.push(moveItem)
+									moveItem = bumpComponent
+								}
+							}
+							state.benchItems.push(moveItem)
+						}
+					})
+					if (unit.benchIndex != null) {
+						state.benchUnits[unit.benchIndex] = null
+					}
+					removeFirstFromArray(state.units, unit)
+				})
+				store.setStarLevel(repUnit, repUnit.starLevel + 1 as StarLevel)
+			}
+		}
+	},
 }
 
-export function modifyPool({ apiName }: { apiName: string }, cost: number, vector: number) {
+function buyUnitFromShopAt(shopIndex: number) {
+	const shopItem = state.shop[shopIndex]!
+	state.gold -= shopItem.totalPrice
+	state.shop[shopIndex] = null
+	modifyPool(shopItem, shopItem.baseCost, -shopItem.countFromPool)
+	if (shopItem.chosenTraits) {
+		resetChosenParameters()
+	}
+	return new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
+}
+
+function getCopiesOfUnitAt(groupAPIName: string, starLevel: number) {
+	return [...state.units, ...state.benchUnits].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
+}
+
+function modifyPool({ apiName }: { apiName: string }, cost: number, vector: number) {
 	const poolAPIName = setData.combinePoolAPINames[apiName] ?? apiName
 	// console.log(poolAPIName, state.shopUnitPools[cost][poolAPIName], vector) //SAMPLE
 	state.shopUnitPools[cost][poolAPIName]! += vector
 }
 
-export function resetChosenParameters() {
+function resetChosenParameters() {
 	state.chosenPreviousTraits = []
 	state.chosenUnitLastTrait = {}
 	state.chosenUnitLastShop = {}
@@ -629,6 +728,7 @@ export function resetShop() {
 	state.elapsedSeconds = 0
 	state.shopSinceChosen = 0
 	state.shopNumber = 0
+	state.shop.fill(null)
 	state.benchUnits.fill(null)
 	state.shopUnitPools = structuredClone(setData.tierBags)
 }
