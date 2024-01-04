@@ -14,7 +14,7 @@ import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/d
 import { getIconURLFor } from '#/ui/helpers/utils'
 import { isEmpty } from '#/ui/helpers/utils'
 
-const { state, getters: { currentLevelData }, dropUnit, setStarLevel, startDragging, buyUnit } = useStore()
+const { state, getters: { currentLevelData }, dropUnit, canBuy, startDragging, buyUnit } = useStore()
 
 const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograph/sets/set10/tft_headliner_badge_mask.tft_set10.png`
 
@@ -127,6 +127,10 @@ function refreshShop() {
 				const groupAPIName = setData.combinePoolAPINames[unitApiName] ?? unitApiName
 				const totalUnitPoolCount = setData.tierBags[baseCost][groupAPIName]
 				const remainingUnitPoolCount = state.shopUnitPools[baseCost][groupAPIName]
+				if (remainingUnitPoolCount == null || totalUnitPoolCount == null) {
+					console.error(unitApiName, groupAPIName, 'remainingUnitPoolCount', remainingUnitPoolCount, 'totalUnitPoolCount', totalUnitPoolCount)
+					continue
+				}
 				if (remainingUnitPoolCount / totalUnitPoolCount < 0.5) {
 					continue
 				}
@@ -221,9 +225,9 @@ watch(() => state.didStart, () => {
 		</div>
 		<div v-for="(shopItem, index) in state.shop" :key="index" class="flex-1 bg-secondary text-white">
 			<button
-				v-if="shopItem" :disabled="!state.rolldownActive || state.gold < shopItem.totalPrice || (shopItem.chosenTraits && state.chosen != null)"
+				v-if="shopItem" :disabled="!state.rolldownActive || !canBuy(shopItem)"
 				:class="`cost-${shopItem.baseCost}`" class="shop-item  flex flex-col"
-				:draggable="true" @dragstart="startDragging($event, 'shop', index.toString(), null)"
+				:draggable="state.rolldownActive && canBuy(shopItem)" @dragstart="startDragging($event, 'shop', index.toString(), null)"
 				@click="buyUnit(shopItem, index)"
 			>
 				<div class="relative w-full">

@@ -629,8 +629,12 @@ const store = {
 		resetUnitsAfterUpdating()
 	},
 
+	canBuy(shopItem: ShopUnit) {
+		return state.gold < shopItem.totalPrice || (shopItem.chosenTraits != null && state.chosen != null)
+	},
+
 	buyUnit(shopItem: ShopUnit, shopIndex: number) {
-		if (state.gold < shopItem.totalPrice) return
+		if (!store.canBuy(shopItem)) return
 
 		const { groupAPIName } = shopItem
 
