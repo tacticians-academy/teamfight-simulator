@@ -30,4 +30,21 @@ export const defaultComps: CustomComps = {
 }
 
 export const rolldownConfigs: RolldownConfig[] = [
+	{
+		stage: 4,
+		gold: 60,
+		xp: 78,
+		augments: [],
+		contestedUnits: [],
+		items: ['TFT_Item_GiantsBelt'],
+		units: [
+			{ id: ChampionKey.JarvanIV, hex: [5, 7], starLevel: 2, items: [] },
+			{ id: ChampionKey.Swain, hex: [6, 4], starLevel: 2, items: [] },
+			{ id: ChampionKey.Sivir, hex: [6, 7], starLevel: 2, items: [23, 29, 69] },
+			{ id: ChampionKey.Alistar, hex: [4, 4], starLevel: 2, items: [55, 37, 77] },
+			{ id: ChampionKey.Sejuani, hex: [2, 4], starLevel: 2, items: [] },
+			{ id: ChampionKey.Nocturne, hex: [4, 7], starLevel: 2, items: [] },
+			{ id: ChampionKey.Lucian, hex: [0, 6], starLevel: 2, items: [] },
+		],
+	},
 ]

@@ -1,7 +1,7 @@
 import { computed, reactive, shallowReactive, watch, watchEffect } from 'vue'
 
-import { ItemKey, TraitKey, removeFirstFromArrayWhere, SET_NUMBERS, removeFirstFromArray } from '@tacticians-academy/academy-library'
-import type { AugmentData, AugmentGroupKey, ChampionData, ItemData, SetNumber, TraitData, UnitPools } from '@tacticians-academy/academy-library'
+import { ItemKey, removeFirstFromArrayWhere, SET_NUMBERS, removeFirstFromArray } from '@tacticians-academy/academy-library'
+import type { AugmentData, AugmentGroupKey, TraitKey, ChampionData, ItemData, SetNumber, TraitData, UnitPools } from '@tacticians-academy/academy-library'
 import { importAugments, importChampions, importItems, importTraits, importSetData, importMap } from '@tacticians-academy/academy-library/dist/imports'
 import { ChampionKey } from '@tacticians-academy/academy-library/dist/set6.5/champions'
 
@@ -73,7 +73,6 @@ export const setData = shallowReactive({
 	traitEffects: {} as TraitEffects,
 
 	dropRates: {} as Record<string, number[][]>,
-	levelShopOdds: [[0, 0, 0, 0, 0]] as number[][],
 	headlinerSystemParameters: {} as Record<string, number> | undefined,
 	tierBags: {} as UnitPools,
 	levelXP: [] as number[],
@@ -136,7 +135,7 @@ export const getters = {
 
 	currentLevelData: computed(() => {
 		if (state.xp <= 0 || !setData.levelXP.length) {
-			return [0, 0, 0]
+			return [1, 0, 0]
 		}
 		let currentLevelIndex = setData.levelXP.findIndex(levelXP => levelXP > state.xp)
 		if (currentLevelIndex === -1) {
@@ -207,11 +206,6 @@ export const getters = {
 						return styleDiff !== 0 ? styleDiff : a.totalScore - b.totalScore
 					})
 			})
-	}),
-
-	socialitesByTeam: computed(() => {
-		const result: boolean[] = getters.synergiesByTeam.value.map(teamSynergies => teamSynergies.some(synergyData => synergyData.key === TraitKey.Socialite))
-		return result
 	}),
 
 	activeAugmentEffectsByTeam: computed(() => {
@@ -539,6 +533,7 @@ const store = {
 				state.dragUnit = null
 			} else if (hex) {
 				store._deleteUnit(hex)
+				store.addUnit(apiName, hex, undefined, 1, undefined)
 			}
 		}
 		saveUnits(state.setNumber)
@@ -718,7 +713,6 @@ export async function setSetNumber(set: SetNumber) {
 		setData.traitEffects = traitEffects ?? {}
 
 		setData.dropRates = dropRates ?? []
-		setData.levelShopOdds = dropRates?.Shop ?? []
 		setData.tierBags = tierBags
 		setData.headlinerSystemParameters = headlinerSystemParameters
 		setData.levelXP = LEVEL_XP ?? []

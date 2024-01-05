@@ -3,7 +3,7 @@ import { SET_NUMBERS, type SetNumber } from '@tacticians-academy/academy-library
 
 import { state, setSetNumber } from '#/store/store'
 
-const implementedSetNumbers: SetNumber[] = [6.5]
+const implementedSetNumbers: SetNumber[] = [6.5, 10]
 
 function onSetNumber(set: SetNumber) {
 	setSetNumber(set)
@@ -12,7 +12,7 @@ function onSetNumber(set: SetNumber) {
 
 <template>
 <footer class="w-fit m-auto relative z-10">
-	<div class="flex justify-center items-center">
+	<div v-show="state.simMode === 'teamfight' || !state.didStart" class="flex justify-center items-center">
 		<span class="text-tertiary uppercase font-light mr-1 max-lg:text-xs">set</span>
 		<button
 			v-for="set in SET_NUMBERS" :key="set"
@@ -23,7 +23,7 @@ function onSetNumber(set: SetNumber) {
 			{{ set }}
 		</button>
 	</div>
-	<div class="mt-2 text-tertiary  flex justify-center space-x-1">
+	<div v-if="state.simMode === 'teamfight'" class="mt-2 text-tertiary  flex justify-center space-x-1">
 		<a href="https://github.com/tacticians-academy/teamfight-simulator" target="_blank">GitHub</a>
 		<span>・</span>
 		<a href="https://github.com/tacticians-academy/teamfight-simulator/milestone/1?closed=1" target="_blank">6.5 progress</a>

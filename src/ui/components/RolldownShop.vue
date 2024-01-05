@@ -18,9 +18,17 @@ import { getIconURLFor } from '#/ui/helpers/utils'
 const { state, getters: { currentLevelData }, dropUnit, canBuy, startDragging, buyUnit } = useStore()
 
 const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograph/sets/set10/tft_headliner_badge_mask.tft_set10.png`
+
 const shopUIURL = computed(() => {
 	const prefix = getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/tft_hud_texture_atlas'
-	const suffix = state.setNumber >= 9.5 ? '.tft_set9_stage2' : ''
+	const setVersioned = state.setNumber >= 9.5
+		? 9.5
+		: state.setNumber >= 8
+			? 8
+			: state.setNumber === 6.5
+				? 6.5
+				: null
+	const suffix = setVersioned ? `.tft_set${setVersioned.toString().replace('.5', '_stage2')}` : ''
 	return `url(${prefix}${suffix}.png)`
 })
 
@@ -95,7 +103,7 @@ function refreshShop() {
 	for (let shopIndex = state.shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
 		const starLevel: StarLevel = getChosen ? 2 : 1
 		const levelIndex = currentLevelData.value[0] - 1
-		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.levelShopOdds)[levelIndex]
+		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.dropRates['Shop'])[levelIndex]
 		const baseCost = getWeightedRandom(shopCostOdds.map((a, shopIndex) => [shopIndex + 1, a]))
 		const units = state.shopUnitPools[baseCost]
 		const countFromPool = Math.pow(3, starLevel - 1)

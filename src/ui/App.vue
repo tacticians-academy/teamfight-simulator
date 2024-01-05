@@ -16,8 +16,8 @@ const { state } = useStore()
 	<SidebarContainer />
 	<div class="relative w-full h-full overflow-y-scroll">
 		<HexBoard />
-		<SetsFooter v-if="state.simMode === 'teamfight'" />
-		<RolldownShop v-else-if="state.simMode === 'rolldown'" />
+		<SetsFooter />
+		<RolldownShop v-if="state.simMode === 'rolldown'" />
 	</div>
 </div>
 </template>
