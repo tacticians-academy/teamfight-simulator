@@ -782,6 +782,9 @@ function buyUnitFromShopAt(shopIndex: number) {
 	return new ChampionUnit(shopItem.apiName, undefined, shopItem.starLevel, shopItem.chosenTraits)
 }
 
+export function getOwnedCountOf(groupAPIName: string) {
+	return [...state.units, ...state.benchUnits].reduce((acc, unit) => acc + (unit != null && unit.groupAPIName === groupAPIName ? unit.getCountFromPool() : 0), 0)
+}
 function getCopiesOfUnitAt(groupAPIName: string, starLevel: number) {
 	return [...state.units, ...state.benchUnits].filter((unit): unit is ChampionUnit => unit != null && unit.groupAPIName === groupAPIName && unit.starLevel === starLevel)
 }

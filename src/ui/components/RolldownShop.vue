@@ -10,7 +10,7 @@ import type { ChampionData, TraitData } from '@tacticians-academy/academy-librar
 import type { StarLevel } from '#/sim/helpers/types'
 import { getWeightedRandom, isEmpty, shuffle } from '#/sim/helpers/utils'
 
-import { setData, useStore } from '#/store/store'
+import { setData, useStore, getOwnedCountOf } from '#/store/store'
 
 import { getDragName, getDragType, onDragOver, onDropSell } from '#/ui/helpers/dragDrop'
 import { getIconURLFor } from '#/ui/helpers/utils'
@@ -95,6 +95,14 @@ function onDrop(event: DragEvent, benchIndex: number) {
 	}
 }
 
+const HEADLINER_COST_MAXIMUM_COPIES = [
+	null,
+	null,
+	null,
+	4,
+	3,
+]
+
 function refreshShop() {
 	state.shopNumber += 1
 	state.shopSinceChosen += 1
@@ -105,6 +113,7 @@ function refreshShop() {
 		const levelIndex = currentLevelData.value[0] - 1
 		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.dropRates['Shop'])[levelIndex]
 		const baseCost = getWeightedRandom(shopCostOdds.map((a, shopIndex) => [shopIndex + 1, a]))
+		const maxOwnedCopies = HEADLINER_COST_MAXIMUM_COPIES[baseCost]
 		const units = state.shopUnitPools[baseCost]
 		const countFromPool = Math.pow(3, starLevel - 1)
 		const chosenTraits: Record<string, number> = {}
@@ -122,8 +131,8 @@ function refreshShop() {
 			if (costRepeatLimit != null && unitLastShopNumber != null && unitLastShopNumber > state.shopNumber - costRepeatLimit) {
 				continue
 			}
-			unit = setData.champions.find(unitData => unitData.apiName === unitApiName)
-			if (unit && getChosen) {
+			const checkUnit = setData.champions.find(unitData => unitData.apiName === unitApiName)
+			if (checkUnit && getChosen) {
 				const groupAPIName = setData.combinePoolAPINames[unitApiName] ?? unitApiName
 				const totalUnitPoolCount = setData.tierBags[baseCost][groupAPIName]
 				const remainingUnitPoolCount = state.shopUnitPools[baseCost][groupAPIName]
@@ -131,11 +140,12 @@ function refreshShop() {
 					console.error(unitApiName, groupAPIName, 'remainingUnitPoolCount', remainingUnitPoolCount, 'totalUnitPoolCount', totalUnitPoolCount)
 					continue
 				}
-				if (remainingUnitPoolCount / totalUnitPoolCount < 0.5) {
+				if (maxOwnedCopies != null && getOwnedCountOf(groupAPIName) > maxOwnedCopies) {
+					console.log(groupAPIName, 'exceeds max owned count', maxOwnedCopies, getOwnedCountOf(groupAPIName))
 					continue
 				}
 
-				const possibleTraits = unit.traits
+				const possibleTraits = checkUnit.traits
 					.map(traitName => setData.traits.find(trait => trait.name === traitName))
 					.filter((trait): trait is TraitData => trait != null && trait.effects.length > 1)
 				shuffle(possibleTraits)
@@ -157,6 +167,7 @@ function refreshShop() {
 					break
 				}
 			}
+			unit = checkUnit
 		}
 		if (unit) {
 			const shopUnit = {
