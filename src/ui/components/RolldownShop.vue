@@ -113,7 +113,7 @@ function refreshShop() {
 
 function nextShop() {
 	const chosenFrequency = setData.headlinerSystemParameters?.['HeadlinerFrequency']
-	let getChosen = chosenFrequency != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
+	let getChosen = chosenFrequency != null && setData.dropRates['Headliner'] != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
 	for (let shopIndex = state.shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
 		const starLevel: StarLevel = getChosen ? 2 : 1
 		const levelIndex = currentLevelData.value[0] - 1

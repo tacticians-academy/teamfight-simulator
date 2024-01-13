@@ -66,7 +66,7 @@ export const setData = shallowReactive({
 	shimmerscaleItems: [] as ItemData[],
 	supportItems: [] as ItemData[],
 	compsDefault: {} as CustomComps,
-	rolldownConfigs: {} as RolldownConfig[],
+	rolldownConfigs: [] as RolldownConfig[],
 	augmentEffects: {} as AugmentEffects,
 	championEffects: {} as ChampionEffects,
 	itemEffects: {} as ItemEffects,
@@ -705,7 +705,7 @@ export async function setSetNumber(set: SetNumber) {
 		setData.supportItems = supportItems
 		setData.traits = traits ?? []
 		setData.compsDefault = defaultComps ?? {}
-		setData.rolldownConfigs = rolldownConfigs ?? {}
+		setData.rolldownConfigs = rolldownConfigs ?? [{stage: 4, gold: 100, xp: 78, augments: [], contestedUnits: [], items: [], units: []}]
 		setDataReactive.compsUser = getSavedComps(set)
 		setData.augmentEffects = augmentEffects ?? {}
 		setData.championEffects = championEffects ?? {}
@@ -715,7 +715,7 @@ export async function setSetNumber(set: SetNumber) {
 		setData.dropRates = dropRates ?? []
 		setData.tierBags = tierBags
 		setData.headlinerSystemParameters = headlinerSystemParameters
-		setData.levelXP = LEVEL_XP ?? []
+		setData.levelXP = LEVEL_XP ?? [0, 0, 2, 8, 18, 38, 74, 130, 210, 310]
 		setData.combinePoolAPINames = COMBINE_POOL_APINAMES ?? {}
 
 		setData.rowsPerSide = set < 2 ? 3 : 4
