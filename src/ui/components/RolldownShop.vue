@@ -21,14 +21,14 @@ const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograp
 
 const shopUIURL = computed(() => {
 	const prefix = getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/tft_hud_texture_atlas'
-	const setVersioned = state.setNumber >= 9.5
-		? 9.5
-		: state.setNumber >= 8
-			? 8
-			: state.setNumber === 6.5
-				? 6.5
+	const setVersioned = state.setNumber >= 10
+		? null
+		: state.setNumber === 9.5 || state.setNumber === 6.5
+			? state.setNumber
+			: state.setNumber >= 8
+				? 8
 				: null
-	const suffix = setVersioned ? `.tft_set${setVersioned.toString().replace('.5', '_stage2')}` : ''
+	const suffix = setVersioned != null ? `.tft_set${setVersioned.toString().replace('.5', '_stage2')}` : ''
 	return `url(${prefix}${suffix}.png)`
 })
 

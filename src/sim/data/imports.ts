@@ -10,8 +10,6 @@ export async function importDefaultComps(set: SetNumber) {
 	if (set === 10) {
 		return await import('./set10/defaultComps.js')
 	}
-	// throw 'Unsupported set:' + set
-	console.error('Unsupported set:' + set)
 	return {} as DefaultComps
 }
 
