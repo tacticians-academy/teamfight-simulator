@@ -103,9 +103,15 @@ const HEADLINER_COST_MAXIMUM_COPIES = [
 	3,
 ]
 
+let previousShopHash = ''
+
 function refreshShop() {
 	state.shopNumber += 1
 	state.shopSinceChosen += 1
+	nextShop()
+}
+
+function nextShop() {
 	const chosenFrequency = setData.headlinerSystemParameters?.['HeadlinerFrequency']
 	let getChosen = chosenFrequency != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
 	for (let shopIndex = state.shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
@@ -189,11 +195,21 @@ function refreshShop() {
 			}
 		}
 	}
+	const newShopHash = state.shop
+		.map(u => (u?.groupAPIName != null ? u.groupAPIName + (u.chosenTraits ? Object.keys(u.chosenTraits).join('') : '') : 'NULL'))
+		.sort()
+		.join('')
+	if (previousShopHash === newShopHash) { // https://www.reddit.com/r/CompetitiveTFT/comments/194vrya/official_headliner_rules_update_for_patch_142/
+		console.log('Shop identical set of units to previous, reloading', previousShopHash, newShopHash)
+		return nextShop()
+	}
+	previousShopHash = newShopHash
 }
 
 watch(() => state.didStart, () => {
 	if (state.didStart) {
 		refreshImageCache()
+		previousShopHash = ''
 		refreshShop()
 	}
 })
