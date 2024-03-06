@@ -21,13 +21,15 @@ const headlinerMaskURL = `url(${getAssetPrefixFor(10, true)}assets/ux/tft/mograp
 
 const shopUIURL = computed(() => {
 	const prefix = getAssetPrefixFor(state.setNumber, true) + 'assets/ux/tft/tft_hud_texture_atlas'
-	const setVersioned = state.setNumber >= 10
-		? null
-		: state.setNumber === 9.5 || state.setNumber === 6.5
-			? state.setNumber
-			: state.setNumber >= 8
-				? 8
-				: null
+	const setVersioned = state.setNumber >= 11
+		? state.setNumber
+		: state.setNumber >= 10
+			? null
+			: state.setNumber === 9.5 || state.setNumber === 6.5
+				? state.setNumber
+				: state.setNumber >= 8
+					? 8
+					: null
 	const suffix = setVersioned != null ? `.tft_set${setVersioned.toString().replace('.5', '_stage2')}` : ''
 	return `url(${prefix}${suffix}.png)`
 })
@@ -113,11 +115,11 @@ function refreshShop() {
 
 function nextShop() {
 	const chosenFrequency = setData.headlinerSystemParameters?.['HeadlinerFrequency']
-	let getChosen = chosenFrequency != null && setData.dropRates['Headliner'] != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
+	let needsChosen = state.setNumber <= 10 && chosenFrequency != null && setData.dropRates['Headliner'] != null && (!state.chosen || (setData.headlinerSystemParameters ? state.shopSinceChosen >= chosenFrequency : false))
 	for (let shopIndex = state.shop.length - 1; shopIndex >= 0; shopIndex -= 1) {
-		const starLevel: StarLevel = getChosen ? 2 : 1
+		const starLevel: StarLevel = needsChosen ? 2 : 1
 		const levelIndex = currentLevelData.value[0] - 1
-		const shopCostOdds = (getChosen ? setData.dropRates['Headliner'] : setData.dropRates['Shop'])[levelIndex]
+		const shopCostOdds = (needsChosen ? setData.dropRates['Headliner'] : setData.dropRates['Shop'])[levelIndex]
 		const baseCost = getWeightedRandom(shopCostOdds.map((a, shopIndex) => [shopIndex + 1, a]))
 		const maxOwnedCopies = HEADLINER_COST_MAXIMUM_COPIES[baseCost]
 		const units = state.shopUnitPools[baseCost]
@@ -138,7 +140,7 @@ function nextShop() {
 				continue
 			}
 			const checkUnit = setData.champions.find(unitData => unitData.apiName === unitApiName)
-			if (checkUnit && getChosen) {
+			if (checkUnit && needsChosen) {
 				const groupAPIName = setData.combinePoolAPINames[unitApiName] ?? unitApiName
 				const totalUnitPoolCount = setData.tierBags[baseCost][groupAPIName]
 				const remainingUnitPoolCount = state.shopUnitPools[baseCost][groupAPIName]
@@ -189,9 +191,9 @@ function nextShop() {
 				chosenTraits: !isEmpty(chosenTraits) ? chosenTraits : undefined,
 			}
 			state.shop[shopIndex] = shopUnit
-			if (getChosen) {
+			if (needsChosen) {
 				state.shopSinceChosen = 0
-				getChosen = false
+				needsChosen = false
 			}
 		}
 	}

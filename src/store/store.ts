@@ -65,6 +65,7 @@ export const setData = shallowReactive({
 	ornnItems: [] as ItemData[],
 	shimmerscaleItems: [] as ItemData[],
 	supportItems: [] as ItemData[],
+	modItems: [] as ItemData[],
 	compsDefault: {} as CustomComps,
 	rolldownConfigs: [] as RolldownConfig[],
 	augmentEffects: {} as AugmentEffects,
@@ -681,7 +682,7 @@ export async function setSetNumber(set: SetNumber) {
 		const { traitEffects } = await importTraitEffects(set)
 
 		const { champions } = await importChampions(set)
-		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems } = await importItems(set)
+		const { currentItems, completedItems, componentItems, shadowItems, radiantItems, ornnItems, shimmerscaleItems, supportItems, emblemItems, modItems } = await importItems(set)
 		const { traits } = await importTraits(set)
 		const { LEVEL_XP, COMBINE_POOL_APINAMES } = await importSetData(set)
 		const { dropRates, tierBags, headlinerSystemParameters } = await importMap(set)
@@ -703,6 +704,7 @@ export async function setSetNumber(set: SetNumber) {
 		setData.ornnItems = ornnItems
 		setData.shimmerscaleItems = shimmerscaleItems
 		setData.supportItems = supportItems
+		setData.modItems = modItems
 		setData.traits = traits ?? []
 		setData.compsDefault = defaultComps ?? {}
 		setData.rolldownConfigs = rolldownConfigs ?? [{stage: 4, gold: 100, xp: 78, augments: [], contestedUnits: [], items: [], units: []}]

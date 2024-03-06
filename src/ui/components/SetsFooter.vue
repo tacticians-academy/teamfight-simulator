@@ -13,7 +13,6 @@ function onSetNumber(set: SetNumber) {
 <template>
 <footer class="w-fit m-auto relative z-10">
 	<div v-show="state.simMode === 'teamfight' || !state.didStart" class="flex justify-center items-center">
-		<span class="text-tertiary uppercase font-light mr-1 max-lg:text-xs">set</span>
 		<button
 			v-for="set in SET_NUMBERS" :key="set"
 			class="set-button" :class="state.setNumber === set ? 'bg-quaternary text-inverted' : 'text-tertiary' + (!implementedSetNumbers.includes(set) ? ' opacity-50' : '')"

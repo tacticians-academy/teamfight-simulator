@@ -37,7 +37,7 @@ export const NEGATIVE_STATUS_EFFECTS = [StatusEffectType.armorReduction, StatusE
 export const CC_STATUS_EFFECTS = [StatusEffectType.attackSpeedSlow, StatusEffectType.stunned]
 
 export function isPlaceable(unitData: ChampionData) {
-	return !unitData.isSpawn || unitData.apiName === ChampionKey.TrainingDummy
+	return unitData.apiName === ChampionKey.TrainingDummy || (!unitData.isSpawn && !unitData.apiName.endsWith('Dummy'))
 }
 
 export class ChampionUnit {

@@ -15,6 +15,9 @@ const itemGroups = computed(() => {
 		[state.setNumber > 1 ? 'Emblems' : 'Spatula', setData.emblemItems.filter(item => (state.setNumber < 5 ? item.name !== 'Force of Nature' : item.apiName !== 'TFT_Item_ForceOfNature'))],
 		['Components', setData.componentItems],
 	]
+	if (state.setNumber === 11) {
+		itemGroups.splice(2, 0, ['Mods', setData.modItems])
+	}
 	if (state.setNumber === 4.5 || (setData.ornnItems.length && state.setNumber >= 6)) {
 		itemGroups.splice(2, 0, [state.setNumber >= 9.5 ? 'Artifacts' : 'Ornn', setData.ornnItems])
 	}
