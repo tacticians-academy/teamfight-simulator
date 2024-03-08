@@ -34,10 +34,16 @@ function onToggle(name: SectionName) {
 	showSection.value = name
 }
 
-const compsByGroup = computed<[string, CustomComps][]>(() => [
-	['Defaults', setData.compsDefault],
-	['Yours', setDataReactive.compsUser],
-])
+const compsByGroup = computed(() => {
+	const compGroups: [string, CustomComps][] = []
+	if (!isEmpty(setData.compsDefault)) {
+		compGroups.push(['Defaults', setData.compsDefault])
+	}
+	if (!isEmpty(setDataReactive.compsUser)) {
+		compGroups.push(['Yours', setDataReactive.compsUser])
+	}
+	return compGroups
+})
 </script>
 
 <template>
@@ -64,8 +70,13 @@ const compsByGroup = computed<[string, CustomComps][]>(() => [
 	</div>
 </template>
 <div v-else-if="showSection === 'comps'" class="space-y-4">
-	<template v-for="[title, comps] in compsByGroup" :key="title">
-		<div v-if="!isEmpty(comps)" class="space-y-1">
+	<template v-if="!compsByGroup.length">
+		<p class="m-1 text-secondary text-sm text-center italic">
+			Preset team compositions created with the "Save Comp" button appear here.
+		</p>
+	</template>
+	<template v-else>
+		<div v-for="[title, comps] in compsByGroup" :key="title" class="space-y-1">
 			<div class="mt-1 mx-1 text-secondary uppercase text-sm">{{ title }}:</div>
 			<template v-for="(comp, name) in comps" :key="name">
 				<SelectUnitsComp :name="name" :comp="comp" :canDelete="title !== 'Defaults'" class="mx-1" />
