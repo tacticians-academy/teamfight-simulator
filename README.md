@@ -4,6 +4,8 @@
 
 Simulate fights from [Teamfight Tactics](https://teamfighttactics.leagueoflegends.com/en-us/) (TFT). The goal is to assist in theorycrafting better team compositions, unit positioning, and item builds through statistical analysis, and perhaps create a "puzzle mode" to improve players' board strength intuition.
 
+There is also an included roll down mode which sets your current composition, gold, and level, and enables you to buy/sell units on a timer to upgrade your composition.
+
 https://tftsim.netlify.app
 
 ## Current Set support
@@ -20,9 +22,9 @@ _Unplanned features are listed in the [Nice-To-Have's project](https://github.co
 - Generates champion/trait/augment/item stats and assets from the current patch, thanks to [Community Dragon](https://communitydragon.org) (see [`academy-library`](https://github.com/tacticians-academy/academy-library?ts=2)).
 
 ### Units setup
-- Place/move any units onto 2 teams
-- Equip/move any valid items, and adjust star levels
-- Set augment(s) for each team
+- Place/move units onto 2 teams
+- Equip/move valid items, and adjust star levels
+- Select augment(s) for each team
 
 ### Play a fight
 - Assassins jump to backline
@@ -65,14 +67,18 @@ In a game like TFT, you can think of 3 layers running on top of the raw numbers 
 ## Contributing
 
 ### Dev setup
-`tacticians-academy` is built on a series of Node apps written in Typescript. The frontend is a Vue 3 app using Vite as the build tool. To run in development, install dependencies and run the `dev` script to launch localhost in your default browser:
+`tacticians-academy` is built on a series of Node apps written in Typescript. The frontend is a Vue 3 app.
+
+1. Install Node: https://nodejs.org/en/learn/getting-started/how-to-install-nodejs
+
+2. To run in development, install dependencies and run the `dev` script to launch localhost in your default browser:
 
 ```sh
 npm install
 npm run dev
 ```
 
-_Note `tacticians-academy` uses [`pnpm`](https://pnpm.io) rather than `npm` for its lockfile._
+_Note: `tacticians-academy` uses [`pnpm`](https://pnpm.io) rather than `npm` for its lockfile._
 
 ### What you can do
 To get started, find an unimplemented issue from the [current Set milestone](#current-set-support) (or alternatively from a past set). Champion abilities are a good place to start – you can refer to spell data in [`academy-library/champions`](https://github.com/tacticians-academy/academy-library/blob/main/dist/set6/champions.ts?ts=2). Then, using existing implementations in [`set6/champions`](src/sim/data/set6/champions.ts?ts=2) as a template, give it a try!
