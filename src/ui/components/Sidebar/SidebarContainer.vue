@@ -60,7 +60,7 @@ function onToggle(name: SimMode) {
 			Roll Down
 		</button>
 	</div>
-	<div class="flex-grow  flex flex-col h-full" @dragover="onDragOver" @drop="onDropSell">
+	<div class="flex-grow  flex flex-col h-full justify-between" @dragover="onDragOver" @drop="onDropSell">
 		<RolldownSetup v-if="state.simMode === 'rolldown'" />
 		<template v-else>
 			<div v-if="!state.didStart" class="overflow-y-scroll flex flex-col">

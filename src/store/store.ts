@@ -87,8 +87,8 @@ export type SimMode = 'teamfight' | 'rolldown'
 
 const initSetNumber = getSetNumber()
 export const state = reactive({
-	simMode: 'rolldown' as SimMode, //SAMPLE
-	// simMode: 'teamfight' as SimMode,
+	// simMode: 'rolldown' as SimMode, //SAMPLE
+	simMode: 'teamfight' as SimMode,
 	loadedSet: false,
 	setNumber: initSetNumber,
 
