@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { SET_NUMBERS, type SetNumber } from '@tacticians-academy/academy-library'
+import { SET_DATA, SET_NUMBERS, type SetNumber } from '@tacticians-academy/academy-library'
 
-import { state, setSetNumber } from '#/store/store'
-
-const implementedSetNumbers: SetNumber[] = [6.5, 10]
+import { state, setSetNumber, DEFAULT_SET } from '#/store/store'
+import { computed } from 'vue'
 
 function onSetNumber(set: SetNumber) {
 	setSetNumber(set)
 }
+
+const currentMilestoneID = computed(() => SET_DATA[state.setNumber].milestoneID)
 </script>
 
 <template>
@@ -15,7 +16,7 @@ function onSetNumber(set: SetNumber) {
 	<div v-show="state.simMode === 'teamfight' || !state.didStart" class="flex justify-center items-center">
 		<button
 			v-for="set in SET_NUMBERS" :key="set"
-			class="set-button" :class="state.setNumber === set ? 'bg-quaternary text-inverted' : 'text-tertiary' + (!implementedSetNumbers.includes(set) ? ' opacity-50' : '')"
+			class="set-button" :class="state.setNumber === set ? 'bg-quaternary text-inverted' : 'text-tertiary' + (set !== DEFAULT_SET && !SET_DATA[set].milestoneID ? ' opacity-50' : '')"
 			:disabled="state.didStart || !state.loadedSet"
 			@click="onSetNumber(set)"
 		>
@@ -25,8 +26,10 @@ function onSetNumber(set: SetNumber) {
 	<div v-if="state.simMode === 'teamfight'" class="mt-2 text-tertiary  flex justify-center space-x-1">
 		<a href="https://github.com/tacticians-academy/teamfight-simulator" target="_blank">GitHub</a>
 		<span>・</span>
-		<a href="https://github.com/tacticians-academy/teamfight-simulator/milestone/1?closed=1" target="_blank">6.5 progress</a>
-		<span>・</span>
+		<template v-if="currentMilestoneID">
+			<a :href="`https://github.com/tacticians-academy/teamfight-simulator/milestone/${currentMilestoneID}?closed=1`" target="_blank">{{ state.setNumber }} progress</a>
+			<span>・</span>
+		</template>
 		<a :href="`mailto:tacticians.academy@gmail.com?subject=${encodeURIComponent('Teamfight Simulator Feedback')}`" target="_blank">Send feedback</a>
 	</div>
 </footer>
